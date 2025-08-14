@@ -113,34 +113,6 @@ namespace FIA_Biosum_Manager
                 chkFullDetails.Checked = false;
         }
 
-        private string[] loadScenarioArray()
-        {
-            //
-            //OPEN CONNECTION TO DB FILE CONTAINING PROCESSOR SCENARIO TABLE
-            //
-            //scenario mdb connection
-            string strProcessorScenarioDB =
-              frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
-              "\\processor\\"+ Tables.ProcessorScenarioRuleDefinitions.DefaultSqliteDbFile;
-            //
-            //get a list of all the scenarios
-            //
-            SQLite.ADO.DataMgr dataMgr = new SQLite.ADO.DataMgr();
-            string strConn = dataMgr.GetConnectionString(strProcessorScenarioDB);
-            IList<string> lstScenarioArray = null;
-            using (System.Data.SQLite.SQLiteConnection oConn = new System.Data.SQLite.SQLiteConnection(strConn))
-            {
-                oConn.Open();
-                lstScenarioArray = dataMgr.getStringList(oConn,
-                        "SELECT scenario_id " +
-                        "FROM scenario " +
-                        "WHERE scenario_id IS NOT NULL AND " +
-                        "LENGTH(TRIM(scenario_id)) > 0");
-                oConn.Close();
-            }
-            return lstScenarioArray.ToArray();
-        }
-
         public void savevalues()
         {
 

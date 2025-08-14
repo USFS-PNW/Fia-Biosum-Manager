@@ -1047,75 +1047,6 @@ namespace FIA_Biosum_Manager
 
 		}
 
-        private void LoadRuleDefinitions()
-        {
-            int x;
-            frmTherm p_frmTherm = new frmTherm();
-            p_frmTherm.lblMsg.Text = "";
-            p_frmTherm.progressBar1.Minimum = 0;
-            p_frmTherm.progressBar1.Maximum = 7;
-            p_frmTherm.btnCancel.Visible = false;
-            p_frmTherm.lblMsg.Visible = true;
-            p_frmTherm.Show();
-            p_frmTherm.progressBar1.Value = 1;
-            p_frmTherm.progressBar1.Value = 2;
-            Queries oQueries = new Queries();
-
-            this.m_oOptimizerScenarioItem.ScenarioId = this.uc_scenario1.txtScenarioId.Text.Trim();
-
-            this.m_oOptimizerScenarioTools.LoadAll(
-                frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" +
-                Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableSqliteDbFile,
-                oQueries, m_oOptimizerScenarioItem.ScenarioId,
-                m_oOptimizerScenarioItem_Collection);
-            //find the current scenario
-            for (x = 0; x <= m_oOptimizerScenarioItem_Collection.Count - 1; x++)
-            {
-                if (m_oOptimizerScenarioItem_Collection.Item(x).ScenarioId.Trim().ToUpper() ==
-                    m_oOptimizerScenarioItem.ScenarioId.Trim().ToUpper())
-                    break;
-            }
-
-            this.m_oOptimizerScenarioItem.Copy(m_oOptimizerScenarioItem_Collection.Item(x), m_oSavOptimizerScenarioItem);
-            this.m_oOptimizerScenarioItem = m_oOptimizerScenarioItem_Collection.Item(x);
-
-            p_frmTherm.progressBar1.Value = 3;
-            p_frmTherm.lblMsg.Text = "Rule Definitions: FVS Variables Data";
-            p_frmTherm.lblMsg.Refresh();
-
-            this.uc_scenario_fvs_prepost_variables_effective1.loadvalues();
-            p_frmTherm.progressBar1.Value = 4;
-
-
-            p_frmTherm.lblMsg.Text = "Rule Definitions: Owner Group Data";
-            p_frmTherm.lblMsg.Refresh();
-
-            this.uc_scenario_owner_groups1.loadvalues();
-            p_frmTherm.progressBar1.Value = 5;
-            p_frmTherm.lblMsg.Text = "Rule Definitions: Cost And Revenue Data";
-            p_frmTherm.lblMsg.Refresh();
-            this.uc_scenario_costs1.loadvalues();
-            this.uc_scenario_processor_scenario_select1.loadvalues();
-            p_frmTherm.progressBar1.Value = 6;
-            p_frmTherm.lblMsg.Text = "Rule Definitions: Plot Filter Data";
-            p_frmTherm.lblMsg.Refresh();
-            this.uc_scenario_filter1.loadvalues(false);
-            this.uc_scenario_cond_filter1.loadvalues(false);
-            //this.uc_scenario_psite1.loadvalue_old();
-            ProcessorScenarioItem_Collection oProcItemCollection = this.m_oOptimizerScenarioItem.m_oProcessorScenarioItem_Collection;
-            foreach (ProcessorScenarioItem psItem in oProcItemCollection)
-            {
-                if (psItem.Selected == true)
-                {
-                    this.uc_optimizer_scenario_select_packages1.loadvalues_FromProperties(psItem);
-                }
-            }
-            p_frmTherm.progressBar1.Value = 7;
-            p_frmTherm.Close();
-            p_frmTherm = null;
-            this.m_lrulesfirsttime = false;
-        }
-
         private void LoadRuleDefinitionsNew()
         {
             int x;
@@ -1154,7 +1085,7 @@ namespace FIA_Biosum_Manager
             p_frmTherm.progressBar1.Value = 3;
             p_frmTherm.lblMsg.Text = "Rule Definitions: FVS Variables Data";
             p_frmTherm.lblMsg.Refresh();
-            this.uc_scenario_fvs_prepost_variables_effective1.loadvalues();
+            this.uc_scenario_fvs_prepost_variables_effective1.loadvalues(false);
             p_frmTherm.progressBar1.Value = 4;
 
 
@@ -1525,7 +1456,7 @@ namespace FIA_Biosum_Manager
 
                 frmMain.g_sbpInfo.Text = "Copying scenario rule definitions...Stand by";
 
-                this.uc_scenario_fvs_prepost_variables_effective1.loadvalues_FromProperties();
+                this.uc_scenario_fvs_prepost_variables_effective1.loadvalues(true);
 
                 this.uc_scenario1.txtDescription.Text = m_oOptimizerScenarioItem.Description;
                 frmMain.g_sbpInfo.Text = "Loading Scenario Notes...Stand By";

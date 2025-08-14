@@ -1577,16 +1577,25 @@ namespace FIA_Biosum_Manager
 			this.AllowNumericOnly(e);
 		}
         
-		public void loadvalues_FromProperties()
+		public void loadvalues(bool bCopy)
 		{
 
 			int x;
+			this.lstFVSTablesList.Items.Clear();
+			this.lstFVSTablesList.Sorted = true;
+			m_dictFVSTables = m_oOptimizerScenarioTools.LoadFvsTablesAndVariables();
+			foreach (string strKey in m_dictFVSTables.Keys)
+			{
+				lstFVSTablesList.Items.Add(strKey);
+			}
+			m_oOldVar = new Variables();
+			m_oSavVar = new Variables();
 
 			for (x = 0; x <= NUMBER_OF_VARIABLES - 1; x++)
 				this.RemoveVariable(x);
 
-			m_oOldVar = new Variables();
-			m_oSavVar = new Variables();
+			//m_oOldVar = new Variables();
+			//m_oSavVar = new Variables();
 			//
 			//effective variables
 			//
@@ -1631,142 +1640,21 @@ namespace FIA_Biosum_Manager
 			if (m_oCurVar == null) m_oCurVar = new Variables();
 			m_oOldVar.Copy(m_oOldVar, ref m_oCurVar);
 
-			this.ReferenceOptimizationUserControl.loadvalues_FromProperties();
-			this.ReferenceTieBreakerUserControl.loadvalues_FromProperties();
-
-
-
-		}
-		
-		public void loadvalues()
-        {
-			this.m_intError = 0;
-			this.m_strError = "";
-
-			DataMgr oDataMgr = new DataMgr();
-
-			this.lstFVSTablesList.Items.Clear();
-			this.lstFVSTablesList.Sorted = true;
-			m_dictFVSTables = m_oOptimizerScenarioTools.LoadFvsTablesAndVariables();
-			foreach (string strKey in m_dictFVSTables.Keys)
-			{
-				lstFVSTablesList.Items.Add(strKey);
-			}
-			m_oOldVar = new Variables();
-			m_oSavVar = new Variables();
-
-			int x = 0;
-			for (x = 0; x <= NUMBER_OF_VARIABLES - 1; x++)
-				this.RemoveVariable(x);
-
-			string strScenarioId = this.ReferenceOptimizerScenarioForm.uc_scenario1.txtScenarioId.Text.Trim().ToLower();
-			string strScenarioDB =
-				frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" +
-				Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableSqliteDbFile;
-			using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(strScenarioDB)))
-			{
-				conn.Open();
-
-				int intVarNum = 0;
-
-				//fvs variables
-				oDataMgr.m_strSQL = "SELECT * " +
-								"FROM scenario_fvs_variables " +
-								"WHERE TRIM(UPPER(scenario_id))='" + strScenarioId.Trim().ToUpper() + "' AND " +
-								"current_yn='Y' " +
-								"ORDER BY variable_number";
-				oDataMgr.SqlQueryReader(conn, oDataMgr.m_strSQL);
-				if (oDataMgr.m_DataReader.HasRows)
-				{
-					while (oDataMgr.m_DataReader.Read())
-					{
-						intVarNum = Convert.ToInt32(oDataMgr.m_DataReader["variable_number"]) - 1;
-
-						m_oOldVar.m_strPreVarArray[intVarNum] =
-							Convert.ToString(oDataMgr.m_DataReader["pre_fvs_variable"]).Trim();
-						m_oOldVar.m_strPostVarArray[intVarNum] =
-							Convert.ToString(oDataMgr.m_DataReader["post_fvs_variable"]).Trim();
-
-						if (oDataMgr.m_DataReader["better_expression"] != System.DBNull.Value)
-							m_oOldVar.m_strBetterExpr[intVarNum] =
-								Convert.ToString(oDataMgr.m_DataReader["better_expression"]).Trim();
-
-						if (oDataMgr.m_DataReader["worse_expression"] != System.DBNull.Value)
-							m_oOldVar.m_strWorseExpr[intVarNum] =
-								Convert.ToString(oDataMgr.m_DataReader["worse_expression"]).Trim();
-
-						if (oDataMgr.m_DataReader["effective_expression"] != System.DBNull.Value)
-							m_oOldVar.m_strEffectiveExpr[intVarNum] =
-								Convert.ToString(oDataMgr.m_DataReader["effective_expression"]).Trim();
-
-
-						this.UpdateListViewVariableItem(intVarNum, intVarNum + 1, m_oOldVar);
-					}
-				}
-				oDataMgr.m_DataReader.Close();
-
-				//overall expression
-				oDataMgr.m_strSQL = "SELECT overall_effective_expression, current_yn " +
-								"FROM scenario_fvs_variables_overall_effective " +
-								"WHERE TRIM(UPPER(scenario_id))='" + strScenarioId.Trim().ToUpper() + "' AND " +
-								"current_yn='Y'";
-
-				oDataMgr.SqlQueryReader(conn, oDataMgr.m_strSQL);
-				if (oDataMgr.m_DataReader.HasRows)
-				{
-					while (oDataMgr.m_DataReader.Read())
-					{
-						if (oDataMgr.m_DataReader["overall_effective_expression"] != System.DBNull.Value &&
-							m_oOldVar.m_strOverallEffectiveExpr.Trim().Length == 0)
-                        {
-							m_oOldVar.m_strOverallEffectiveExpr = Convert.ToString(oDataMgr.m_DataReader["overall_effective_expression"]).Trim();
-                        }
-					}
-				}
-				oDataMgr.m_DataReader.Close();
-			}
-
-			for (x = 0; x <= NUMBER_OF_VARIABLES - 1; x++)
-			{
-				if (m_oOldVar.m_strPreVarArray[x].Trim().Length > 0 &&
-					m_oOldVar.m_strPreVarArray[x].Trim().ToUpper() != "NOT DEFINED")
-					this.btnFVSVariablesPrePostOverall.Enabled = true;
-			}
-			m_oOldVar.Copy(m_oOldVar, ref m_oSavVar);
-
-			this.ReferenceOptimizationUserControl.loadvalues(m_dictFVSTables);
-			this.ReferenceTieBreakerUserControl.loadvalues(m_dictFVSTables);
-			this.m_intError = oDataMgr.m_intError;
-			this.m_strError = oDataMgr.m_strError;
-		}
-
-		public void loadvaluesnew()
-        {
-			this.m_intError = 0;
-			this.m_strError = "";
-
-			this.lstFVSTablesList.Items.Clear();
-			this.lstFVSTablesList.Sorted = true;
-			m_dictFVSTables = m_oOptimizerScenarioTools.LoadFvsTablesAndVariables();
-			foreach (string strKey in m_dictFVSTables.Keys)
-			{
-				lstFVSTablesList.Items.Add(strKey);
-			}
-			m_oOldVar = new Variables();
-			m_oSavVar = new Variables();
-
-			int x = 0;
-			for (x = 0; x <= NUMBER_OF_VARIABLES - 1; x++)
-				this.RemoveVariable(x);
-
-			int y = 0;
-			for (y = 0; y <= ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem.m_oEffectiveVariablesItem_Collection.Count - 1; y++)
+			if (bCopy)
             {
-				m_oOldVar.m_strPreVarArray[y] = ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem.m_oEffectiveVariablesItem_Collection.Item(0).m_strPostVarArray[y];
-
+				this.ReferenceOptimizationUserControl.loadvalues_FromProperties();
+                this.ReferenceTieBreakerUserControl.loadvalues_FromProperties();
+            }
+            else
+            {
+				this.ReferenceOptimizationUserControl.loadvalues(m_dictFVSTables);
+				//this.ReferenceTieBreakerUserControl.loadvalues(m_dictFVSTables);
+				this.ReferenceTieBreakerUserControl.loadvalues(m_dictFVSTables);
 			}
+
 		}
 
+        
 
 		private void loadFVSTableAndField()
         {
