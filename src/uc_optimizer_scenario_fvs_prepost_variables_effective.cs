@@ -2843,7 +2843,7 @@ namespace FIA_Biosum_Manager
 
 				string strEffectiveTableName = strPrefix + "_effective";
 				frmMain.g_oTables.m_oOptimizerScenarioResults.CreateSqliteEffectiveTable(oDataMgr, conn,
-					strPrefix, strColumnFilterName);
+					strEffectiveTableName, strColumnFilterName);
 
 				strSQL = "SELECT * FROM " + strEffectiveTableName + " WHERE " +
 					strSQL + ";";
