@@ -20,13 +20,8 @@ namespace FIA_Biosum_Manager
 		public string strImagePath = "";
 		public string m_strProjectDirectory;
 		public int m_intFullHt = 280;
-		public System.Data.OleDb.OleDbDataAdapter m_OleDbDataAdapter;
 		public System.Data.SQLite.SQLiteDataAdapter m_SQLiteDataAdapter;
 		public System.Data.DataSet m_DataSet;
-		public System.Data.OleDb.OleDbConnection m_OleDbConnectionMaster;
-		public System.Data.OleDb.OleDbConnection m_OleDbRxConn;
-		public System.Data.OleDb.OleDbConnection m_OleDbConnectionScenario;
-		public System.Data.OleDb.OleDbCommand m_OleDbCommand;
 		public System.Data.SQLite.SQLiteCommand m_SQLiteCommand;
 		public System.Data.DataRelation m_DataRelation;
 		public System.Data.DataTable m_DataTable;
@@ -37,6 +32,7 @@ namespace FIA_Biosum_Manager
 		public string strScenarioId;
 		private FIA_Biosum_Manager.frmOptimizerScenario _frmScenario = null;
 
+		const int COLUMN_COUNT = 4;
 
 		public uc_optimizer_scenario_last_tiebreak_rank()
 		{
@@ -300,7 +296,6 @@ namespace FIA_Biosum_Manager
 					if (oDataMgr.m_intError == 0)
 					{
 						this.m_DataSet = new System.Data.DataSet();
-						this.m_OleDbDataAdapter = new System.Data.OleDb.OleDbDataAdapter();
 						while (oDataMgr.m_DataReader.Read())
 						{
 							/************************************************************************
@@ -529,6 +524,108 @@ namespace FIA_Biosum_Manager
 			}
 		}
 
+		public void loadvalues()
+        {
+			this.strScenarioId = ReferenceOptimizerScenarioForm.uc_scenario1.txtScenarioId.Text.Trim().ToLower();
+			this.m_DataSet = new DataSet();
+
+			//create rxpackage data table
+			//this.m_DataTable = new DataTable()
+
+			//create scenario_last_tiebreak_rank data table
+			this.m_DataTable = new DataTable("scenario_last_tiebreak_rank");
+
+			DataColumn column;
+			DataRow row;
+
+			//create scenario_id column
+			column = new DataColumn();
+			column.DataType = System.Type.GetType("System.String");
+			column.ColumnName = "scenario_id";
+			column.ReadOnly = true;
+			m_DataTable.Columns.Add(column);
+
+			//create rxpackage column
+			column = new DataColumn();
+			column.DataType = System.Type.GetType("System.String");
+			column.ColumnName = "rxpackage";
+			column.ReadOnly = true;
+			m_DataTable.Columns.Add(column);
+
+			//create last_tiebreak_rank column
+			column = new DataColumn();
+			column.DataType = System.Type.GetType("System.Int32");
+			column.ColumnName = "last_tiebreak_rank";
+			column.ReadOnly = false;
+			m_DataTable.Columns.Add(column);
+
+			//create description column
+			column = new DataColumn();
+			column.DataType = System.Type.GetType("System.String");
+			column.ColumnName = "Description";
+			column.ReadOnly = true;
+			m_DataTable.Columns.Add(column);
+
+			m_DataSet.Tables.Add(m_DataTable);
+
+			int x = 0;
+			for (x = 0; x <= ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem.m_oLastTieBreakRankItem_Collection.Count - 1; x++)
+            {
+				row = m_DataTable.NewRow();
+				row["scenario_id"] = this.strScenarioId.Trim();
+				row["rxpackage"] = ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem.m_oLastTieBreakRankItem_Collection.Item(x).RxPackage;
+				row["last_tiebreak_rank"] = ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem.m_oLastTieBreakRankItem_Collection.Item(x).LastTieBreakRank;
+				row["Description"] = ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem.m_oLastTieBreakRankItem_Collection.Item(x).Description;
+				m_DataTable.Rows.Add(row);
+			}
+
+			//place the dataset table into a view class so as to not allow new records to be appended
+			DataView firstView = new DataView(this.m_DataSet.Tables["scenario_last_tiebreak_rank"]);
+			firstView.AllowNew = false;       //cannot append new records
+			firstView.AllowDelete = false;    //cannot delete records
+
+			DataGridTableStyle tableStyle = new DataGridTableStyle();
+			tableStyle.MappingName = "scenario_last_tiebreak_rank";
+			tableStyle.AlternatingBackColor = frmMain.g_oGridViewAlternateRowBackgroundColor;
+			tableStyle.BackColor = frmMain.g_oGridViewRowBackgroundColor;
+			tableStyle.ForeColor = frmMain.g_oGridViewRowForegroundColor;
+			tableStyle.SelectionBackColor = frmMain.g_oGridViewSelectedRowBackgroundColor;
+
+			DataGridColoredTextBoxColumn aColumnTextColumn;
+			for (int i = 0; i < COLUMN_COUNT; ++i)
+			{
+				//create a new instance of the DataGridColoredTextBoxColumn class
+				aColumnTextColumn = new DataGridColoredTextBoxColumn();
+				aColumnTextColumn.HeaderText = this.m_DataSet.Tables["scenario_last_tiebreak_rank"].Columns[i].ColumnName;
+				//all columns are read-only except the last_tiebreak_rank column
+				if (aColumnTextColumn.HeaderText != "last_tiebreak_rank") aColumnTextColumn.ReadOnly = true;
+				//assign the mappingname property the data sets column name
+				aColumnTextColumn.MappingName = this.m_DataSet.Tables["scenario_last_tiebreak_rank"].Columns[i].ColumnName;
+				//add the datagridcoloredtextboxcolumn object to the data grid table style object
+				tableStyle.GridColumnStyles.Add(aColumnTextColumn);
+				//set wider width for some columns
+				switch (aColumnTextColumn.HeaderText)
+				{
+					case "scenario_id":
+						aColumnTextColumn.Width = 150;
+						break;
+					case "Description":
+						aColumnTextColumn.Width = 475;
+						break;
+				}
+			}
+			dataGrid1.BackgroundColor = frmMain.g_oGridViewBackgroundColor;
+			dataGrid1.BackColor = frmMain.g_oGridViewRowBackgroundColor;
+			if (frmMain.g_oGridViewFont != null) dataGrid1.Font = frmMain.g_oGridViewFont;
+
+			// make the dataGrid use our new tablestyle and bind it to our table
+			this.dataGrid1.TableStyles.Clear();
+			this.dataGrid1.TableStyles.Add(tableStyle);
+
+			this.dataGrid1.DataSource = firstView;
+			this.dataGrid1.Expand(-1);
+		}
+
 		private void dataGrid1_Click(object sender, System.EventArgs e)
 		{
 			
@@ -542,13 +639,6 @@ namespace FIA_Biosum_Manager
 		{
 			int x;
 			int y;
-			if (this.m_DataSet.Tables["rxdb." + this.strRxPackageTableName].Rows.Count==0)
-			{
-				if (p_bDisplayMessage) MessageBox.Show("Run Scenario Failed: No treatments defined");
-				return -1;
-			}
-			//if (((frmScenario)this.ParentForm).m_bSave)
-			 //   this.savevalues();
 
             for (x = this.m_DataSet.Tables["scenario_last_tiebreak_rank"].Rows.Count - 1;
 				x >= 0; x--)

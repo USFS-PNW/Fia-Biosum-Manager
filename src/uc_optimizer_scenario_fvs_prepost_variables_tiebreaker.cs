@@ -1002,7 +1002,7 @@ namespace FIA_Biosum_Manager
                 }
                 this.m_oSavTieBreakerCollection.Copy(this.m_oOldTieBreakerCollection, ref this.m_oSavTieBreakerCollection, true);
             }
-            this.uc_scenario_last_tiebreak_rank1.loadgrid(true);
+            this.uc_scenario_last_tiebreak_rank1.loadvalues();
 
         }
         
@@ -1148,7 +1148,7 @@ namespace FIA_Biosum_Manager
                 }
             }
             this.m_oSavTieBreakerCollection.Copy(this.m_oOldTieBreakerCollection, ref this.m_oSavTieBreakerCollection, true);
-            this.uc_scenario_last_tiebreak_rank1.loadgrid(false);
+            this.uc_scenario_last_tiebreak_rank1.loadvalues();
         }
 
         public int savevalues()

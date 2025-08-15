@@ -1047,7 +1047,7 @@ namespace FIA_Biosum_Manager
 
 		}
 
-        private void LoadRuleDefinitionsNew()
+        private void LoadRuleDefinitions()
         {
             int x;
             frmTherm p_frmTherm = new frmTherm();
@@ -1419,7 +1419,7 @@ namespace FIA_Biosum_Manager
                     break;
                 case 4:
                     if (this.m_lrulesfirsttime == true)
-                        LoadRuleDefinitionsNew();
+                        LoadRuleDefinitions();
                     else
                     {
                         SaveRuleDefinitions();
@@ -1446,7 +1446,7 @@ namespace FIA_Biosum_Manager
             frmDialog frmTemp = new frmDialog();
             frmTemp.Initialize_Scenario_Optimizer_Scenario_Copy(this);
             frmTemp.Text = "FIA Biosum";
-            if (m_oOptimizerScenarioItem.ScenarioId.Trim().Length == 0) LoadRuleDefinitionsNew();
+            if (m_oOptimizerScenarioItem.ScenarioId.Trim().Length == 0) LoadRuleDefinitions();
 
             frmTemp.uc_scenario_optimizer_scenario_copy1.ReferenceCurrentScenarioItem = m_oOptimizerScenarioItem;
             frmTemp.uc_scenario_optimizer_scenario_copy1.loadvalues();
@@ -1504,7 +1504,7 @@ namespace FIA_Biosum_Manager
                 if (tabControlScenario.SelectedTab.Text.Trim().ToUpper()=="RULE DEFINITIONS")
 				{
 					if (m_lrulesfirsttime==true)
-						LoadRuleDefinitionsNew();
+						LoadRuleDefinitions();
 
 				}
 				else if (tabControlScenario.SelectedTab.Text.Trim().ToUpper() == "NOTES")
@@ -2392,11 +2392,17 @@ namespace FIA_Biosum_Manager
                 get { return _intLastTieBreakRank; }
                 set { _intLastTieBreakRank = value; }
             }
+            private string _strDescription = "";
+            public string Description
+            {
+                get { return _strDescription; }
+                set { _strDescription = value; }
+            }
             public void Copy(LastTieBreakRankItem p_oSource, ref LastTieBreakRankItem p_oDest)
             {
                 p_oDest.RxPackage = p_oSource.RxPackage;
                 p_oDest.LastTieBreakRank = p_oSource.LastTieBreakRank;
-                
+                p_oDest.Description = p_oSource.Description;
 
             }
         }
@@ -3149,9 +3155,11 @@ namespace FIA_Biosum_Manager
             //
             //LOAD RXINTENSITY ITEMS
             //
-            p_oDataMgr.m_strSQL = "SELECT * FROM " +
-                              Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioLastTieBreakRankTableName + " " +
-                              "WHERE TRIM(UPPER(scenario_id))='" + p_strScenarioId.Trim().ToUpper() + "'";
+            p_oDataMgr.m_strSQL = "SELECT sltr.rxpackage, last_tiebreak_rank, rx.description FROM " +
+                              Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioLastTieBreakRankTableName + " AS sltr, " +
+                              " rxdb." + strRxPackageTableName + " AS rx " +
+                              "WHERE TRIM(UPPER(scenario_id))='" + p_strScenarioId.Trim().ToUpper() + "' " +
+                              "AND sltr.rxpackage = rx.rxpackage";
             p_oDataMgr.SqlQueryReader(p_oConn, p_oDataMgr.m_strSQL);
             if (p_oDataMgr.m_DataReader.HasRows)
             {
@@ -3169,6 +3177,7 @@ namespace FIA_Biosum_Manager
                         {
                             oItem.LastTieBreakRank = -1;
                         }
+                        oItem.Description = p_oDataMgr.m_DataReader["description"].ToString().Trim();
                         p_oOptimizerScenarioItem.m_oLastTieBreakRankItem_Collection.Add(oItem);
                     }
                 }
