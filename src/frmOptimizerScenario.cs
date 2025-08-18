@@ -2663,6 +2663,7 @@ namespace FIA_Biosum_Manager
     {
         public string m_strError = "";
         public int m_intError = 0;
+        public string m_strTravelTimesDb;
         public OptimizerScenarioTools()
         {
         }

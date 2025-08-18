@@ -893,6 +893,12 @@ namespace FIA_Biosum_Manager
 
             if (this.m_intError == 0)
             {
+                UpdateThermPercent();
+                this.m_intError = val_travelTimesDatasourceMatch();
+            }
+
+            if (this.m_intError == 0)
+            {
                 /***************************************************************************
                 **make sure all the scenario datasource tables and files are available
                 **and ready for use
@@ -924,6 +930,53 @@ namespace FIA_Biosum_Manager
                 UpdateThermText(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic, "!!Error!!");
             }
 		}
+
+        private int val_travelTimesDatasourceMatch()
+        {
+            DataMgr oDataMgr = new DataMgr();
+            string strProcessorScenarioTravelTimesSource = ReferenceOptimizerScenarioForm.uc_datasource1.m_strProjectDirectory + "\\" + Tables.TravelTime.DefaultTravelTimePathAndDbFile;
+
+            int x = 0;
+            for (x = 0; x <= ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem.m_oProcessorScenarioItem_Collection.Count - 1; x++)
+            {
+                if (ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem.m_oProcessorScenarioItem_Collection.Item(x).Selected)
+                {
+                    string strProcessorRuleDefsDb = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
+                    "\\processor\\" + Tables.ProcessorScenarioRuleDefinitions.DefaultSqliteDbFile;
+
+                    string strProcessorScenarioId = ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem.m_oProcessorScenarioItem_Collection.Item(x).ScenarioId;
+
+                    using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(strProcessorRuleDefsDb)))
+                    {
+                        conn.Open();
+
+                        oDataMgr.m_strSQL = "SELECT path, file FROM scenario_datasource WHERE TRIM(UPPER(table_type)) = 'TRAVEL TIMES' AND TRIM(UPPER(scenario_id)) = '" + strProcessorScenarioId.Trim().ToUpper() + "'";
+
+                        oDataMgr.SqlQueryReader(conn, oDataMgr.m_strSQL);
+                        if (oDataMgr.m_DataReader.HasRows)
+                        {
+                            while (oDataMgr.m_DataReader.Read())
+                            {
+                                strProcessorScenarioTravelTimesSource = oDataMgr.m_DataReader["path"].ToString().Trim() + "\\" + oDataMgr.m_DataReader["file"].ToString().Trim();
+                                break;
+                            }
+                        }
+                        oDataMgr.m_DataReader.Close();
+                    }
+                }
+            }
+
+            string strOptimizerScenarioTravelTimesSource = ReferenceOptimizerScenarioForm.LoadedQueries.m_oTravelTime.m_strDbFile;
+
+            if (strProcessorScenarioTravelTimesSource != strOptimizerScenarioTravelTimesSource)
+            {
+                MessageBox.Show("Run Scenario Failed: Optimizer Scenario Travel Times Datasource does not match Travel Times Datasource of selected Processor scenario",
+                    "FIA Biosum", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Exclamation);
+                return -1;
+            }
+
+            return 0;
+        }
 
 		private void groupBox1_Resize(object sender, System.EventArgs e)
 		{
