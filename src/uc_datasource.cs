@@ -1029,6 +1029,132 @@ namespace FIA_Biosum_Manager
 			frmTemp = null;
 			p_ado = null;
 		}
+
+		private void EditDatasourceSqlite()
+        {
+			if (this.lstRequiredTables.SelectedItems.Count == 0)
+			{
+				return;
+			}
+			string strConn = "";
+			string strSQL = "";
+			int y;
+			DataMgr p_dataMgr = new DataMgr();
+
+			string strDBFullPath = this.lstRequiredTables.SelectedItems[0].SubItems[PATH].Text.Trim() + "\\" +
+				this.lstRequiredTables.SelectedItems[0].SubItems[DBFILE].Text.Trim();
+			string strTable = this.lstRequiredTables.SelectedItems[0].SubItems[TABLE].Text.Trim();
+
+			FIA_Biosum_Manager.uc_datasource_edit p_uc;
+			FIA_Biosum_Manager.frmDialog frmTemp = new frmDialog((frmMain)this.ParentForm.ParentForm);
+			frmTemp.MaximizeBox = false;
+			frmTemp.BackColor = System.Drawing.SystemColors.Control;
+
+			if (this.m_strScenarioId.Trim().Length > 0)
+			{
+				if (ScenarioType.Trim().ToUpper() == "OPTIMIZER")
+				{
+					frmTemp.Text = "Treatment Optimizer: Edit " + this.lstRequiredTables.SelectedItems[0].SubItems[TABLETYPE].Text.Trim() + " Data Source";
+					p_uc = new uc_datasource_edit(this.m_strDataSourceMDBFile, this.m_strScenarioId);
+				}
+				else
+				{
+					frmTemp.Text = "Prcoessor: Edit " + this.lstRequiredTables.SelectedItems[0].SubItems[TABLETYPE].Text.Trim() + " Data Source";
+					p_uc = new uc_datasource_edit(this.m_strDataSourceMDBFile, this.m_strScenarioId);
+				}
+			}
+			else
+			{
+				frmTemp.Text = "Database: Edit " + this.lstRequiredTables.SelectedItems[0].SubItems[TABLETYPE].Text.Trim() + " Data Source";
+				p_uc = new uc_datasource_edit(this.m_strDataSourceMDBFile);
+			}
+
+			frmTemp.Controls.Add(p_uc);
+
+			p_uc.strProjectDirectory = this.strProjectDirectory;
+			p_uc.strScenarioId = this.strScenarioId;
+
+			frmTemp.Height = 0;
+			frmTemp.Width = 0;
+			if (p_uc.Top + p_uc.Height > frmTemp.ClientSize.Height + 2)
+			{
+				for (y = 1; ; y++)
+				{
+					frmTemp.Height = y;
+					if (p_uc.Top +
+						p_uc.Height <
+						frmTemp.ClientSize.Height)
+					{
+						break;
+					}
+				}
+
+			}
+			if (p_uc.Left + p_uc.Width > frmTemp.ClientSize.Width + 2)
+			{
+				for (y = 1; ; y++)
+				{
+					frmTemp.Width = y;
+					if (p_uc.Left +
+						p_uc.Width <
+						frmTemp.ClientSize.Width)
+					{
+						break;
+					}
+				}
+
+			}
+			frmTemp.Left = 0;
+			frmTemp.Top = 0;
+
+			p_uc.lblMDBFile.Text = strDBFullPath.Trim();
+			p_uc.lblTable.Text = strTable.Trim();
+			p_uc.lblTableType.Text =
+				this.lstRequiredTables.SelectedItems[0].SubItems[TABLETYPE].Text.Trim();
+			p_uc.Dock = System.Windows.Forms.DockStyle.Fill;
+			frmTemp.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
+			frmTemp.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
+
+			System.Windows.Forms.DialogResult result = frmTemp.ShowDialog();
+			if (result == System.Windows.Forms.DialogResult.OK)
+			{
+				utils p_utils = new utils();
+				string strDir = p_utils.getDirectory(p_uc.lblNewMDBFile.Text);
+				string strFile = p_utils.getFileName(p_uc.lblNewMDBFile.Text);
+				this.lstRequiredTables.SelectedItems[0].SubItems[PATH].Text = strDir;
+				this.lstRequiredTables.SelectedItems[0].SubItems[DBFILE].Text = strFile;
+				ListViewItem.ListViewSubItem FileSubItem =
+					this.lstRequiredTables.SelectedItems[0].SubItems[FILESTATUS];
+
+
+				FileSubItem.Font = frmMain.g_oGridViewFont;
+				this.lstRequiredTables.SelectedItems[0].SubItems[FILESTATUS].Text = "Found";
+				this.m_oLvRowColors.m_oRowCollection.Item(this.lstRequiredTables.SelectedItems[0].Index).m_oColumnCollection.Item(FILESTATUS).UpdateColumn = true;
+				this.m_oLvRowColors.ListViewSubItem(lstRequiredTables.SelectedItems[0].Index, FILESTATUS, FileSubItem, true);
+				this.lstRequiredTables.SelectedItems[0].SubItems[TABLE].Text = p_uc.lblNewTable.Text;
+				ListViewItem.ListViewSubItem TableSubItem =
+					this.lstRequiredTables.SelectedItems[0].SubItems[TABLESTATUS];
+
+
+				TableSubItem.Font = frmMain.g_oGridViewFont;
+				this.lstRequiredTables.SelectedItems[0].SubItems[TABLESTATUS].Text = "Found";
+				this.m_oLvRowColors.m_oRowCollection.Item(this.lstRequiredTables.SelectedItems[0].Index).m_oColumnCollection.Item(TABLESTATUS).UpdateColumn = true;
+				this.m_oLvRowColors.ListViewSubItem(lstRequiredTables.SelectedItems[0].Index, TABLESTATUS, TableSubItem, true);
+				p_utils = null;
+				strConn = p_dataMgr.GetConnectionString(p_uc.lblNewMDBFile.Text.Trim());
+				using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strConn))
+                {
+					conn.Open();
+					p_dataMgr.m_strSQL = "SELECT COUNT(*) FROM " + p_uc.lblNewTable.Text.Trim();
+					this.lstRequiredTables.SelectedItems[0].SubItems[RECORDCOUNT].Text =
+						Convert.ToString(p_dataMgr.getRecordCount(conn, p_dataMgr.m_strSQL, p_uc.lblNewTable.Text.Trim()));
+                }
+			}
+			frmTemp.Close();
+			frmTemp.Dispose();
+			frmTemp = null;
+			p_dataMgr = null;
+		}
 		private void btnEdit_Click(object sender, System.EventArgs e)
 		{
 			if (this.lstRequiredTables.SelectedItems.Count == 0)
@@ -1409,7 +1535,14 @@ namespace FIA_Biosum_Manager
 					this.CloseDatasource();
 					break;
 				case "Edit":
-					this.EditDatasource();
+					if (this.m_strScenarioId.Trim().Length > 0) // it is a processor or optimizer scenario. only these datasource tables are currently in SQLite
+                    {
+						this.EditDatasourceSqlite();
+					}
+                    else
+                    {
+						this.EditDatasource();
+					}
 					break;
 				case "Refresh":
                     if (!m_bUsingSqlite)
