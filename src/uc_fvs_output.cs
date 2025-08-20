@@ -3677,7 +3677,7 @@ namespace FIA_Biosum_Manager
                                     this.WriteText(m_strDebugFile, "Attached database " + strAuditDbFile + "\r\n");
                                 if (SQLite.AttachedTableExist(conn, "audit_Post_SUMMARY") == false)
                                 {
-                                    SQLite.m_strSQL = Tables.FVS.Audit.Post.CreateFVSPostAuditCutlistSUMMARYtableSQL("audit_Post_SUMMARY");
+                                    SQLite.m_strSQL = Tables.FVS.Audit.Post.CreateFVSPostAuditCutlistSUMMARYtableSQL("AUDITS.audit_Post_SUMMARY");
                                     SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
                                 }
                                 else
@@ -3693,7 +3693,7 @@ namespace FIA_Biosum_Manager
                                 }
                                 if (SQLite.AttachedTableExist(conn, "audit_Post_NOVALUE_ERROR") == false)
                                 {
-                                    SQLite.m_strSQL = Tables.FVS.Audit.Post.CreateFVSPostAuditCutlistERROR_OUTPUTtableSQL("audit_Post_NOVALUE_ERROR");
+                                    SQLite.m_strSQL = Tables.FVS.Audit.Post.CreateFVSPostAuditCutlistERROR_OUTPUTtableSQL("AUDITS.audit_Post_NOVALUE_ERROR");
                                     SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
                                 }
                                 else
@@ -3708,7 +3708,7 @@ namespace FIA_Biosum_Manager
                                 }
                                 if (SQLite.AttachedTableExist(conn, "audit_Post_VALUE_ERROR") == false)
                                 {
-                                    SQLite.m_strSQL = Tables.FVS.Audit.Post.CreateFVSPostAuditCutlistERROR_OUTPUTtableSQL("audit_Post_VALUE_ERROR");
+                                    SQLite.m_strSQL = Tables.FVS.Audit.Post.CreateFVSPostAuditCutlistERROR_OUTPUTtableSQL("AUDITS.audit_Post_VALUE_ERROR");
                                     SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
                                 }
                                 else
@@ -3723,7 +3723,7 @@ namespace FIA_Biosum_Manager
                                 }
                                 if (SQLite.AttachedTableExist(conn, "audit_Post_NOTFOUND_ERROR") == false)
                                 {
-                                    SQLite.m_strSQL = Tables.FVS.Audit.Post.CreateFVSPostAuditCutlistNOTFOUND_ERRORtableSQL("audit_Post_NOTFOUND_ERROR");
+                                    SQLite.m_strSQL = Tables.FVS.Audit.Post.CreateFVSPostAuditCutlistNOTFOUND_ERRORtableSQL("AUDITS.audit_Post_NOTFOUND_ERROR");
                                     SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
                                 }
                                 else
@@ -3738,7 +3738,7 @@ namespace FIA_Biosum_Manager
                                 }
                                 if (SQLite.AttachedTableExist(conn, "audit_Post_SPCDCHANGE_WARNING") == false)
                                 {
-                                    SQLite.m_strSQL = Tables.FVS.Audit.Post.CreateFVSPostAuditCutlistFVSFIA_TREEMATCHINGtableSQL("audit_Post_SPCDCHANGE_WARNING", "WARNING_DESC");
+                                    SQLite.m_strSQL = Tables.FVS.Audit.Post.CreateFVSPostAuditCutlistFVSFIA_TREEMATCHINGtableSQL("AUDITS.audit_Post_SPCDCHANGE_WARNING", "WARNING_DESC");
                                     SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
                                 }
                                 else

@@ -120,25 +120,17 @@ namespace FIA_Biosum_Manager
 		
         
 
-		private FIA_Biosum_Manager.frmDialog m_frmCoreMerge;      //core analysis merge scenarios form
         private FIA_Biosum_Manager.frmDialog m_frmCoreUserVariables;      //user pre/post variables form
 		private FIA_Biosum_Manager.frmDialog m_frmPlotData;       //plot data form
-		private FIA_Biosum_Manager.frmOptimizerScenario m_frmScenario;     //core analysis scenario form
-		private FIA_Biosum_Manager.frmProcessorScenario m_frmProcessorScenario; //processor scenario form
-		private FIA_Biosum_Manager.frmDialog m_frmTreeDiam;       //processor tree diameter form
-		private FIA_Biosum_Manager.frmDialog m_frmSpcGrp;         //processor species group form
 		private FIA_Biosum_Manager.frmDialog m_frmRx;             //treatment form 
 		private FIA_Biosum_Manager.frmDialog m_frmRxPackage;      //treatment package form
 		private FIA_Biosum_Manager.frmDialog m_frmDataSource;     //datasource form
 		private FIA_Biosum_Manager.frmDialog m_frmFvsInput;       //fvs input form
-		private FIA_Biosum_Manager.frmDialog m_frmFvsTreeSpcCvt;  //fvs tree spc conversion form
-        private FIA_Biosum_Manager.frmDialog m_frmCreateFvsOutputMdbs; // popup form for fvs access DB creation
         private FIA_Biosum_Manager.frmDialog m_frmFvsOutput;      //fvs output
 		private FIA_Biosum_Manager.frmDialog m_frmProcessorSpc;   //processor spc audit form
 		private FIA_Biosum_Manager.frmDialog m_frmPSite;          //wood processing site form
-		private FIA_Biosum_Manager.frmDialog m_frmFvsVariant;     //plot fvs variant
 		private FIA_Biosum_Manager.frmDialog m_frmDb;                //database utilities
-        private FIA_Biosum_Manager.frmDialog m_frmLoadGis;            //load gis data
+        private FIA_Biosum_Manager.frmDialog m_frmLoadGis;            //Facility/Haul Load
         private FIA_Biosum_Manager.frmDialog m_frmDbSQLite;                //SQLite database utilities
 
 
@@ -1563,108 +1555,14 @@ namespace FIA_Biosum_Manager
                         this.m_frmCoreUserVariables.Show();
 
                     }
-                    else
-                    {
-                        if (this.m_frmCoreMerge.WindowState == System.Windows.Forms.FormWindowState.Minimized)
-                            this.m_frmCoreMerge.WindowState = System.Windows.Forms.FormWindowState.Normal;
-
-                        this.m_frmCoreMerge.Focus();
-
-                    }
                 }
-                else if (strText.Trim().ToUpper() == "LOAD GIS DATA")
+                else if (strText.Trim().ToUpper() == "FACILITY/HAUL LOAD")
                 {
-                    //GisTools oGisTools = new GisTools();
-                    //bool bTablesHaveData = false;
-                    //bool bTablesExist = oGisTools.CheckForExistingDataSqlite(this.frmProject.uc_project1.m_strProjectDirectory, out bTablesHaveData);
-                    //bool bCreateBackups = false;
-                    //string strMessage = "";
-                    //bool bSuccess = true;
-
-                    //string strMasterDb = frmMain.g_oEnv.strApplicationDataDirectory.Trim() + frmMain.g_strBiosumDataDir +
-                    //    "\\" + Tables.TravelTime.DefaultMasterTravelTimeDbFile;
-                    //if (!System.IO.File.Exists(strMasterDb))
-                    //{
-                    //    MessageBox.Show("The source gis_travel_times_master.db is required but does not exist in the " +
-                    //        frmMain.g_oEnv.strApplicationDataDirectory.Trim() + frmMain.g_strBiosumDataDir + " folder. \r\n\r\n" +
-                    //        "Please download a copy of this database into the FIABiosum folder!!", "FIA Biosum");
-                    //    return;
-                    //}
-                    //if (bTablesHaveData == true)
-                    //{
-                    //    strMessage = "BioSum has found existing data in your gis data tables. Do you wish to overwrite existing data? " +
-                    //        "This process cannot be reversed!!";
-                    //    DialogResult res = MessageBox.Show(strMessage, "FIA BioSum", MessageBoxButtons.YesNo);
-                    //    if (res != DialogResult.Yes)
-                    //    {
-                    //        MessageBox.Show("GIS data load terminated!!", "FIA BioSum");
-                    //        return;
-                    //    }
-                    //    else
-                    //    {
-                    //        strMessage = "Would you like BioSum to make a copy of your existing GIS database? The name of the database backup will include today's date.";
-                    //        res = MessageBox.Show(strMessage, "FIA BioSum", MessageBoxButtons.YesNo);
-                    //        if (res == DialogResult.Yes)
-                    //        {
-                    //            bCreateBackups = true;
-                    //        }
-                    //    }
-                    //}
-                    //// Check for existence of MoveDist_ft_REPLACEMENT field
-                    //string strSourceField = "MoveDist_ft_REPLACEMENT";
-                    //if (oGisTools.CheckPlotGisTable(strMasterDb, strSourceField))
-                    //{
-                    //    strMessage = "Do you want to update the plot yarding distance from the plot_gis table in the master travel times database ?";
-                    //    DialogResult res2 = MessageBox.Show(strMessage, "FIA BioSum", MessageBoxButtons.YesNo);
-                    //    if (res2 != DialogResult.Yes)
-                    //    {
-                    //        strSourceField = "";
-                    //    }
-                    //}
-                    //else
-                    //{
-                    //    strSourceField = "";
-                    //}
-
-                    //this.ActivateStandByAnimation(
-                    //     this.WindowState,
-                    //     this.Left,
-                    //     this.Height,
-                    //     this.Width,
-                    //     this.Top);
-                    //g_sbpInfo.Text = "Loading gis data...Stand by";
-
-                    //if (bCreateBackups == true)
-                    //{
-                    //    g_sbpInfo.Text = "Backing up old gis data...Stand by";
-                    //    bSuccess = oGisTools.BackupGisData();
-                    //}
-                    //if (bSuccess == true)
-                    //{
-                    //    int intRowCount = oGisTools.LoadSqliteGisData(strSourceField, frmProject.uc_project1.m_strDebugFile);
-                    //    if (intRowCount < 1)
-                    //    {
-                    //        MessageBox.Show("An error occurred while loading the GIS data!!", "FIA BioSum");
-                    //        this.DeactivateStandByAnimation();
-                    //        return;
-                    //    }
-                    //}
-                    //else
-                    //{
-                    //    MessageBox.Show("An error occurred while backing up the tables. GIS data load terminated!!", "FIA BioSum");
-                    //    g_sbpInfo.Text = "Ready";
-                    //    this.DeactivateStandByAnimation();
-                    //    return;
-                    //}
-                    //g_sbpInfo.Text = "Ready";
-                    //this.DeactivateStandByAnimation();
-                    //MessageBox.Show("If you updated existing GIS data, verify the selected sites in Treatment Optimizer. GIS data successfully loaded!");
-                    // END EXISTING
                     this.m_frmLoadGis = new frmDialog(this);
                     this.m_frmLoadGis.MaximizeBox = false;
                     this.m_frmLoadGis.MinimizeBox = false;
                     this.m_frmLoadGis.BackColor = System.Drawing.SystemColors.Control;
-                    this.m_frmLoadGis.Text = "Load GIS Data";
+                    this.m_frmLoadGis.Text = "Facility/Haul Load";
                     this.m_frmLoadGis.MdiParent = this;
                     bool bTerminateLoad = this.m_frmLoadGis.Initialize_Load_Gis_Data_User_Control();
 
@@ -3320,7 +3218,7 @@ namespace FIA_Biosum_Manager
             this.m_btnOptimizerLoadGisData.Size = this.btnMain1.Size;
             this.m_btnOptimizerLoadGisData.Left = this.m_btnOptimizerUserVariables.Left;
             this.m_btnOptimizerLoadGisData.Top = this.m_btnOptimizerUserVariables.Top + this.m_btnOptimizerUserVariables.Height + 5;
-            this.m_btnOptimizerLoadGisData.Text = "Load GIS Data";
+            this.m_btnOptimizerLoadGisData.Text = "Facility/Haul Load";
             //Optimization scenario
             this.m_btnOptimizerScenario = new btnMainForm(this);
             this.m_pnlOptimizer.Controls.Add(this.m_btnOptimizerScenario);

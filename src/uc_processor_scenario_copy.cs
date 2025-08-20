@@ -13,7 +13,6 @@ namespace FIA_Biosum_Manager
     {
         private FIA_Biosum_Manager.ProcessorScenarioItem_Collection m_oProcessorScenarioItem_Collection = new ProcessorScenarioItem_Collection();
         private FIA_Biosum_Manager.ProcessorScenarioItem m_oProcessorScenarioItem;
-        private Queries m_oQueries = new Queries();
         private FIA_Biosum_Manager.ProcessorScenarioItem _oProcessorScenarioItem;
         private FIA_Biosum_Manager.frmProcessorScenario _frmProcessorScenario;
         private FIA_Biosum_Manager.ProcessorScenarioTools m_oProcessorScenarioTools = new ProcessorScenarioTools();
@@ -316,7 +315,7 @@ namespace FIA_Biosum_Manager
                 lblMsg.Show();
                 lblMsg.Refresh();
                 //load the scenario into the collection
-                m_oProcessorScenarioTools.LoadScenario(p_strScenarioId.Trim(), m_oQueries,
+                m_oProcessorScenarioTools.LoadScenario(p_strScenarioId.Trim(), ReferenceProcessorScenarioForm.LoadedQueries,
                     m_oProcessorScenarioItem_Collection);
                 lblMsg.Hide();
             }

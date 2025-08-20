@@ -254,7 +254,11 @@ namespace FIA_Biosum_Manager
                                             }
                                         }
                                     }
-                                }
+                                    else
+                                    {
+										this.m_strDataSource[x, TABLESTATUS] = "NF";
+									}
+								}
                             }
                             else
                             {
