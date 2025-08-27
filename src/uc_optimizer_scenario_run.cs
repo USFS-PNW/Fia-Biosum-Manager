@@ -906,7 +906,7 @@ namespace FIA_Biosum_Manager
                 UpdateThermPercent();
                 if (ReferenceOptimizerScenarioForm.m_ldatasourcefirsttime == true)
                 {
-                    ReferenceOptimizerScenarioForm.uc_datasource1.populate_listview_grid_sqlite();
+                    ReferenceOptimizerScenarioForm.uc_datasource1.LoadValues();
                     ReferenceOptimizerScenarioForm.m_ldatasourcefirsttime = false;
                 }
                 this.m_intError = ReferenceOptimizerScenarioForm.uc_datasource1.val_datasources();
