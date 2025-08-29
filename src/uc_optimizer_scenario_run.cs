@@ -968,7 +968,7 @@ namespace FIA_Biosum_Manager
 
             string strOptimizerScenarioTravelTimesSource = ReferenceOptimizerScenarioForm.LoadedQueries.m_oTravelTime.m_strDbFile;
 
-            if (strProcessorScenarioTravelTimesSource != strOptimizerScenarioTravelTimesSource)
+            if (strProcessorScenarioTravelTimesSource.Trim().ToLower() != strOptimizerScenarioTravelTimesSource.Trim().ToLower())
             {
                 MessageBox.Show("Run Scenario Failed: Optimizer Scenario Travel Times Datasource does not match Travel Times Datasource of selected Processor scenario",
                     "FIA Biosum", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Exclamation);
