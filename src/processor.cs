@@ -237,8 +237,11 @@ namespace FIA_Biosum_Manager
             {
                 frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n//\r\n");
                 frmMain.g_oUtils.WriteText(m_strDebugFile, "// !! " + Convert.ToString(m_standsWithNoYardingDistance.Count) + " stands had no valid yarding distance and were excluded from processing \r\n");
-                frmMain.g_oUtils.WriteText(m_strDebugFile, "// Check the gis_yard_dist_ft on the plot table to find these stands !!  \r\n");
-                frmMain.g_oUtils.WriteText(m_strDebugFile, "//\r\n");
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "// The stand ids are listed below !!  \r\n");
+                foreach (var item in m_standsWithNoYardingDistance)
+                {
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, $@"// {item}" + " \r\n");
+                }
             }
             
             if (frmMain.g_bDebug)
@@ -818,6 +821,7 @@ namespace FIA_Biosum_Manager
                         if (dblBaFracCutDenominator > 0)
                         {
                             double dblTestBaFracCut = nextStand.TotalBaFracCutNumerator / dblBaFracCutDenominator;
+                            dblTestBaFracCut = Math.Round(dblTestBaFracCut, 2, MidpointRounding.AwayFromZero);
                             if (dblTestBaFracCut > 0 &&
                                 dblTestBaFracCut < 1)
                             {
