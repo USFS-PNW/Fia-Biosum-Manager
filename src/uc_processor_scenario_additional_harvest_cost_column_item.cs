@@ -227,7 +227,7 @@ namespace FIA_Biosum_Manager
         {
             switch (this.cmbEdit.Text.Trim())
             {
-                case "Assign default value to all  componenet occurances":
+                case "Assign default value to all component occurrences":
                     DefaultValueToAll();
                     break;
                 case "Assign default value to all component NULL values":
@@ -268,11 +268,8 @@ namespace FIA_Biosum_Manager
                     this.ParentForm.Height,
                     this.ParentForm.Width,
                     this.ParentForm.Top);
-                frmMain.g_sbpInfo.Text = "Updating Harvest Cost Component $/A/C Values...Stand By";
-                                             
-                string strScenarioDb = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
-                    "\\processor\\" + Tables.ProcessorScenarioRuleDefinitions.DefaultSqliteDbFile;
-                using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(ReferenceDataMgr.GetConnectionString(strScenarioDb)))
+                frmMain.g_sbpInfo.Text = "Updating Harvest Cost Component $/A/C Values...Stand By";                                             
+                using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(ReferenceDataMgr.GetConnectionString(ReferenceAdditionalHarvestCostColumnsUserControl.TempDb)))
                 {
                     conn.Open();
                     ReferenceDataMgr.m_strSQL = "UPDATE additional_harvest_costs_work_table " +
@@ -321,9 +318,7 @@ namespace FIA_Biosum_Manager
                    this.ParentForm.Width,
                    this.ParentForm.Top);
                 frmMain.g_sbpInfo.Text = "Updating Harvest Cost Component $/A/C Values...Stand By";
-                string strScenarioDb = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
-                    "\\processor\\" + Tables.ProcessorScenarioRuleDefinitions.DefaultSqliteDbFile;
-                using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(ReferenceDataMgr.GetConnectionString(strScenarioDb)))
+                using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(ReferenceDataMgr.GetConnectionString(ReferenceAdditionalHarvestCostColumnsUserControl.TempDb)))
                 {
                     conn.Open();
                     ReferenceDataMgr.m_strSQL = "UPDATE  additional_harvest_costs_work_table " +
