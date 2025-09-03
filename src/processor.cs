@@ -237,8 +237,11 @@ namespace FIA_Biosum_Manager
             {
                 frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n//\r\n");
                 frmMain.g_oUtils.WriteText(m_strDebugFile, "// !! " + Convert.ToString(m_standsWithNoYardingDistance.Count) + " stands had no valid yarding distance and were excluded from processing \r\n");
-                frmMain.g_oUtils.WriteText(m_strDebugFile, "// Check the gis_yard_dist_ft on the plot table to find these stands !!  \r\n");
-                frmMain.g_oUtils.WriteText(m_strDebugFile, "//\r\n");
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "// The stand ids are listed below !!  \r\n");
+                foreach (var item in m_standsWithNoYardingDistance)
+                {
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, $@"// {item}" + " \r\n");
+                }
             }
             
             if (frmMain.g_bDebug)
@@ -707,6 +710,8 @@ namespace FIA_Biosum_Manager
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "createOpcostInput: Begin writing opcost input table - " + System.DateTime.Now.ToString() + "\r\n");
                 long lngCount = 0;
 
+                System.Collections.Generic.IList<string> standsWithInvalidBaFrac = new System.Collections.Generic.List<string>();
+                double maxBaFrac = 1.05;
                 using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(SQLite.GetConnectionString(m_strSqliteConnection)))
                 {
                     conn.Open();
@@ -722,64 +727,64 @@ namespace FIA_Biosum_Manager
                     {
                         foreach (string key in dictOpcostInput.Keys)
                         {
-                    opcostInput nextStand = dictOpcostInput[key];
+                            opcostInput nextStand = dictOpcostInput[key];
 
-                    // Some fields we wait to calculate until we have the totals
-                    // *** BRUSH CUT ***
-                    double dblBcAvgVolume = 0;
+                            // Some fields we wait to calculate until we have the totals
+                            // *** BRUSH CUT ***
+                            double dblBcAvgVolume = 0;
 
-                    if (nextStand.TotalBcTpa > 0)
-                    { dblBcAvgVolume = nextStand.PerAcBcVolCf / nextStand.TotalBcTpa; }
+                            if (nextStand.TotalBcTpa > 0)
+                            { dblBcAvgVolume = nextStand.PerAcBcVolCf / nextStand.TotalBcTpa; }
 
-                    // *** CHIP TREES ***
-                    double dblCtAvgVolume = 0;
-                    if (nextStand.TotalChipTpa > 0)
-                    { dblCtAvgVolume = nextStand.ChipVolCfPa / nextStand.TotalChipTpa; }
-                    double dblCtMerchPctTotal = 0;
-                    double dblCtAvgDensity = 0;
-                    double dblCtHwdPct = 0;
-                    if (nextStand.ChipVolCfPa > 0)
-                    {
-                        dblCtMerchPctTotal = nextStand.ChipMerchVolCfPa / nextStand.ChipVolCfPa * 100;
-                        dblCtAvgDensity = nextStand.ChipWtGtPa * 2000 / nextStand.ChipVolCfPa;
-                        dblCtHwdPct = nextStand.ChipHwdVolCfPa / nextStand.ChipVolCfPa * 100;
-                    }
+                            // *** CHIP TREES ***
+                            double dblCtAvgVolume = 0;
+                            if (nextStand.TotalChipTpa > 0)
+                            { dblCtAvgVolume = nextStand.ChipVolCfPa / nextStand.TotalChipTpa; }
+                            double dblCtMerchPctTotal = 0;
+                            double dblCtAvgDensity = 0;
+                            double dblCtHwdPct = 0;
+                            if (nextStand.ChipVolCfPa > 0)
+                            {
+                                dblCtMerchPctTotal = nextStand.ChipMerchVolCfPa / nextStand.ChipVolCfPa * 100;
+                                dblCtAvgDensity = nextStand.ChipWtGtPa * 2000 / nextStand.ChipVolCfPa;
+                                dblCtHwdPct = nextStand.ChipHwdVolCfPa / nextStand.ChipVolCfPa * 100;
+                            }
 
 
-                    // *** SMALL LOGS ***
-                    double dblSmLogAvgVolume = 0;
-                    double dblSmLogAvgVolumeAdj = 0;
-                    if (nextStand.TotalSmLogTpa > 0)
-                    { dblSmLogAvgVolume = nextStand.SmLogVolCfPa / nextStand.TotalSmLogTpa; }
-                    double dblSmLogMerchPctTotal = 0;
-                    double dblSmLogChipPct_Cat1_3 = 0;
-                    double dblSmLogChipPct_Cat2_4 = 0;
-                    double dblSmLogChipPct_Cat5 = 0;
-                    double dblSmLogAvgDensity = 0;
-                    double dblSmLogHwdPct = 0;
-                    if (nextStand.SmLogVolCfPa > 0)
-                    {
-                        dblSmLogMerchPctTotal = nextStand.SmLogMerchVolCfPa / nextStand.SmLogVolCfPa * 100;
-                        dblSmLogChipPct_Cat1_3 = nextStand.SmLogNonCommMerchVolCfPa / nextStand.SmLogVolCfPa * 100;
-                        dblSmLogChipPct_Cat2_4 = (nextStand.SmLogNonCommVolCfPa + nextStand.SmLogCommNonMerchVolCfPa) / nextStand.SmLogVolCfPa * 100;
-                        dblSmLogChipPct_Cat5 = nextStand.SmLogNonCommVolCfPa / nextStand.SmLogVolCfPa * 100;
-                        dblSmLogAvgDensity = nextStand.SmLogWtGtPa * 2000 / nextStand.SmLogVolCfPa;
-                        dblSmLogHwdPct = nextStand.SmLogHwdVolCfPa / nextStand.SmLogVolCfPa * 100;
-                    }
-                    // Apply OpCost value limits
-                    if (nextStand.TotalSmLogTpa > 0)
-                    {
-                        if (nextStand.TotalSmLogTpa < nextStand.HarvestMethod.MinTpa)
-                        {
-                            nextStand.TotalSmLogTpaUnadj = nextStand.TotalSmLogTpa;
-                            nextStand.TotalSmLogTpa = nextStand.HarvestMethod.MinTpa;
-                        }
-                        if (dblSmLogAvgVolume < nextStand.HarvestMethod.MinAvgTreeVolCf)
-                        {
-                            dblSmLogAvgVolumeAdj = dblSmLogAvgVolume;
-                            dblSmLogAvgVolume = nextStand.HarvestMethod.MinAvgTreeVolCf;
-                        }
-                    }
+                            // *** SMALL LOGS ***
+                            double dblSmLogAvgVolume = 0;
+                            double dblSmLogAvgVolumeAdj = 0;
+                            if (nextStand.TotalSmLogTpa > 0)
+                            { dblSmLogAvgVolume = nextStand.SmLogVolCfPa / nextStand.TotalSmLogTpa; }
+                            double dblSmLogMerchPctTotal = 0;
+                            double dblSmLogChipPct_Cat1_3 = 0;
+                            double dblSmLogChipPct_Cat2_4 = 0;
+                            double dblSmLogChipPct_Cat5 = 0;
+                            double dblSmLogAvgDensity = 0;
+                            double dblSmLogHwdPct = 0;
+                            if (nextStand.SmLogVolCfPa > 0)
+                            {
+                                dblSmLogMerchPctTotal = nextStand.SmLogMerchVolCfPa / nextStand.SmLogVolCfPa * 100;
+                                dblSmLogChipPct_Cat1_3 = nextStand.SmLogNonCommMerchVolCfPa / nextStand.SmLogVolCfPa * 100;
+                                dblSmLogChipPct_Cat2_4 = (nextStand.SmLogNonCommVolCfPa + nextStand.SmLogCommNonMerchVolCfPa) / nextStand.SmLogVolCfPa * 100;
+                                dblSmLogChipPct_Cat5 = nextStand.SmLogNonCommVolCfPa / nextStand.SmLogVolCfPa * 100;
+                                dblSmLogAvgDensity = nextStand.SmLogWtGtPa * 2000 / nextStand.SmLogVolCfPa;
+                                dblSmLogHwdPct = nextStand.SmLogHwdVolCfPa / nextStand.SmLogVolCfPa * 100;
+                            }
+                            // Apply OpCost value limits
+                            if (nextStand.TotalSmLogTpa > 0)
+                            {
+                                if (nextStand.TotalSmLogTpa < nextStand.HarvestMethod.MinTpa)
+                                {
+                                    nextStand.TotalSmLogTpaUnadj = nextStand.TotalSmLogTpa;
+                                    nextStand.TotalSmLogTpa = nextStand.HarvestMethod.MinTpa;
+                                }
+                                if (dblSmLogAvgVolume < nextStand.HarvestMethod.MinAvgTreeVolCf)
+                                {
+                                    dblSmLogAvgVolumeAdj = dblSmLogAvgVolume;
+                                    dblSmLogAvgVolume = nextStand.HarvestMethod.MinAvgTreeVolCf;
+                                }
+                            }
 
                     // *** LARGE LOGS ***
                     double dblLgLogAvgVolume = 0;
@@ -818,14 +823,16 @@ namespace FIA_Biosum_Manager
                         if (dblBaFracCutDenominator > 0)
                         {
                             double dblTestBaFracCut = nextStand.TotalBaFracCutNumerator / dblBaFracCutDenominator;
+                            dblTestBaFracCut = Math.Round(dblTestBaFracCut, 2, MidpointRounding.AwayFromZero);
                             if (dblTestBaFracCut > 0 &&
-                                dblTestBaFracCut < 1)
+                                dblTestBaFracCut <= maxBaFrac)
                             {
                                 nextStand.BaFracCut = dblTestBaFracCut;
                             }
                             else
                             {
-                                frmMain.g_oUtils.WriteText(m_strDebugFile, "BA_FRAC_CUT --> INVALID VALUE: " + dblTestBaFracCut + " from opcost stand " + nextStand.OpCostStand + "\r\n");
+                                        standsWithInvalidBaFrac.Add(nextStand.OpCostStand);
+                                        frmMain.g_oUtils.WriteText(m_strDebugFile, "BA_FRAC_CUT --> INVALID VALUE: " + dblTestBaFracCut + " from opcost stand " + nextStand.OpCostStand + "\r\n");
                             }
                         }
                         else
@@ -898,6 +905,15 @@ namespace FIA_Biosum_Manager
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "//Processor.createOpcostInput END \r\n");
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "//INSERTED " + lngCount + " RECORDS: " + System.DateTime.Now.ToString() + "\r\n");
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "//\r\n");
+                }
+                if (standsWithInvalidBaFrac.Count > 0)
+                {
+                    string strMessage = $@"{standsWithInvalidBaFrac.Count} stand(s) had a BA_FRAC > {maxBaFrac} indicating the cutting of >{maxBaFrac*100}% of the trees present. A list of the stands has been printed in the biosum_processor_debug.txt file. Something might be amiss -- click yes to continue with this absurd value or no to abort";
+                    System.Windows.Forms.DialogResult res = System.Windows.Forms.MessageBox.Show(strMessage, "FIA Biosum", System.Windows.Forms.MessageBoxButtons.YesNo);
+                    if (res != System.Windows.Forms.DialogResult.Yes)
+                    {
+                        intReturnVal = -1;
+                    }
                 }
                 return intReturnVal;
             }
