@@ -7801,7 +7801,7 @@ namespace FIA_Biosum_Manager
                 p_dataMgr.m_strSQL = "INSERT INTO " + Tables.OptimizerScenarioResults.DefaultScenarioResultsSpeciesGroupRefTableName +
                 " SELECT species_group AS spp_grp_cd, common_name, spcd AS Ffia_spcd" +
                 " FROM " + Tables.ProcessorScenarioRuleDefinitions.DefaultTreeSpeciesGroupsListTableName +
-                " WHERE scenario_id = '" + this.m_oProcessorScenarioItem.ScenarioId + "'";
+                " WHERE TRIM(LOWER(scenario_id)) = '" + this.m_oProcessorScenarioItem.ScenarioId.Trim().ToLower() + "'";
 
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\nPopulate spp_grp_ref_C table \r\n");
@@ -7828,7 +7828,7 @@ namespace FIA_Biosum_Manager
 
                 p_dataMgr.m_strSQL = "INSERT INTO " + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioPSitesTableName + "_C " +
                     "SELECT * FROM " + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioPSitesTableName +
-                    " WHERE TRIM(LOWER(scenario_id)) = '" + this.m_oProcessorScenarioItem.ScenarioId.Trim().ToLower() + "'";
+                    " WHERE TRIM(LOWER(scenario_id)) = '" + this.ReferenceOptimizerScenarioForm.uc_scenario1.txtScenarioId.Text.Trim() + "'";
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\nPopulate scenario_psites_C table \r\n");
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
