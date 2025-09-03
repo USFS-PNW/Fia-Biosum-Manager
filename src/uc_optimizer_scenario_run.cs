@@ -7788,7 +7788,7 @@ namespace FIA_Biosum_Manager
 
                 p_dataMgr.m_strSQL = "INSERT INTO " + Tables.ProcessorScenarioRuleDefinitions.DefaultAdditionalHarvestCostsTableName + "_C" +
                             " SELECT * FROM " + Tables.ProcessorScenarioRuleDefinitions.DefaultAdditionalHarvestCostsTableName +
-                            " WHERE scenario_id = '" + this.m_oProcessorScenarioItem.ScenarioId + "'";
+                            " WHERE TRIM(LOWER(scenario_id)) = '" + this.m_oProcessorScenarioItem.ScenarioId.Trim().ToLower() + "'";
 
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\nPopulate SCENARIO_ADDITIONAL_ HARVEST_COSTS table \r\n");
@@ -7827,7 +7827,8 @@ namespace FIA_Biosum_Manager
                 p_dataMgr.SqlNonQuery(contextConn, p_dataMgr.m_strSQL);
 
                 p_dataMgr.m_strSQL = "INSERT INTO " + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioPSitesTableName + "_C " +
-                    "SELECT * FROM " + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioPSitesTableName;
+                    "SELECT * FROM " + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioPSitesTableName +
+                    " WHERE TRIM(LOWER(scenario_id)) = '" + this.m_oProcessorScenarioItem.ScenarioId.Trim().ToLower() + "'";
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\nPopulate scenario_psites_C table \r\n");
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
