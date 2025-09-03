@@ -205,7 +205,7 @@
     </Compile>
     <Compile Include="sqlite_optimizer_tables.cs" />
     <Compile Include="ODBCMgr.cs" />
-    <Compile Include="uc_db_sqlite.cs">
+    <Compile Include="uc_db.cs">
       <SubType>UserControl</SubType>
     </Compile>
     <Compile Include="uc_delete_packages.cs">
@@ -373,9 +373,6 @@
       <SubType>UserControl</SubType>
     </Compile>
     <Compile Include="uc_datasource_edit.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="uc_db.cs">
       <SubType>UserControl</SubType>
     </Compile>
     <Compile Include="uc_filesize_monitor.cs">
@@ -590,8 +587,8 @@
     <EmbeddedResource Include="btnMainForm.resx">
       <DependentUpon>btnMainForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="uc_db_sqlite.resx">
-      <DependentUpon>uc_db_sqlite.cs</DependentUpon>
+    <EmbeddedResource Include="uc_db.resx">
+      <DependentUpon>uc_db.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="uc_delete_packages.resx">
       <DependentUpon>uc_delete_packages.cs</DependentUpon>
@@ -705,9 +702,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="uc_datasource_edit.resx">
       <DependentUpon>uc_datasource_edit.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="uc_db.resx">
-      <DependentUpon>uc_db.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="uc_filesize_monitor.resx">
       <DependentUpon>uc_filesize_monitor.cs</DependentUpon>

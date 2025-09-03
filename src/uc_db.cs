@@ -16,8 +16,7 @@ namespace FIA_Biosum_Manager
 		private System.Windows.Forms.TreeView treeView1;
 		public int m_intError=0;
 		private string m_strProjDir;
-		private FIA_Biosum_Manager.ado_data_access m_ado;
-		private FIA_Biosum_Manager.dao_data_access m_dao;
+        private SQLite.ADO.DataMgr m_DataMgr;
 		private System.Windows.Forms.ImageList imageList1;
 		private System.Windows.Forms.Label label1;
 		private System.Windows.Forms.Button btnHelp;
@@ -26,10 +25,9 @@ namespace FIA_Biosum_Manager
 		private System.Windows.Forms.Label label2;
 		private System.Windows.Forms.Label label3;
 		private System.Windows.Forms.CheckedListBox lstFields;
-		private System.Windows.Forms.Button btnCompact;
 		private System.ComponentModel.IContainer components;
-		private string m_strCurMDBFile="";
-		private string m_strCurConn="";
+        private string m_strCurDBFile = "";
+        private string m_strCurConn="";
 		private string m_strCurTable="";
 		private System.Windows.Forms.Button btnBrowse;
 		private System.Windows.Forms.Button btnCheckAll;
@@ -51,8 +49,7 @@ namespace FIA_Biosum_Manager
 			// This call is required by the Windows.Forms Form Designer.
 			InitializeComponent();
 			this.m_strProjDir = p_strProjDir.Trim();
-			this.m_ado = new ado_data_access();
-			this.m_dao = new dao_data_access();
+            this.m_DataMgr = new SQLite.ADO.DataMgr();
             this.m_oEnv = new env();
 
 			// TODO: Add any initialization after the InitializeComponent call
@@ -91,20 +88,20 @@ namespace FIA_Biosum_Manager
 						myNode.SelectedImageIndex=1;
 
 						parentNode.Nodes.Add( myNode );
-						string[] mdbFiles = System.IO.Directory.GetFiles(myNode.FullPath,"*.mdb");
-						string[] accdbFiles = System.IO.Directory.GetFiles(myNode.FullPath,"*.accdb");
-						string[] allFiles = new string[mdbFiles.Length + accdbFiles.Length];
+						string[] dbFiles = System.IO.Directory.GetFiles(myNode.FullPath,"*.db");
+						string[] db3Files = System.IO.Directory.GetFiles(myNode.FullPath,"*.db3");
+						string[] allFiles = new string[dbFiles.Length + db3Files.Length];
 						
-						if (mdbFiles.Length > 0)
+						if (dbFiles.Length > 0)
 						{
-							mdbFiles.CopyTo(allFiles,0);
-							if (accdbFiles.Length > 0)
-								accdbFiles.CopyTo(allFiles,mdbFiles.Length);
+							dbFiles.CopyTo(allFiles,0);
+							if (db3Files.Length > 0)
+                                db3Files.CopyTo(allFiles,dbFiles.Length);
 						}
 						else
 						{
-							if (accdbFiles.Length > 0)
-								accdbFiles.CopyTo(allFiles,0);
+							if (db3Files.Length > 0)
+                                db3Files.CopyTo(allFiles,0);
 						}
 
 						
@@ -115,14 +112,9 @@ namespace FIA_Biosum_Manager
 							for (int y=0;y<=allFiles.Length -1;y++)
 							{
 								strNode = this.getSubDir(allFiles[y]);
-								if (strNode.Trim().ToUpper() != "PROJECT.MDB" && 
-									strNode.Trim().ToUpper() != "PERSONAL_PROJECT_LINKS_AND_NOTES.MDB" && 
-									strNode.Trim().ToUpper() != "SHARED_PROJECT_LINKS_AND_NOTES.MDB" &&
-									strNode.Trim().ToUpper() != "SCENARIO_CORE_RULE_DEFINITIONS.MDB" &&
-									strNode.Trim().ToUpper() != "SCENARIO.MDB" &&
-									strNode.Trim().ToUpper() != "FVSOUT.MDB" &&
-									strNode.Trim().ToUpper() != "FVSIN.MDB" &&
-                                    allFiles[y].Trim().ToUpper() != this.m_strProjDir.Trim().ToUpper() + "\\OPTIMIZER\\" + Tables.OptimizerScenarioResults.DefaultScenarioResultsDbFile)
+                                // This section is intended to exclude some database files; Do we want to do this?
+                                // If so, add additional clauses to the != statement
+								if (strNode.Trim().ToUpper() != "PROJECT.MDB")
 								{
 									node2 = new TreeNode(strNode);
 									node2.ImageIndex=0;
@@ -187,7 +179,6 @@ namespace FIA_Biosum_Manager
             this.btnOpen = new System.Windows.Forms.Button();
             this.label4 = new System.Windows.Forms.Label();
             this.lblFileSize = new System.Windows.Forms.Label();
-            this.btnCompact = new System.Windows.Forms.Button();
             this.btnClearAll = new System.Windows.Forms.Button();
             this.btnCheckAll = new System.Windows.Forms.Button();
             this.btnBrowse = new System.Windows.Forms.Button();
@@ -230,7 +221,6 @@ namespace FIA_Biosum_Manager
             this.grpMdb.Controls.Add(this.btnOpen);
             this.grpMdb.Controls.Add(this.label4);
             this.grpMdb.Controls.Add(this.lblFileSize);
-            this.grpMdb.Controls.Add(this.btnCompact);
             this.grpMdb.Location = new System.Drawing.Point(8, 440);
             this.grpMdb.Name = "grpMdb";
             this.grpMdb.Size = new System.Drawing.Size(232, 88);
@@ -240,11 +230,11 @@ namespace FIA_Biosum_Manager
             // btnOpen
             // 
             this.btnOpen.Enabled = false;
-            this.btnOpen.Location = new System.Drawing.Point(80, 56);
+            this.btnOpen.Location = new System.Drawing.Point(0, 58);
             this.btnOpen.Name = "btnOpen";
-            this.btnOpen.Size = new System.Drawing.Size(96, 24);
+            this.btnOpen.Size = new System.Drawing.Size(182, 24);
             this.btnOpen.TabIndex = 53;
-            this.btnOpen.Text = "Open In Access";
+            this.btnOpen.Text = "Open With SQLite Editor";
             this.btnOpen.Click += new System.EventHandler(this.btnOpen_Click);
             // 
             // label4
@@ -263,16 +253,6 @@ namespace FIA_Biosum_Manager
             this.lblFileSize.Name = "lblFileSize";
             this.lblFileSize.Size = new System.Drawing.Size(136, 24);
             this.lblFileSize.TabIndex = 52;
-            // 
-            // btnCompact
-            // 
-            this.btnCompact.Enabled = false;
-            this.btnCompact.Location = new System.Drawing.Point(16, 56);
-            this.btnCompact.Name = "btnCompact";
-            this.btnCompact.Size = new System.Drawing.Size(64, 24);
-            this.btnCompact.TabIndex = 46;
-            this.btnCompact.Text = "Compact";
-            this.btnCompact.Click += new System.EventHandler(this.btnCompact_Click);
             // 
             // btnClearAll
             // 
@@ -306,7 +286,7 @@ namespace FIA_Biosum_Manager
             this.lstFields.CheckOnClick = true;
             this.lstFields.Location = new System.Drawing.Point(493, 40);
             this.lstFields.Name = "lstFields";
-            this.lstFields.Size = new System.Drawing.Size(237, 394);
+            this.lstFields.Size = new System.Drawing.Size(237, 378);
             this.lstFields.TabIndex = 45;
             // 
             // label3
@@ -327,9 +307,10 @@ namespace FIA_Biosum_Manager
             // 
             // lstTables
             // 
+            this.lstTables.ItemHeight = 16;
             this.lstTables.Location = new System.Drawing.Point(253, 40);
             this.lstTables.Name = "lstTables";
-            this.lstTables.Size = new System.Drawing.Size(237, 394);
+            this.lstTables.Size = new System.Drawing.Size(237, 388);
             this.lstTables.TabIndex = 41;
             this.lstTables.SelectedIndexChanged += new System.EventHandler(this.lstTables_SelectedIndexChanged);
             // 
@@ -358,7 +339,7 @@ namespace FIA_Biosum_Manager
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(152, 16);
             this.label1.TabIndex = 5;
-            this.label1.Text = "MS Access Database Files";
+            this.label1.Text = "SQLite Database Files";
             // 
             // treeView1
             // 
@@ -405,19 +386,16 @@ namespace FIA_Biosum_Manager
 
 		private void treeView1_AfterSelect(object sender, System.Windows.Forms.TreeViewEventArgs e)
 		{
-		
-			//string strFullPath;
 			try
 			{
-				if (e.Node.Text.ToUpper().IndexOf(".MDB",0) > 0 || e.Node.Text.ToUpper().IndexOf(".ACCDB",0) > 0)
+				if (e.Node.Text.ToUpper().IndexOf(".DB",0) > 0 || e.Node.Text.ToUpper().IndexOf(".DB3",0) > 0)
 				{
 					this.lstFields.Items.Clear();
 					this.lstTables.Items.Clear();
-					this.m_dao.LoadTablesIntoListBox(e.Node.FullPath,this.lstTables);
-					this.m_strCurMDBFile = e.Node.FullPath.Trim();
-					this.btnCompact.Enabled=true;
+                    this.m_DataMgr.LoadTablesIntoListBox(e.Node.FullPath, this.lstTables);
+					this.m_strCurDBFile = e.Node.FullPath.Trim();
 					this.btnOpen.Enabled=true;
-					System.IO.FileInfo fi = new System.IO.FileInfo(this.m_strCurMDBFile);
+					System.IO.FileInfo fi = new System.IO.FileInfo(this.m_strCurDBFile);
 					lblFileSize.Text = fi.Length.ToString();
 					fi = null;
 				}
@@ -426,9 +404,8 @@ namespace FIA_Biosum_Manager
 					this.lstTables.Items.Clear();
 					this.lstFields.Items.Clear();
 					this.m_strCurTable="";
-					this.m_strCurMDBFile="";
+                    this.m_strCurDBFile = "";
 					this.lblFileSize.Text="";
-					this.btnCompact.Enabled=false;
 					this.btnOpen.Enabled=false;
 				}
 			}
@@ -448,7 +425,7 @@ namespace FIA_Biosum_Manager
 		{
 		       this.m_strCurTable = this.lstTables.SelectedItems[0].ToString().Trim();
 			   this.lstFields.Items.Clear();
-			   this.m_dao.LoadFieldsIntoCheckedListBox(this.m_strCurMDBFile,this.m_strCurTable,this.lstFields);
+			   this.m_DataMgr.LoadFieldsIntoCheckedListBox(this.m_strCurDBFile,this.m_strCurTable,this.lstFields);
 		}
 
 		private void uc_db_Resize(object sender, System.EventArgs e)
@@ -539,56 +516,29 @@ namespace FIA_Biosum_Manager
                     return;
 				}
 
-			    this.m_strCurConn = this.m_ado.getMDBConnString(this.m_strCurMDBFile,"","");
-                this.m_ado.m_strSQL = "";
+                this.m_strCurConn = this.m_DataMgr.GetConnectionString(this.m_strCurDBFile);
+                this.m_DataMgr.m_strSQL = "";
 				for (int x=0;x<=this.lstFields.CheckedItems.Count-1;x++)
 				{
-						if (this.m_ado.m_strSQL.Trim().Length ==0)
+						if (this.m_DataMgr.m_strSQL.Trim().Length ==0)
 						{
-							this.m_ado.m_strSQL = this.lstFields.CheckedItems[x].ToString();
+							this.m_DataMgr.m_strSQL = this.lstFields.CheckedItems[x].ToString();
 						}
 						else
 						{
-							this.m_ado.m_strSQL += "," + this.lstFields.CheckedItems[x].ToString();
+							this.m_DataMgr.m_strSQL += "," + this.lstFields.CheckedItems[x].ToString();
 						}
 				}
-				this.m_ado.m_strSQL = "SELECT " + this.m_ado.m_strSQL + " FROM " + this.m_strCurTable;
+				this.m_DataMgr.m_strSQL = "SELECT " + this.m_DataMgr.m_strSQL + " FROM " + this.m_strCurTable;
 
 				this.m_frmGridView = new frmGridView();
 				this.m_frmGridView.Text = "Database: Browse (" + this.m_strCurTable.Trim() + ")";
+                this.m_frmGridView.UsingSQLite = true;
 
-				this.m_frmGridView.LoadDataSet(this.m_strCurConn,this.m_ado.m_strSQL,this.m_strCurTable);
+				this.m_frmGridView.LoadDataSet(this.m_strCurConn,this.m_DataMgr.m_strSQL,this.m_strCurTable);
 				this.m_frmGridView.Show();
 				this.m_frmGridView.Focus();
 
-			}
-		}
-
-		private void btnCompact_Click(object sender, System.EventArgs e)
-		{
-			try
-			{
-                frmMain.g_oFrmMain.ActivateStandByAnimation(
-                    frmMain.g_oFrmMain.WindowState,
-                    frmMain.g_oFrmMain.Left,
-                    frmMain.g_oFrmMain.Height,
-                    frmMain.g_oFrmMain.Width,
-                    frmMain.g_oFrmMain.Top);
-				this.m_dao.CompactMDB(this.m_strCurMDBFile);
-                frmMain.g_oFrmMain.DeactivateStandByAnimation();
-				System.IO.FileInfo fi = new System.IO.FileInfo(this.m_strCurMDBFile);
-				lblFileSize.Text = fi.Length.ToString();
-				fi = null;
-			}
-			catch (Exception err)
-			{
-				MessageBox.Show("!!Error!! \n" + 
-					"Module - uc_db:btnCompact_Click() \n" + 
-					"Err Msg - " + err.Message,
-					"FIA Biosum",System.Windows.Forms.MessageBoxButtons.OK,
-					System.Windows.Forms.MessageBoxIcon.Exclamation);
-
-				this.m_intError=-1;
 			}
 		}
 
@@ -598,7 +548,7 @@ namespace FIA_Biosum_Manager
 			proc.StartInfo.UseShellExecute = true;
 			try
 			{
-				proc.StartInfo.FileName = this.m_strCurMDBFile;
+                proc.StartInfo.FileName = this.m_strCurDBFile;
 			}
 			catch
 			{
@@ -625,7 +575,7 @@ namespace FIA_Biosum_Manager
             {
                 m_oHelp = new Help(m_xpsFile, m_oEnv);
             }
-            m_oHelp.ShowHelp(new string[] { "DATABASE", "MANAGE_TABLES" });
+            m_oHelp.ShowHelp(new string[] { "DATABASE", "SQLITE_DATA_SOURCES" });
 
         }
 	}

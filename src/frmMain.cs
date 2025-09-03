@@ -76,7 +76,6 @@ namespace FIA_Biosum_Manager
 		public FIA_Biosum_Manager.btnMainForm m_btnDbPlotData;
 		public FIA_Biosum_Manager.btnMainForm m_btnDbTreeDiam;
 		public FIA_Biosum_Manager.btnMainForm m_btnDbTreeSpGps;
-		public FIA_Biosum_Manager.btnMainForm m_btnDbTableMgmt;
         public FIA_Biosum_Manager.btnMainForm m_btnSQLiteTableMgmt;
 		public FIA_Biosum_Manager.btnMainForm m_btnDbRandomTravelTimes;
 		public FIA_Biosum_Manager.btnMainForm m_btnDbDataSource;
@@ -1620,10 +1619,6 @@ namespace FIA_Biosum_Manager
                         StartManageTablesDialog();
                         break;
 
-                    case "MANAGE SQLITE TABLES":
-                        StartManageSQLiteTablesDialog();
-                        break;
-
                     case "PLOT DATA":
 
 
@@ -1963,78 +1958,8 @@ namespace FIA_Biosum_Manager
 
             }
         }
+        
         public void StartManageTablesDialog()
-        {
-            //check to see if the form has already been loaded
-            if (this.IsChildWindowVisible("Database: Manage Tables") == false)
-            {
-                this.m_frmDb = new frmDialog(this);
-                this.m_frmDb.MaximizeBox = true;
-                this.m_frmDb.BackColor = System.Drawing.SystemColors.Control;
-                this.m_frmDb.Text = "Database: Manage Tables";
-                this.m_frmDb.MdiParent = this;
-
-                FIA_Biosum_Manager.uc_db p_uc = new uc_db(this.frmProject.uc_project1.txtRootDirectory.Text.Trim());
-                if (p_uc.m_intError < 0)
-                {
-                    this.m_frmDb.Dispose();
-                    return;
-                }
-                this.m_frmDb.Controls.Add(p_uc);
-                this.m_frmDb.DbUserControl = p_uc;
-                this.m_frmDb.Height = 0;
-                this.m_frmDb.Width = 0;
-                if (p_uc.Top + p_uc.Height > this.m_frmDb.ClientSize.Height + 2)
-                {
-                    for (int x = 1; ; x++)
-                    {
-                        this.m_frmDb.Height = x;
-                        if (p_uc.Top +
-                            p_uc.Height <
-                            this.m_frmDb.ClientSize.Height)
-                        {
-                            break;
-                        }
-                    }
-
-                }
-                if (p_uc.Left + p_uc.Width > this.m_frmDb.ClientSize.Width + 2)
-                {
-                    for (int x = 1; ; x++)
-                    {
-                        this.m_frmDb.Width = x;
-                        if (p_uc.Left +
-                            p_uc.Width <
-                            this.m_frmDb.ClientSize.Width)
-                        {
-                            break;
-                        }
-                    }
-
-                }
-                p_uc.Dock = System.Windows.Forms.DockStyle.Fill;
-                p_uc.loadvalues();
-
-
-                this.m_frmDb.Left = 0;
-                this.m_frmDb.Top = 0;
-                this.m_frmDb.FormBorderStyle = System.Windows.Forms.FormBorderStyle.Sizable;
-                this.m_frmDb.DisposeOfFormWhenClosing = true;
-                this.m_frmDb.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-                this.m_frmDb.Show();
-
-            }
-            else
-            {
-                if (this.m_frmDb.WindowState == System.Windows.Forms.FormWindowState.Minimized)
-                    this.m_frmDb.WindowState = System.Windows.Forms.FormWindowState.Normal;
-
-                this.m_frmDb.Focus();
-
-            }
-
-        }
-        public void StartManageSQLiteTablesDialog()
         {
             //check to see if the form has already been loaded
             if (this.IsChildWindowVisible("Database: Manage SQLite Tables") == false)
@@ -2045,7 +1970,7 @@ namespace FIA_Biosum_Manager
                 this.m_frmDbSQLite.Text = "Database: Manage SQLite Tables";
                 this.m_frmDbSQLite.MdiParent = this;
 
-                FIA_Biosum_Manager.uc_db_sqlite p_uc = new uc_db_sqlite(this.frmProject.uc_project1.txtRootDirectory.Text.Trim());
+                FIA_Biosum_Manager.uc_db p_uc = new uc_db(this.frmProject.uc_project1.txtRootDirectory.Text.Trim());
                 if (p_uc.m_intError < 0)
                 {
                     this.m_frmDbSQLite.Dispose();
@@ -3297,20 +3222,13 @@ namespace FIA_Biosum_Manager
 			this.m_btnDbDataSource.Top = this.m_btnDbPlotData.Top + this.m_btnDbPlotData.Height + 5;
 			this.m_btnDbDataSource.Text = "Project Data Sources";
 			this.m_btnDbDataSource.Enabled=true;
-			//table management
-			this.m_btnDbTableMgmt = new btnMainForm(this);
-			this.m_pnlDb.Controls.Add(this.m_btnDbTableMgmt);
-			this.m_btnDbTableMgmt.Size = this.btnMain1.Size;
-			this.m_btnDbTableMgmt.Left  = this.m_btnDbPlotData.Left;
-			this.m_btnDbTableMgmt.Top = this.m_btnDbDataSource.Top + this.m_btnDbDataSource.Height + 5;
-			this.m_btnDbTableMgmt.Text = "Manage Tables";
             //table management
             this.m_btnSQLiteTableMgmt = new btnMainForm(this);
             this.m_pnlDb.Controls.Add(this.m_btnSQLiteTableMgmt);
             this.m_btnSQLiteTableMgmt.Size = this.btnMain1.Size;
             this.m_btnSQLiteTableMgmt.Left = this.m_btnDbPlotData.Left;
-            this.m_btnSQLiteTableMgmt.Top = this.m_btnDbTableMgmt.Top + this.m_btnDbTableMgmt.Height + 5;
-            this.m_btnSQLiteTableMgmt.Text = "Manage SQLite Tables";
+            this.m_btnSQLiteTableMgmt.Top = this.m_btnDbDataSource.Top + this.m_btnDbDataSource.Height + 5;
+            this.m_btnSQLiteTableMgmt.Text = "Manage Tables";
 			//generate travel times
 			this.m_btnDbRandomTravelTimes = new btnMainForm(this);
 			this.m_pnlDb.Controls.Add(this.m_btnDbRandomTravelTimes);
