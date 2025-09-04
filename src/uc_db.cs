@@ -339,7 +339,7 @@ namespace FIA_Biosum_Manager
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(152, 16);
             this.label1.TabIndex = 5;
-            this.label1.Text = "SQLite Database Files";
+            this.label1.Text = "Database Files";
             // 
             // treeView1
             // 
@@ -575,7 +575,7 @@ namespace FIA_Biosum_Manager
             {
                 m_oHelp = new Help(m_xpsFile, m_oEnv);
             }
-            m_oHelp.ShowHelp(new string[] { "DATABASE", "SQLITE_DATA_SOURCES" });
+            m_oHelp.ShowHelp(new string[] { "DATABASE", "DATA_SOURCES" });
 
         }
 	}

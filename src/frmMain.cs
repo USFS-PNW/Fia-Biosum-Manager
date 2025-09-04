@@ -1962,12 +1962,12 @@ namespace FIA_Biosum_Manager
         public void StartManageTablesDialog()
         {
             //check to see if the form has already been loaded
-            if (this.IsChildWindowVisible("Database: Manage SQLite Tables") == false)
+            if (this.IsChildWindowVisible("Database: Manage Tables") == false)
             {
                 this.m_frmDbSQLite = new frmDialog(this);
                 this.m_frmDbSQLite.MaximizeBox = true;
                 this.m_frmDbSQLite.BackColor = System.Drawing.SystemColors.Control;
-                this.m_frmDbSQLite.Text = "Database: Manage SQLite Tables";
+                this.m_frmDbSQLite.Text = "Database: Manage Tables";
                 this.m_frmDbSQLite.MdiParent = this;
 
                 FIA_Biosum_Manager.uc_db p_uc = new uc_db(this.frmProject.uc_project1.txtRootDirectory.Text.Trim());
