@@ -185,9 +185,6 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ado_optimizer_tables.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="ado_data_access.cs">
       <SubType>Code</SubType>
     </Compile>

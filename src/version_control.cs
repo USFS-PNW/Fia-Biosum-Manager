@@ -597,10 +597,20 @@ namespace FIA_Biosum_Manager
                         UpdateProjectVersionFile(strProjVersionFile);
                         bPerformCheck = false;
                     }
+                    // Upgraded from 5.11.2 to 5.12.0 (master.mdb to SQLite)
+                    else if ((Convert.ToInt16(m_strAppVerArray[APP_VERSION_MAJOR]) == 5 &&
+                        Convert.ToInt16(m_strAppVerArray[APP_VERSION_MINOR1]) == 12 &&
+                        Convert.ToInt16(m_strAppVerArray[APP_VERSION_MINOR2]) == 0) &&
+                        (Convert.ToInt16(m_strProjectVersionArray[APP_VERSION_MAJOR]) == 5 &&
+                        Convert.ToInt16(m_strProjectVersionArray[APP_VERSION_MINOR1]) == 11 &&
+                        Convert.ToInt16(m_strProjectVersionArray[APP_VERSION_MINOR2]) == 2))
+                    {
+                        UpdateDatasources_5_12_0();
+                        UpdateProjectVersionFile(strProjVersionFile);
+                        bPerformCheck = false;
+                    }
                 }
             }
-
-            //UpdateDatasources_5_12_0();
 
             if (bPerformCheck)
             {
@@ -613,8 +623,6 @@ namespace FIA_Biosum_Manager
                 CheckProjectTable();
                 frmMain.g_sbpInfo.Text = "Version Update: Checking Core Analysis Scenario Rule Definitions...Stand by";
                 CheckCoreScenarioRuleDefinitionTables();
-                frmMain.g_sbpInfo.Text = "Version Update: Checking Project Datasource Table Records...Stand by";
-                CheckProjectDatasourceTableRecords();
                 //frmMain.g_sbpInfo.Text = "Version Update: Checking Project Datasource Tables...Stand by";
                 //CheckProjectDatasourceTables();
                 //frmMain.g_sbpInfo.Text = "Version Update: Checking Pre-Populated Reference Tables...Stand by";
@@ -1061,220 +1069,6 @@ namespace FIA_Biosum_Manager
 			
 		}
 
-		/// <summary>
-		/// Check and update the project datasource table with the latest version of table type entries
-		/// </summary>
-		private void CheckProjectDatasourceTableRecords()
-		{
-		    
-			int x;
-			int y;
-			FIA_Biosum_Manager.Datasource oDs = new Datasource();
-			oDs.m_strDataSourceMDBFile = ReferenceProjectDirectory.Trim() + "\\db\\project.mdb";
-			oDs.m_strDataSourceTableName = "datasource";
-			oDs.m_strScenarioId="";
-			oDs.LoadTableColumnNamesAndDataTypes=false;
-			oDs.LoadTableRecordCount=false;
-			oDs.populate_datasource_array();
-
-            
-
-			ado_data_access oAdo=new ado_data_access();
-			string strDbFile="";
-            //open the project db file
-            oAdo.OpenConnection(oAdo.getMDBConnString(ReferenceProjectDirectory.Trim() + "\\" +
-                frmMain.g_oTables.m_oProject.DefaultProjectTableDbFile, "", ""));
-			//
-            //drop obsolete table types 
-            //
-            //additional harvest costs table type
-            oAdo.m_strSQL = "DELETE FROM datasource WHERE TRIM(UCASE(table_type)) IN ('ADDITIONAL HARVEST COSTS','TREE SPECIES AND DIAMETER GROUPS DOLLAR VALUES')";
-            oAdo.SqlNonQuery(oAdo.m_OleDbConnection, oAdo.m_strSQL);
-            //
-			//
-			//make sure all the current table type data sources are accounted for
-			//
-			for (x=0;x<=Datasource.g_strProjectDatasourceTableTypesArray.Length - 1;x++)
-			{
-				//check if the latest datasource table type exists 
-				y = oDs.getDataSourceTableNameRow(Datasource.g_strProjectDatasourceTableTypesArray[x].Trim());
-				if (y==-1)
-				{
-					//table type does not exist so create it
-					switch (Datasource.g_strProjectDatasourceTableTypesArray[x].Trim().ToUpper())
-					{
-						case "PLOT":
-							oDs.InsertDatasourceRecord(oAdo,oAdo.m_OleDbConnection,
-								Datasource.g_strProjectDatasourceTableTypesArray[x].Trim(),
-								ReferenceProjectDirectory.Trim() + "\\db",
-								frmMain.g_oUtils.getFileNameUsingLastIndexOf(frmMain.g_oTables.m_oFIAPlot.DefaultPlotTableDbFile),
-                                frmMain.g_oTables.m_oFIAPlot.DefaultPlotTableName);
-							break;
-						case "CONDITION":
-							oDs.InsertDatasourceRecord(oAdo,oAdo.m_OleDbConnection,
-								Datasource.g_strProjectDatasourceTableTypesArray[x].Trim(),
-								ReferenceProjectDirectory.Trim() + "\\db",
-								frmMain.g_oUtils.getFileNameUsingLastIndexOf(frmMain.g_oTables.m_oFIAPlot.DefaultConditionTableDbFile),
-								frmMain.g_oTables.m_oFIAPlot.DefaultConditionTableName);
-							break;
-						case "TREE":
-							oDs.InsertDatasourceRecord(oAdo,oAdo.m_OleDbConnection,
-								Datasource.g_strProjectDatasourceTableTypesArray[x].Trim(),
-								ReferenceProjectDirectory.Trim() + "\\db",
-								frmMain.g_oUtils.getFileNameUsingLastIndexOf(frmMain.g_oTables.m_oFIAPlot.DefaultTreeTableDbFile),
-								frmMain.g_oTables.m_oFIAPlot.DefaultTreeTableName);
-							break;
-						case "TREATMENT PRESCRIPTIONS":
-                            strDbFile = frmMain.g_oUtils.getFileNameUsingLastIndexOf(Tables.FVS.DefaultRxTableDbFile);
-							oAdo.m_strSQL = "INSERT INTO datasource (table_type,Path,file,table_name) VALUES " +
-								"('Treatment Prescriptions'," + 
-								"'" + ReferenceProjectDirectory.Trim() + "\\db'," + 
-								"'" + strDbFile.Trim() + "'," + 
-								"'rx');";
-							oAdo.SqlNonQuery(oAdo.m_OleDbConnection,oAdo.m_strSQL);
-							break;						
-						case "TRAVEL TIMES":
-							oDs.InsertDatasourceRecord(oAdo,oAdo.m_OleDbConnection,
-								Datasource.g_strProjectDatasourceTableTypesArray[x].Trim(),
-								ReferenceProjectDirectory.Trim() + "\\gis\\db",
-								frmMain.g_oUtils.getFileNameUsingLastIndexOf(Tables.TravelTime.DefaultTravelTimeTableDbFile),
-                                Tables.TravelTime.DefaultTravelTimeTableName);
-							break;
-						case "PROCESSING SITES":
-							oDs.InsertDatasourceRecord(oAdo,oAdo.m_OleDbConnection,
-								Datasource.g_strProjectDatasourceTableTypesArray[x].Trim(),
-								ReferenceProjectDirectory.Trim() + "\\gis\\db",
-								frmMain.g_oUtils.getFileNameUsingLastIndexOf(frmMain.g_oTables.m_oTravelTime.DefaultProcessingSiteTableDbFile),
-                                Tables.TravelTime.DefaultProcessingSiteTableName);
-							break;						
-						case "PLOT AND CONDITION RECORD AUDIT":
-							oDs.InsertDatasourceRecord(oAdo,oAdo.m_OleDbConnection,
-								Datasource.g_strProjectDatasourceTableTypesArray[x].Trim(),
-								ReferenceProjectDirectory.Trim() + "\\db",
-								frmMain.g_oUtils.getFileName(Tables.Audit.DefaultCondAuditTableDbFile),
-                                Tables.Audit.DefaultCondAuditTableName);
-							break;
-						case "PLOT, CONDITION AND TREATMENT RECORD AUDIT":
-							oDs.InsertDatasourceRecord(oAdo,oAdo.m_OleDbConnection,
-								Datasource.g_strProjectDatasourceTableTypesArray[x].Trim(),
-								ReferenceProjectDirectory.Trim() + "\\db",
-                                frmMain.g_oUtils.getFileName(Tables.Audit.DefaultCondRxAuditTableDbFile),
-                                Tables.Audit.DefaultCondRxAuditTableName);
-							break;
-						case "POPULATION EVALUATION":
-							strDbFile = frmMain.g_oUtils.getFileNameUsingLastIndexOf(frmMain.g_oTables.m_oFIAPlot.DefaultPopEvalTableDbFile);
-							oAdo.m_strSQL = "INSERT INTO datasource (table_type,Path,file,table_name) VALUES " +
-								"('Population Evaluation'," + 
-								"'" + ReferenceProjectDirectory.Trim() + "\\db'," + 
-								"'" + strDbFile.Trim() + "'," + 
-								"'pop_eval');";
-							oAdo.SqlNonQuery(oAdo.m_OleDbConnection,oAdo.m_strSQL);
-							break;
-						case "POPULATION ESTIMATION UNIT":
-							strDbFile = frmMain.g_oUtils.getFileNameUsingLastIndexOf(frmMain.g_oTables.m_oFIAPlot.DefaultPopEstnUnitTableDbFile);
-							oAdo.m_strSQL = "INSERT INTO datasource (table_type,Path,file,table_name) VALUES " +
-								"('Population Estimation Unit'," + 
-								"'" + ReferenceProjectDirectory.Trim() + "\\db'," + 
-								"'" + strDbFile.Trim() + "'," + 								
-								"'pop_estn_unit');";
-							oAdo.SqlNonQuery(oAdo.m_OleDbConnection,oAdo.m_strSQL);
-							break;
-						case "POPULATION STRATUM":
-							strDbFile = frmMain.g_oUtils.getFileNameUsingLastIndexOf(frmMain.g_oTables.m_oFIAPlot.DefaultPopStratumTableDbFile);
-							oAdo.m_strSQL = "INSERT INTO datasource (table_type,Path,file,table_name) VALUES " +
-								"('Population Stratum'," + 
-								"'" + ReferenceProjectDirectory.Trim() + "\\db'," + 
-								"'" + strDbFile.Trim() + "'," + 		
-								"'pop_stratum');";
-							oAdo.SqlNonQuery(oAdo.m_OleDbConnection,oAdo.m_strSQL);
-							break;
-						case "POPULATION PLOT STRATUM ASSIGNMENT":
-							strDbFile = frmMain.g_oUtils.getFileNameUsingLastIndexOf(frmMain.g_oTables.m_oFIAPlot.DefaultPopPlotStratumAssgnTableDbFile);
-							oAdo.m_strSQL = "INSERT INTO datasource (table_type,Path,file,table_name) VALUES " +
-								"('Population Plot Stratum Assignment'," + 
-								"'" + ReferenceProjectDirectory.Trim() + "\\db'," + 
-								"'" + strDbFile.Trim() + "'," + 		
-								"'pop_plot_stratum_assgn');";
-							oAdo.SqlNonQuery(oAdo.m_OleDbConnection,oAdo.m_strSQL);
-							break;
-						case "SITE TREE":
-							strDbFile = frmMain.g_oUtils.getFileNameUsingLastIndexOf(frmMain.g_oTables.m_oFIAPlot.DefaultSiteTreeTableDbFile);
-							oAdo.m_strSQL = "INSERT INTO datasource (table_type,Path,file,table_name) VALUES " +
-								"('Site Tree'," + 
-								"'" + ReferenceProjectDirectory.Trim() + "\\db'," + 
-								"'master.mdb'," + 
-								"'sitetree');";
-							oAdo.SqlNonQuery(oAdo.m_OleDbConnection,oAdo.m_strSQL);
-							break;
-                        
-                        //version 5 additions
-                        case "TREATMENT PRESCRIPTIONS ASSIGNED FVS COMMANDS":
-       //                     strDbFile = frmMain.g_oUtils.getFileNameUsingLastIndexOf(Tables.FVS.DefaultRxFvsCommandTableDbFile);
-							//oAdo.m_strSQL = "INSERT INTO datasource (table_type,Path,file,table_name) VALUES " +
-       //                         "('Treatment Prescriptions Assigned FVS Commands'," + 
-							//	"'" + ReferenceProjectDirectory.Trim() + "\\db'," + 
-							//	"'fvsmaster.mdb'," + 
-							//	"'rx_fvs_commands');";
-							//oAdo.SqlNonQuery(oAdo.m_OleDbConnection,oAdo.m_strSQL);
-                            break;
-                        case "TREATMENT PRESCRIPTIONS HARVEST COST COLUMNS":
-                            strDbFile = frmMain.g_oUtils.getFileNameUsingLastIndexOf(Tables.FVS.DefaultRxHarvestCostColumnsTableDbFile);
-							oAdo.m_strSQL = "INSERT INTO datasource (table_type,Path,file,table_name) VALUES " +
-                                "('Treatment Prescriptions Harvest Cost Columns'," + 
-								"'" + ReferenceProjectDirectory.Trim() + "\\db'," + 
-								"'fvsmaster.mdb'," +
-                                "'rx_harvest_cost_columns');";
-							oAdo.SqlNonQuery(oAdo.m_OleDbConnection,oAdo.m_strSQL);
-                            break;
-                        case "TREATMENT PRESCRIPTION CATEGORIES":
-                            //strDbFile = frmMain.g_oUtils.getFileNameUsingLastIndexOf(frmMain.g_oTables.m_oReference.DefaultRxHarvestCostTableDbFile);
-							oAdo.m_strSQL = "INSERT INTO datasource (table_type,Path,file,table_name) VALUES " +
-                                "('Treatment Prescription Categories'," + 
-								"'" + ReferenceProjectDirectory.Trim() + "\\db'," + 
-								"'ref_master.mdb'," +
-                                "'fvs_rx_category');";
-							oAdo.SqlNonQuery(oAdo.m_OleDbConnection,oAdo.m_strSQL);
-                            break;
-                        case "TREATMENT PRESCRIPTION SUBCATEGORIES":
-                            oAdo.m_strSQL = "INSERT INTO datasource (table_type,Path,file,table_name) VALUES " +
-                                "('Treatment Prescription Subcategories'," + 
-								"'" + ReferenceProjectDirectory.Trim() + "\\db'," + 
-								"'ref_master.mdb'," +
-                                "'fvs_rx_subcategory');";
-							oAdo.SqlNonQuery(oAdo.m_OleDbConnection,oAdo.m_strSQL);
-                            break;
-                        case "TREATMENT PACKAGES":
-                            strDbFile = frmMain.g_oUtils.getFileNameUsingLastIndexOf(Tables.FVS.DefaultRxPackageTableDbFile);
-							oAdo.m_strSQL = "INSERT INTO datasource (table_type,Path,file,table_name) VALUES " +
-                                "('Treatment Packages'," + 
-								"'" + ReferenceProjectDirectory.Trim() + "\\db'," + 
-								"'fvsmaster.mdb'," +
-                                "'rxpackage');";
-							oAdo.SqlNonQuery(oAdo.m_OleDbConnection,oAdo.m_strSQL);
-                            break;
-                        case "HARVEST METHODS":
-                            oAdo.m_strSQL = "INSERT INTO datasource (table_type,Path,file,table_name) VALUES " +
-                                "('Harvest Methods'," +
-                                "'" + ReferenceProjectDirectory.Trim() + "\\db'," +
-                                "'ref_master.mdb'," +
-                                "'harvest_methods');";
-                            oAdo.SqlNonQuery(oAdo.m_OleDbConnection, oAdo.m_strSQL);
-                            break;
-
-
-                        //case "ADDITIONAL HARVEST COSTS":
-                        //    oAdo.m_strSQL = "INSERT INTO datasource (table_type,Path,file,table_name) VALUES " +
-                        //        "('Additional Harvest Costs'," +
-                        //        "'" + ReferenceProjectDirectory.Trim() + "\\db'," +
-                        //        "'master.mdb'," +
-                        //        "'additional_harvest_costs');";
-                        //    oAdo.SqlNonQuery(oAdo.m_OleDbConnection, oAdo.m_strSQL);
-                        //    break;
-					}
-				}
-			}
-			oAdo.CloseConnection(oAdo.m_OleDbConnection);
-		}
 
 		//private void CheckProjectReferenceDatasourceTables()
 		//{
@@ -2178,22 +1972,8 @@ namespace FIA_Biosum_Manager
             oAdo.SqlNonQuery(oAdo.m_OleDbConnection, oAdo.m_strSQL);
 
 
-			oDs.InsertDatasourceRecord(oAdo,oAdo.m_OleDbConnection,
-				"Plot And Condition Record Audit",
-				ReferenceProjectDirectory.Trim() + "\\db",
-                frmMain.g_oUtils.getFileName(Tables.Audit.DefaultCondAuditTableDbFile),
-                Tables.Audit.DefaultCondAuditTableName);
-
-
             oAdo.m_strSQL = "DELETE FROM datasource WHERE TRIM(UCASE(table_type))='PLOT, CONDITION AND TREATMENT RECORD AUDIT'";
             oAdo.SqlNonQuery(oAdo.m_OleDbConnection, oAdo.m_strSQL);
-
-			oDs.InsertDatasourceRecord(oAdo,oAdo.m_OleDbConnection,
-				"Plot, Condition And Treatment Record Audit",
-				ReferenceProjectDirectory.Trim() + "\\db",
-                frmMain.g_oUtils.getFileName(Tables.Audit.DefaultCondRxAuditTableDbFile),
-                Tables.Audit.DefaultCondRxAuditTableName);
-
 
 			oAdo.CloseConnection(oAdo.m_OleDbConnection);
 
