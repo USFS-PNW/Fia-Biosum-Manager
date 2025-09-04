@@ -57,7 +57,7 @@ namespace FIA_Biosum_Manager
             if (this.m_oFvs.LoadDatasource) this.m_oFvs.LoadDatasources();
             if (this.m_oFIAPlot.LoadDatasource) this.m_oFIAPlot.LoadDatasources();
             if (this.m_oReference.LoadDatasource) this.m_oReference.LoadDatasources();
-            if (this.m_oTravelTime.LoadDatasource) this.m_oTravelTime.LoadDatasources();
+            if (this.m_oTravelTime.LoadDatasource) this.m_oTravelTime.LoadDatasources(null, null);
         }
         public void LoadDatasourcesNew(bool p_bLimited, string p_strScenarioType, string p_strScenarioId)
         {
@@ -80,7 +80,7 @@ namespace FIA_Biosum_Manager
             if (this.m_oFvs.LoadDatasource) this.m_oFvs.LoadDatasources();
             if (this.m_oFIAPlot.LoadDatasource) this.m_oFIAPlot.LoadDatasources();
             if (this.m_oReference.LoadDatasource) this.m_oReference.LoadDatasources();
-            if (this.m_oTravelTime.LoadDatasource) this.m_oTravelTime.LoadDatasources();
+            if (this.m_oTravelTime.LoadDatasource) this.m_oTravelTime.LoadDatasources(p_strScenarioType, p_strScenarioId);
             m_lstSourceDbs = this.m_oDataSource.getDataSourceDbsList();
         }
         protected void LoadLimitedDatasources()
@@ -4803,15 +4803,22 @@ namespace FIA_Biosum_Manager
                 set { _bLoadDataSources = value; }
             }
 			
-            public void LoadDatasources()
+            public void LoadDatasources(string strScenarioType, string strScenarioId)
             {
                 m_strTravelTimeTable = ReferenceQueries.m_oDataSource.getValidDataSourceTableName(Datasource.TableTypes.TravelTimes);
                 m_strDbFile = ReferenceQueries.m_oDataSource.getFullPathAndFile(Datasource.TableTypes.TravelTimes);
 
                 if (this.m_strTravelTimeTable.Trim().Length == 0)
                 {
-
-                    MessageBox.Show("!!Could Not Locate Travel Times Table!!", "FIA Biosum", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Exclamation);
+                    string strMessage = "!!Could Not Locate ";
+                    if (strScenarioType.Length > 0)
+                    {
+                        strMessage += strScenarioType.Substring(0, 1).ToUpper() +
+                        strScenarioType.Substring(1).ToLower() + " " + 
+                        strScenarioId + " ";
+                    }
+                    strMessage += "Travel Times Table!!";
+                    MessageBox.Show(strMessage, "FIA Biosum", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Exclamation);
                     ReferenceQueries.m_intError = -1;
                     return;
                 }

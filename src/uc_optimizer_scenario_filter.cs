@@ -320,9 +320,11 @@ namespace FIA_Biosum_Manager
 		}
 		public void loadvalues(bool p_bScenarioCopy)
 		{
-            this.txtCurrentSQL.Text = "";
+			this.txtCurrentSQL.Text = "";
             if (this.FilterType == "PLOT")
             {
+				
+
                 if (this.ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem.PlotTableSQLFilter.Trim().Length == 0)
                 {
                     this.txtCurrentSQL.Text = "SELECT @@PlotTable@@.* FROM @@PlotTable@@ ";

@@ -104,6 +104,7 @@ namespace FIA_Biosum_Manager
         private TabPage tbFilterPkg;
         private string m_strOutputTablePrefix;
         public bool m_bProcessorUsingSqlite = false;
+        private Queries m_oQueries = new Queries();
 
         public frmOptimizerScenario(FIA_Biosum_Manager.frmMain p_frmMain)
 		{
@@ -755,11 +756,11 @@ namespace FIA_Biosum_Manager
 		}
 		#endregion
 
-   public string OutputTablePrefix
-   {
-       get { return m_strOutputTablePrefix; }
-       set { m_strOutputTablePrefix = value; }
-   }
+       public string OutputTablePrefix
+       {
+           get { return m_strOutputTablePrefix; }
+           set { m_strOutputTablePrefix = value; }
+       }
 
 		private void frmOptimizerScenario_Load(object sender, System.EventArgs e)
 		{
@@ -1052,22 +1053,24 @@ namespace FIA_Biosum_Manager
             frmTherm p_frmTherm = new frmTherm();
             p_frmTherm.lblMsg.Text = "";
             p_frmTherm.progressBar1.Minimum = 0;
-            p_frmTherm.progressBar1.Maximum = 7;
+            p_frmTherm.progressBar1.Maximum = 9;
             p_frmTherm.btnCancel.Visible = false;
             p_frmTherm.lblMsg.Visible = true;
             p_frmTherm.Show();
             p_frmTherm.progressBar1.Value = 1;
             p_frmTherm.progressBar1.Value = 2;
-            Queries oQueries = new Queries();
 
+            m_oQueries.m_oReference.LoadDatasource = true;
             this.m_oOptimizerScenarioItem.ScenarioId = this.uc_scenario1.txtScenarioId.Text.Trim();
+            m_oQueries.LoadDatasourcesNew(true, "optimizer", this.m_oOptimizerScenarioItem.ScenarioId);
 
             this.m_oOptimizerScenarioTools.LoadAll(
                 frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" +
                 Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableSqliteDbFile,
-                oQueries, m_oOptimizerScenarioItem.ScenarioId,
+                m_oQueries, m_oOptimizerScenarioItem.ScenarioId,
                 m_oOptimizerScenarioItem_Collection);
-            //find the current scenario
+
+            ////find the current scenario
             for (x = 0; x <= m_oOptimizerScenarioItem_Collection.Count - 1; x++)
             {
                 if (m_oOptimizerScenarioItem_Collection.Item(x).ScenarioId.Trim().ToUpper() ==
@@ -1078,29 +1081,38 @@ namespace FIA_Biosum_Manager
             this.m_oOptimizerScenarioItem.Copy(m_oOptimizerScenarioItem_Collection.Item(x), m_oSavOptimizerScenarioItem);
             this.m_oOptimizerScenarioItem = m_oOptimizerScenarioItem_Collection.Item(x);
 
+
             p_frmTherm.progressBar1.Value = 3;
             p_frmTherm.lblMsg.Text = "Rule Definitions: FVS Variables Data";
             p_frmTherm.lblMsg.Refresh();
-
-            this.uc_scenario_fvs_prepost_variables_effective1.loadvalues();
+            this.uc_scenario_fvs_prepost_variables_effective1.loadvalues(false);
             p_frmTherm.progressBar1.Value = 4;
 
 
             p_frmTherm.lblMsg.Text = "Rule Definitions: Owner Group Data";
             p_frmTherm.lblMsg.Refresh();
-
             this.uc_scenario_owner_groups1.loadvalues();
             p_frmTherm.progressBar1.Value = 5;
+
             p_frmTherm.lblMsg.Text = "Rule Definitions: Cost And Revenue Data";
             p_frmTherm.lblMsg.Refresh();
             this.uc_scenario_costs1.loadvalues();
-            this.uc_scenario_processor_scenario_select1.loadvalues(false);
+            this.uc_scenario_processor_scenario_select1.loadvalues();
             p_frmTherm.progressBar1.Value = 6;
-            p_frmTherm.lblMsg.Text = "Rule Definitions: Plot Filter Data";
+
+            p_frmTherm.lblMsg.Text = "Rule Definitions: Plot And Cond Filter Data";
             p_frmTherm.lblMsg.Refresh();
             this.uc_scenario_filter1.loadvalues(false);
             this.uc_scenario_cond_filter1.loadvalues(false);
+            p_frmTherm.progressBar1.Value = 7;
+
+            p_frmTherm.lblMsg.Text = "Rule Definitions: Processing Sites";
+            p_frmTherm.lblMsg.Refresh();
             this.uc_scenario_psite1.loadvalues();
+            p_frmTherm.progressBar1.Value = 8;
+
+            p_frmTherm.lblMsg.Text = "Rule Definitions: Variants and Packages";
+            p_frmTherm.lblMsg.Refresh();
             ProcessorScenarioItem_Collection oProcItemCollection = this.m_oOptimizerScenarioItem.m_oProcessorScenarioItem_Collection;
             foreach (ProcessorScenarioItem psItem in oProcItemCollection)
             {
@@ -1109,13 +1121,14 @@ namespace FIA_Biosum_Manager
                     this.uc_optimizer_scenario_select_packages1.loadvalues_FromProperties(psItem);
                 }
             }
-            p_frmTherm.progressBar1.Value = 7;
+            p_frmTherm.progressBar1.Value = 9;
             p_frmTherm.Close();
             p_frmTherm = null;
             this.m_lrulesfirsttime = false;
         }
-		
-		public void SaveRuleDefinitions()
+
+
+        public void SaveRuleDefinitions()
         {
             int savestatus;
             int x;
@@ -1443,7 +1456,7 @@ namespace FIA_Biosum_Manager
 
                 frmMain.g_sbpInfo.Text = "Copying scenario rule definitions...Stand by";
 
-                this.uc_scenario_fvs_prepost_variables_effective1.loadvalues_FromProperties();
+                this.uc_scenario_fvs_prepost_variables_effective1.loadvalues(true);
 
                 this.uc_scenario1.txtDescription.Text = m_oOptimizerScenarioItem.Description;
                 frmMain.g_sbpInfo.Text = "Loading Scenario Notes...Stand By";
@@ -1453,12 +1466,12 @@ namespace FIA_Biosum_Manager
 
 
                 this.uc_scenario_costs1.loadvalues();
-                this.uc_scenario_processor_scenario_select1.loadvalues(true);
+                this.uc_scenario_processor_scenario_select1.loadvalues();
 
 
                 this.uc_scenario_filter1.loadvalues(true);
                 this.uc_scenario_cond_filter1.loadvalues(true);
-                this.uc_scenario_psite1.loadvalues_FromProperties();
+                this.uc_scenario_psite1.loadvalues();
                 ProcessorScenarioItem_Collection oProcItemCollection = this.m_oOptimizerScenarioItem.m_oProcessorScenarioItem_Collection;
                 //if (oProcItemCollection != null && oProcItemCollection.Count > 0)
                 //{
@@ -1826,8 +1839,16 @@ namespace FIA_Biosum_Manager
                 m_oHelp.ShowHelp(new string[] { "TREATMENT_OPTIMIZER", this.HelpChapter });
             }
         }
-	
-	}
+
+        //
+        //HANDLE TO QUERIES OBJECT SO IT CAN BE RE-USED BY CHILD FORMS WHEN LOADONG
+        //
+        public Queries LoadedQueries
+        {
+            get { return m_oQueries; }
+        }
+
+    }
     public class OptimizerScenarioItem
     {
         
@@ -2371,11 +2392,17 @@ namespace FIA_Biosum_Manager
                 get { return _intLastTieBreakRank; }
                 set { _intLastTieBreakRank = value; }
             }
+            private string _strDescription = "";
+            public string Description
+            {
+                get { return _strDescription; }
+                set { _strDescription = value; }
+            }
             public void Copy(LastTieBreakRankItem p_oSource, ref LastTieBreakRankItem p_oDest)
             {
                 p_oDest.RxPackage = p_oSource.RxPackage;
                 p_oDest.LastTieBreakRank = p_oSource.LastTieBreakRank;
-                
+                p_oDest.Description = p_oSource.Description;
 
             }
         }
@@ -2447,6 +2474,13 @@ namespace FIA_Biosum_Manager
                 get { return _strPSiteId; }
                 set { _strPSiteId = value; }
             }
+
+            string _strPsiteCn = "";
+            public string ProcessingSiteCN
+            {
+                get { return _strPsiteCn; }
+                set { _strPsiteCn = value; }
+            }
             string _strPSiteName = "";
             public string ProcessingSiteName
             {
@@ -2463,11 +2497,6 @@ namespace FIA_Biosum_Manager
                 get { return _strTranCd; }
                 set { _strTranCd = value; }
             }
-            // public string[,] m_strBioCdDescArray = new string[4, 2] {{"1","Merchantable - Logs Only"},
-            //			  											 {"2","Chips - Chips Only"},
-            //				  										 {"3","Both - Logs And Chips"},
-            //                                                       {"4","Other" }
-            //				  										};
 
             public string[,] m_strBioCdDescArray = new string[3, 2] { { "1","Merchantable - Logs Only"},
                                                                     { "2","Chips - Chips Only"},
@@ -2487,19 +2516,6 @@ namespace FIA_Biosum_Manager
                 set { _strExistsYN = value; }
             }
 
-            double _dblLat = -1;
-            public double GPSLatitude
-            {
-                get { return _dblLat; }
-                set { _dblLat = value; }
-            }
-
-            double _dblLon = -1;
-            public double GPSLongitude
-            {
-                get { return _dblLon; }
-                set { _dblLon = value; }
-            }
             bool _bSelected = false;
             public bool Selected
             {
@@ -2507,7 +2523,18 @@ namespace FIA_Biosum_Manager
                 set { _bSelected = value; }
             }
 
-
+            string _strState = "";
+            public string State
+            {
+                get { return _strState; }
+                set { _strState = value; }
+            }
+            string _strCounty = "";
+            public string County
+            {
+                get { return _strCounty; }
+                set { _strCounty = value; }
+            }
 
 
             public void Copy(ProcessingSiteItem p_oSource, ref ProcessingSiteItem p_oDest)
@@ -2517,10 +2544,11 @@ namespace FIA_Biosum_Manager
                 p_oDest.TransportationCode = p_oSource.TransportationCode;
                 p_oDest.BiomassCode = p_oSource.BiomassCode;
                 p_oDest.ProcessingSiteExistYN = p_oSource.ProcessingSiteExistYN;
-                p_oDest.GPSLatitude = p_oSource.GPSLatitude;
-                p_oDest.GPSLongitude = p_oSource.GPSLongitude;
                 p_oDest.Selected = p_oSource.Selected;
                 p_oDest.intListViewIndex = p_oSource.intListViewIndex;
+                p_oDest.ProcessingSiteCN = p_oSource.ProcessingSiteCN;
+                p_oDest.State = p_oSource.State;
+                p_oDest.County = p_oSource.County;
             }
         }
 
@@ -2635,6 +2663,7 @@ namespace FIA_Biosum_Manager
     {
         public string m_strError = "";
         public int m_intError = 0;
+        public string m_strTravelTimesDb;
         public OptimizerScenarioTools()
         {
         }
@@ -3127,9 +3156,11 @@ namespace FIA_Biosum_Manager
             //
             //LOAD RXINTENSITY ITEMS
             //
-            p_oDataMgr.m_strSQL = "SELECT * FROM " +
-                              Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioLastTieBreakRankTableName + " " +
-                              "WHERE TRIM(UPPER(scenario_id))='" + p_strScenarioId.Trim().ToUpper() + "'";
+            p_oDataMgr.m_strSQL = "SELECT sltr.rxpackage, last_tiebreak_rank, rx.description FROM " +
+                              Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioLastTieBreakRankTableName + " AS sltr, " +
+                              " rxdb." + strRxPackageTableName + " AS rx " +
+                              "WHERE TRIM(UPPER(scenario_id))='" + p_strScenarioId.Trim().ToUpper() + "' " +
+                              "AND sltr.rxpackage = rx.rxpackage";
             p_oDataMgr.SqlQueryReader(p_oConn, p_oDataMgr.m_strSQL);
             if (p_oDataMgr.m_DataReader.HasRows)
             {
@@ -3147,6 +3178,7 @@ namespace FIA_Biosum_Manager
                         {
                             oItem.LastTieBreakRank = -1;
                         }
+                        oItem.Description = p_oDataMgr.m_DataReader["description"].ToString().Trim();
                         p_oOptimizerScenarioItem.m_oLastTieBreakRankItem_Collection.Add(oItem);
                     }
                 }
@@ -3364,32 +3396,40 @@ namespace FIA_Biosum_Manager
                 p_oDataMgr.m_DataReader.Close();
             }
 
+
             //
             //GET THE PSITE LIST
             //
             string strList = "";
-            using (System.Data.SQLite.SQLiteConnection travelTimesConn = new System.Data.SQLite.SQLiteConnection(strTravelTimeConn))
+            if (System.IO.File.Exists(strTravelTimeDBFile))
             {
-                travelTimesConn.Open();
-                p_oDataMgr.SqlQueryReader(travelTimesConn, "SELECT DISTINCT CAST(psite_id AS text) FROM " + strTravelTimeTableName);
-                if (p_oDataMgr.m_intError == 0)
+                using (System.Data.SQLite.SQLiteConnection travelTimesConn = new System.Data.SQLite.SQLiteConnection(strTravelTimeConn))
                 {
-                    if (p_oDataMgr.m_DataReader.HasRows)
-                    {
-                        while (p_oDataMgr.m_DataReader.Read())
-                        {
-                            if (strList.Trim().Length == 0)
-                            {
+                    travelTimesConn.Open();
 
-                                strList = "'" + p_oDataMgr.m_DataReader[0].ToString().Trim() + "'";
-                            }
-                            else
+                    if (p_oDataMgr.TableExist(travelTimesConn, strTravelTimeTableName))
+                    {
+                        p_oDataMgr.SqlQueryReader(travelTimesConn, "SELECT DISTINCT CAST(psite_id AS text) FROM " + strTravelTimeTableName);
+                        if (p_oDataMgr.m_intError == 0)
+                        {
+                            if (p_oDataMgr.m_DataReader.HasRows)
                             {
-                                strList += ",'" + p_oDataMgr.m_DataReader[0].ToString().Trim() + "'";
+                                while (p_oDataMgr.m_DataReader.Read())
+                                {
+                                    if (strList.Trim().Length == 0)
+                                    {
+
+                                        strList = "'" + p_oDataMgr.m_DataReader[0].ToString().Trim() + "'";
+                                    }
+                                    else
+                                    {
+                                        strList += ",'" + p_oDataMgr.m_DataReader[0].ToString().Trim() + "'";
+                                    }
+                                }
                             }
+                            p_oDataMgr.m_DataReader.Close();
                         }
                     }
-                    p_oDataMgr.m_DataReader.Close();
                 }
             }
             string[] strArray = frmMain.g_oUtils.ConvertListToArray(strList, ",");
@@ -3438,57 +3478,83 @@ namespace FIA_Biosum_Manager
                     p_oDataMgr.m_DataReader.Close();
                 }
 
-                using (System.Data.SQLite.SQLiteConnection pSitesConn = new System.Data.SQLite.SQLiteConnection(strPSitesConn))
+                if (System.IO.File.Exists(strPSitesDBFile))
                 {
-                    pSitesConn.Open();
-                    p_oDataMgr.m_strSQL = "SELECT DISTINCT psite_id, name, trancd, trancd_def, biocd, biocd_def, exists_yn " +
-                                 "FROM " + strPSitesTableName + " WHERE psite_id IN (" + strList + ")";
-                    p_oDataMgr.SqlQueryReader(pSitesConn, p_oDataMgr.m_strSQL);
-
-                    if (p_oDataMgr.m_DataReader.HasRows)
+                    using (System.Data.SQLite.SQLiteConnection pSitesConn = new System.Data.SQLite.SQLiteConnection(strPSitesConn))
                     {
-                        x = 0;
-                        while (p_oDataMgr.m_DataReader.Read())
+                        pSitesConn.Open();
+
+                        if (p_oDataMgr.TableExist(pSitesConn, strPSitesTableName))
                         {
-                            if (p_oDataMgr.m_DataReader["psite_id"] != System.DBNull.Value)
+                            p_oDataMgr.m_strSQL = "SELECT DISTINCT psite_id, psite_cn, name, trancd, trancd_def, biocd, biocd_def, state, county, exists_yn " +
+                                     "FROM " + strPSitesTableName + " WHERE psite_id IN (" + strList + ")";
+                            p_oDataMgr.SqlQueryReader(pSitesConn, p_oDataMgr.m_strSQL);
+
+                            if (p_oDataMgr.m_DataReader.HasRows)
                             {
-                                for (x = 0; x <= p_oOptimizerScenarioItem.m_oProcessingSiteItem_Collection.Count - 1; x++)
+                                x = 0;
+                                while (p_oDataMgr.m_DataReader.Read())
                                 {
-                                    if (p_oOptimizerScenarioItem.m_oProcessingSiteItem_Collection.Item(x).ProcessingSiteId.Trim('\'') ==
-                                        Convert.ToString(p_oDataMgr.m_DataReader["psite_id"]).Trim())
+                                    if (p_oDataMgr.m_DataReader["psite_id"] != System.DBNull.Value)
                                     {
-                                        //processing site name
-                                        if (p_oDataMgr.m_DataReader["name"] != System.DBNull.Value)
+                                        for (x = 0; x <= p_oOptimizerScenarioItem.m_oProcessingSiteItem_Collection.Count - 1; x++)
                                         {
-                                            p_oOptimizerScenarioItem.m_oProcessingSiteItem_Collection.Item(x).ProcessingSiteName =
-                                                Convert.ToString(p_oDataMgr.m_DataReader["name"]).Trim();
+                                            if (p_oOptimizerScenarioItem.m_oProcessingSiteItem_Collection.Item(x).ProcessingSiteId.Trim('\'') ==
+                                                Convert.ToString(p_oDataMgr.m_DataReader["psite_id"]).Trim())
+                                            {
+                                                //processing site cn
+                                                if (p_oDataMgr.m_DataReader["psite_cn"] != System.DBNull.Value)
+                                                {
+                                                    p_oOptimizerScenarioItem.m_oProcessingSiteItem_Collection.Item(x).ProcessingSiteCN =
+                                                        Convert.ToString(p_oDataMgr.m_DataReader["psite_cn"]).Trim();
+                                                }
+                                                //processing site name
+                                                if (p_oDataMgr.m_DataReader["name"] != System.DBNull.Value)
+                                                {
+                                                    p_oOptimizerScenarioItem.m_oProcessingSiteItem_Collection.Item(x).ProcessingSiteName =
+                                                        Convert.ToString(p_oDataMgr.m_DataReader["name"]).Trim();
+                                                }
+                                                //transportation code
+                                                if (p_oDataMgr.m_DataReader["trancd"] != System.DBNull.Value)
+                                                {
+                                                    p_oOptimizerScenarioItem.m_oProcessingSiteItem_Collection.Item(x).TransportationCode =
+                                                        Convert.ToString(p_oDataMgr.m_DataReader["trancd"]).Trim();
+                                                }
+                                                //biomass code
+                                                if (p_oDataMgr.m_DataReader["biocd"] != System.DBNull.Value)
+                                                {
+                                                    p_oOptimizerScenarioItem.m_oProcessingSiteItem_Collection.Item(x).BiomassCode =
+                                                        Convert.ToString(p_oDataMgr.m_DataReader["biocd"]).Trim();
+                                                }
+                                                //state
+                                                if (p_oDataMgr.m_DataReader["state"] != System.DBNull.Value)
+                                                {
+                                                    p_oOptimizerScenarioItem.m_oProcessingSiteItem_Collection.Item(x).State =
+                                                        Convert.ToString(p_oDataMgr.m_DataReader["state"]).Trim();
+                                                }
+                                                //county
+                                                if (p_oDataMgr.m_DataReader["county"] != System.DBNull.Value)
+                                                {
+                                                    p_oOptimizerScenarioItem.m_oProcessingSiteItem_Collection.Item(x).County =
+                                                        Convert.ToString(p_oDataMgr.m_DataReader["county"]).Trim();
+                                                }
+                                                //exists YN
+                                                if (p_oDataMgr.m_DataReader["exists_yn"] != System.DBNull.Value)
+                                                {
+                                                    p_oOptimizerScenarioItem.m_oProcessingSiteItem_Collection.Item(x).ProcessingSiteExistYN =
+                                                        Convert.ToString(p_oDataMgr.m_DataReader["exists_yn"]).Trim();
+                                                }
+                                                break;
+                                            }
                                         }
-                                        //transportation code
-                                        if (p_oDataMgr.m_DataReader["trancd"] != System.DBNull.Value)
-                                        {
-                                            p_oOptimizerScenarioItem.m_oProcessingSiteItem_Collection.Item(x).TransportationCode =
-                                                Convert.ToString(p_oDataMgr.m_DataReader["trancd"]).Trim();
-                                        }
-                                        //biomass code
-                                        if (p_oDataMgr.m_DataReader["biocd"] != System.DBNull.Value)
-                                        {
-                                            p_oOptimizerScenarioItem.m_oProcessingSiteItem_Collection.Item(x).BiomassCode =
-                                                Convert.ToString(p_oDataMgr.m_DataReader["biocd"]).Trim();
-                                        }
-                                        //exists YN
-                                        if (p_oDataMgr.m_DataReader["exists_yn"] != System.DBNull.Value)
-                                        {
-                                            p_oOptimizerScenarioItem.m_oProcessingSiteItem_Collection.Item(x).ProcessingSiteExistYN =
-                                                Convert.ToString(p_oDataMgr.m_DataReader["exists_yn"]).Trim();
-                                        }
-                                        break;
                                     }
                                 }
                             }
+                            p_oDataMgr.m_DataReader.Close();
                         }
                     }
-                    p_oDataMgr.m_DataReader.Close();
                 }
+                
                 //
                 //SET THE PREVIOUSLY SELECTED
                 //

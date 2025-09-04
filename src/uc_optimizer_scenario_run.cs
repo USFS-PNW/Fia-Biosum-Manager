@@ -893,6 +893,12 @@ namespace FIA_Biosum_Manager
 
             if (this.m_intError == 0)
             {
+                UpdateThermPercent();
+                this.m_intError = val_travelTimesDatasourceMatch();
+            }
+
+            if (this.m_intError == 0)
+            {
                 /***************************************************************************
                 **make sure all the scenario datasource tables and files are available
                 **and ready for use
@@ -900,7 +906,7 @@ namespace FIA_Biosum_Manager
                 UpdateThermPercent();
                 if (ReferenceOptimizerScenarioForm.m_ldatasourcefirsttime == true)
                 {
-                    ReferenceOptimizerScenarioForm.uc_datasource1.populate_listview_grid_sqlite();
+                    ReferenceOptimizerScenarioForm.uc_datasource1.LoadValues();
                     ReferenceOptimizerScenarioForm.m_ldatasourcefirsttime = false;
                 }
                 this.m_intError = ReferenceOptimizerScenarioForm.uc_datasource1.val_datasources();
@@ -924,6 +930,53 @@ namespace FIA_Biosum_Manager
                 UpdateThermText(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic, "!!Error!!");
             }
 		}
+
+        private int val_travelTimesDatasourceMatch()
+        {
+            DataMgr oDataMgr = new DataMgr();
+            string strProcessorScenarioTravelTimesSource = ReferenceOptimizerScenarioForm.uc_datasource1.m_strProjectDirectory + "\\" + Tables.TravelTime.DefaultTravelTimePathAndDbFile;
+
+            int x = 0;
+            for (x = 0; x <= ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem.m_oProcessorScenarioItem_Collection.Count - 1; x++)
+            {
+                if (ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem.m_oProcessorScenarioItem_Collection.Item(x).Selected)
+                {
+                    string strProcessorRuleDefsDb = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
+                    "\\processor\\" + Tables.ProcessorScenarioRuleDefinitions.DefaultSqliteDbFile;
+
+                    string strProcessorScenarioId = ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem.m_oProcessorScenarioItem_Collection.Item(x).ScenarioId;
+
+                    using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(strProcessorRuleDefsDb)))
+                    {
+                        conn.Open();
+
+                        oDataMgr.m_strSQL = "SELECT path, file FROM scenario_datasource WHERE TRIM(UPPER(table_type)) = 'TRAVEL TIMES' AND TRIM(UPPER(scenario_id)) = '" + strProcessorScenarioId.Trim().ToUpper() + "'";
+
+                        oDataMgr.SqlQueryReader(conn, oDataMgr.m_strSQL);
+                        if (oDataMgr.m_DataReader.HasRows)
+                        {
+                            while (oDataMgr.m_DataReader.Read())
+                            {
+                                strProcessorScenarioTravelTimesSource = oDataMgr.m_DataReader["path"].ToString().Trim() + "\\" + oDataMgr.m_DataReader["file"].ToString().Trim();
+                                break;
+                            }
+                        }
+                        oDataMgr.m_DataReader.Close();
+                    }
+                }
+            }
+
+            string strOptimizerScenarioTravelTimesSource = ReferenceOptimizerScenarioForm.LoadedQueries.m_oTravelTime.m_strDbFile;
+
+            if (strProcessorScenarioTravelTimesSource.Trim().ToLower() != strOptimizerScenarioTravelTimesSource.Trim().ToLower())
+            {
+                MessageBox.Show("Run Scenario Failed: Optimizer Scenario Travel Times Datasource does not match Travel Times Datasource of selected Processor scenario",
+                    "FIA Biosum", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Exclamation);
+                return -1;
+            }
+
+            return 0;
+        }
 
 		private void groupBox1_Resize(object sender, System.EventArgs e)
 		{
@@ -2118,39 +2171,6 @@ namespace FIA_Biosum_Manager
 
             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
                 frmMain.g_oUtils.WriteText(m_strDebugFile, "Cond Path and File:" + this.m_strCondPathAndFile + "\r\n");
-
-
-            /**************************************************************
-             **get the psites table name and path
-             **************************************************************/
-            arr1 = new string[] { "PROCESSING SITES" };
-            oValue = frmMain.g_oDelegate.GetValueExecuteControlMethodWithParam(ReferenceUserControlScenarioRun.ReferenceOptimizerScenarioForm.uc_datasource1,
-                "getDataSourceTableName", arr1, true);
-            if (oValue != null)
-            {
-                string strValue = Convert.ToString(oValue);
-                if (strValue != "false")
-                {
-                    this.m_strPSiteTable = strValue;
-                }
-            }
-
-            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
-                frmMain.g_oUtils.WriteText(m_strDebugFile, "Processing Sites Table:" + this.m_strPSiteTable + "\r\n");
-
-            oValue = frmMain.g_oDelegate.GetValueExecuteControlMethodWithParam(ReferenceUserControlScenarioRun.ReferenceOptimizerScenarioForm.uc_datasource1,
-                "getDataSourcePathAndFile", arr1, true);
-            if (oValue != null)
-            {
-                string strValue = Convert.ToString(oValue);
-                if (strValue != "false")
-                {
-                    this.m_strPSitePathAndFile = strValue;
-                }
-            }
-            
-            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
-                frmMain.g_oUtils.WriteText(m_strDebugFile, "Processing Sites Path and file:" + m_strPSitePathAndFile + "\r\n");
 
             /**************************************************************
              **get the processing sites table name and path
@@ -6992,7 +7012,7 @@ namespace FIA_Biosum_Manager
                 if (bFVSVariable == false)
                 {
                     //find the treatment for each plot that produces the MAX/MIN revenue value
-                    p_dataMgr.m_strSQL = "SELECT a.biosum_cond_id, a.rxpackage, a.rx, a." + m_strOptimizationColumnNameSql + " AS optimization value " +
+                    p_dataMgr.m_strSQL = "SELECT a.biosum_cond_id, a.rxpackage, a.rx, a." + m_strOptimizationColumnNameSql + " AS optimization_value " +
                         "FROM " + strOptimizationTableName + " AS a, " +
                         "(SELECT " + m_strOptimizationAggregateSql + "(" + m_strOptimizationColumnNameSql + ") AS " + m_strOptimizationAggregateColumnName + ", biosum_cond_id " +
                         "FROM " + strOptimizationTableName + " WHERE affordable_YN = 'Y' " +
@@ -7768,7 +7788,7 @@ namespace FIA_Biosum_Manager
 
                 p_dataMgr.m_strSQL = "INSERT INTO " + Tables.ProcessorScenarioRuleDefinitions.DefaultAdditionalHarvestCostsTableName + "_C" +
                             " SELECT * FROM " + Tables.ProcessorScenarioRuleDefinitions.DefaultAdditionalHarvestCostsTableName +
-                            " WHERE scenario_id = '" + this.m_oProcessorScenarioItem.ScenarioId + "'";
+                            " WHERE TRIM(LOWER(scenario_id)) = '" + this.m_oProcessorScenarioItem.ScenarioId.Trim().ToLower() + "'";
 
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\nPopulate SCENARIO_ADDITIONAL_ HARVEST_COSTS table \r\n");
@@ -7781,7 +7801,7 @@ namespace FIA_Biosum_Manager
                 p_dataMgr.m_strSQL = "INSERT INTO " + Tables.OptimizerScenarioResults.DefaultScenarioResultsSpeciesGroupRefTableName +
                 " SELECT species_group AS spp_grp_cd, common_name, spcd AS Ffia_spcd" +
                 " FROM " + Tables.ProcessorScenarioRuleDefinitions.DefaultTreeSpeciesGroupsListTableName +
-                " WHERE scenario_id = '" + this.m_oProcessorScenarioItem.ScenarioId + "'";
+                " WHERE TRIM(LOWER(scenario_id)) = '" + this.m_oProcessorScenarioItem.ScenarioId.Trim().ToLower() + "'";
 
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\nPopulate spp_grp_ref_C table \r\n");
@@ -7807,7 +7827,8 @@ namespace FIA_Biosum_Manager
                 p_dataMgr.SqlNonQuery(contextConn, p_dataMgr.m_strSQL);
 
                 p_dataMgr.m_strSQL = "INSERT INTO " + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioPSitesTableName + "_C " +
-                    "SELECT * FROM " + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioPSitesTableName;
+                    "SELECT * FROM " + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioPSitesTableName +
+                    " WHERE TRIM(LOWER(scenario_id)) = '" + this.ReferenceOptimizerScenarioForm.uc_scenario1.txtScenarioId.Text.Trim() + "'";
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\nPopulate scenario_psites_C table \r\n");
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)

@@ -192,8 +192,6 @@ namespace FIA_Biosum_Manager
 				case "ADD PLOT DATA":
 					frmDialog frmTemp = new frmDialog(((frmDialog)this.ParentForm).m_frmMain);
 					frmTemp.Visible=false;
-					//FIA_Biosum_Manager.uc_plot_input uc_plot_input1 = new uc_plot_input();
-					//frmTemp.Controls.Add(uc_plot_input1);
 					frmTemp.Initialize_Plot_Input_User_Control();
 					frmTemp.MaximizeBox = false;
 					frmTemp.MinimizeBox = true;

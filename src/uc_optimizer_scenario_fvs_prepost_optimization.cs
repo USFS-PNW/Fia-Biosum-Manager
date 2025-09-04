@@ -1083,6 +1083,7 @@ namespace FIA_Biosum_Manager
         public void loadvalues_FromProperties()
         {
             int x;
+
             if (ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem_Collection.Item(0) != null)
             {
                 for (x = 0; x <= ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem_Collection.Item(0).m_oOptimizationVariableItem_Collection.Count - 1; x++)
@@ -1110,6 +1111,7 @@ namespace FIA_Biosum_Manager
 
         }
        
+
         public void loadvalues(System.Collections.Generic.IDictionary<string, System.Collections.Generic.IList<String>> p_dictFVSTables)
         {
             this.m_intError = 0;
@@ -1173,149 +1175,6 @@ namespace FIA_Biosum_Manager
             this.lvOptimizationListValues.Items[lvOptimizationListValues.Items.Count - 1].SubItems[uc_optimizer_scenario_fvs_prepost_optimization.COLUMN_FILTER_OPERATOR].Text = "Not Defined";
             this.lvOptimizationListValues.Items[lvOptimizationListValues.Items.Count - 1].SubItems[uc_optimizer_scenario_fvs_prepost_optimization.COLUMN_FILTER_VALUE].Text = "Not Defined";
 
-            //
-            //load previous scenario values
-            //
-            if (this.m_bFirstTime)
-            {
-                DataMgr oDataMgr = new DataMgr();
-                string strScenarioId = this.ReferenceOptimizerScenarioForm.uc_scenario1.txtScenarioId.Text.Trim().ToLower();
-                string strScenarioDB =
-                    frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" +
-                    Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableSqliteDbFile;
-
-                using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(strScenarioDB)))
-                {
-                    conn.Open();
-                    if (oDataMgr.m_intError == 0)
-                    {
-                        this.ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem_Collection.Item(0).m_oOptimizationVariableItem_Collection.Clear();
-                        int intVarNum = 0;
-
-                        oDataMgr.m_strSQL = "SELECT * " +
-                            "FROM scenario_fvs_variables_optimization " +
-                            "WHERE TRIM(UPPER(scenario_id))='" + strScenarioId.Trim().ToUpper() + "' AND " +
-                            "current_yn='Y'";
-
-                        oDataMgr.SqlQueryReader(conn, oDataMgr.m_strSQL);
-                        if (oDataMgr.m_DataReader.HasRows)
-                        {
-                            while (oDataMgr.m_DataReader.Read())
-                            {
-                                OptimizerScenarioItem.OptimizationVariableItem oItem = new OptimizerScenarioItem.OptimizationVariableItem();
-                                if (oDataMgr.m_DataReader["optimization_variable"] != System.DBNull.Value)
-                                {
-                                    oItem.strOptimizedVariable = Convert.ToString(oDataMgr.m_DataReader["optimization_variable"]);
-                                    //optimization variable
-                                    if (oDataMgr.m_DataReader["fvs_variable_name"] != System.DBNull.Value)
-                                    {
-                                        oItem.strFVSVariableName = Convert.ToString(oDataMgr.m_DataReader["fvs_variable_name"]).Trim();
-                                    }
-                                    else
-                                    {
-                                        oItem.strFVSVariableName = "NA";
-                                    }
-                                    //value source (POST or POST-PRE)
-                                    if (oDataMgr.m_DataReader["value_source"] != System.DBNull.Value)
-                                    {
-                                        oItem.strValueSource = Convert.ToString(oDataMgr.m_DataReader["value_source"]).Trim();
-                                    }
-                                    else
-                                    {
-                                        oItem.strValueSource = "Not Defined";
-                                    }
-
-                                    //max value
-                                    if (oDataMgr.m_DataReader["max_yn"] != System.DBNull.Value)
-                                    {
-                                        oItem.strMaxYN = Convert.ToString(oDataMgr.m_DataReader["max_yn"]).Trim();
-                                    }
-                                    else
-                                    {
-                                        oItem.strMaxYN = "N";
-                                    }
-                                    //min value
-                                    if (oDataMgr.m_DataReader["min_yn"] != System.DBNull.Value)
-                                    {
-                                        oItem.strMinYN = Convert.ToString(oDataMgr.m_DataReader["min_yn"]).Trim();
-                                    }
-                                    else
-                                    {
-                                        oItem.strMinYN = "N";
-                                    }
-                                    //enable filter
-                                    if (oDataMgr.m_DataReader["filter_enabled_yn"] != System.DBNull.Value)
-                                    {
-                                        if (Convert.ToString(oDataMgr.m_DataReader["filter_enabled_yn"]).Trim() == "Y")
-                                            oItem.bUseFilter = true;
-                                        else
-                                            oItem.bUseFilter = false;
-
-                                    }
-                                    else
-                                    {
-                                        oItem.bUseFilter = false;
-                                    }
-                                    //filter operator
-                                    if (oDataMgr.m_DataReader["filter_operator"] != System.DBNull.Value)
-                                    {
-
-                                        oItem.strFilterOperator = Convert.ToString(oDataMgr.m_DataReader["filter_operator"]).Trim();
-                                    }
-                                    else
-                                    {
-                                        oItem.strFilterOperator = "";
-                                    }
-                                    //filter value
-                                    if (oDataMgr.m_DataReader["filter_value"] != System.DBNull.Value)
-                                    {
-                                        oItem.dblFilterValue = Convert.ToDouble(oDataMgr.m_DataReader["filter_value"]);
-                                    }
-                                    //filter operator
-                                    if (oDataMgr.m_DataReader["checked_yn"] != System.DBNull.Value)
-                                    {
-                                        if (Convert.ToString(oDataMgr.m_DataReader["checked_yn"]).Trim() == "Y")
-                                        {
-                                            oItem.bSelected = true;
-                                            if (oItem.strOptimizedVariable.Trim().ToUpper() == "STAND ATTRIBUTE")
-                                            {
-                                                ReferenceOptimizerScenarioForm.uc_scenario_run1.UpdateOptimizationVariableGroupboxText(oItem.strFVSVariableName);
-                                            }
-                                            else
-                                            {
-                                                ReferenceOptimizerScenarioForm.uc_scenario_run1.UpdateOptimizationVariableGroupboxText(oItem.strOptimizedVariable);
-                                            }
-                                        }
-                                        else
-                                            oItem.bSelected = false;
-                                    }
-                                    else
-                                    {
-                                        oItem.bSelected = false;
-                                    }
-                                    //revenue attribute
-                                    if (oDataMgr.m_DataReader["revenue_attribute"] != System.DBNull.Value)
-                                    {
-                                        oItem.strRevenueAttribute = Convert.ToString(oDataMgr.m_DataReader["revenue_attribute"]).Trim();
-                                    }
-                                    //rxcycle
-                                    if (oDataMgr.m_DataReader["rxcycle"] != System.DBNull.Value)
-                                    {
-                                        oItem.RxCycle = Convert.ToString(oDataMgr.m_DataReader["rxcycle"]).Trim();
-                                    }
-
-                                    this.ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem_Collection.Item(0).m_oOptimizationVariableItem_Collection.Add(oItem);
-                                }
-                            }
-                        }
-                        oDataMgr.m_DataReader.Close();
-                    }
-                    conn.Close();
-                }
-                this.m_intError = oDataMgr.m_intError;
-                this.m_strError = oDataMgr.m_strError;
-                this.m_bFirstTime = false;
-            }
             this.UpdateValues();
         }
 
