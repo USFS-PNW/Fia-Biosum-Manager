@@ -256,10 +256,15 @@ namespace FIA_Biosum_Manager
                     Directory.GetFiles(m_strProjDir + "\\fvs\\db\\", "PREPOST*.db"),
                     strTableExceptions: new string[] { "FVS_TREE" });
 
-                //OPTIMIZER weighted variables
+                //ProjectRoot\optimizer Section
                 UpdateProgressBar2(80);
-                ConnectToDatabasesInPathAndExecuteDeletes(
-                    Directory.GetFiles(m_strProjDir + "\\optimizer\\db\\", "prepost*.db"));
+                foreach (string subfolder in Directory.GetDirectories(m_strProjDir + "\\optimizer\\"))
+                {
+                    if (Path.GetFileName(subfolder) == "db")
+                        ConnectToDatabasesInPathAndExecuteDeletes(Directory.GetFiles(subfolder, "*.db"));
+                    else if (Directory.Exists(subfolder + "\\db\\"))
+                        ConnectToDatabasesInPathAndExecuteDeletes(Directory.GetFiles(subfolder + "\\db\\", "*.db"));
+                }
 
                 //ProjectRoot\db Section
                 UpdateProgressBar2(90);
@@ -376,20 +381,6 @@ namespace FIA_Biosum_Manager
         {
             frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control) this.m_frmTherm.progressBar2,
                 "Value", value);
-        }
-
-        private void ConnectToDatabasesInPathAndExecuteDeletes_old(string[] strDatabaseNames, string[] strTargetTables = null, string[] strTableExceptions = null)
-        {
-            int counter = 0;
-
-            foreach (string db in strDatabaseNames)
-            {
-                var message = (Checked(chkDeletesDisabled) ? "Checking " : "Deleting from ") + Path.GetFileName(db);
-                UpdateProgressBar1(message, (int) Math.Floor(100 * ((double) (counter + 1) / (strDatabaseNames.Length + 1))));
-                counter += 1;
-                ExecuteDeleteOnTables(db, tables: strTargetTables, exceptions: strTableExceptions);
-            }
-            UpdateProgressBar1("", 0);
         }
 
         private void ConnectToDatabasesInPathAndExecuteDeletes(string[] strDatabaseNames, string[] strTargetTables = null, string[] strTableExceptions = null)
@@ -707,10 +698,6 @@ namespace FIA_Biosum_Manager
             }
         }
 
-        private bool Checked(System.Windows.Forms.RadioButton p_rdoButton)
-        {
-            return (bool)frmMain.g_oDelegate.GetControlPropertyValue((System.Windows.Forms.RadioButton)p_rdoButton, "Checked", false);
-        }
         private bool Checked(System.Windows.Forms.CheckBox p_chkBox)
         {
             return (bool)frmMain.g_oDelegate.GetControlPropertyValue((System.Windows.Forms.CheckBox)p_chkBox, "Checked", false);
@@ -720,12 +707,6 @@ namespace FIA_Biosum_Manager
         {
             frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control) p_oPb, p_strPropertyName,
                 (int) p_intValue);
-        }
-
-        private int GetThermValue(System.Windows.Forms.ProgressBar p_oPb, string p_strPropertyName)
-        {
-            return (int) frmMain.g_oDelegate.GetControlPropertyValue((System.Windows.Forms.Control) p_oPb,
-                p_strPropertyName, false);
         }
 
         private bool GetBooleanValue(System.Windows.Forms.Control p_oControl, string p_strPropertyName)

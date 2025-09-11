@@ -177,10 +177,9 @@ namespace FIA_Biosum_Manager
                         SearchOption.AllDirectories));
                 }
 
-                //OPTIMIZER weighted variables
-                if (Directory.Exists(m_strProjDir + "\\optimizer\\db\\"))
+                if (Directory.Exists(m_strProjDir + "\\optimizer\\"))
                 {
-                    projectFiles.AddRange(Directory.GetFiles(m_strProjDir + "\\optimizer\\db\\", "prepost*.db",
+                    projectFiles.AddRange(Directory.GetFiles(m_strProjDir + "\\optimizer\\", "*.*",
                         SearchOption.AllDirectories));
                 }
 
@@ -583,10 +582,6 @@ namespace FIA_Biosum_Manager
             }
         }
 
-        private bool Checked(System.Windows.Forms.RadioButton p_rdoButton)
-        {
-            return (bool)frmMain.g_oDelegate.GetControlPropertyValue((System.Windows.Forms.RadioButton)p_rdoButton, "Checked", false);
-        }
         private bool Checked(System.Windows.Forms.CheckBox p_chkBox)
         {
             return (bool)frmMain.g_oDelegate.GetControlPropertyValue((System.Windows.Forms.CheckBox)p_chkBox, "Checked", false);
@@ -597,19 +592,6 @@ namespace FIA_Biosum_Manager
             frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control) p_oPb, p_strPropertyName,
                 (int) p_intValue);
         }
-
-        private int GetThermValue(System.Windows.Forms.ProgressBar p_oPb, string p_strPropertyName)
-        {
-            return (int) frmMain.g_oDelegate.GetControlPropertyValue((System.Windows.Forms.Control) p_oPb,
-                p_strPropertyName, false);
-        }
-
-        private bool GetBooleanValue(System.Windows.Forms.Control p_oControl, string p_strPropertyName)
-        {
-            return (bool) frmMain.g_oDelegate.GetControlPropertyValue((System.Windows.Forms.Control) p_oControl,
-                p_strPropertyName, false);
-        }
-
 
         private void SetLabelValue(System.Windows.Forms.Label p_oLabel, string p_strPropertyName, string p_strValue)
         {
