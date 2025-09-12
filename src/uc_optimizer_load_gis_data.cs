@@ -74,7 +74,7 @@ namespace FIA_Biosum_Manager
             if (m_oGisTools.CheckPlotGisTable(m_strMasterDb, m_strSourceField))
             {
                 ckUpdateYardingDistance.Visible = true;
-                ckUpdateYardingDistance.Checked = true;
+                ckUpdateYardingDistance.Checked = false;
             }
             else
             {
