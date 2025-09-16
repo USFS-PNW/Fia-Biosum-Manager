@@ -3855,7 +3855,7 @@ namespace FIA_Biosum_Manager
             try
             {
                 string strSourceFile = frmMain.g_oEnv.strAppDir + "\\db" + Tables.Reference.DefaultTreeSampleDbFile;
-                if (System.IO.File.Exists(strDestFile) == false || System.IO.File.Exists(strSourceFile) == true)
+                if (System.IO.File.Exists(strDestFile) == false && System.IO.File.Exists(strSourceFile) == true)
                 {
                     // Copy it the database from the app install directory
                     System.IO.File.Copy(strSourceFile, strDestFile, true);
