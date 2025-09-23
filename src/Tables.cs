@@ -2638,7 +2638,7 @@ namespace FIA_Biosum_Manager
             static public string BioSumCompsJar { get { return "BioSumComps.jar"; } }
             static public string FcsTreeCalcBat { get { return "fcs_tree_calc.bat"; } }
 
-
+            // These are the columns on the biosum_calc table
             static public List<Tuple<string, utils.DataType>> ColumnsAndDataTypes
             {
                 get
