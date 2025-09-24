@@ -2704,6 +2704,85 @@ namespace FIA_Biosum_Manager
                     };
                 }
             }
+
+            static public string DefaultTvbcWorkDatabase { get { return "tvbc_tree_data.db"; } }
+            static public string TvbcVolumesOutputTable { get { return "tvbc_volumes_input"; } }
+
+            public void CreateBiosumVolumesOutputTable(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
+            {
+                p_oDataMgr.SqlNonQuery(p_oConn, CreateBiosumVolumesOutputTableSQL(p_strTableName));
+                CreateBiosumVolumesOutputTableIndexes(p_oDataMgr, p_oConn, p_strTableName);
+            }
+            public void CreateBiosumVolumesOutputTableIndexes(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
+            {
+                p_oDataMgr.AddIndex(p_oConn, p_strTableName, p_strTableName + "_idx1", "tre_cn");
+                p_oDataMgr.AddIndex(p_oConn, p_strTableName, p_strTableName + "_idx2", "biosum_cond_id");
+                //p_oDataMgr.AddIndex(p_oConn, p_strTableName, p_strTableName + "_idx3", "id");
+            }
+            //These columns come from the TreeSample table
+            public string CreateBiosumVolumesOutputTableSQL(string p_strTableName)
+            {
+                return "CREATE TABLE " + p_strTableName + " (" +
+                    "id INTEGER PRIMARY KEY," +
+                    "tre_cn CHAR(34)," +
+                    "biosum_cond_id CHAR(25) NOT NULL," +
+                    "statecd INTEGER," +
+                    "countycd INTEGER," +
+                    "plot INTEGER," +
+                    "subp INTEGER," +
+                    "tree INTEGER," +
+                    "InvYr CHAR(4)," +
+                    "spcd INTEGER," +
+                    "dia    DOUBLE," +
+                    "ht DOUBLE," +
+                    "vol_loc_grp    CHAR(10)," +
+                    "actualht   DOUBLE," +
+                    "statuscd   CHAR(1)," +
+                    "treeclcd CHAR(1)," +
+                    "cr DOUBLE," +
+                    "cull   DOUBLE," +
+                    "roughcull DOUBLE," +
+                    "decaycd    INTEGER," +
+                    "balive DOUBLE, " +
+                    "centroid_dia DOUBLE, " +
+                    "centroid_dia_ht_actual DOUBLE, " +
+                    "cull_fld INTEGER," +
+                    "cullform INTEGER," +
+                    "cullmstop  INTEGER," +
+                    "diahtcd INTEGER," +
+                    "htdmp  DOUBLE," +
+                    "sitree INTEGER," +
+                    "standing_dead_cd   INTEGER," +
+                    "upper_dia DOUBLE," +
+                    "upper_dia_ht DOUBLE," +
+                    "wdldstem INTEGER," +
+                    "stdorgcd INTEGER," +
+                    "ecosubcd CHAR(7)," +
+                    "volcfgrs DOUBLE," +
+                    "volcfnet DOUBLE," +
+                    "volcfsnd DOUBLE," +
+                    "volcsgrs DOUBLE," +
+                    "voltsgrs DOUBLE," +
+                    "drybio_bole DOUBLE," +
+                    "voltsgrs_bark DOUBLE," +
+                    "volcfgrs_bark DOUBLE," +
+                    "volcfsnd_bark DOUBLE," +
+                    "volcfnet_bark DOUBLE," +
+                    "volcsgrs_bark DOUBLE," +
+                    "volbsnet DOUBLE," +
+                    "drybio_stem DOUBLE," +
+                    "drybio_stem_bark DOUBLE," +
+                    "drybio_stump DOUBLE," +
+                    "drybio_stump_bark DOUBLE," +
+                    "drybio_bole_bark  DOUBLE," +
+                    "drybio_branch DOUBLE," +
+                    "drybio_foliage DOUBLE," +
+                    "drybio_ag DOUBLE," +
+                    "drybio_bg DOUBLE," +
+                    "carbon_ag DOUBLE," +
+                    "carbon_bg DOUBLE " +
+                    ")";
+            }
         }
 
         public class FVS
@@ -3178,78 +3257,6 @@ namespace FIA_Biosum_Manager
                     "fvs_tree_id CHAR(10)," +
                     "FvsCreatedTree_YN CHAR(1) DEFAULT 'N'," +
                     "CONSTRAINT " + p_strTableName + "_pk PRIMARY KEY(id))";
-
-            }
-            public void CreateOracleInputFCSBiosumVolumesTable(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
-            {
-                p_oAdo.SqlNonQuery(p_oConn, CreateOracleInputFCSBiosumVolumesTableSQL(p_strTableName));
-                CreateOracleInputFCSBiosumVolumesTableIndexes(p_oAdo, p_oConn, p_strTableName);
-            }
-            public void CreateOracleInputFCSBiosumVolumesTableIndexes(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
-            {
-                p_oAdo.AddPrimaryKey(p_oConn, p_strTableName, p_strTableName + "_pk", "TRE_CN");
-            }
-            public string CreateOracleInputFCSBiosumVolumesTableSQL(string p_strTableName)
-            {
-                return "CREATE TABLE " + p_strTableName + " (" +
-                    "STATECD INTEGER," +
-                    "COUNTYCD INTEGER," +
-                    "PLOT INTEGER," +
-                    "INVYR INTEGER," +
-                    "TREE INTEGER," +
-                    "VOL_LOC_GRP CHAR(10)," +
-                    "SPCD INTEGER," +
-                    "DIA DOUBLE," +
-                    "HT DOUBLE," +
-                    "ACTUALHT DOUBLE," +
-                    "CR DOUBLE," +
-                    "STATUSCD BYTE," +
-                    "TREECLCD BYTE," +
-                    "ROUGHCULL DOUBLE," +
-                    "CULL DOUBLE," +
-                    "DECAYCD BYTE," +
-                    "TOTAGE DOUBLE," +
-                    "SUBP BYTE," +
-                    "FORMCL BYTE," +
-                    "CULLBF DOUBLE," +
-                    //START: ADDED BIOSUM_VOLUME COLUMNS
-                    "SITREE INTEGER," +
-                    "WDLDSTEM INTEGER," +
-                    "UPPER_DIA DOUBLE," +
-                    "UPPER_DIA_HT DOUBLE," +
-                    "CENTROID_DIA DOUBLE," +
-                    "CENTROID_DIA_HT_ACTUAL DOUBLE," +
-                    "SAWHT INTEGER," +
-                    "HTDMP DOUBLE," +
-                    "BOLEHT INTEGER," +
-                    "CULLCF INTEGER," +
-                    "CULL_FLD INTEGER," +
-                    "CULLDEAD INTEGER," +
-                    "CULLFORM INTEGER," +
-                    "CULLMSTOP INTEGER," +
-                    "CFSND INTEGER," +
-                    "BFSND INTEGER," +
-                    "PRECIPITATION DOUBLE," +
-                    "BALIVE DOUBLE," +
-                    "DIAHTCD INTEGER," +
-                    "STANDING_DEAD_CD INTEGER," +
-                    "VOLCFSND_CALC DOUBLE," +
-                    "DRYBIO_BOLE_CALC DOUBLE," +
-                    "DRYBIO_TOP_CALC DOUBLE," +
-                    "DRYBIO_SAPLING_CALC DOUBLE," +
-                    "DRYBIO_WDLD_SPP_CALC DOUBLE," +
-                    "STDORGCD INTEGER," +
-                    "ECODIV CHAR(7)," +
-                    //END: ADDED BIOSUM_VOLUME COLUMNS
-                    "TRE_CN CHAR(34)," +
-                    "CND_CN CHAR(34)," +
-                    "PLT_CN CHAR(34)," +
-                    "VOLCFGRS_CALC DOUBLE," +
-                    "VOLCSGRS_CALC DOUBLE," +
-                    "VOLCFNET_CALC DOUBLE," +
-                    "DRYBIOM_CALC DOUBLE," +
-                    "DRYBIOT_CALC DOUBLE," +
-                    "VOLTSGRS_CALC DOUBLE)";
 
             }
             public void CreateSQLiteInputFCSBiosumVolumesTable(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
@@ -5767,10 +5774,6 @@ namespace FIA_Biosum_Manager
                     "DateTimeCreated CHAR(22)," +
                     "CONSTRAINT " + p_strTableName + "_pk PRIMARY KEY (biosum_cond_id,rxpackage,rx,rxcycle))";
             }
-            public void CreateSqliteAdditionalHarvestCostsTable(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
-            {
-                p_oDataMgr.SqlNonQuery(p_oConn, Tables.Processor.CreateSqliteAdditionalHarvestCostsTableSQL(p_strTableName));               
-            }
             static public string CreateSqliteAdditionalHarvestCostsTableSQL(string p_strTableName)
             {
                 return "CREATE TABLE " + p_strTableName + " (" +
@@ -5778,31 +5781,7 @@ namespace FIA_Biosum_Manager
                     "rx TEXT," +
                     "PRIMARY KEY(biosum_cond_id,rx))";
             }
-            public void CreateHarvestTechniqueTable(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
-            {
-                p_oAdo.SqlNonQuery(p_oConn, CreateHarvestTechniqueTableSQL(p_strTableName));
-                CreateHarvestTechniqueTableIndexes(p_oAdo, p_oConn, p_strTableName);
-            }
-            public void CreateHarvestTechniqueTableIndexes(ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
-            {
-                p_oAdo.AddPrimaryKey(p_oConn, p_strTableName, p_strTableName + "_pk", "biosum_cond_id,rx");
-            }
-            public string CreateHarvestTechniqueTableSQL(string p_strTableName)
-            {
-                return "CREATE TABLE " + p_strTableName + " (" +
-                    "biosum_cond_id CHAR(25)," +
-                    "rxpackage CHAR(3)," +
-                    "rx CHAR(3)," +
-                    "harvest_technique CHAR(30)," +
-                    "harvest_technique_40 CHAR(30))";
 
-            }
-
-            public void CreateTreeVolValSpeciesDiamGroupsTable(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
-            {
-                p_oAdo.SqlNonQuery(p_oConn, Tables.Processor.CreateTreeVolValSpeciesDiamGroupsTableSQL(p_strTableName));
-                CreateTreeVolValSpeciesDiamGroupsTableIndexes(p_oAdo, p_oConn, p_strTableName);
-            }
             public void CreateTreeVolValSpeciesDiamGroupsTableIndexes(ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
             {
                 p_oAdo.AddAutoNumber(p_oConn, p_strTableName, "id");

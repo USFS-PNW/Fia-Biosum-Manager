@@ -1714,7 +1714,7 @@ namespace FIA_Biosum_Manager
                 m_oDataMgr.SqlNonQuery(conn, m_oDataMgr.m_strSQL);
                 intRecordCount = Convert.ToInt32(m_oDataMgr.getRecordCount(conn, "SELECT COUNT(*) FROM " + strTable, strTable));
                 // Attach TVBC database
-                string strTvbcDb = $@"{frmMain.g_oEnv.strApplicationDataDirectory.Trim()}{frmMain.g_strBiosumDataDir}\tvbc_tree_data.db";
+                string strTvbcDb = $@"{frmMain.g_oEnv.strApplicationDataDirectory.Trim()}{frmMain.g_strBiosumDataDir}\{Tables.VolumeAndBiomass.DefaultTvbcWorkDatabase}";
                 m_oDataMgr.m_strSQL = $@"ATTACH DATABASE '{strTvbcDb}' AS TVBC";
                 m_oDataMgr.SqlNonQuery(conn, m_oDataMgr.m_strSQL);
 
@@ -1734,11 +1734,10 @@ namespace FIA_Biosum_Manager
                     frmMain.g_oTables.m_oFvs.CreateSQLiteInputBiosumVolumesTable(m_oDataMgr, conn,
                         Tables.VolumeAndBiomass.BiosumVolumesInputTable);
 
-                    //creating fcs_biosum_volumes_input; This is only used here
-                    if (m_oDataMgr.TableExist(conn, Tables.VolumeAndBiomass.FcsBiosumVolumesInputTable))
-                        m_oDataMgr.SqlNonQuery(conn, "DROP TABLE " + Tables.VolumeAndBiomass.FcsBiosumVolumesInputTable);
-                    frmMain.g_oTables.m_oFvs.CreateSQLiteInputFCSBiosumVolumesTable(m_oDataMgr, conn,
-                        Tables.VolumeAndBiomass.FcsBiosumVolumesInputTable);
+                    if (m_oDataMgr.TableExist(conn, Tables.VolumeAndBiomass.TvbcVolumesOutputTable))
+                        m_oDataMgr.SqlNonQuery(conn, "DROP TABLE " + Tables.VolumeAndBiomass.TvbcVolumesOutputTable);
+                    frmMain.g_oTables.m_oVolumeAndBiomass.CreateBiosumVolumesOutputTable(m_oDataMgr, conn,
+                        Tables.VolumeAndBiomass.TvbcVolumesOutputTable);
 
                     //clean out tvbc input
                     m_oDataMgr.SqlNonQuery(conn, $"DELETE FROM {strTvbcTable}");
@@ -1786,7 +1785,7 @@ namespace FIA_Biosum_Manager
                     strColumns = string.Join(",", treeToTvbcBiosumVolumesInputTable.Select(e => e.Item1));
                     strValues = string.Join(",", treeToTvbcBiosumVolumesInputTable.Select(e => e.Item2));
 
-                    // Writing from treeSample to fcs_biosum_volumes_input
+                    // Writing from treeSample to tvbc_tree_data
                     m_oDataMgr.m_strSQL = $"INSERT INTO {strTvbcTable} ({strColumns}) SELECT {strValues} FROM {strTable} WHERE DIA >= 1.0";
                     if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                         frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile,
@@ -1807,30 +1806,31 @@ namespace FIA_Biosum_Manager
             }
 
             //RUN JAVA APP TO CALCULATE VOLUME/BIOMASS
-            if (System.IO.File.Exists(frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\" + Tables.VolumeAndBiomass.DefaultSqliteWorkDatabase) == false)
+            if (System.IO.File.Exists(frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\" + Tables.VolumeAndBiomass.DefaultTvbcWorkDatabase) == false)
             {
                 m_intError = -1;
-                m_strError = frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\" + Tables.VolumeAndBiomass.DefaultSqliteWorkDatabase + " not found";
+                m_strError = frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\" + Tables.VolumeAndBiomass.DefaultTvbcWorkDatabase + " not found";
             }
 
-            if (m_intError == 0 && System.IO.File.Exists(frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\BioSumComps.JAR") == false)
+            if (m_intError == 0 && System.IO.File.Exists(frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\FIA_TreeVBC.jar") == false)
             {
                 m_intError = -1;
-                m_strError = frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\BioSumComps.JAR not found";
+                m_strError = frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\FIA_TreeVBC.jar not found";
             }
 
-            if (m_intError == 0 && System.IO.File.Exists(frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\fcs_tree_calc.bat") == false)
+            if (m_intError == 0 && System.IO.File.Exists(frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\tvbc_tree_calc.bat") == false)
             {
                 m_intError = -1;
-                m_strError = frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\fcs_tree_calc.bat not found";
+                m_strError = frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\tvbc_tree_calc.bat not found";
             }
 
             if (m_intError == 0)
             {
-                frmMain.g_oUtils.RunProcess(frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum", "fcs_tree_calc.bat", "BAT");
-                if (System.IO.File.Exists(frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\fcs_error_msg.txt"))
+                frmMain.g_oUtils.RunProcess(frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum", "tvbc_tree_calc.bat", "BAT");
+                // Note: the name of the error log is also in the tvbc_tree_calc.bat file
+                if (System.IO.File.Exists(frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\tvbc_error_msg.txt"))
                 {
-                    m_strError = System.IO.File.ReadAllText(frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\fcs_error_msg.txt");
+                    m_strError = System.IO.File.ReadAllText(frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\tvbc_error_msg.txt");
                     if (m_strError.IndexOf("JAVA.EXE", 0) > 0)
                         m_strError = "Problem detected running JAVA.EXE";
                     m_intError = -2;
@@ -1842,7 +1842,7 @@ namespace FIA_Biosum_Manager
 
             //step 7 - Get returned results from SQLite
             frmMain.g_oDelegate.SetStatusBarPanelTextValue(frmMain.g_sbpInfo.Parent, 1,
-                "Wait For BioSumComps.jar Volume and Biomass Calculations To Complete...Stand By");
+                "Wait For FIA_TreeVBC.jar Volume and Biomass Calculations To Complete...Stand By");
 
             //Parse SQLite output and insert into Biosum_Calc_Output access table
             using (System.Data.SQLite.SQLiteConnection conn =
@@ -1854,15 +1854,16 @@ namespace FIA_Biosum_Manager
                     SQLite.ADO.DataMgr oSQLite = new SQLite.ADO.DataMgr();
                     oSQLite.OpenConnection(false, 1,
                         frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\" +
-                        Tables.VolumeAndBiomass.DefaultSqliteWorkDatabase, "BIOSUM_CALC");
+                        Tables.VolumeAndBiomass.DefaultTvbcWorkDatabase, "tvbc_tree_data_calc");
 
-                    if (m_oDataMgr.TableExist(conn, Tables.VolumeAndBiomass.BiosumCalcOutputTable))
-                        m_oDataMgr.SqlNonQuery(conn, $"DROP TABLE {Tables.VolumeAndBiomass.BiosumCalcOutputTable}");
-                    m_oDataMgr.SqlNonQuery(conn, $"CREATE TABLE {Tables.VolumeAndBiomass.BiosumCalcOutputTable} AS SELECT * FROM {Tables.VolumeAndBiomass.FcsBiosumVolumesInputTable} WHERE 1=2");
+                    // Attach TVBC database
+                    string strTvbcDb = $@"{frmMain.g_oEnv.strApplicationDataDirectory.Trim()}{frmMain.g_strBiosumDataDir}\{Tables.VolumeAndBiomass.DefaultTvbcWorkDatabase}";
+                    m_oDataMgr.m_strSQL = $@"ATTACH DATABASE '{strTvbcDb}' AS TVBC";
+                    m_oDataMgr.SqlNonQuery(conn, m_oDataMgr.m_strSQL);
 
                     intTotalRecs = Convert.ToInt32(oSQLite.getSingleDoubleValueFromSQLQuery(oSQLite.m_Connection,
-                        $"SELECT COUNT(*) AS ROWCOUNT FROM {Tables.VolumeAndBiomass.BiosumVolumeCalcTable} WHERE VOLTSGRS_CALC IS NOT NULL",
-                        Tables.VolumeAndBiomass.BiosumVolumeCalcTable));
+                        $"SELECT COUNT(*) AS ROWCOUNT FROM tvbc_tree_data_calc WHERE VOLTSGRS IS NOT NULL",
+                        "tvbc_tree_data_calc"));
 
                     UpdateThermPercent(0, intRecordCount * 3 + 8, intThermValue);
 
