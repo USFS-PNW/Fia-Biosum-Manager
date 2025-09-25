@@ -2878,7 +2878,7 @@ namespace FIA_Biosum_Manager
                     SQLite.m_strSQL = "UPDATE " + this.m_strTreeTable + " AS t " +
                         "SET condprop_specific = CASE WHEN c.micrprop_unadj IS NOT NULL AND t.dia < 5 " +
                         "THEN c.micrprop_unadj ELSE CASE WHEN c.subpprop_unadj IS NOT NULL AND t.dia >= 5 " +
-                        "THEN c.subpprop_unadj END END END " +
+                        "THEN c.subpprop_unadj END END " +
                         "FROM " + this.m_strCondTable + " AS c, " + this.m_strPlotTable + " AS p " +
                         "WHERE c.biosum_plot_id = p.biosum_plot_id AND t.biosum_cond_id = c.biosum_cond_id " +
                         "AND t.condid = c.condid AND t.biosum_status_cd = 9";
