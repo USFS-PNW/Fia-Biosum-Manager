@@ -1764,7 +1764,7 @@ namespace FIA_Biosum_Manager
                     var treeToTvbcBiosumVolumesInputTable = new List<Tuple<string, string>>
                 {
                     Tuple.Create("TRE_CN", "CAST(ID AS TEXT)"),
-                    Tuple.Create("FIA_TRE_CN", "TRIM(TRE_CN)"),
+                    Tuple.Create("FIA_TRE_CN", "TRIM(FIA_TRE_CN)"),
                     Tuple.Create("BIOSUM_COND_ID", "BIOSUM_COND_ID"),
                     Tuple.Create("STATECD", "CAST(SUBSTR(BIOSUM_COND_ID,6,2) AS INTEGER) AS STATECD"),
                     Tuple.Create("ECOSUBCD", "TRIM(ECOSUBCD)"),
