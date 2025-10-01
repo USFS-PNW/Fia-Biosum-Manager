@@ -284,10 +284,10 @@ namespace FIA_Biosum_Manager
             }
 
             frmMain.g_oDelegate.SetControlPropertyValue(m_frmTherm.lblMsg, "Text",
-                    "Writing BioSum FVS_StandInit For Variant " + strVariant);
+                    "Calculating Site Index/Site Species for Variant " + strVariant);
             frmMain.g_oDelegate.SetControlPropertyValue(m_frmTherm.progressBar1, "Minimum", 0);
             frmMain.g_oDelegate.SetControlPropertyValue(m_frmTherm.progressBar1, "Maximum",
-                oDataMgr.m_DataSet.Tables["standlist"].Rows.Count);
+                oDataMgr.m_DataSet.Tables["standlist"].Rows.Count + 8);
             m_dt = oDataMgr.m_DataSet.Tables["standlist"];
 
             DebugLogMessage("Inserting Site Index/Site Species\r\n", 1);

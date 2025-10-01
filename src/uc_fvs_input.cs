@@ -1248,7 +1248,7 @@ namespace FIA_Biosum_Manager
                                     m_frmTherm.progressBar1, "Maximum", false));
                     Application.DoEvents();
                     if (bAbort == true) break;
-
+                    intValue = intValue + interval;
                 }
             }
             catch (ThreadInterruptedException err)
