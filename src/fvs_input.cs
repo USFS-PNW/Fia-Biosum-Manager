@@ -321,7 +321,8 @@ namespace FIA_Biosum_Manager
                     strBase_Age = "null";
                 }
 
-                if (strSite_Species != "null" && strSite_Index != "null")
+                if (strSite_Species != "null" && strSite_Index != "null"
+                    && strSite_Species.Trim() != "999"  && strSite_Index.Trim() != "0")
                 {
                     oDataMgr.m_strSQL =
                         Queries.FVS.FVSInput.StandInit.InsertSiteIndexSpeciesRow(strStand_ID, strSite_Species,
@@ -2533,9 +2534,9 @@ namespace FIA_Biosum_Manager
                 DebugLogSQL(Queries.FVS.FVSInput.StandInit.UpdateFromCond(m_strCondTable, strVariant));
                 oDataMgr.SqlNonQuery(tempConn, Queries.FVS.FVSInput.StandInit.UpdateFromCond("master." + m_strCondTable, strVariant));
 
-                //Overwrite FOREST_TYPE with FOREST_TYPE_FIA, PV_CODE with PV_FIA_HABTYPCD1
-                DebugLogSQL(Queries.FVS.FVSInput.StandInit.UpdateForestTypeAndPvCode());
-                oDataMgr.SqlNonQuery(tempConn, Queries.FVS.FVSInput.StandInit.UpdateForestTypeAndPvCode());
+                //Overwrite FOREST_TYPE with FOREST_TYPE_FIA
+                DebugLogSQL(Queries.FVS.FVSInput.StandInit.UpdateForestType());
+                oDataMgr.SqlNonQuery(tempConn, Queries.FVS.FVSInput.StandInit.UpdateForestType());
 
                 //Null FUEL_MODEL if not checked
                 if (new int[]
