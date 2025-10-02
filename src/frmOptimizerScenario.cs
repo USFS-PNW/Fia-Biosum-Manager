@@ -4384,6 +4384,19 @@ namespace FIA_Biosum_Manager
             string strFileName = m_oProjectDs.m_strDataSource[intTable, FIA_Biosum_Manager.Datasource.DBFILE].Trim();
             strConn = oDataMgr.GetConnectionString(strDirectoryPath + "\\" + strFileName);
 
+            // Manage plot yarding distance audit table
+            string strAuditDBPath = $@"{frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory}\{Tables.TravelTime.DefaultGisAuditPathAndDbFile}";
+            string strAuditConn = SQLite.GetConnectionString(strAuditDBPath);
+            using (var oAuditConn = new System.Data.SQLite.SQLiteConnection(strAuditConn))
+            {
+                oAuditConn.Open();
+                if (SQLite.TableExist(oAuditConn, Tables.TravelTime.DefaultGisPlotDistanceAuditTable))
+                {
+                    SQLite.SqlNonQuery(oAuditConn, $@"DROP TABLE {Tables.TravelTime.DefaultGisPlotDistanceAuditTable}");
+                }
+                frmMain.g_oTables.m_oTravelTime.CreateSqlitePlotDistanceAuditTable(SQLite, oAuditConn, Tables.TravelTime.DefaultGisPlotDistanceAuditTable);
+            }
+
             using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strConn))
             {
                 conn.Open();
