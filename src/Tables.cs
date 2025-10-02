@@ -2783,6 +2783,39 @@ namespace FIA_Biosum_Manager
                     "carbon_bg DOUBLE " +
                     ")";
             }
+            // These are the columns on the biosum_calc table
+            static public string[] TvbcVolAndBio
+            {
+                get
+                {
+                    return new string []
+                    {
+                        "volcfgrs",
+                        "volcfnet",
+                        "volcfsnd",
+                        "volcsgrs",
+                        "voltsgrs",
+                        "drybio_bole",
+                        "voltsgrs_bark",
+                        "volcfgrs_bark",
+                        "volcfsnd_bark",
+                        "volcfnet_bark",
+                        "volcsgrs_bark",
+                        "volbsnet",
+                        "drybio_stem",
+                        "drybio_stem_bark",
+                        "drybio_stump",
+                        "drybio_stump_bark",
+                        "drybio_bole_bark",
+                        "drybio_branch",
+                        "drybio_foliage",
+                        "drybio_ag",
+                        "drybio_bg",
+                        "carbon_ag",
+                        "carbon_bg"
+                    };
+                }
+            }
         }
 
         public class FVS
@@ -7034,6 +7067,7 @@ namespace FIA_Biosum_Manager
             static public string DefaultFIATreeSpeciesTableName { get { return "FIA_TREE_SPECIES_REF"; } }
             static public string DefaultRefMasterDbFile { get { return @"db\ref_master.db"; } }
             static public string DefaultTreeSampleDbFile { get { return @"\treesample.db"; } }
+            static public string DefaultTreeSampleTvbcTableName { get { return "TreeSampleTvbc"; } }
             public void CreateTreeSpeciesTable(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
             {
                 p_oAdo.SqlNonQuery(p_oConn, CreateTreeSpeciesTableSQL(p_strTableName));
