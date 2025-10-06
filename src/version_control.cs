@@ -5852,6 +5852,12 @@ namespace FIA_Biosum_Manager
             oProjectDs.populate_datasource_array();
             // plot
             int intPlotTable = oProjectDs.getTableNameRow(Datasource.TableTypes.Plot);
+            // cond
+            int intCondTable = oProjectDs.getTableNameRow(Datasource.TableTypes.Condition);
+            // tree
+            int intTreeTable = oProjectDs.getTableNameRow(Datasource.TableTypes.Tree);
+            // sitetree
+            int intSiteTreeTable = oProjectDs.getTableNameRow(Datasource.TableTypes.SiteTree);
 
             // Create DSN if needed
             if (odbcmgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.MasterDsnName))
@@ -5863,6 +5869,8 @@ namespace FIA_Biosum_Manager
             string[] arrTargetTables = { frmMain.g_oTables.m_oFIAPlot.DefaultPlotTableName, frmMain.g_oTables.m_oFIAPlot.DefaultConditionTableName, 
                 frmMain.g_oTables.m_oFIAPlot.DefaultTreeTableName, frmMain.g_oTables.m_oFIAPlot.DefaultSiteTreeTableName };
             string strSourceFile = oProjectDs.m_strDataSource[intPlotTable, FIA_Biosum_Manager.Datasource.PATH].Trim() + "\\" + oProjectDs.m_strDataSource[intPlotTable, FIA_Biosum_Manager.Datasource.DBFILE].Trim();
+            string[] strSourceTables = { oProjectDs.m_strDataSource[intPlotTable, Datasource.TABLE].Trim(), oProjectDs.m_strDataSource[intCondTable, Datasource.TABLE].Trim(),
+                oProjectDs.m_strDataSource[intTreeTable, Datasource.TABLE].Trim(), oProjectDs.m_strDataSource[intSiteTreeTable, Datasource.TABLE].Trim() };
             string strMasterDb = System.IO.Path.GetFileName(frmMain.g_oTables.m_oFIAPlot.DefaultPlotTableSqliteDbFile);
 
             // Set new temporary database
@@ -5870,7 +5878,10 @@ namespace FIA_Biosum_Manager
             oDao.CreateMDB(strTempAccdb);
 
             //link access tables to temporary database
-            oDao.CreateTableLinks(strTempAccdb, strSourceFile);
+            foreach (string table in strSourceTables)
+            {
+                oDao.CreateTableLink(strTempAccdb, table, strSourceFile, table);
+            }
 
             for (int i = 0; i < arrTargetTables.Length; i++)
             {
