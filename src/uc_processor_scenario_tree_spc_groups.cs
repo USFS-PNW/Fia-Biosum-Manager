@@ -829,9 +829,10 @@ namespace FIA_Biosum_Manager
                  **table, tree table, and tree species table
                  ***************************************************************************/
                 SQLite.SqlNonQuery(conn, $@"attach '{this.m_oQueries.m_oDataSource.getFullPathAndFile(Datasource.TableTypes.Tree)}' as MASTER");
-                SQLite.m_strSQL = $@"CREATE TABLE tree_spc_groups_temp AS SELECT DISTINCT spcd FROM {this.m_oQueries.m_oFIAPlot.m_strTreeTable}";
+                //SQLite.SqlNonQuery(conn, $@"attach '{strFvsOutTreeListDb}' as TREELIST");
+                SQLite.m_strSQL = $@"CREATE TABLE tree_spc_groups_temp AS SELECT DISTINCT spcd FROM {this.m_oQueries.m_oFIAPlot.m_strTreeTable} t, {this.m_strFvsOutTreeTable} f
+                    WHERE f.fvs_tree_id = t.fvs_tree_id AND f.biosum_cond_id = t.biosum_cond_id";
                 SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
-
                 SQLite.m_strSQL = "SELECT DISTINCT s.common_name " +
                     "FROM tree_spc_groups_temp t, " + m_oQueries.m_oReference.m_strFiaTreeSpeciesRefTable + " s " +
                     "WHERE t.spcd = s.spcd";
