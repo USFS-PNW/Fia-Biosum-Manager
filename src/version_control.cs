@@ -6048,7 +6048,7 @@ namespace FIA_Biosum_Manager
                     oDataMgr.AddColumn(conn, Tables.OptimizerDefinitions.DefaultCalculatedOptimizerVariablesTableName, "HANDLE_NEGATIVES", "CHAR", "4");
 
                     oDataMgr.m_strSQL = "UPDATE " + Tables.OptimizerDefinitions.DefaultCalculatedOptimizerVariablesTableName +
-                        " SET HANDLE_NEGATIVES = CASE WHEN NEGATIVES_YN = 'Y' THEN 'keep' ELSE 'null' END";
+                        " SET HANDLE_NEGATIVES = CASE WHEN NEGATIVES_YN = 'Y' THEN 'keep' ELSE 'omit' END";
                     oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
                 }
 

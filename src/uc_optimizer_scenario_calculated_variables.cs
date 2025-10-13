@@ -1522,13 +1522,7 @@ namespace FIA_Biosum_Manager
                 try
                 {
                     m_oDataMgr.SqlNonQuery(m_oDataMgr.m_Connection, strSql);
-                    //Set USE_NEGATIVE to Y if desired
-                    //if (m_bUseNegatives)
-                    //{
-                    //    m_oDataMgr.m_strSQL = "UPDATE " + Tables.OptimizerDefinitions.DefaultCalculatedOptimizerVariablesTableName +
-                    //        " SET NEGATIVES_YN = 'Y' WHERE TRIM(VARIABLE_NAME) = '" + lblFvsVariableName.Text + "'";
-                    //    m_oDataMgr.SqlNonQuery(m_oDataMgr.m_Connection, m_oDataMgr.m_strSQL);
-                    //}
+                    m_oDataMgr.SqlNonQuery(m_oDataMgr.m_Connection, strSql);
                     if (m_strHandleNegatives == "zero")
                     {
                         m_oDataMgr.m_strSQL = "UPDATE " + Tables.OptimizerDefinitions.DefaultCalculatedOptimizerVariablesTableName +
@@ -1725,8 +1719,7 @@ namespace FIA_Biosum_Manager
             }
             string strCalculateConn = m_oDataMgr.GetConnectionString(frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory +
                                       "\\fvs\\db\\" + strPrePostDb);
-            //m_bUseNegatives = false;
-            m_strHandleNegatives = "null";
+            m_strHandleNegatives = "omit";
             using (var calculateConn = new SQLiteConnection(strCalculateConn))
             {
                 calculateConn.Open();
