@@ -5852,6 +5852,12 @@ namespace FIA_Biosum_Manager
             oProjectDs.populate_datasource_array();
             // plot
             int intPlotTable = oProjectDs.getTableNameRow(Datasource.TableTypes.Plot);
+            // cond
+            int intCondTable = oProjectDs.getTableNameRow(Datasource.TableTypes.Condition);
+            // tree
+            int intTreeTable = oProjectDs.getTableNameRow(Datasource.TableTypes.Tree);
+            // sitetree
+            int intSiteTreeTable = oProjectDs.getTableNameRow(Datasource.TableTypes.SiteTree);
 
             // Create DSN if needed
             if (odbcmgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.MasterDsnName))
@@ -5860,9 +5866,11 @@ namespace FIA_Biosum_Manager
             }
             odbcmgr.CreateUserSQLiteDSN(ODBCMgr.DSN_KEYS.MasterDsnName, strDestFile);
 
-            string[] arrTargetTables = { frmMain.g_oTables.m_oFIAPlot.DefaultPlotTableName, frmMain.g_oTables.m_oFIAPlot.DefaultConditionTableName, 
+            string[] arrTargetTables = { frmMain.g_oTables.m_oFIAPlot.DefaultPlotTableName, frmMain.g_oTables.m_oFIAPlot.DefaultConditionTableName,
                 frmMain.g_oTables.m_oFIAPlot.DefaultTreeTableName, frmMain.g_oTables.m_oFIAPlot.DefaultSiteTreeTableName };
             string strSourceFile = oProjectDs.m_strDataSource[intPlotTable, FIA_Biosum_Manager.Datasource.PATH].Trim() + "\\" + oProjectDs.m_strDataSource[intPlotTable, FIA_Biosum_Manager.Datasource.DBFILE].Trim();
+            string[] strSourceTables = { oProjectDs.m_strDataSource[intPlotTable, Datasource.TABLE].Trim(), oProjectDs.m_strDataSource[intCondTable, Datasource.TABLE].Trim(),
+                oProjectDs.m_strDataSource[intTreeTable, Datasource.TABLE].Trim(), oProjectDs.m_strDataSource[intSiteTreeTable, Datasource.TABLE].Trim() };
             string strMasterDb = System.IO.Path.GetFileName(frmMain.g_oTables.m_oFIAPlot.DefaultPlotTableSqliteDbFile);
 
             // Set new temporary database
@@ -5870,7 +5878,10 @@ namespace FIA_Biosum_Manager
             oDao.CreateMDB(strTempAccdb);
 
             //link access tables to temporary database
-            oDao.CreateTableLinks(strTempAccdb, strSourceFile);
+            foreach (string table in strSourceTables)
+            {
+                oDao.CreateTableLink(strTempAccdb, table, strSourceFile, table);
+            }
 
             for (int i = 0; i < arrTargetTables.Length; i++)
             {
@@ -5933,7 +5944,7 @@ namespace FIA_Biosum_Manager
                 oProjectDs.UpdateDataSourcePath(Datasource.TableTypes.Condition, ReferenceProjectDirectory + "\\db", strMasterDb, arrTargetTables[1]);
                 oProjectDs.UpdateDataSourcePath(Datasource.TableTypes.Tree, ReferenceProjectDirectory + "\\db", strMasterDb, arrTargetTables[2]);
                 oProjectDs.UpdateDataSourcePath(Datasource.TableTypes.SiteTree, ReferenceProjectDirectory + "\\db", strMasterDb, arrTargetTables[3]);
-                oProjectDs.UpdateDataSourcePath(Datasource.TableTypes.PopStratumAdjFactors, ReferenceProjectDirectory + "\\db", strMasterDb, 
+                oProjectDs.UpdateDataSourcePath(Datasource.TableTypes.PopStratumAdjFactors, ReferenceProjectDirectory + "\\db", strMasterDb,
                     frmMain.g_oTables.m_oFIAPlot.DefaultBiosumPopStratumAdjustmentFactorsTableName);
 
                 // Update processor datasources
@@ -6022,7 +6033,28 @@ namespace FIA_Biosum_Manager
             // Copy ref_master.db to project if it doesn't already exist
             if (!System.IO.File.Exists(ReferenceProjectDirectory.Trim() + "\\" + Tables.Reference.DefaultRefMasterDbFile))
             {
-                System.IO.File.Copy($@"{frmMain.g_oEnv.strAppDir}\{Tables.Reference.DefaultRefMasterDbFile}", ReferenceProjectDirectory.Trim() + "\\" + Tables.Reference.DefaultRefMasterDbFile, true );
+                System.IO.File.Copy($@"{frmMain.g_oEnv.strAppDir}\{Tables.Reference.DefaultRefMasterDbFile}", ReferenceProjectDirectory.Trim() + "\\" + Tables.Reference.DefaultRefMasterDbFile, true);
+            }
+
+            // update calculated variables for keep, null, and zero options for negative values
+            frmMain.g_sbpInfo.Text = "Version Update: Updating Optimizer Calculated Variables ...Stand by";
+            string strCalculatedVariablesDb = ReferenceProjectDirectory.Trim() + "\\" + Tables.OptimizerDefinitions.DefaultSqliteDbFile;
+            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(strCalculatedVariablesDb)))
+            {
+                conn.Open();
+
+                if (!oDataMgr.ColumnExist(conn, Tables.OptimizerDefinitions.DefaultCalculatedOptimizerVariablesTableName, "HANDLE_NEGATIVES"))
+                {
+                    oDataMgr.AddColumn(conn, Tables.OptimizerDefinitions.DefaultCalculatedOptimizerVariablesTableName, "HANDLE_NEGATIVES", "CHAR", "4");
+
+                    oDataMgr.m_strSQL = "UPDATE " + Tables.OptimizerDefinitions.DefaultCalculatedOptimizerVariablesTableName +
+                        " SET HANDLE_NEGATIVES = CASE WHEN NEGATIVES_YN = 'Y' THEN 'keep' ELSE 'omit' END";
+                    oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+                }
+
+                oDataMgr.m_strSQL = "ALTER TABLE " + Tables.OptimizerDefinitions.DefaultCalculatedOptimizerVariablesTableName +
+                        " DROP COLUMN NEGATIVES_YN";
+                oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
             }
         }
 
