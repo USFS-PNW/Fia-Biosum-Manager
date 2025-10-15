@@ -2556,7 +2556,7 @@ namespace FIA_Biosum_Manager
                     }
                     if (m_intError == 0)
                     {
-                        RunScenario_DeleteInaccessibleCondFromWorktable("HarvestCostsWorkTable");
+                        RunScenario_DeleteInaccessibleCondFromWorktables("HarvestCostsWorkTable", strKcpCpaWorkTable, Convert.ToString(processor.MIN_YARD_DIST_FT));
                         y++;
                         frmMain.g_oDelegate.SetControlPropertyValue(ReferenceProgressBarEx, "Value", y);
                     }
@@ -2871,7 +2871,7 @@ namespace FIA_Biosum_Manager
             }
             return lstRxItem;
         }
-        private void RunScenario_DeleteInaccessibleCondFromWorktable(string p_strHarvestCostsTableName)
+        private void RunScenario_DeleteInaccessibleCondFromWorktables(string p_strHarvestCostsTableName, string p_KcpCpaTableName, string p_strMinYardDistFt)
         {
             using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(m_oDataMgr.GetConnectionString(m_strTempSqliteDbFile)))
             {
@@ -2879,12 +2879,24 @@ namespace FIA_Biosum_Manager
                 m_oDataMgr.SqlNonQuery(conn, $@"ATTACH '{this.ReferenceProcessorScenarioForm.LoadedQueries.m_oDataSource.getFullPathAndFile(Datasource.TableTypes.Plot)}' as MASTER");
                 m_oDataMgr.m_strSQL = $@"DELETE FROM {p_strHarvestCostsTableName} WHERE biosum_cond_id IN (
                     SELECT {p_strHarvestCostsTableName}.biosum_cond_id FROM {p_strHarvestCostsTableName}
-                    INNER JOIN {this.ReferenceProcessorScenarioForm.LoadedQueries.m_oFIAPlot.m_strCondTable} c ON HarvestCostsWorkTable.biosum_cond_id = c.biosum_cond_id
+                    INNER JOIN {this.ReferenceProcessorScenarioForm.LoadedQueries.m_oFIAPlot.m_strCondTable} c ON {p_strHarvestCostsTableName}.biosum_cond_id = c.biosum_cond_id
                     INNER JOIN {this.ReferenceProcessorScenarioForm.LoadedQueries.m_oFIAPlot.m_strPlotTable} p ON c.biosum_plot_id = p.biosum_plot_id
-                    WHERE p.gis_yard_dist_ft < 0)";
+                    WHERE p.gis_yard_dist_ft < {p_strMinYardDistFt})";
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                     frmMain.g_oUtils.WriteText(m_strDebugFile, m_oDataMgr.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
                 m_oDataMgr.SqlNonQuery(conn, m_oDataMgr.m_strSQL);
+                if (!string.IsNullOrEmpty(p_KcpCpaTableName))
+                {
+                    m_oDataMgr.m_strSQL = $@"DELETE FROM {p_KcpCpaTableName} WHERE biosum_cond_id IN (
+                    SELECT {p_KcpCpaTableName}.biosum_cond_id FROM {p_KcpCpaTableName}
+                    INNER JOIN {this.ReferenceProcessorScenarioForm.LoadedQueries.m_oFIAPlot.m_strCondTable} c ON {p_KcpCpaTableName}.biosum_cond_id = c.biosum_cond_id
+                    INNER JOIN {this.ReferenceProcessorScenarioForm.LoadedQueries.m_oFIAPlot.m_strPlotTable} p ON c.biosum_plot_id = p.biosum_plot_id
+                    WHERE p.gis_yard_dist_ft < {p_strMinYardDistFt})";
+                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                        frmMain.g_oUtils.WriteText(m_strDebugFile, m_oDataMgr.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
+                    m_oDataMgr.SqlNonQuery(conn, m_oDataMgr.m_strSQL);
+
+                }
             }
 
         }
