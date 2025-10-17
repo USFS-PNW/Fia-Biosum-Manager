@@ -26,6 +26,7 @@ namespace FIA_Biosum_Manager
             get { return _SQLite; }
             set { _SQLite = value; }
         }
+        public const int MIN_YARD_DIST_FT = 0;
 
         public processor(string strDebugFile, string strScenarioId, string sqliteTempDb)
         {
@@ -218,7 +219,7 @@ namespace FIA_Biosum_Manager
                             newTree.YardingDistance = Convert.ToDouble(SQLite.m_DataReader["gis_yard_dist_ft"]);
 
                         // only process the tree if it has a valid yarding distance
-                        if (newTree.YardingDistance > 0)
+                        if (newTree.YardingDistance >= MIN_YARD_DIST_FT)
                         { 
                             m_trees.Add(newTree); 
                         }
