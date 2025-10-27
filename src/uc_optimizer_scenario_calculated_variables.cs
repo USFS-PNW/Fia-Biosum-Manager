@@ -1513,7 +1513,7 @@ namespace FIA_Biosum_Manager
                     strDescription = txtFVSVariableDescr.Text.Trim();
                 strDescription = m_oDataMgr.FixString(strDescription, "'", "''");
                 strSql = strSql + lblFvsVariableName.Text.Trim() + "','" + strDescription + "','" +
-                         strVariableType + "','" + strBaselinePackage + "','" + LblSelectedVariable.Text.Trim() + "', 'null')";
+                         strVariableType + "','" + strBaselinePackage + "','" + LblSelectedVariable.Text.Trim() + "', 'omit')";
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                 {
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "Add parent record for FVS weighted variable \r\n");
@@ -1521,7 +1521,6 @@ namespace FIA_Biosum_Manager
                 }
                 try
                 {
-                    m_oDataMgr.SqlNonQuery(m_oDataMgr.m_Connection, strSql);
                     m_oDataMgr.SqlNonQuery(m_oDataMgr.m_Connection, strSql);
                     if (m_strHandleNegatives == "zero")
                     {
