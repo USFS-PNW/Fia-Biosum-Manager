@@ -2695,13 +2695,17 @@ namespace FIA_Biosum_Manager
                     oDataMgr.m_strSQL = "ATTACH DATABASE '" + strInDirAndFile + "' AS target";
                     oDataMgr.SqlNonQuery(tempConn, oDataMgr.m_strSQL);
                 }
+
+                // get target fields
+                strStandInitFields = oDataMgr.getFieldNames(tempConn, "SELECT * FROM target." + Tables.FIA2FVS.DefaultFvsInputStandTableName);
+                strTreeInitFields = oDataMgr.getFieldNames(tempConn, "SELECT * FROM target." + Tables.FIA2FVS.DefaultFvsInputTreeTableName);
                 
                 oDataMgr.m_strSQL = "INSERT INTO target." + Tables.FIA2FVS.DefaultFvsInputStandTableName +
-                    " SELECT * FROM " + Tables.FIA2FVS.DefaultFvsInputStandTableName;
+                    " SELECT " + strStandInitFields + " FROM " + Tables.FIA2FVS.DefaultFvsInputStandTableName;
                 oDataMgr.SqlNonQuery(tempConn, oDataMgr.m_strSQL);
 
                 oDataMgr.m_strSQL = "INSERT INTO target." + Tables.FIA2FVS.DefaultFvsInputTreeTableName +
-                    " SELECT * FROM " + Tables.FIA2FVS.DefaultFvsInputTreeTableName;
+                    " SELECT " + strTreeInitFields + " FROM " + Tables.FIA2FVS.DefaultFvsInputTreeTableName;
                 oDataMgr.SqlNonQuery(tempConn, oDataMgr.m_strSQL);
             }
 
