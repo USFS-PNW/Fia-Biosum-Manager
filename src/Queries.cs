@@ -3585,6 +3585,12 @@ namespace FIA_Biosum_Manager
                          " SET FOREST_TYPE = FOREST_TYPE_FIA";
                     }
 
+                    public static string UpdatePVCode()
+                    {
+                        return "UPDATE " + Tables.FIA2FVS.DefaultFvsInputStandTableName +
+                            " SET PV_CODE = PV_FIA_HABTYPCD1 WHERE PV_CODE IS NULL";
+                    }
+
                     public static string SetFuelModelToNull()
                     {
                         return "UPDATE " + Tables.FIA2FVS.DefaultFvsInputStandTableName +

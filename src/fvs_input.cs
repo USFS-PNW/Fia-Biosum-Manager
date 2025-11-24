@@ -292,43 +292,66 @@ namespace FIA_Biosum_Manager
 
             DebugLogMessage("Inserting Site Index/Site Species\r\n", 1);
 
+            string strBioSumRefDb = frmMain.g_oEnv.strApplicationDataDirectory.Trim() +
+                        frmMain.g_strBiosumDataDir + "\\" + Tables.Reference.DefaultBiosumReferenceSqliteFile;
+            if (!oDataMgr.DatabaseAttached(conn, strBioSumRefDb))
+            {
+                oDataMgr.m_strSQL = "ATTACH DATABASE '" + strBioSumRefDb + "' AS ref";
+                oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+            }
+
+            IList<string> lstStatesToCalc = new List<string>();
+            oDataMgr.m_strSQL = "SELECT DISTINCT STATECD FROM TreeMacroPlotBreakPointDia";
+            oDataMgr.SqlQueryReader(conn, oDataMgr.m_strSQL);
+            if (oDataMgr.m_DataReader.HasRows)
+            {
+                while (oDataMgr.m_DataReader.Read())
+                {
+                    lstStatesToCalc.Add(Convert.ToString(oDataMgr.m_DataReader["STATECD"]));
+                }
+            }
+
             for (int x = 0; x <= m_dt.Rows.Count - 1; x++)
             {
-                string strStand_ID;
-                string strSite_Species;
-                string strSite_Index;
-                string strBase_Age;
-
-                frmMain.g_oDelegate.SetControlPropertyValue(m_frmTherm.progressBar1, "Value", x);
-                strStand_ID = "\'" + m_dt.Rows[x]["biosum_cond_id"].ToString().Trim() + "\'";
-                oSiteIndex.getSiteIndex(m_dt.Rows[x]);
-                strSite_Species = "\'" + oSiteIndex.SiteIndexSpecies + "\'";
-                strSite_Index = oSiteIndex.SiteIndex;
-                strBase_Age = oSiteIndex.BaseAge;
-
-                if (strSite_Species.Contains("@"))
+                string strStateCd = m_dt.Rows[x]["statecd"].ToString().Trim();
+                if (lstStatesToCalc.Contains(strStateCd))
                 {
-                    strSite_Species = "null";
-                }
+                    string strStand_ID;
+                    string strSite_Species;
+                    string strSite_Index;
+                    string strBase_Age;
 
-                if (strSite_Index.Contains("@"))
-                {
-                    strSite_Index = "null";
-                }
+                    frmMain.g_oDelegate.SetControlPropertyValue(m_frmTherm.progressBar1, "Value", x);
+                    strStand_ID = "\'" + m_dt.Rows[x]["biosum_cond_id"].ToString().Trim() + "\'";
+                    oSiteIndex.getSiteIndex(m_dt.Rows[x]);
+                    strSite_Species = "\'" + oSiteIndex.SiteIndexSpecies + "\'";
+                    strSite_Index = oSiteIndex.SiteIndex;
+                    strBase_Age = oSiteIndex.BaseAge;
 
-                if (strBase_Age.Contains("@") || strBase_Age == "")
-                {
-                    strBase_Age = "null";
-                }
+                    if (strSite_Species.Contains("@"))
+                    {
+                        strSite_Species = "null";
+                    }
 
-                if (strSite_Species != "null" && strSite_Index != "null"
-                    && strSite_Species.Trim() != "999"  && strSite_Index.Trim() != "0")
-                {
-                    oDataMgr.m_strSQL =
-                        Queries.FVS.FVSInput.StandInit.InsertSiteIndexSpeciesRow(strStand_ID, strSite_Species,
-                            strSite_Index, strBase_Age);
-                    DebugLogSQL(oDataMgr.m_strSQL);
-                    oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+                    if (strSite_Index.Contains("@"))
+                    {
+                        strSite_Index = "null";
+                    }
+
+                    if (strBase_Age.Contains("@") || strBase_Age == "")
+                    {
+                        strBase_Age = "null";
+                    }
+
+                    if (strSite_Species != "null" && strSite_Index != "null"
+                        && strSite_Species.Trim() != "999" && strSite_Index.Trim() != "0")
+                    {
+                        oDataMgr.m_strSQL =
+                            Queries.FVS.FVSInput.StandInit.InsertSiteIndexSpeciesRow(strStand_ID, strSite_Species,
+                                strSite_Index, strBase_Age);
+                        DebugLogSQL(oDataMgr.m_strSQL);
+                        oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+                    }
                 }
             }
         }
@@ -2537,6 +2560,10 @@ namespace FIA_Biosum_Manager
                 //Overwrite FOREST_TYPE with FOREST_TYPE_FIA
                 DebugLogSQL(Queries.FVS.FVSInput.StandInit.UpdateForestType());
                 oDataMgr.SqlNonQuery(tempConn, Queries.FVS.FVSInput.StandInit.UpdateForestType());
+
+                //Overwrite PV_CODE with HABTYPCD1 where PV_CODE is not populated
+                DebugLogSQL(Queries.FVS.FVSInput.StandInit.UpdatePVCode());
+                oDataMgr.SqlNonQuery(tempConn, Queries.FVS.FVSInput.StandInit.UpdatePVCode());
 
                 //Null FUEL_MODEL if not checked
                 if (new int[]

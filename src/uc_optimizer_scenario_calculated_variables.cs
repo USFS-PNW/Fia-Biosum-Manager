@@ -3926,7 +3926,7 @@ namespace FIA_Biosum_Manager
                         _frmScenario.DebugLog(false, m_strDebugFile, m_oDataMgr.m_strSQL);
 
                         // Apply weights to each cycle
-                        if (strHandleNegatives == "null")
+                        if (strHandleNegatives == "omit")
                         {
                             m_oDataMgr.m_strSQL = "UPDATE " + strTargetTableName + " AS w " +
                                 "SET " + strVariableName + " = " +

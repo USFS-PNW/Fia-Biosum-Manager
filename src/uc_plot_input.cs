@@ -2657,7 +2657,7 @@ namespace FIA_Biosum_Manager
                         break;
                     case "tree":
                         intReturn = (int)SQLite.getRecordCount(p_conn,
-                            String.Concat("SELECT COUNT(*) FROM ", strTable, " WHERE biosum_status_cd = 9 AND dia <> 0.1"), strTable);
+                            String.Concat("SELECT COUNT(*) FROM ", strTable, " WHERE biosum_status_cd = 9 AND (dia <> 0.1 OR dia IS NULL)"), strTable);
                         break;
                     default:
                         intReturn = (int)SQLite.getRecordCount(p_conn,
@@ -2792,7 +2792,7 @@ namespace FIA_Biosum_Manager
             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
                 frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, "//----------------------COND AND TREE COLUMN UPDATES-----------------------//\r\n");
                
-            SetThermValue(m_frmTherm.progressBar1,"Maximum",42);
+            SetThermValue(m_frmTherm.progressBar1,"Maximum",43);
             SetThermValue(m_frmTherm.progressBar1, "Minimum", 0);
             SetThermValue(m_frmTherm.progressBar1, "Value", 0);
 
@@ -3852,6 +3852,28 @@ namespace FIA_Biosum_Manager
                     frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
                 SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
                 strTime += " " + System.DateTime.Now.ToString();
+            }
+            SetThermValue(m_frmTherm.progressBar1, "Value", 1);
+
+            if (SQLite.m_intError == 0 && !GetBooleanValue((System.Windows.Forms.Control)m_frmTherm, "AbortProcess"))
+            {
+                /********************************************
+				 **update ecosubcd
+				 ********************************************/
+                string strPlotGeomTable = "FIADB.PLOTGEOM";
+                if (SQLite.ColumnExist(p_conn, strPlotGeomTable, "ecosubcd"))
+                {
+                    SQLite.m_strSQL = "UPDATE " + this.m_strPlotTable + " AS p " +
+                    "SET ecosubcd = g.ecosubcd " +
+                    "FROM " + strPlotGeomTable + " AS g " +
+                    "WHERE TRIM(g.cn) = p.cn";
+                    strTime = System.DateTime.Now.ToString();
+                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                        frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
+                    SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
+                    strTime += " " + System.DateTime.Now.ToString();
+                }
+                
             }
             SetThermValue(m_frmTherm.progressBar1, "Value", 1);
 
