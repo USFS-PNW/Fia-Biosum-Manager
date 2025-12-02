@@ -3861,7 +3861,7 @@ namespace FIA_Biosum_Manager
 				 **update ecosubcd
 				 ********************************************/
                 string strPlotGeomTable = "FIADB.PLOTGEOM";
-                if (SQLite.ColumnExist(p_conn, strPlotGeomTable, "ecosubcd"))
+                if (SQLite.AttachedColumnExist(p_conn, "PLOTGEOM", "ecosubcd"))
                 {
                     SQLite.m_strSQL = "UPDATE " + this.m_strPlotTable + " AS p " +
                     "SET ecosubcd = g.ecosubcd " +
