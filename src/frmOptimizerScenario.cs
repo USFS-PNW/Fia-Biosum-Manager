@@ -3048,7 +3048,6 @@ namespace FIA_Biosum_Manager
             }
             p_oDataMgr.m_DataReader.Close();
         }
-        
         public void LoadLastTieBreakRank(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strScenarioId, FIA_Biosum_Manager.OptimizerScenarioItem p_oOptimizerScenarioItem)
         {
             this.m_intError = 0;
