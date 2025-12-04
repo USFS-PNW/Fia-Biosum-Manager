@@ -73,8 +73,9 @@ namespace FIA_Biosum_Manager
         const int ECON_DETAILS_TABLE = 0;
         const int FVS_DETAILS_TABLE = 1;
 
-        private const int WEIGHT_SUM = 0;
+        private const int NULL_WEIGHT_SUM = 0;
         private const int NULL_COUNT = 1;
+        private const int WEIGHT_TOTAL = 2;
         private int intNullThreshold = 4;
 
         private FIA_Biosum_Manager.uc_optimizer_scenario_fvs_prepost_variables_effective.Variables _oCurVar;
@@ -3861,24 +3862,8 @@ namespace FIA_Biosum_Manager
                     Tables.OptimizerDefinitions.DefaultSqliteDbFile + "' AS variable_defs";
                 m_oDataMgr.SqlNonQuery(calculateConn, m_oDataMgr.m_strSQL);
 
-                //bool bUseNegatives = false;
 
-                //m_oDataMgr.m_strSQL = "SELECT NEGATIVES_YN FROM " + Tables.OptimizerDefinitions.DefaultCalculatedOptimizerVariablesTableName +
-                //    " WHERE VARIABLE_NAME = '" + strVariableName + "'";
-                //m_oDataMgr.SqlQueryReader(calculateConn, m_oDataMgr.m_strSQL);
-                //if (m_oDataMgr.m_DataReader.HasRows)
-                //{
-                //    while (m_oDataMgr.m_DataReader.Read())
-                //    {
-                //        if (m_oDataMgr.m_DataReader["NEGATIVES_YN"].ToString().Trim() == "Y")
-                //        {
-                //            bUseNegatives = true;
-                //        }
-                //    }
-                //}
-                //m_oDataMgr.m_DataReader.Close();
-
-                string strHandleNegatives = "null";
+                string strHandleNegatives = "omit";
 
                 m_oDataMgr.m_strSQL = "SELECT HANDLE_NEGATIVES FROM " + Tables.OptimizerDefinitions.DefaultCalculatedOptimizerVariablesTableName +
                     " WHERE VARIABLE_NAME = '" + strVariableName + "'";
@@ -3989,7 +3974,7 @@ namespace FIA_Biosum_Manager
                         double dblWt = Convert.ToDouble(m_oDataMgr.m_DataReader["weight"]);
                         string strCondId = m_oDataMgr.m_DataReader["biosum_cond_id"].ToString().Trim();
                         string strRxPkg = m_oDataMgr.m_DataReader["rxpackage"].ToString().Trim();
-                        double[] entry = { dblWt, 1 };
+                        double[] entry = { dblWt, 1, 0};
                         if (!correctionFactors.ContainsKey(strCondId))
                         {
                             Dictionary<string, double[]> dictEntry = new Dictionary<string, double[]> { { strRxPkg, entry } };
@@ -4001,8 +3986,8 @@ namespace FIA_Biosum_Manager
                         }
                         else 
                         {
-                            double dblCurWtSum = correctionFactors[strCondId][strRxPkg][WEIGHT_SUM];
-                            correctionFactors[strCondId][strRxPkg][WEIGHT_SUM] = dblCurWtSum + dblWt;
+                            double dblCurWtSum = correctionFactors[strCondId][strRxPkg][NULL_WEIGHT_SUM];
+                            correctionFactors[strCondId][strRxPkg][NULL_WEIGHT_SUM] = dblCurWtSum + dblWt;
                             correctionFactors[strCondId][strRxPkg][NULL_COUNT]++;
                         }
                     }
@@ -4018,7 +4003,7 @@ namespace FIA_Biosum_Manager
                         double dblWt = Convert.ToDouble(m_oDataMgr.m_DataReader["weight"]);
                         string strCondId = m_oDataMgr.m_DataReader["biosum_cond_id"].ToString().Trim();
                         string strRxPkg = m_oDataMgr.m_DataReader["rxpackage"].ToString().Trim();
-                        double[] entry = { dblWt, 1 };
+                        double[] entry = { dblWt, 1 , 0};
 
                         if (!correctionFactors.ContainsKey(strCondId))
                         {
@@ -4031,9 +4016,42 @@ namespace FIA_Biosum_Manager
                         }
                         else
                         {
-                            double dblCurWtSum = correctionFactors[strCondId][strRxPkg][WEIGHT_SUM];
-                            correctionFactors[strCondId][strRxPkg][WEIGHT_SUM] = dblCurWtSum + dblWt;
+                            double dblCurWtSum = correctionFactors[strCondId][strRxPkg][NULL_WEIGHT_SUM];
+                            correctionFactors[strCondId][strRxPkg][NULL_WEIGHT_SUM] = dblCurWtSum + dblWt;
                             correctionFactors[strCondId][strRxPkg][NULL_COUNT]++;
+                        }
+                    }
+                }
+
+                // get total sum of weights for cases with nulls
+                foreach (string strCondId in correctionFactors.Keys)
+                {
+                    foreach (string strRxPkg in correctionFactors[strCondId].Keys)
+                    {
+                        m_oDataMgr.m_strSQL = "SELECT weight FROM " + strWeightsByRxCyclePreTable +
+                            " WHERE biosum_cond_id = '" + strCondId + "' AND rxpackage = '" + strRxPkg + "'";
+                        m_oDataMgr.SqlQueryReader(calculateConn, m_oDataMgr.m_strSQL);
+                        if (m_oDataMgr.m_DataReader.HasRows)
+                        {
+                            while (m_oDataMgr.m_DataReader.Read())
+                            {
+                                double dblWt = Convert.ToDouble(m_oDataMgr.m_DataReader["weight"]);
+                                double dblCurWtTotal = correctionFactors[strCondId][strRxPkg][WEIGHT_TOTAL];
+                                correctionFactors[strCondId][strRxPkg][WEIGHT_TOTAL] = dblCurWtTotal + dblWt;
+                            }
+                        }
+
+                        m_oDataMgr.m_strSQL = "SELECT weight FROM " + strWeightsByRxCyclePostTable +
+                            " WHERE biosum_cond_id = '" + strCondId + "' AND rxpackage = '" + strRxPkg + "'";
+                        m_oDataMgr.SqlQueryReader(calculateConn, m_oDataMgr.m_strSQL);
+                        if (m_oDataMgr.m_DataReader.HasRows)
+                        {
+                            while (m_oDataMgr.m_DataReader.Read())
+                            {
+                                double dblWt = Convert.ToDouble(m_oDataMgr.m_DataReader["weight"]);
+                                double dblCurWtTotal = correctionFactors[strCondId][strRxPkg][WEIGHT_TOTAL];
+                                correctionFactors[strCondId][strRxPkg][WEIGHT_TOTAL] = dblCurWtTotal + dblWt;
+                            }
                         }
                     }
                 }
@@ -4174,7 +4192,9 @@ namespace FIA_Biosum_Manager
                             intCorrected++;
                             m_oDataMgr.m_strSQL = "UPDATE " + strTargetPreTable +
                                " SET " + strVariableName + " = " + strVariableName +
-                               " * (1 / (1 - " + correctionFactors[strCondId][strRxPkg][WEIGHT_SUM] + "))" +
+                               " * (" + correctionFactors[strCondId][strRxPkg][WEIGHT_TOTAL] + " / (" +
+                               correctionFactors[strCondId][strRxPkg][WEIGHT_TOTAL] + " - " +
+                               correctionFactors[strCondId][strRxPkg][NULL_WEIGHT_SUM] + "))" +
                                " WHERE biosum_cond_id = '" + strCondId + "'" +
                                " AND rxpackage = '" + strRxPkg + "'";
                             _frmScenario.DebugLog(true, m_strDebugFile, m_oDataMgr.m_strSQL);
@@ -4183,7 +4203,9 @@ namespace FIA_Biosum_Manager
 
                             m_oDataMgr.m_strSQL = "UPDATE " + strTargetPostTable +
                                 " SET " + strVariableName + " = " + strVariableName +
-                                " * (1 / (1 - " + correctionFactors[strCondId][strRxPkg][WEIGHT_SUM] + "))" +
+                                " * (" + correctionFactors[strCondId][strRxPkg][WEIGHT_TOTAL] + " / (" +
+                               correctionFactors[strCondId][strRxPkg][WEIGHT_TOTAL] + " - " +
+                               correctionFactors[strCondId][strRxPkg][NULL_WEIGHT_SUM] + "))" +
                                 " WHERE biosum_cond_id = '" + strCondId + "'" +
                                 " AND rxpackage = '" + strRxPkg + "'";
                             _frmScenario.DebugLog(true, m_strDebugFile, m_oDataMgr.m_strSQL);
