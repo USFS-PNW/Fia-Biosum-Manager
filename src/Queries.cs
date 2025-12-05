@@ -3588,7 +3588,8 @@ namespace FIA_Biosum_Manager
                     public static string UpdatePVCode()
                     {
                         return "UPDATE " + Tables.FIA2FVS.DefaultFvsInputStandTableName +
-                            " SET PV_CODE = PV_FIA_HABTYPCD1 WHERE PV_CODE IS NULL";
+                            " SET PV_CODE = PV_FIA_HABTYPCD1 WHERE PV_CODE IS NULL " +
+                            "OR PV_CODE = CAST(PV_FIA_HABTYPCD1 AS INTEGER";
                     }
 
                     public static string SetFuelModelToNull()
