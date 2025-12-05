@@ -981,7 +981,9 @@ namespace FIA_Biosum_Manager
 
                         if (dblSIAvgMax <= 0 && intSISpeciesMax > 0 && intSISpeciesMax != 999)
                         {
-                            MessageBox.Show("Warning: Site index tree species " + Convert.ToString(intSISpeciesMax) + " has an invalid  site index value of " + Convert.ToString(Math.Round(dblSIAvgMax, 6)).Trim() + ". Both the SI species and SI height will be given a value of @");
+                            MessageBox.Show("Warning: Site index tree species " + Convert.ToString(intSISpeciesMax) + 
+                                " for BioSum Plot ID " + this.BiosumPlotId + " has an invalid site index value of " 
+                                + Convert.ToString(Math.Round(dblSIAvgMax, 6)).Trim() + ". Both the SI species and SI height will be given a value of null");
                             this.SiteIndexSpecies = "@";
                             this.SiteIndex = "@";
 
