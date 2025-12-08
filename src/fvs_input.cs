@@ -2726,14 +2726,46 @@ namespace FIA_Biosum_Manager
                 }
 
                 // get target fields
-                strStandInitFields = oDataMgr.getFieldNames(tempConn, "SELECT * FROM target." + Tables.FIA2FVS.DefaultFvsInputStandTableName);
-                strTreeInitFields = oDataMgr.getFieldNames(tempConn, "SELECT * FROM target." + Tables.FIA2FVS.DefaultFvsInputTreeTableName);
-                
+                strStandInitFields = oDataMgr.getFieldNames(tempConn, "SELECT * FROM " + Tables.FIA2FVS.DefaultFvsInputStandTableName);
+                strTreeInitFields = oDataMgr.getFieldNames(tempConn, "SELECT * FROM " + Tables.FIA2FVS.DefaultFvsInputTreeTableName);
+
+                string[] arrTargetStandFields = oDataMgr.getFieldNamesArray(tempConn, "SELECT * FROM target." + Tables.FIA2FVS.DefaultFvsInputStandTableName);
+                string[] arrTargetTreeFields = oDataMgr.getFieldNamesArray(tempConn, "SELECT * FROM target." + Tables.FIA2FVS.DefaultFvsInputTreeTableName);
+                string[] arrSourceStandFields = oDataMgr.getFieldNamesArray(tempConn, "SELECT * FROM " + Tables.FIA2FVS.DefaultFvsInputStandTableName);
+                string[] arrSourceTreeFields = oDataMgr.getFieldNamesArray(tempConn, "SELECT * FROM " + Tables.FIA2FVS.DefaultFvsInputTreeTableName);
+
+                foreach (string strSourceField in arrSourceStandFields)
+                {
+                    if (!arrTargetStandFields.Contains(strSourceField))
+                    {
+                        string strAddField = "";
+                        string strAddDataType = "";
+                        oDataMgr.getFieldNamesAndDataTypes(tempConn, "SELECT " + strSourceField + " FROM " + Tables.FIA2FVS.DefaultFvsInputStandTableName,
+                            ref strAddField, ref strAddDataType);
+                        strAddDataType = utils.DataTypeConvert(strAddDataType.ToUpper(), true);
+                        oDataMgr.AddColumn(tempConn, "target." + Tables.FIA2FVS.DefaultFvsInputStandTableName, strAddField, strAddDataType, null);
+                    }
+                }
+                foreach (string strSourceField in arrSourceTreeFields)
+                {
+                    if (!arrTargetTreeFields.Contains(strSourceField))
+                    {
+                        string strAddField = "";
+                        string strAddDataType = "";
+                        oDataMgr.getFieldNamesAndDataTypes(tempConn, "SELECT " + strSourceField + " FROM " + Tables.FIA2FVS.DefaultFvsInputTreeTableName,
+                            ref strAddField, ref strAddDataType);
+                        strAddDataType = utils.DataTypeConvert(strAddDataType.ToUpper(), true);
+                        oDataMgr.AddColumn(tempConn, "target." + Tables.FIA2FVS.DefaultFvsInputTreeTableName, strAddField, strAddDataType, null);
+                    }
+                }
+
                 oDataMgr.m_strSQL = "INSERT INTO target." + Tables.FIA2FVS.DefaultFvsInputStandTableName +
+                    " (" + strStandInitFields + ") " +
                     " SELECT " + strStandInitFields + " FROM " + Tables.FIA2FVS.DefaultFvsInputStandTableName;
                 oDataMgr.SqlNonQuery(tempConn, oDataMgr.m_strSQL);
 
                 oDataMgr.m_strSQL = "INSERT INTO target." + Tables.FIA2FVS.DefaultFvsInputTreeTableName +
+                    " (" + strTreeInitFields + ") " +
                     " SELECT " + strTreeInitFields + " FROM " + Tables.FIA2FVS.DefaultFvsInputTreeTableName;
                 oDataMgr.SqlNonQuery(tempConn, oDataMgr.m_strSQL);
             }
