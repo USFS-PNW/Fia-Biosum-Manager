@@ -4190,11 +4190,12 @@ namespace FIA_Biosum_Manager
                         else
                         {
                             intCorrected++;
+                            double wtTotal = Convert.ToDouble(correctionFactors[strCondId][strRxPkg][WEIGHT_TOTAL]);
+                            double nullWtSum = Convert.ToDouble(correctionFactors[strCondId][strRxPkg][NULL_WEIGHT_SUM]);
+                            double corrFactor = wtTotal / (wtTotal - nullWtSum);
                             m_oDataMgr.m_strSQL = "UPDATE " + strTargetPreTable +
                                " SET " + strVariableName + " = " + strVariableName +
-                               " * (" + correctionFactors[strCondId][strRxPkg][WEIGHT_TOTAL] + " / (" +
-                               correctionFactors[strCondId][strRxPkg][WEIGHT_TOTAL] + " - " +
-                               correctionFactors[strCondId][strRxPkg][NULL_WEIGHT_SUM] + "))" +
+                               " * " + corrFactor + 
                                " WHERE biosum_cond_id = '" + strCondId + "'" +
                                " AND rxpackage = '" + strRxPkg + "'";
                             _frmScenario.DebugLog(true, m_strDebugFile, m_oDataMgr.m_strSQL);
@@ -4203,9 +4204,7 @@ namespace FIA_Biosum_Manager
 
                             m_oDataMgr.m_strSQL = "UPDATE " + strTargetPostTable +
                                 " SET " + strVariableName + " = " + strVariableName +
-                                " * (" + correctionFactors[strCondId][strRxPkg][WEIGHT_TOTAL] + " / (" +
-                               correctionFactors[strCondId][strRxPkg][WEIGHT_TOTAL] + " - " +
-                               correctionFactors[strCondId][strRxPkg][NULL_WEIGHT_SUM] + "))" +
+                                " * " + corrFactor +
                                 " WHERE biosum_cond_id = '" + strCondId + "'" +
                                 " AND rxpackage = '" + strRxPkg + "'";
                             _frmScenario.DebugLog(true, m_strDebugFile, m_oDataMgr.m_strSQL);
