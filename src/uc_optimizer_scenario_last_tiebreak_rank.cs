@@ -162,13 +162,13 @@ namespace FIA_Biosum_Manager
 							oDataMgr.m_strSQL = "UPDATE scenario_last_tiebreak_rank SET last_tiebreak_rank = " +
 								this.m_DataSet.Tables["scenario_last_tiebreak_rank"].Rows[x]["last_tiebreak_rank"] +
 								" WHERE TRIM(rxpackage) = '" + this.m_DataSet.Tables["scenario_last_tiebreak_rank"].Rows[x]["rxpackage"].ToString().Trim() + "' " +
-								"AND scenario_id = '" + this.strScenarioId + "'";
+								"AND UPPER(scenario_id) = '" + this.strScenarioId.ToUpper() + "'";
 						}
 						else
 						{
 							oDataMgr.m_strSQL = "UPDATE scenario_last_tiebreak_rank SET last_tiebreak_rank = null " +
 									 " WHERE TRIM(rxpackage) = '" + this.m_DataSet.Tables["scenario_last_tiebreak_rank"].Rows[x]["rxpackage"].ToString().Trim() + "' " +
-									 "AND scenario_id = '" + this.strScenarioId + "'";
+									 "AND UPPER(scenario_id) = '" + this.strScenarioId.ToUpper() + "'";
 						}
 						oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
 						if (oDataMgr.m_intError < 0) break;
