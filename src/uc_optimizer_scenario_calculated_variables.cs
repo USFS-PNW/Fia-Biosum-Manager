@@ -4152,16 +4152,20 @@ namespace FIA_Biosum_Manager
                 }
 
                 m_oDataMgr.m_strSQL = "UPDATE " + strTargetPreTable + " AS f " +
-                "SET " + strVariableName + " = (SELECT (sum_pre + sum_post) FROM " + strWeightsByRxPkgPostTable +
-                " AS pt INNER JOIN " + strWeightsByRxPkgPreTable + " AS pe ON pt.biosum_cond_id = pe.biosum_cond_id " +
-                "WHERE pe.biosum_cond_id = f.biosum_cond_id AND pt.rxpackage = '" + strBaselinePkg +
-                "' AND pe.rxpackage = '" + strBaselinePkg + "') WHERE f.rxcycle = '1'";
+                    "SET " + strVariableName + " = (SELECT CASE WHEN " +
+                    "sum_pre IS NULL AND sum_post IS NULL THEN NULL " +
+                    "ELSE IFNULL(sum_pre, 0) + IFNULL(sum_post,0) END FROM " + strWeightsByRxPkgPostTable +
+                    " AS pt INNER JOIN " + strWeightsByRxPkgPreTable + " AS pe ON pt.biosum_cond_id = pe.biosum_cond_id " +
+                    "WHERE pe.biosum_cond_id = f.biosum_cond_id AND pt.rxpackage = '" + strBaselinePkg +
+                    "' AND pe.rxpackage = '" + strBaselinePkg + "') WHERE f.rxcycle = '1'";
                 _frmScenario.DebugLog(true, m_strDebugFile, m_oDataMgr.m_strSQL);
                 m_oDataMgr.SqlNonQuery(calculateConn, m_oDataMgr.m_strSQL);
                 _frmScenario.DebugLog(false, m_strDebugFile, m_oDataMgr.m_strSQL);
 
                 m_oDataMgr.m_strSQL = "UPDATE " + strTargetPostTable + " AS f " +
-                    "SET " + strVariableName + " = (SELECT (sum_pre + sum_post) FROM " + strWeightsByRxPkgPostTable +
+                    "SET " + strVariableName + " = (SELECT CASE WHEN " +
+                    "sum_pre IS NULL AND sum_post IS NULL THEN NULL " +
+                    "ELSE IFNULL(sum_pre, 0) + IFNULL(sum_post,0) END FROM " + strWeightsByRxPkgPostTable +
                     " AS pt INNER JOIN " + strWeightsByRxPkgPreTable + " AS pe ON pt.rxpackage = pe.rxpackage AND pt.biosum_cond_id = pe.biosum_cond_id " +
                     "WHERE pe.rxpackage = f.rxpackage AND pe.biosum_cond_id = f.biosum_cond_id) " + "WHERE f.rxcycle = '1'";
                 _frmScenario.DebugLog(true, m_strDebugFile, m_oDataMgr.m_strSQL);
