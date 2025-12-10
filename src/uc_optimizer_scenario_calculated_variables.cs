@@ -3940,7 +3940,11 @@ namespace FIA_Biosum_Manager
                                 "WHERE w.biosum_cond_id = p.biosum_cond_id AND w.rxpackage = p.rxpackage " +
                                 "AND w.rx = p.rx AND w.rxcycle = p.rxcycle AND w.fvs_variant = p.fvs_variant)" +
                                 "* " + dblWeight +
-                                " ELSE 0 END" +
+                                " ELSE CASE WHEN " + 
+                                "(SELECT " + strFieldName + " FROM " + strSourceTableName + " AS p " +
+                                "WHERE w.biosum_cond_id = p.biosum_cond_id AND w.rxpackage = p.rxpackage " +
+                                "AND w.rx = p.rx AND w.rxcycle = p.rxcycle AND w.fvs_variant = p.fvs_variant) IS NULL " +
+                                "THEN NULL ELSE 0 END END" +
                                 " WHERE w.rxcycle = '" + strRxCycle + "'";
                         }
                         else
