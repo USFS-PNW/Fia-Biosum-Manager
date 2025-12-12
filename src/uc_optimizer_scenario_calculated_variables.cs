@@ -3940,7 +3940,11 @@ namespace FIA_Biosum_Manager
                                 "WHERE w.biosum_cond_id = p.biosum_cond_id AND w.rxpackage = p.rxpackage " +
                                 "AND w.rx = p.rx AND w.rxcycle = p.rxcycle AND w.fvs_variant = p.fvs_variant)" +
                                 "* " + dblWeight +
-                                " ELSE 0 END" +
+                                " ELSE CASE WHEN " + 
+                                "(SELECT " + strFieldName + " FROM " + strSourceTableName + " AS p " +
+                                "WHERE w.biosum_cond_id = p.biosum_cond_id AND w.rxpackage = p.rxpackage " +
+                                "AND w.rx = p.rx AND w.rxcycle = p.rxcycle AND w.fvs_variant = p.fvs_variant) IS NULL " +
+                                "THEN NULL ELSE 0 END END" +
                                 " WHERE w.rxcycle = '" + strRxCycle + "'";
                         }
                         else
@@ -4148,16 +4152,20 @@ namespace FIA_Biosum_Manager
                 }
 
                 m_oDataMgr.m_strSQL = "UPDATE " + strTargetPreTable + " AS f " +
-                "SET " + strVariableName + " = (SELECT (sum_pre + sum_post) FROM " + strWeightsByRxPkgPostTable +
-                " AS pt INNER JOIN " + strWeightsByRxPkgPreTable + " AS pe ON pt.biosum_cond_id = pe.biosum_cond_id " +
-                "WHERE pe.biosum_cond_id = f.biosum_cond_id AND pt.rxpackage = '" + strBaselinePkg +
-                "' AND pe.rxpackage = '" + strBaselinePkg + "') WHERE f.rxcycle = '1'";
+                    "SET " + strVariableName + " = (SELECT CASE WHEN " +
+                    "sum_pre IS NULL AND sum_post IS NULL THEN NULL " +
+                    "ELSE IFNULL(sum_pre, 0) + IFNULL(sum_post,0) END FROM " + strWeightsByRxPkgPostTable +
+                    " AS pt INNER JOIN " + strWeightsByRxPkgPreTable + " AS pe ON pt.biosum_cond_id = pe.biosum_cond_id " +
+                    "WHERE pe.biosum_cond_id = f.biosum_cond_id AND pt.rxpackage = '" + strBaselinePkg +
+                    "' AND pe.rxpackage = '" + strBaselinePkg + "') WHERE f.rxcycle = '1'";
                 _frmScenario.DebugLog(true, m_strDebugFile, m_oDataMgr.m_strSQL);
                 m_oDataMgr.SqlNonQuery(calculateConn, m_oDataMgr.m_strSQL);
                 _frmScenario.DebugLog(false, m_strDebugFile, m_oDataMgr.m_strSQL);
 
                 m_oDataMgr.m_strSQL = "UPDATE " + strTargetPostTable + " AS f " +
-                    "SET " + strVariableName + " = (SELECT (sum_pre + sum_post) FROM " + strWeightsByRxPkgPostTable +
+                    "SET " + strVariableName + " = (SELECT CASE WHEN " +
+                    "sum_pre IS NULL AND sum_post IS NULL THEN NULL " +
+                    "ELSE IFNULL(sum_pre, 0) + IFNULL(sum_post,0) END FROM " + strWeightsByRxPkgPostTable +
                     " AS pt INNER JOIN " + strWeightsByRxPkgPreTable + " AS pe ON pt.rxpackage = pe.rxpackage AND pt.biosum_cond_id = pe.biosum_cond_id " +
                     "WHERE pe.rxpackage = f.rxpackage AND pe.biosum_cond_id = f.biosum_cond_id) " + "WHERE f.rxcycle = '1'";
                 _frmScenario.DebugLog(true, m_strDebugFile, m_oDataMgr.m_strSQL);
@@ -4171,14 +4179,17 @@ namespace FIA_Biosum_Manager
                         if (correctionFactors[strCondId][strRxPkg][NULL_COUNT] > intNullThreshold)
                         {
                             intMissing++;
-                            m_oDataMgr.m_strSQL = "UPDATE " + strTargetPreTable +
+                            if (strRxPkg == strBaselinePkg)
+                            {
+                                m_oDataMgr.m_strSQL = "UPDATE " + strTargetPreTable +
                                 " SET " + strVariableName + " = NULL " +
                                 "WHERE biosum_cond_id = '" + strCondId + "'" +
                                 " AND rxpackage = '" + strRxPkg + "'";
-                            _frmScenario.DebugLog(true, m_strDebugFile, m_oDataMgr.m_strSQL);
-                            m_oDataMgr.SqlNonQuery(calculateConn, m_oDataMgr.m_strSQL);
-                            _frmScenario.DebugLog(false, m_strDebugFile, m_oDataMgr.m_strSQL);
-
+                                _frmScenario.DebugLog(true, m_strDebugFile, m_oDataMgr.m_strSQL);
+                                m_oDataMgr.SqlNonQuery(calculateConn, m_oDataMgr.m_strSQL);
+                                _frmScenario.DebugLog(false, m_strDebugFile, m_oDataMgr.m_strSQL);
+                            }
+                            
                             m_oDataMgr.m_strSQL = "UPDATE " + strTargetPostTable +
                                 " SET " + strVariableName + " = NULL " +
                                 "WHERE biosum_cond_id = '" + strCondId + "'" +
@@ -4193,15 +4204,19 @@ namespace FIA_Biosum_Manager
                             double wtTotal = Convert.ToDouble(correctionFactors[strCondId][strRxPkg][WEIGHT_TOTAL]);
                             double nullWtSum = Convert.ToDouble(correctionFactors[strCondId][strRxPkg][NULL_WEIGHT_SUM]);
                             double corrFactor = wtTotal / (wtTotal - nullWtSum);
-                            m_oDataMgr.m_strSQL = "UPDATE " + strTargetPreTable +
+
+                            if (strRxPkg == strBaselinePkg)
+                            {
+                                m_oDataMgr.m_strSQL = "UPDATE " + strTargetPreTable +
                                " SET " + strVariableName + " = " + strVariableName +
-                               " * " + corrFactor + 
+                               " * " + corrFactor +
                                " WHERE biosum_cond_id = '" + strCondId + "'" +
                                " AND rxpackage = '" + strRxPkg + "'";
-                            _frmScenario.DebugLog(true, m_strDebugFile, m_oDataMgr.m_strSQL);
-                            m_oDataMgr.SqlNonQuery(calculateConn, m_oDataMgr.m_strSQL);
-                            _frmScenario.DebugLog(false, m_strDebugFile, m_oDataMgr.m_strSQL);
-
+                                _frmScenario.DebugLog(true, m_strDebugFile, m_oDataMgr.m_strSQL);
+                                m_oDataMgr.SqlNonQuery(calculateConn, m_oDataMgr.m_strSQL);
+                                _frmScenario.DebugLog(false, m_strDebugFile, m_oDataMgr.m_strSQL);
+                            }
+                                
                             m_oDataMgr.m_strSQL = "UPDATE " + strTargetPostTable +
                                 " SET " + strVariableName + " = " + strVariableName +
                                 " * " + corrFactor +
@@ -4211,10 +4226,14 @@ namespace FIA_Biosum_Manager
                             m_oDataMgr.SqlNonQuery(calculateConn, m_oDataMgr.m_strSQL);
                             _frmScenario.DebugLog(false, m_strDebugFile, m_oDataMgr.m_strSQL);
                         }
-                        m_oDataMgr.m_strSQL = "UPDATE " + strTargetPreTable +
-                            " SET " + strVariableName + "_null_count = " + correctionFactors[strCondId][strRxPkg][NULL_COUNT] + 
+                        if (strRxPkg == strBaselinePkg)
+                        {
+                            m_oDataMgr.m_strSQL = "UPDATE " + strTargetPreTable +
+                            " SET " + strVariableName + "_null_count = " + correctionFactors[strCondId][strRxPkg][NULL_COUNT] +
                             " WHERE biosum_cond_id = '" + strCondId + "' AND rxpackage = '" + strRxPkg + "' AND  rxcycle = '1'";
-                        m_oDataMgr.SqlNonQuery(calculateConn, m_oDataMgr.m_strSQL);
+                            m_oDataMgr.SqlNonQuery(calculateConn, m_oDataMgr.m_strSQL);
+                        }
+                            
                         m_oDataMgr.m_strSQL = "UPDATE " + strTargetPostTable +
                             " SET " + strVariableName + "_null_count = " + correctionFactors[strCondId][strRxPkg][NULL_COUNT] +
                             " WHERE biosum_cond_id = '" + strCondId + "' AND rxpackage = '" + strRxPkg + "' AND  rxcycle = '1'";
