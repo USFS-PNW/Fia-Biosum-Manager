@@ -7059,7 +7059,6 @@ namespace FIA_Biosum_Manager
             static public string DefaultHarvestMethodsTableName { get { return "harvest_methods"; } }
             static public string DefaultTreeMacroPlotBreakPointDiaTableDbFile { get { return @"biosum_ref.db"; } }
             static public string DefaultTreeMacroPlotBreakPointDiaTableName { get { return "TreeMacroPlotBreakPointDia"; } }
-            static public string DefaultBiosumReferenceDbFile { get { return "biosum_ref.accdb"; } }
             static public string DefaultBiosumReferenceVersionTableName { get { return "REF_VERSION"; } }
             static public string DefaultOpCostReferenceDbFile { get { return @"db\opcost_ref.db"; } }
             static public string DefaultBiosumReferenceSqliteFile { get { return "biosum_ref.db"; } }

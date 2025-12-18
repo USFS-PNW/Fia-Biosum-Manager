@@ -423,7 +423,6 @@ namespace FIA_Biosum_Manager
             g_oGeneralMacroSubstitutionVariable_Collection.Add(oItem);
 
             CheckForBiosumRefData();
-            CheckForBiosumRefSqliteData();
             CheckForTreeSampleData();
             CheckForFcsFiles();            
         }
@@ -3762,53 +3761,7 @@ namespace FIA_Biosum_Manager
                 parentForm.frmProject.Width = parentForm.frmProject.uc_project1.m_intFullWh;
 
         }
-
-        /// <summary>
-        /// Manages the biosum_ref.accdb that lives in the current user's AppData directory
-        /// </summary>
         private void CheckForBiosumRefData()
-        {
-            string strDestFile = frmMain.g_oEnv.strApplicationDataDirectory.Trim() +
-                frmMain.g_strBiosumDataDir + "\\" + Tables.Reference.DefaultBiosumReferenceDbFile;
-            try
-            {
-                bool bCopyDatabase = true;
-                string strSourceFile = frmMain.g_oEnv.strAppDir + "\\db\\" + Tables.Reference.DefaultBiosumReferenceDbFile;
-                if (System.IO.File.Exists(strDestFile) == true)
-                {
-                    // Check to see if the version is correct
-                    ado_data_access oAdo = new ado_data_access();
-                    string strConn = oAdo.getMDBConnString(strDestFile, "", "");
-                    using (var oConn = new System.Data.OleDb.OleDbConnection(strConn))
-                    {
-                        oConn.Open();
-                        // If the table doesn't exist, the database needs to be refreshed
-                        if (oAdo.TableExist(oConn, Tables.Reference.DefaultBiosumReferenceVersionTableName))
-                        {
-                            string strSql = "select version_num from " + Tables.Reference.DefaultBiosumReferenceVersionTableName;
-                            double dblVersion = oAdo.getSingleDoubleValueFromSQLQuery(oConn, strSql,
-                                Tables.Reference.DefaultBiosumReferenceVersionTableName);
-                            if (dblVersion >= g_intRefDbVer)
-                            {
-                                // if the version number is greater than or equal do the current version, the database doesn't need to be refreshed
-                                bCopyDatabase = false;
-                            }
-                        }
-                    }
-                    oAdo = null;
-                } 
-               
-                if (bCopyDatabase == true)
-                    // Copy it the database from the app install directory
-                    System.IO.File.Copy(strSourceFile, strDestFile, true);
-            }
-            catch (Exception)
-            {
-                MessageBox.Show("!! An error occurred while accessing biosum_ref.accdb at " + 
-                    System.IO.Path.GetDirectoryName(strDestFile) + " !!", "FIA Biosum");
-            }
-        }
-        private void CheckForBiosumRefSqliteData()
         {
             string strDestFile = frmMain.g_oEnv.strApplicationDataDirectory.Trim() +
                 frmMain.g_strBiosumDataDir + "\\" + Tables.Reference.DefaultBiosumReferenceSqliteFile;
