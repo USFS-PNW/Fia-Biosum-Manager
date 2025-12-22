@@ -424,7 +424,8 @@ namespace FIA_Biosum_Manager
 
             CheckForBiosumRefData();
             CheckForTreeSampleData();
-            CheckForFcsFiles();            
+            CheckForFcsFiles();
+            CheckForFiaTvbcFiles();
         }
 
 		/// <summary>
@@ -3845,6 +3846,34 @@ namespace FIA_Biosum_Manager
             catch (Exception)
             {
                 MessageBox.Show("!! An error occurred while copying fcs file to " +
+                    System.IO.Path.GetDirectoryName(strTargetPath) + " !!", "FIA Biosum");
+            }
+        }
+
+        /// <summary>
+        /// Manages the required files for FIA-TVBC. These files are packaged in the application tvbc directory
+        /// and copied to the AppData\FIABioSum folder
+        /// </summary>
+        private void CheckForFiaTvbcFiles()
+        {
+            string[] arrRequiredFiles = {Tables.VolumeAndBiomass.FiaTreeVBCJar, Tables.VolumeAndBiomass.DefaultTvbcWorkDatabase,
+                                         Tables.VolumeAndBiomass.TvbcTreeCalcBat};
+            string strTargetPath = "";
+            try
+            {
+                for (int i = 0; i < arrRequiredFiles.Length; i++)
+                {
+                    strTargetPath = frmMain.g_oEnv.strApplicationDataDirectory.Trim() + frmMain.g_strBiosumDataDir + @"\" + arrRequiredFiles[i];
+                    string strSourcePath = frmMain.g_oEnv.strAppDir + @"\tvbc\" + arrRequiredFiles[i];
+                    if (!System.IO.File.Exists(strTargetPath) == true)
+                    {
+                        System.IO.File.Copy(strSourcePath, strTargetPath);
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                MessageBox.Show("!! An error occurred while copying FIA Tvbc files to " +
                     System.IO.Path.GetDirectoryName(strTargetPath) + " !!", "FIA Biosum");
             }
         }
