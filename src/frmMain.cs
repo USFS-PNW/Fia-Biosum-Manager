@@ -2407,7 +2407,6 @@ namespace FIA_Biosum_Manager
 				this.frmProject.uc_project1.SetProjectPathEnvironmentVariables();
 				if (frmProject.uc_project1.m_strAction != "NEW")
 				{
-					oVersCtl.ReferenceMainForm=this;
 					oVersCtl.ReferenceProjectDirectory=this.frmProject.uc_project1.m_strProjectDirectory;
                     // Warn if application version < project version
                     string strProjVersionFile = this.frmProject.uc_project1.m_strProjectDirectory.Trim() + "\\application.version";
@@ -2509,7 +2508,6 @@ namespace FIA_Biosum_Manager
 				frmTemp.frmProject.uc_project1.SetProjectPathEnvironmentVariables();
 				if (frmTemp.frmProject.uc_project1.m_strAction != "NEW")
 				{
-					oVersCtl.ReferenceMainForm=frmTemp;
 					oVersCtl.ReferenceProjectDirectory=frmTemp.frmProject.uc_project1.m_strProjectDirectory;
 					oVersCtl.PerformVersionCheck();
 				}
