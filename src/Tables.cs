@@ -33,7 +33,6 @@ namespace FIA_Biosum_Manager
 
         public class Project
         {
-            private string strSQL = "";
             public string DefaultProjectTableDbFile { get { return @"db\project.mdb"; } }
             public string DefaultProjectTableName { get { return "project"; } }
             public string DefaultProjectNotesTableDbFile { get { return @"db\project.mdb"; } }
@@ -72,9 +71,14 @@ namespace FIA_Biosum_Manager
                         "email CHAR(50))";
 
             }
-            public void CreateDatasourceTable(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
+            public void CreateAccessDatasourceTable(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
             {
                 p_oAdo.SqlNonQuery(p_oConn, CreateDatasourceTableSQL(p_strTableName));
+            }
+
+            public void CreateDatasourceTable(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
+            {
+                p_oDataMgr.SqlNonQuery(p_oConn, CreateDatasourceTableSQL(p_strTableName));
             }
             public string CreateDatasourceTableSQL(string p_strTableName)
             {
@@ -83,47 +87,31 @@ namespace FIA_Biosum_Manager
                     "path CHAR(254)," +
                     "file CHAR(50)," +
                     "table_name CHAR(50))";
-
             }
-            public void CreateLinksCategoryTable(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
+
+            public void CreateAccessProjectTable(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
             {
-                p_oAdo.SqlNonQuery(p_oConn, CreateLinksCategoryTableSQL(p_strTableName));
-                CreateLinksCategoryTableIndexes(p_oAdo, p_oConn, p_strTableName);
-
+                p_oAdo.SqlNonQuery(p_oConn, CreateAccessProjectTableSQL(p_strTableName));
+                CreateAccessProjectTableIndexes(p_oAdo, p_oConn, p_strTableName);
             }
-            public void CreateLinksCategoryTableIndexes(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
+            public void CreateAccessProjectTableIndexes(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
             {
-                p_oAdo.AddIndex(p_oConn, p_strTableName, p_strTableName + "_idx", "category");
-                p_oAdo.AddIndex(p_oConn, p_strTableName, p_strTableName + "_idx2", "subcategory");
-
+                p_oAdo.AddPrimaryKey(p_oConn, p_strTableName, p_strTableName + "_pk", "proj_id");
             }
-            public string CreateLinksCategoryTableSQL(string p_strTableName)
+            public string CreateAccessProjectTableSQL(string p_strTableName)
             {
                 return "CREATE TABLE " + p_strTableName + " (" +
-                    "category BYTE," +
-                    "subcategory INTEGER," +
-                    "subcategory_desc CHAR(50))";
-            }
-            public void CreateLinksDepositoryTable(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
-            {
-                p_oAdo.SqlNonQuery(p_oConn, CreateLinksDepositoryTableSQL(p_strTableName));
-                CreateLinksDepositoryTableIndexes(p_oAdo, p_oConn, p_strTableName);
+                    "proj_id CHAR(20)," +
+                    "created_by CHAR(30)," +
+                    "created_date DATETIME," +
+                    "company CHAR(100)," +
+                    "description MEMO," +
+                    "notes MEMO," +
+                    "shared_file CHAR(254)," +
+                    "project_root_directory CHAR(254)," +
+                    "application_version CHAR(11))";       //version 4.0
             }
 
-            public void CreateLinksDepositoryTableIndexes(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
-            {
-                p_oAdo.AddIndex(p_oConn, p_strTableName, p_strTableName + "_idx", "category");
-                p_oAdo.AddIndex(p_oConn, p_strTableName, p_strTableName + "_idx2", "subcategory");
-            }
-            public string CreateLinksDepositoryTableSQL(string p_strTableName)
-            {
-                return "CREATE TABLE " + p_strTableName + " (" +
-                    "category BYTE," +
-                    "subcategory INTEGER," +
-                    "link CHAR(100)," +
-                    "description CHAR(100)," +
-                    "list_yn CHAR(1) DEFAULT 'Y')";
-            }
             public void CreateProjectTable(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
             {
                 p_oAdo.SqlNonQuery(p_oConn, CreateProjectTableSQL(p_strTableName));
@@ -138,13 +126,13 @@ namespace FIA_Biosum_Manager
                 return "CREATE TABLE " + p_strTableName + " (" +
                     "proj_id CHAR(20)," +
                     "created_by CHAR(30)," +
-                    "created_date DATETIME," +
+                    "created_date CHAR(22)," +
                     "company CHAR(100)," +
-                    "description MEMO," +
-                    "notes MEMO," +
-                    "shared_file CHAR(254)," +
-                    "project_root_directory CHAR(254)," +
-                    "application_version CHAR(11))";       //version 4.0
+                    "description CHAR(255)," +
+                    "notes CHAR(255)," +
+                    "shared_file CHAR(255)," +  //@ToDo: This can probably be removed when the shared functionality goes away
+                    "project_root_directory CHAR(255)," +
+                    "application_version CHAR(11))";     
             }
 
             public void CreateUserConfigTable(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
@@ -2846,43 +2834,25 @@ namespace FIA_Biosum_Manager
                                                               "FVS_ECONSUMMARY",
                                                               "FVS_CONSUMPTION"};
 
-            static public string DefaultRxTableDbFile { get { return @"db\fvsmaster.mdb"; } }
             static public string DefaultRxTableName { get { return "rx"; } }
-
-            static public string DefaultRxHarvestCostColumnsTableDbFile { get { return @"db\fvsmaster.mdb"; } }
             static public string DefaultRxHarvestCostColumnsTableName { get { return "rx_harvest_cost_columns"; } }
-
-            static public string DefaultRxPackageTableDbFile { get { return @"db\fvsmaster.mdb"; } }
             static public string DefaultRxPackageTableName { get { return "rxpackage"; } }
             static public string DefaultRxPackageDbFile { get { return @"db\master.db"; } }
-
             static public string DefaultFVSTreeTableName { get { return "FVS_Tree"; } }
-            static public string DefaultFVSResidTreeTableName { get { return "FVS_ResidTree"; } }
             static public string DefaultFVSCutTreeTableName { get { return "FVS_CutTree"; } }
             static public string DefaultFVSInForestTreeTableName { get { return "FVS_InForestTree"; } }
             static public string DefaultFVSTreeListDbFile { get { return @"\fvs\data\FVSOUT_TREE_LIST.db"; } }
             static public string DefaultFVSOutDbFile { get { return @"\fvs\data\FVSOut.db"; } }
             static public string DefaultFVSOutBiosumDbFile { get { return @"\fvs\data\FVSOut_BioSum.db"; } }
-            static public string DefaultFVSOutPostAuditDbFile { get { return @"\fvs\data\PostAudit.db"; } }
             static public string DefaultFVSOutPrePostDbFile { get { return @"\fvs\db\PREPOST_FVSOUT.db"; } }
             static public string DefaultFVSAuditsDbFile { get { return @"\fvs\db\FVS_AUDITS.db"; } }
-
-
-            static public string DefaultFVSTreeIdWorkTable { get { return "fvs_tree_id_work_table"; } }
-
             static public string DefaultFVSPrePostSeqNumTable { get { return "fvs_output_prepost_seqnum"; } }
-            static public string DefaultFVSPrePostSeqNumTableMdbFile { get { return @"db\fvsmaster.mdb"; } }
             static public string DefaultFVSPrePostSeqNumTableDbFile { get { return @"db\master.db"; } }
-
             static public string DefaultFVSPrePostSeqNumRxPackageAssgnTable { get { return "fvs_output_prepost_seqnum_rxpackage_assignment"; } }
-            static public string DefaultFVSPrePostSeqNumRxPackageAssgnTableDbFile { get { return @"db\fvsmaster.mdb"; } }
-
             static public string DefaultPreFVSSummaryTableName { get { return "PRE_FVS_SUMMARY"; } }
-            static public string DefaultPreFVSSummaryDbFile { get { return @"\fvs\db\PREPOST_FVS_SUMMARY.ACCDB"; } }
 
             static public string DefaultPreFVSComputeTableName { get { return "PRE_FVS_COMPUTE"; } }
             static public string DefaultPostFVSComputeTableName { get { return "POST_FVS_COMPUTE"; } }
-            static public string DefaultPreFVSComputeDbFile { get { return @"\fvs\db\PREPOST_FVS_COMPUTE.ACCDB"; } }
             static public string DefaultFVSCasesTableName { get { return "FVS_CASES"; } }
             static public string DefaultFVSCasesTempTableName { get { return "FVS_CASES_TEMP"; } }
             static public string DefaultFVSSummaryTableName { get { return "FVS_SUMMARY"; } }
@@ -2892,99 +2862,10 @@ namespace FIA_Biosum_Manager
             static public string DefaultFVSTreeListTableName { get { return "FVS_TREELIST"; } }
             static public string DefaultFVSAtrtListTableName { get { return "FVS_ATRTLIST"; } }
 
-
             public FVS()
             {
             }
 
-            public static void CreateFVSCutListTable(ado_data_access p_oAdo)
-            {
-                p_oAdo.SqlNonQuery(p_oAdo.m_OleDbConnection, CreateFVSCutListTableSQL());
-            }
-
-            public static string CreateFVSCutListTableSQL()
-            {
-                return "CREATE TABLE FVS_CutList " +
-                    "(CaseID CHAR(255)," +
-                    "StandID CHAR(255)," +
-                    "`Year` LONG," +
-                    "PrdLen LONG," +
-                    "TreeId CHAR(255)," +
-                    "TreeIndex LONG," +
-                    "Species CHAR(255)," +
-                    "TreeVal LONG," +
-                    "SSCD LONG," +
-                    "PtIndex LONG," +
-                    "TPA DOUBLE," +
-                    "MortPA DOUBLE," +
-                    "DBH DOUBLE," +
-                    "DG DOUBLE," +
-                    "Ht DOUBLE," +
-                    "HtG DOUBLE," +
-                    "PctCr LONG," +
-                    "CrWidth DOUBLE," +
-                    "MistCD LONG," +
-                    "BAPctile DOUBLE," +
-                    "PtBAL DOUBLE," +
-                    "TCuFt DOUBLE," +
-                    "MCuFt DOUBLE," +
-                    "BdFt DOUBLE," +
-                    "MDefect LONG," +
-                    "BDefect LONG," +
-                    "TruncHt LONG," +
-                    "EstHt DOUBLE," +
-                    "ActPt LONG," +
-                    "Ht2TDCF SINGLE," +
-                    "Ht2TDBF SINGLE," +
-                    "TreeAge DOUBLE)";
-            }
-
-            //
-            //FVS_tree table
-            //
-            public void CreateFVSOutProcessorIn(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
-            {
-                p_oAdo.SqlNonQuery(p_oConn, CreateFVSOutProcessorInTableSQL(p_strTableName));
-                CreateFVSOutProcessorInTableIndexes(p_oAdo, p_oConn, p_strTableName);
-            }
-            public void CreateFVSOutProcessorInTableIndexes(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
-            {
-                p_oAdo.AddPrimaryKey(p_oConn, p_strTableName, p_strTableName + "_pk", "id");
-                p_oAdo.AddAutoNumber(p_oConn, p_strTableName, "id");
-                p_oAdo.AddIndex(p_oConn, p_strTableName, p_strTableName + "_idx1", "fvs_tree_id");
-            }
-            public string CreateFVSOutProcessorInTableSQL(string p_strTableName)
-            {
-                return "CREATE TABLE " + p_strTableName + " (" +
-                    "id LONG," +
-                    "biosum_cond_id CHAR(25)," +
-                    "rxpackage CHAR(3)," +
-                    "rx CHAR(3)," +
-                    "rxcycle CHAR(1)," +
-                    "rxyear CHAR(4)," +
-                    "fvs_variant CHAR(2)," +
-                    "fvs_species CHAR(6)," +
-                    "tpa DOUBLE," +
-                    "dbh DOUBLE," +
-                    "ht DOUBLE," +
-                    "estht DOUBLE," +
-                    "pctcr DOUBLE," +
-                    "drybio_bole double," +
-                    "drybio_sapling double," +
-                    "drybio_top double," +
-                    "drybio_wdld_spp double," +
-                    "volcfsnd double," + 
-                    "drybiom DOUBLE," +
-                    "drybiot DOUBLE," +
-                    "volcfgrs DOUBLE," +
-                    "volcfnet DOUBLE," +
-                    "volcsgrs DOUBLE," +
-                    "voltsgrs DOUBLE," +
-                    "fvs_tree_id CHAR(10)," +
-                    "FvsCreatedTree_YN CHAR(1) DEFAULT 'N'," +
-                    "DateTimeCreated CHAR(22))";
-
-            }
             public void CreateFVSOutTreeTable(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
             {
                 p_oDataMgr.SqlNonQuery(p_oConn, CreateFVSOutTreeTableSQL(p_strTableName));
@@ -3101,32 +2982,6 @@ namespace FIA_Biosum_Manager
             //
             //FVS_tree table audit
             //
-            public void CreateFVSTreeIdAudit(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
-            {
-                p_oAdo.SqlNonQuery(p_oConn, CreateFVSTreeIdAuditTableSQL(p_strTableName));
-                CreateFVSTreeIdAuditTableIndexes(p_oAdo, p_oConn, p_strTableName);
-            }
-            public void CreateFVSTreeIdAuditTableIndexes(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
-            {
-                p_oAdo.AddIndex(p_oConn, p_strTableName, p_strTableName + "_idx1", "fvs_tree_id");
-            }
-            public string CreateFVSTreeIdAuditTableSQL(string p_strTableName)
-            {
-                return "CREATE TABLE " + p_strTableName + " (" +
-                    "id LONG," +
-                    "biosum_cond_id CHAR(25)," +
-                    "rxpackage CHAR(3)," +
-                    "rx CHAR(3)," +
-                    "rxcycle CHAR(1)," +
-                    "rxyear CHAR(4)," +
-                    "fvs_variant CHAR(2)," +
-                    "fvs_tree_id CHAR(10)," +
-                    "Found_FvsTreeId_YN CHAR(1) DEFAULT 'N')";
-            }
-
-            //
-            //FVS_tree table audit
-            //
             public void CreateSQLiteFVSTreeIdAudit(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
             {
                 p_oDataMgr.SqlNonQuery(p_oConn, CreateSQLiteFVSTreeIdAuditTableSQL(p_strTableName));
@@ -3148,81 +3003,6 @@ namespace FIA_Biosum_Manager
                     "fvs_variant CHAR(2)," +
                     "fvs_tree_id CHAR(10)," +
                     "Found_FvsTreeId_YN CHAR(1) DEFAULT 'N')";
-            }
-            //
-            //ORACLE biosum_volumes
-            //
-            public void CreateOracleInputBiosumVolumesTable(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
-            {
-                p_oAdo.SqlNonQuery(p_oConn, CreateOracleInputBiosumVolumesTableSQL(p_strTableName));
-                CreateOracleInputBiosumVolumesTableIndexes(p_oAdo, p_oConn, p_strTableName);
-            }
-            public void CreateOracleInputBiosumVolumesTableIndexes(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
-            {
-                p_oAdo.AddPrimaryKey(p_oConn, p_strTableName, p_strTableName + "_pk", "id");
-                p_oAdo.AddIndex(p_oConn, p_strTableName, p_strTableName + "_idx1", "fvs_tree_id");
-                p_oAdo.AddIndex(p_oConn, p_strTableName, p_strTableName + "_idx2", "biosum_cond_id");
-            }
-            public string CreateOracleInputBiosumVolumesTableSQL(string p_strTableName)
-            {
-                return "CREATE TABLE " + p_strTableName + " (" +
-                    "id LONG," +
-                    "biosum_cond_id CHAR(25)," +
-                    "invyr INTEGER," +
-                    "fvs_variant CHAR(2)," +
-                    "spcd INTEGER," +
-                    "dbh DOUBLE," +
-                    "ht DOUBLE," +
-                    "actualht DOUBLE," +
-                    "vol_loc_grp CHAR(10)," +
-                    "statuscd BYTE," +
-                    "treeclcd BYTE," +
-                    "cr DOUBLE," +
-                    "cull DOUBLE," +
-                    "roughcull DOUBLE," +
-                    "decaycd BYTE," +
-                    "totage DOUBLE," +
-                    "SUBP BYTE," +
-                    "FORMCL BYTE," +
-                    "CULLBF DOUBLE," +
-                    //START: ADDED BIOSUM_VOLUME COLUMNS
-                    "sitree INTEGER, " + 
-                    "wdldstem INTEGER," + 
-                    "upper_dia DECIMAL(4,1)," + 
-                    "upper_dia_ht DECIMAL(4,1)," + 
-                    "centroid_dia DECIMAL(4,1)," + 
-                    "centroid_dia_ht_actual DECIMAL(4,1)," + 
-                    "sawht DECIMAL(2,0)," + 
-                    "htdmp DECIMAL(3,1)," + 
-                    "boleht DECIMAL(3,0)," + 
-                    "cullcf DECIMAL(3,0)," + 
-                    "cull_fld DECIMAL(2,0)," + 
-                    "culldead DECIMAL(3,0)," + 
-                    "cullform DECIMAL(3,0)," + 
-                    "cullmstop DECIMAL(3,0)," + 
-                    "cfsnd DECIMAL(3,0)," + 
-                    "bfsnd DECIMAL(3,0)," + 
-                    "precipitation DOUBLE," + 
-                    "balive DOUBLE," +
-                    "diahtcd INTEGER," +
-                    "standing_dead_cd INTEGER," +
-                    "volcfsnd_calc DECIMAL(13,6)," +
-                    "drybio_bole_calc DECIMAL(13,6)," +
-                    "drybio_top_calc DECIMAL(13,6)," +
-                    "drybio_sapling_calc DECIMAL(13,6)," +
-                    "drybio_wdld_spp_calc DECIMAL(13,6)," +
-                    "ecosubcd CHAR(7)," +
-                    "stdorgcd INTEGER," +
-                    //END: ADDED BIOSUM_VOLUME COLUMNS
-                    "volcfnet DOUBLE," +
-                    "volcfgrs DOUBLE," +
-                    "volcsgrs DOUBLE," +
-                    "drybiom DOUBLE," +
-                    "drybiot DOUBLE," +
-                    "voltsgrs DOUBLE," +
-                    "fvs_tree_id CHAR(10)," +
-                    "FvsCreatedTree_YN CHAR(1) DEFAULT 'N')";
-
             }
             public void CreateSQLiteInputBiosumVolumesTable(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
             {
@@ -3359,75 +3139,6 @@ namespace FIA_Biosum_Manager
                     "DRYBIOT_CALC DOUBLE, " +
                     "VOLTSGRS_CALC DOUBLE)";
             }
-            public void CreateOracleInputFCSBiosumVolumesWorkTable(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
-            {
-                p_oAdo.SqlNonQuery(p_oConn, CreateOracleInputFCSBiosumVolumesWorkTableSQL(p_strTableName));
-            }
-            public string CreateOracleInputFCSBiosumVolumesWorkTableSQL(string p_strTableName)
-            {
-                return "CREATE TABLE " + p_strTableName + " (" +
-                    "ID AUTOINCREMENT," +
-                    "STATECD INTEGER," +
-                    "COUNTYCD INTEGER," +
-                    "PLOT INTEGER," +
-                    "INVYR INTEGER," +
-                    "TREE INTEGER," +
-                    "VOL_LOC_GRP CHAR(10)," +
-                    "SPCD INTEGER," +
-                    "DIA DOUBLE," +
-                    "HT DOUBLE," +
-                    "ACTUALHT DOUBLE," +
-                    "CR DOUBLE," +
-                    "STATUSCD BYTE," +
-                    "TREECLCD BYTE," +
-                    "ROUGHCULL DOUBLE," +
-                    "CULL DOUBLE," +
-                    "DECAYCD BYTE," +
-                    "TOTAGE DOUBLE," +
-                    "SUBP BYTE," +
-                    "FORMCL BYTE," +
-                    "CULLBF DOUBLE," +
-                    //START: ADDED BIOSUM_VOLUME COLUMNS
-                    "SITREE INTEGER, " +
-                    "WDLDSTEM INTEGER," +
-                    "UPPER_DIA DOUBLE," +
-                    "UPPER_DIA_HT DOUBLE," +
-                    "CENTROID_DIA DOUBLE," +
-                    "CENTROID_DIA_HT_ACTUAL DOUBLE," +
-                    "SAWHT INTEGER," +
-                    "HTDMP DOUBLE," +
-                    "BOLEHT INTEGER," +
-                    "CULLCF INTEGER," +
-                    "CULL_FLD INTEGER," +
-                    "CULLDEAD INTEGER," +
-                    "CULLFORM INTEGER," +
-                    "CULLMSTOP INTEGER," +
-                    "CFSND INTEGER," +
-                    "BFSND INTEGER," +
-                    "PRECIPITATION DOUBLE," +
-                    "BALIVE DOUBLE," +
-                    "DIAHTCD INTEGER," +
-                    "STANDING_DEAD_CD INTEGER," +
-                    "VOLCFSND_CALC DOUBLE," +
-                    "DRYBIO_BOLE_CALC DOUBLE," +
-                    "DRYBIO_TOP_CALC DOUBLE," +
-                    "DRYBIO_SAPLING_CALC DOUBLE," +
-                    "DRYBIO_WDLD_SPP_CALC DOUBLE," +
-                    "ECODIV CHAR(7)," +
-                    "STDORGCD INTEGER," +
-                    //END: ADDED BIOSUM_VOLUME COLUMNS
-                    "TRE_CN CHAR(34)," +
-                    "CND_CN CHAR(34)," +
-                    "PLT_CN CHAR(34)," +
-                    "VOLCFGRS_CALC DOUBLE," +
-                    "VOLCSGRS_CALC DOUBLE," +
-                    "VOLCFNET_CALC DOUBLE," +
-                    "DRYBIOM_CALC DOUBLE," +
-                    "DRYBIOT_CALC DOUBLE," +
-                    "VOLTSGRS_CALC DOUBLE)";
-
-            }
-
             public void CreateSqliteInputFCSBiosumVolumesWorkTable(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
             {
                 p_oDataMgr.SqlNonQuery(p_oConn, CreateSqliteInputFCSBiosumVolumesWorkTableSQL(p_strTableName));
@@ -3504,35 +3215,6 @@ namespace FIA_Biosum_Manager
             /// <param name="p_oAdo"></param>
             /// <param name="p_oConn"></param>
             /// <param name="p_strTableName"></param>
-            public void CreateRxTable(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
-            {
-                p_oAdo.SqlNonQuery(p_oConn, CreateRxTableSQL(p_strTableName));
-                CreateRxTableIndexes(p_oAdo, p_oConn, p_strTableName);
-            }
-            public void CreateRxTableIndexes(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
-            {
-                p_oAdo.AddPrimaryKey(p_oConn, p_strTableName, p_strTableName + "_pk", "rx");
-            }
-            public string CreateRxTableSQL(string p_strTableName)
-            {
-                return "CREATE TABLE " + p_strTableName + " (" +
-                    "rx CHAR(3)," +
-                    "catid INTEGER," +
-                    "subcatid INTEGER," +
-                    "description MEMO," +
-                    "HarvestMethodLowSlope CHAR(50)," +
-                    "HarvestMethodSteepSlope CHAR(50))";
-            }
-
-            //
-            //RX table
-            //
-            /// <summary>
-            /// Create the treatment table
-            /// </summary>
-            /// <param name="p_oAdo"></param>
-            /// <param name="p_oConn"></param>
-            /// <param name="p_strTableName"></param>
             public void CreateSQLiteRxTable(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
             {
                 p_oDataMgr.SqlNonQuery(p_oConn, CreateSQLiteRxTableSQL(p_strTableName));
@@ -3547,68 +3229,6 @@ namespace FIA_Biosum_Manager
                     "CONSTRAINT " + p_strTableName + "_pk PRIMARY KEY(rx))";
             }
 
-            //
-            //RX FVS Commands table
-            //
-            /// <summary>
-            /// Create the table that defines the FVS commands associated with a treatment.
-            /// </summary>
-            /// <param name="p_oAdo"></param>
-            /// <param name="p_oConn"></param>
-            /// <param name="p_strTableName"></param>
-            public void CreateRxFvsCommandsTable(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
-            {
-                p_oAdo.SqlNonQuery(p_oConn, CreateRxFvsCommandsTableSQL(p_strTableName));
-                CreateRxFvsCommandsTableIndexes(p_oAdo, p_oConn, p_strTableName);
-            }
-            public void CreateRxFvsCommandsTableIndexes(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
-            {
-                p_oAdo.AddPrimaryKey(p_oConn, p_strTableName, p_strTableName + "_pk", "rx_fvscmd_index,rx,fvscmd");
-                p_oAdo.AddIndex(p_oConn, p_strTableName, p_strTableName + "_idx1", "rx");
-            }
-            public string CreateRxFvsCommandsTableSQL(string p_strTableName)
-            {
-                return "CREATE TABLE " + p_strTableName + " (" +
-                    "rx_fvscmd_index LONG," +
-                    "rx CHAR(3)," +
-                    "fvscmd CHAR(30)," +
-                    "fvscmd_id BYTE," +
-                    "p1 CHAR(30)," +
-                    "p2 CHAR(30)," +
-                    "p3 CHAR(30)," +
-                    "p4 CHAR(30)," +
-                    "p5 CHAR(30)," +
-                    "p6 CHAR(30)," +
-                    "p7 CHAR(30)," +
-                    "Other MEMO)";
-
-            }
-            //
-            //RX HARVEST COST COLUMN
-            //
-            /// <summary>
-            /// Create the rx harvest cost column table
-            /// </summary>
-            /// <param name="p_oAdo"></param>
-            /// <param name="p_oConn"></param>
-            /// <param name="p_strTableName"></param>
-            public void CreateRxHarvestCostColumnTable(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
-            {
-                p_oAdo.SqlNonQuery(p_oConn, CreateRxHarvestCostColumnTableSQL(p_strTableName));
-                CreateRxHarvestCostColumnTableIndexes(p_oAdo, p_oConn, p_strTableName);
-            }
-            public void CreateRxHarvestCostColumnTableIndexes(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
-            {
-                p_oAdo.AddPrimaryKey(p_oConn, p_strTableName, p_strTableName + "_pk", "rx,ColumnName");
-
-            }
-            static public string CreateRxHarvestCostColumnTableSQL(string p_strTableName)
-            {
-                return "CREATE TABLE " + p_strTableName + " (" +
-                    "rx CHAR(3)," +
-                    "ColumnName CHAR(50)," +
-                    "Description CHAR(255))";
-            }
             public void CreateSqliteRxHarvestCostColumnTable(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
             {
                 p_oDataMgr.SqlNonQuery(p_oConn, CreateSqliteRxHarvestCostColumnTableSQL(p_strTableName));
@@ -3621,42 +3241,7 @@ namespace FIA_Biosum_Manager
                     "Description CHAR(255)," +
                     "CONSTRAINT " + p_strTableName + "_pk PRIMARY KEY (RX, COLUMNNAME))";
             }
-            //
-            //RX PACKAGE TABLE
-            //
-            /// <summary>
-            /// Create the Package table that defines an FVS treatment contained in a key/kcp file.
-            /// </summary>
-            /// <param name="p_oAdo"></param>
-            /// <param name="p_oConn"></param>
-            /// <param name="p_strTableName"></param>
-            public void CreateRxPackageTable(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
-            {
-                p_oAdo.SqlNonQuery(p_oConn, CreateRxPackageTableSQL(p_strTableName));
-                CreateRxPackageTableIndexes(p_oAdo, p_oConn, p_strTableName);
-            }
-            public void CreateRxPackageTableIndexes(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
-            {
-                p_oAdo.AddPrimaryKey(p_oConn, p_strTableName, p_strTableName + "_pk", "rxpackage");
-            }
-            public string CreateRxPackageTableSQL(string p_strTableName)
-            {
-                return "CREATE TABLE " + p_strTableName + " (" +
-                    "rxpackage CHAR(3)," +
-                    "description MEMO," +
-                    "rxcycle_length CHAR(2)," +
-                    "simyear1_rx CHAR(3)," +
-                    "simyear1_fvscycle CHAR(2)," +
-                    "simyear2_rx CHAR(3)," +
-                    "simyear2_fvscycle CHAR(2)," +
-                    "simyear3_rx CHAR(3)," +
-                    "simyear3_fvscycle CHAR(2)," +
-                    "simyear4_rx CHAR(3)," +
-                    "simyear4_fvscycle CHAR(2)," +
-                    "kcpfile CHAR(254))";
-            }
-
-            public void CreateSQLiteRxPackageTable(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
+           public void CreateSQLiteRxPackageTable(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
             {
                 p_oDataMgr.SqlNonQuery(p_oConn, CreateSQLiteRxPackageTableSQL(p_strTableName));
             }
@@ -3676,174 +3261,7 @@ namespace FIA_Biosum_Manager
                     "simyear4_fvscycle CHAR(2)," +
                     "CONSTRAINT " + p_strTableName + "_pk PRIMARY KEY(rxpackage))";
             }
-            //
-            //RX PACKAGE FVS Commands table
-            //
-            /// <summary>
-            /// Create the table that lists the FVS commands specific to a Package
-            /// </summary>
-            /// <param name="p_oAdo"></param>
-            /// <param name="p_oConn"></param>
-            /// <param name="p_strTableName"></param>
-            public void CreateRxPackageFvsCommandsTable(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
-            {
-                p_oAdo.SqlNonQuery(p_oConn, CreateRxPackageFvsCommandsTableSQL(p_strTableName));
-                CreateRxPackageFvsCommandsTableIndexes(p_oAdo, p_oConn, p_strTableName);
-            }
-            public void CreateRxPackageFvsCommandsTableIndexes(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
-            {
-                p_oAdo.AddPrimaryKey(p_oConn, p_strTableName, p_strTableName + "_pk", "rxpackage_fvscmd_index,rxpackage,fvscmd");
-                p_oAdo.AddIndex(p_oConn, p_strTableName, p_strTableName + "_idx1", "rxpackage");
-            }
-            public string CreateRxPackageFvsCommandsTableSQL(string p_strTableName)
-            {
-                return "CREATE TABLE " + p_strTableName + " (" +
-                    "rxpackage_fvscmd_index LONG," +
-                    "rxpackage CHAR(3)," +
-                    "fvscmd CHAR(30)," +
-                    "fvscmd_id BYTE," +
-                    "list_index LONG," +
-                    "p1 CHAR(30)," +
-                    "p2 CHAR(30)," +
-                    "p3 CHAR(30)," +
-                    "p4 CHAR(30)," +
-                    "p5 CHAR(30)," +
-                    "p6 CHAR(30)," +
-                    "p7 CHAR(30)," +
-                    "Other MEMO)";
 
-            }
-            //
-            //PACKAGE RX MEMBERS TABLE
-            //
-            /// <summary>
-            /// Create the table that lists the RX members of a package. 
-            /// </summary>
-            /// <param name="p_oAdo"></param>
-            /// <param name="p_oConn"></param>
-            /// <param name="p_strTableName"></param>
-            public void CreateRxPackageMembersTable(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
-            {
-                p_oAdo.SqlNonQuery(p_oConn, CreateRxPackageMembersTableSQL(p_strTableName));
-                CreateRxPackageMembersTableIndexes(p_oAdo, p_oConn, p_strTableName);
-            }
-            public void CreateRxPackageMembersTableIndexes(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
-            {
-                p_oAdo.AddIndex(p_oConn, p_strTableName, p_strTableName + "_idx1", "rxpackage");
-            }
-            public string CreateRxPackageMembersTableSQL(string p_strTableName)
-            {
-                return "CREATE TABLE " + p_strTableName + " (" +
-                    "rxpackage CHAR(3)," +
-                    "rx CHAR(3))";
-
-            }
-            //
-            //PACKAGE KCP FVS COMMANDS ORDER TABLE
-            //
-            /// <summary>
-            /// Create the table that lists the order of the FVS Commands within a package
-            /// </summary>
-            /// <param name="p_oAdo"></param>
-            /// <param name="p_oConn"></param>
-            /// <param name="p_strTableName"></param>
-            public void CreateRxPackageFvsCommandsOrderTable(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
-            {
-                p_oAdo.SqlNonQuery(p_oConn, CreateRxPackageFvsCommandsOrderTableSQL(p_strTableName));
-                CreateRxPackageFvsCommandsOrderTableIndexes(p_oAdo, p_oConn, p_strTableName);
-            }
-            public void CreateRxPackageFvsCommandsOrderTableIndexes(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
-            {
-                p_oAdo.AddIndex(p_oConn, p_strTableName, p_strTableName + "_idx1", "rxpackage");
-                p_oAdo.AddIndex(p_oConn, p_strTableName, p_strTableName + "_idx2", "rx");
-            }
-            public string CreateRxPackageFvsCommandsOrderTableSQL(string p_strTableName)
-            {
-                return "CREATE TABLE " + p_strTableName + " (" +
-                    "rxpackage CHAR(3)," +
-                    "rx CHAR(3)," +
-                    "fvscycle CHAR(2)," +
-                    "fvscmd CHAR(30)," +
-                    "fvscmd_id BYTE)";
-
-            }
-            //
-            //AUDIT TABLES
-            //
-            public static string CreateFVSOutputRxPrePostCycleYearTableSQL(string p_strTableName)
-            {
-                return "CREATE TABLE " + p_strTableName + " (standid TEXT(255), pre_year1 INTEGER, post_year1 INTEGER," +
-                    "pre_year2 INTEGER, post_year2 INTEGER ," +
-                    "pre_year3 INTEGER, post_year3 INTEGER ," +
-                    "pre_year4 INTEGER, post_year4 INTEGER)";
-
-            }
-            public static string CreateFVSOutputCycleYearTableSQL(string p_strTableName)
-            {
-                return "CREATE TABLE " + p_strTableName + " (standid TEXT(255), `year` INTEGER,cycle INTEGER)";
-            }
-            //
-            //FVS Tree Id used when creating FVS Text Input files
-            //
-            public static string CreateFVSTreeIdWorkTableSQL(string p_strTableName)
-            {
-                return "CREATE TABLE " + p_strTableName + " (" +
-                    "biosum_cond_id CHAR(25)," +
-                    "fvs_tree_id CHAR(9)," +
-                    "fvs_variant CHAR(2)," +
-                    "plotid CHAR(4)," +
-                    "treeid CHAR(3)," +
-                    "plottreeid CHAR(7))";
-
-            }
-            //
-            //FVS Output PRE-POST Sequence Number Definitions
-            //
-            /// <summary>
-            /// Create the table that defines the FVS Output PRE-POST Sequence Number Definitions.
-            /// </summary>
-            /// <param name="p_oAdo"></param>
-            /// <param name="p_oConn"></param>
-            /// <param name="p_strTableName"></param>
-            public void CreateFVSOutputPrePostSeqNumTable(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
-            {
-                p_oAdo.SqlNonQuery(p_oConn, CreateFVSOutputPrePostSeqNumTableSQL(p_strTableName));
-                CreateFVSOutputPrePostSeqNumTableIndexes(p_oAdo, p_oConn, p_strTableName);
-            }
-            public void CreateFVSOutputPrePostSeqNumTableIndexes(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
-            {
-                p_oAdo.AddPrimaryKey(p_oConn, p_strTableName, p_strTableName + "_pk", "PREPOST_SEQNUM_ID");
-                p_oAdo.AddIndex(p_oConn, p_strTableName, p_strTableName + "_idx1", "tablename");
-            }
-            public string CreateFVSOutputPrePostSeqNumTableSQL(string p_strTableName)
-            {
-                return "CREATE TABLE " + p_strTableName + " (" +
-                    "PREPOST_SEQNUM_ID INTEGER," +
-                    "TABLENAME CHAR(75)," +
-                    "TYPE CHAR(1)," +
-                    "RXCYCLE1_PRE_SEQNUM INTEGER," +
-                    "RXCYCLE1_POST_SEQNUM INTEGER," +
-                    "RXCYCLE2_PRE_SEQNUM INTEGER," +
-                    "RXCYCLE2_POST_SEQNUM INTEGER," +
-                    "RXCYCLE3_PRE_SEQNUM INTEGER," +
-                    "RXCYCLE3_POST_SEQNUM INTEGER," +
-                    "RXCYCLE4_PRE_SEQNUM INTEGER," +
-                    "RXCYCLE4_POST_SEQNUM INTEGER," +
-                    "RXCYCLE1_PRE_BASEYR_YN CHAR(1) DEFAULT 'N'," +
-                    "RXCYCLE2_PRE_BASEYR_YN CHAR(1) DEFAULT 'N'," +
-                    "RXCYCLE3_PRE_BASEYR_YN CHAR(1) DEFAULT 'N'," +
-                    "RXCYCLE4_PRE_BASEYR_YN CHAR(1) DEFAULT 'N'," +
-                    "RXCYCLE1_PRE_BEFORECUT_YN CHAR(1) DEFAULT 'N'," +
-                    "RXCYCLE1_POST_BEFORECUT_YN CHAR(1) DEFAULT 'Y'," +
-                    "RXCYCLE2_PRE_BEFORECUT_YN CHAR(1) DEFAULT 'N'," +
-                    "RXCYCLE2_POST_BEFORECUT_YN CHAR(1) DEFAULT 'Y'," +
-                    "RXCYCLE3_PRE_BEFORECUT_YN CHAR(1) DEFAULT 'N'," +
-                    "RXCYCLE3_POST_BEFORECUT_YN CHAR(1) DEFAULT 'Y'," +
-                    "RXCYCLE4_PRE_BEFORECUT_YN CHAR(1) DEFAULT 'N'," +
-                    "RXCYCLE4_POST_BEFORECUT_YN CHAR(1) DEFAULT 'Y'," +
-                    "USE_SUMMARY_TABLE_SEQNUM_YN CHAR(1) DEFAULT 'N')";
-
-            }
             //
             //FVS Output PRE-POST Sequence Number Definitions
             //
@@ -3895,21 +3313,7 @@ namespace FIA_Biosum_Manager
             //
             //FVS Output PRE-POST Sequence Number RX Package Assignments
             //
-            /// <summary>
-            /// Create the table that assigns seqnum to rx packages.
-            /// </summary>
-            /// <param name="p_oAdo"></param>
-            /// <param name="p_oConn"></param>
-            /// <param name="p_strTableName"></param>
-            public void CreateFVSOutputPrePostSeqNumRxPackageAssgnTable(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
-            {
-                p_oAdo.SqlNonQuery(p_oConn, CreateFVSOutputPrePostSeqNumRxPackageAssgnTableSQL(p_strTableName));
-                CreateFVSOutputPrePostSeqNumRxPackageAssgnTableIndexes(p_oAdo, p_oConn, p_strTableName);
-            }
-            public void CreateFVSOutputPrePostSeqNumRxPackageAssgnTableIndexes(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
-            {
-                p_oAdo.AddPrimaryKey(p_oConn, p_strTableName, p_strTableName + "_pk", "RXPACKAGE,PREPOST_SEQNUM_ID");
-            }
+
             public string CreateFVSOutputPrePostSeqNumRxPackageAssgnTableSQL(string p_strTableName)
             {
                 return "CREATE TABLE " + p_strTableName + " (" +
@@ -3931,31 +3335,6 @@ namespace FIA_Biosum_Manager
             //
             //FVS Output PRE-POST Sequence Number Audit
             //
-            public void CreateFVSOutputPrePostSeqNumAuditGenericTable(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
-            {
-                p_oAdo.SqlNonQuery(p_oConn, CreateFVSOutputPrePostSeqNumAuditGenericTableSQL(p_strTableName));
-                CreateFVSOutputPrePostSeqNumAuditGenericTableIndexes(p_oAdo, p_oConn, p_strTableName);
-            }
-            public void CreateFVSOutputPrePostSeqNumAuditGenericTableIndexes(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
-            {
-                p_oAdo.AddPrimaryKey(p_oConn, p_strTableName, p_strTableName + "_pk", "SEQNUM,STANDID");
-                p_oAdo.AddIndex(p_oConn, p_strTableName, p_strTableName + "_idx1", "STANDID,[YEAR]");
-            }
-            public string CreateFVSOutputPrePostSeqNumAuditGenericTableSQL(string p_strTableName)
-            {
-                return "CREATE TABLE " + p_strTableName + " (" +
-                  "SEQNUM INTEGER," +
-                  "STANDID CHAR(255)," +
-                  "[YEAR] INTEGER," +
-                  "CYCLE1_PRE_YN CHAR(1)," +
-                  "CYCLE1_POST_YN CHAR(1)," +
-                  "CYCLE2_PRE_YN CHAR(1)," +
-                  "CYCLE2_POST_YN CHAR(1)," +
-                  "CYCLE3_PRE_YN CHAR(1)," +
-                  "CYCLE3_POST_YN CHAR(1)," +
-                  "CYCLE4_PRE_YN CHAR(1)," +
-                  "CYCLE4_POST_YN CHAR(1))";
-            }
             public void CreateSQLiteFVSOutputPrePostSeqNumAuditGenericTable(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
             {
                 p_oDataMgr.SqlNonQuery(p_oConn, CreateSQLiteFVSOutputPrePostSeqNumAuditGenericTableSQL(p_strTableName));
@@ -3982,37 +3361,6 @@ namespace FIA_Biosum_Manager
                   "RXPACKAGE CHAR(3), " +
                   "FVS_VARIANT CHAR(2), " +
                   "CONSTRAINT " + p_strTableName + "_pk PRIMARY KEY(SEQNUM, STANDID, RXPACKAGE, FVS_VARIANT))";
-            }
-
-
-            //
-            //FVS Output StrClass PRE-POST Sequence Number Audit
-            //
-            public void CreateFVSOutputPrePostSeqNumAuditStrClassTable(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
-            {
-                p_oAdo.SqlNonQuery(p_oConn, CreateFVSOutputPrePostSeqNumAuditStrClassTableSQL(p_strTableName));
-                CreateFVSOutputPrePostSeqNumAuditStrClassTableIndexes(p_oAdo, p_oConn, p_strTableName);
-            }
-            public void CreateFVSOutputPrePostSeqNumAuditStrClassTableIndexes(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
-            {
-                p_oAdo.AddPrimaryKey(p_oConn, p_strTableName, p_strTableName + "_pk", "SEQNUM,STANDID,REMOVAL_CODE");
-                p_oAdo.AddIndex(p_oConn, p_strTableName, p_strTableName + "_idx1", "STANDID,[YEAR],REMOVAL_CODE");
-            }
-            public string CreateFVSOutputPrePostSeqNumAuditStrClassTableSQL(string p_strTableName)
-            {
-                return "CREATE TABLE " + p_strTableName + " (" +
-                  "SEQNUM INTEGER," +
-                  "STANDID CHAR(255)," +
-                  "[YEAR] INTEGER," +
-                  "REMOVAL_CODE INTEGER," +
-                  "CYCLE1_PRE_YN CHAR(1)," +
-                  "CYCLE1_POST_YN CHAR(1)," +
-                  "CYCLE2_PRE_YN CHAR(1)," +
-                  "CYCLE2_POST_YN CHAR(1)," +
-                  "CYCLE3_PRE_YN CHAR(1)," +
-                  "CYCLE3_POST_YN CHAR(1)," +
-                  "CYCLE4_PRE_YN CHAR(1)," +
-                  "CYCLE4_POST_YN CHAR(1))";
             }
 
             //
@@ -4250,181 +3598,12 @@ namespace FIA_Biosum_Manager
                     }
                 }
             }
-
-            //To be used in fvs_input.cs for creating FVS_StandInit_WorkTable in the temporary biosum database, which will then be translated to FVS_StandInit
-            public void CreateFVSInputStandInitTable(FIA_Biosum_Manager.ado_data_access p_oAdo,
-                System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
-            {
-                p_oAdo.SqlNonQuery(p_oConn, CreateFVSInputStandInitTableSQL(p_strTableName));
-                CreateFVSInputStandInitTableIndexes(p_oAdo, p_oConn, p_strTableName);
-            }
-
-            public void CreateFVSInputStandInitTableIndexes(FIA_Biosum_Manager.ado_data_access p_oAdo,
-                System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
-            {
-                p_oAdo.AddPrimaryKey(p_oConn, p_strTableName, p_strTableName + "_pk", "Stand_ID"); //TODO: Note that the Blank_Database used as an FVSIn.accdb template doesn't have primary keys.
-                p_oAdo.AddIndex(p_oConn, p_strTableName, p_strTableName + "_Groups_idx", "Groups");
-            }
-
-            public string CreateFVSInputStandInitTableSQL(string p_strTableName)
-            {
-                return "CREATE TABLE " + p_strTableName + " (" +
-                       "Stand_ID CHAR(26)," + //indexed, duplicates okay //REQUIRED
-                       "Variant CHAR(11)," + //REQUIRED
-                       "Inv_Year LONG," + //REQUIRED
-                       "Groups MEMO," + //indexed, duplicates okay
-                       "AddFiles MEMO," +
-                       "FVSKeywords MEMO," +
-                       "Latitude DOUBLE," +
-                       "Longitude DOUBLE," +
-                       "Region LONG," +
-                       "Forest LONG," +
-                       "District LONG," +
-                       "Compartment LONG," +
-                       "Location LONG," + //RECOMMENDED
-                       "Ecoregion CHAR(6)," +
-                       "PV_Code CHAR(10)," +
-                       "PV_Ref_Code LONG," +
-                       "Age LONG," +
-                       "Aspect DOUBLE," + //RECOMMENDED
-                       "Slope DOUBLE," + //RECOMMENDED
-                       "Elevation DOUBLE," +
-                       "ElevFt DOUBLE," + //RECOMMENDED
-                       "Basal_Area_Factor DOUBLE," + //REQUIRED
-                       "Inv_Plot_Size DOUBLE," + //REQUIRED
-                       "Brk_DBH DOUBLE," + //REQUIRED
-                       "Num_Plots LONG," + //RECOMMENDED
-                       "NonStk_Plots LONG," +
-                       "Sam_Wt DOUBLE," +
-                       "Stk_Pcnt DOUBLE," +
-                       "DG_Trans LONG," +
-                       "DG_Measure LONG," +
-                       "HTG_Trans LONG," +
-                       "HTG_Measure LONG," +
-                       "Mort_Measure LONG," +
-                       "Max_BA DOUBLE," +
-                       "Max_SDI DOUBLE," +
-                       "Site_Species CHAR(8)," +
-                       "Site_Index DOUBLE," +
-                       "Model_Type LONG," +
-                       "Physio_Region LONG," +
-                       "Forest_Type LONG," +
-                       "State LONG," +
-                       "County LONG," +
-                       "Fuel_Model LONG," +
-                       "Fuel_0_25_H DOUBLE," +
-                       "Fuel_25_1_H DOUBLE," +
-                       "Fuel_1_3_H DOUBLE," +
-                       "Fuel_3_6_H DOUBLE," +
-                       "Fuel_6_12_H DOUBLE," +
-                       "Fuel_12_20_H DOUBLE," +
-                       "Fuel_20_35_H DOUBLE," +
-                       "Fuel_35_50_H DOUBLE," +
-                       "Fuel_gt_50_H DOUBLE," +
-                       "Fuel_0_25_S DOUBLE," +
-                       "Fuel_25_1_S DOUBLE," +
-                       "Fuel_1_3_S DOUBLE," +
-                       "Fuel_3_6_S DOUBLE," +
-                       "Fuel_6_12_S DOUBLE," +
-                       "Fuel_12_20_S DOUBLE," +
-                       "Fuel_20_35_S DOUBLE," +
-                       "Fuel_35_50_S DOUBLE," +
-                       "Fuel_gt_50_S DOUBLE," +
-                       "Fuel_Litter DOUBLE," +
-                       "Fuel_Duff DOUBLE," +
-                       "SmallMediumTotalLength DOUBLE," +
-                       "LargeTotalLength DOUBLE," +
-                       "CWDTotalLength DOUBLE," +
-                       "DuffPitCount LONG," +
-                       "LitterPitCount LONG," +
-                       "Photo_Ref LONG," +
-                       "Photo_code CHAR(13)" +
-                       ")";
-            }
-
-
-            //To be used in fvs_input.cs for creating FVS_TreeInit_WorkTable in the temporary biosum database, which will then be translated to FVS_TreeInit
-            public void CreateFVSInputTreeInitWorkTable(FIA_Biosum_Manager.ado_data_access p_oAdo,
-                System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
-            {
-                p_oAdo.SqlNonQuery(p_oConn, CreateFVSInputTreeInitTableSQL(p_strTableName));
-                CreateFVSInputTreeInitWorkTableIndexes(p_oAdo, p_oConn, p_strTableName);
-            }
-
-            public void CreateFVSInputTreeInitWorkTableIndexes(FIA_Biosum_Manager.ado_data_access p_oAdo,
-                System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
-            {
-                p_oAdo.AddPrimaryKey(p_oConn, p_strTableName, p_strTableName + "_pk", "TreeInitID");
-                p_oAdo.AddIndex(p_oConn, p_strTableName, p_strTableName + "_Stand_ID_idx", "Stand_ID");
-                p_oAdo.AddIndex(p_oConn, p_strTableName, p_strTableName + "_StandPlot_ID_idx", "StandPlot_ID");
-                p_oAdo.AddIndex(p_oConn, p_strTableName, p_strTableName + "_Tree_ID_idx", "Tree_ID");
-                p_oAdo.AddIndex(p_oConn, p_strTableName, p_strTableName + "_PV_Code_idx", "PV_Code");
-                p_oAdo.AddIndex(p_oConn, p_strTableName, p_strTableName + "_TopoCode_idx", "TopoCode");
-            }
-
-            public string CreateFVSInputTreeInitTableSQL(string p_strTableName)
-            {
-                return "CREATE TABLE " + p_strTableName + " (" +
-                       "TreeInitID AUTOINCREMENT, " + //Pkey and indexed
-                       "Stand_ID CHAR(26)," + //indexed, duplicates okay //REQUIRED
-                       "StandPlot_ID CHAR(40)," +
-                       //"Plot_ID CHAR(4)," + //RECOMMENDED (how FVS defines this field)
-                       //"Tree_ID CHAR(40)," + // (how FVS defines this field)
-                       "Plot_ID DOUBLE," + //RECOMMENDED //This deviates from FVS DB documentation. Our current approach is to not use plot_IDs
-                       "Tree_ID DOUBLE," + //This deviates from FVS DB documentation because we calculate Tree_ID as Tree.Subp*1000+Tree.Tree. Also indexed.
-                       "Tree_Count DOUBLE," + //RECOMMENDED
-                       "History DOUBLE," +
-                       "Species CHAR(8)," + //REQUIRED
-                       "DBH DOUBLE," + //REQUIRED
-                       "DG DOUBLE," +
-                       "Htcd DOUBLE," + //Temporary table only: If Htcd in {1,2,3}, then we import Ht and HtTopK from Biosum Ht and ActualHt
-                       "Ht DOUBLE," + //RECOMMENDED
-                       "HTG DOUBLE," +
-                       "HtTopK DOUBLE," +
-                       "CrRatio DOUBLE," + //RECOMMENDED
-                       "Damage1 DOUBLE," +
-                       "Severity1 DOUBLE," +
-                       "Damage2 DOUBLE," +
-                       "Severity2 DOUBLE," +
-                       "Damage3 DOUBLE," +
-                       "Severity3 DOUBLE," +
-                       "TreeValue DOUBLE," +
-                       "Prescription DOUBLE," +
-                       "Age DOUBLE," +
-                       "Slope DOUBLE," +
-                       "Aspect DOUBLE," +
-                       "PV_Code CHAR(10)," + //indexed, duplicates okay
-                       "TopoCode DOUBLE," + //indexed, duplicates okay
-                       "SitePrep DOUBLE" +
-
-                       //To be used in the work table in the temp biosum mdb before the above records are inserted into FVS_TreeInit
-                       ", fvs_dmg_ag1 CHAR(2)," +
-                       "fvs_dmg_sv1 CHAR(2)," +
-                       "fvs_dmg_ag2 CHAR(2)," +
-                       "fvs_dmg_sv2 CHAR(2)," +
-                       "fvs_dmg_ag3 CHAR(2)," +
-                       "fvs_dmg_sv3 CHAR(2)," +
-                       "mist_cl_cd LONG, " +
-                       "hasBrokenTop BIT, " +
-                       "cullbf DOUBLE,  " +
-                       "TreeCN CHAR(34)  " +
-                       ")";
-            }
-
-
-
-
-
-
         }
         public class TravelTime
         {
             public static string DefaultTravelTimeAccdbFile { get { return "gis_travel_times.accdb"; } }
-            public static string DefaultTravelTimeTableDbFile { get { return @"gis\db\" + DefaultTravelTimeAccdbFile; } }
             public static string DefaultTravelTimeTableName { get { return "travel_time"; } }
-            public string DefaultProcessingSiteTableDbFile { get { return @"gis\db\" + DefaultTravelTimeAccdbFile; } }
             public static string DefaultProcessingSiteTableName { get { return "processing_site"; } }
-            public static string DefaultMasterTravelTimeAccdbFile { get { return "gis_travel_times_master.accdb"; } }
             public static string DefaultMasterTravelTimeDbFile { get { return "gis_travel_times_master.db"; } }
             public static string DefaultTravelTimeDbFile { get { return "gis_travel_times.db"; } }
             public static string DefaultTravelTimePathAndDbFile { get { return @"gis\db\" + DefaultTravelTimeDbFile; } }
@@ -5764,31 +4943,6 @@ namespace FIA_Biosum_Manager
             {
             }
 
-            public void CreateHarvestCostsTable(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
-            {
-                p_oAdo.SqlNonQuery(p_oConn, Tables.Processor.CreateHarvestCostsTableSQL(p_strTableName));
-                CreateHarvestCostsTableIndexes(p_oAdo, p_oConn, p_strTableName);
-            }
-            public void CreateHarvestCostsTableIndexes(ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
-            {
-                p_oAdo.AddPrimaryKey(p_oConn, p_strTableName, p_strTableName + "_pk", "biosum_cond_id,rxpackage,rx,rxcycle");
-            }
-            static public string CreateHarvestCostsTableSQL(string p_strTableName)
-            {
-                return "CREATE TABLE " + p_strTableName + " (" +
-                    "biosum_cond_id CHAR(25)," +
-                    "rxpackage CHAR(3)," +
-                    "rx CHAR(3)," +
-                    "rxcycle CHAR(1)," +
-                    "additional_cpa DOUBLE DEFAULT 0," +
-                    "harvest_cpa DOUBLE ," +
-                    "complete_cpa DOUBLE DEFAULT 0," +
-                    "chip_cpa DOUBLE ," +
-                    "assumed_movein_cpa DOUBLE ," +
-                    "place_holder CHAR(1) DEFAULT 'N'," +
-                    "override_YN CHAR(1) DEFAULT 'N'," +
-                    "DateTimeCreated CHAR(22))";
-            }
             public void CreateSqliteHarvestCostsTable(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
             {
                 p_oDataMgr.SqlNonQuery(p_oConn, Tables.Processor.CreateSqliteHarvestCostsTableSQL(p_strTableName));
@@ -5818,41 +4972,6 @@ namespace FIA_Biosum_Manager
                     "PRIMARY KEY(biosum_cond_id,rx))";
             }
 
-            public void CreateTreeVolValSpeciesDiamGroupsTableIndexes(ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
-            {
-                p_oAdo.AddAutoNumber(p_oConn, p_strTableName, "id");
-                p_oAdo.AddPrimaryKey(p_oConn, p_strTableName, p_strTableName + "_pk", "id");
-                p_oAdo.AddIndex(p_oConn, p_strTableName, p_strTableName + "_idx1", "biosum_cond_id,rxpackage,rx,rxcycle");
-                p_oAdo.AddIndex(p_oConn, p_strTableName, p_strTableName + "_idx2", "rx");
-                p_oAdo.AddIndex(p_oConn, p_strTableName, p_strTableName + "_idx3", "species_group");
-                p_oAdo.AddIndex(p_oConn, p_strTableName, p_strTableName + "_idx4", "diam_group");
-            }
-
-            static public string CreateTreeVolValSpeciesDiamGroupsTableSQL(string p_strTableName)
-            {
-                return "CREATE TABLE " + p_strTableName + " (" +
-                    "id LONG," +
-                    "biosum_cond_id CHAR(25)," +
-                    "rxpackage CHAR(3)," +
-                    "rx CHAR(3)," +
-                    "rxcycle CHAR(1)," +
-                    "species_group INTEGER," +
-                    "diam_group INTEGER DEFAULT 0," +
-                    "biosum_harvest_method_category INTEGER DEFAULT 0," +
-                    "chip_vol_cf DOUBLE," +
-                    "chip_wt_gt DOUBLE," +
-                    "chip_val_dpa DOUBLE," +
-                    "chip_mkt_val_pgt DOUBLE DEFAULT 0," +
-                    "merch_vol_cf DOUBLE," +
-                    "merch_wt_gt DOUBLE," +
-                    "merch_val_dpa DOUBLE," +
-                    "merch_to_chipbin_YN CHAR(1) DEFAULT 'N'," +
-                    "bc_vol_cf DOUBLE," +
-                    "bc_wt_gt DOUBLE," +
-                    "stand_residue_wt_gt DOUBLE," +
-                    "place_holder CHAR(1) DEFAULT 'N'," +
-                    "DateTimeCreated CHAR(22))";
-            }
             public void CreateSqliteTreeVolValSpeciesDiamGroupsTable(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, 
                 string p_strTableName, bool p_bCreateIdColumn)
             {
@@ -5890,83 +5009,6 @@ namespace FIA_Biosum_Manager
                     "place_holder CHAR(1) DEFAULT 'N'," +
                     "DateTimeCreated CHAR(22))";
                 return strSQL;
-            }
-            public void CreateTreeVolValSpeciesDiamGroupsWorkTable(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
-            {
-                p_oAdo.SqlNonQuery(p_oConn, Tables.Processor.CreateTreeVolValSpeciesDiamGroupsWorkTableSQL(p_strTableName));
-                CreateTreeVolValSpeciesDiamGroupsWorkTableIndexes(p_oAdo, p_oConn, p_strTableName);
-            }
-            public void CreateTreeVolValSpeciesDiamGroupsWorkTableIndexes(ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
-            {
-                p_oAdo.AddIndex(p_oConn, p_strTableName, p_strTableName + "_idx1", "biosum_cond_id,rxpackage,rx,rxcycle");
-                p_oAdo.AddIndex(p_oConn, p_strTableName, p_strTableName + "_idx2", "rx");
-                p_oAdo.AddIndex(p_oConn, p_strTableName, p_strTableName + "_idx3", "species_group");
-                p_oAdo.AddIndex(p_oConn, p_strTableName, p_strTableName + "_idx4", "diam_group");
-            }
-
-            static public string CreateTreeVolValSpeciesDiamGroupsWorkTableSQL(string p_strTableName)
-            {
-                return "CREATE TABLE " + p_strTableName + " (" +
-                    "biosum_cond_id CHAR(25)," +
-                    "rxpackage CHAR(3)," +
-                    "rx CHAR(3)," +
-                    "rxcycle CHAR(1)," +
-                    "species_group INTEGER," +
-                    "diam_group INTEGER DEFAULT 0," +
-                    "chip_vol_cf DOUBLE," +
-                    "chip_wt_gt DOUBLE," +
-                    "chip_val_dpa DOUBLE," +
-                    "chip_mkt_val_pgt DOUBLE DEFAULT 0," +
-                    "merch_vol_cf DOUBLE," +
-                    "merch_wt_gt DOUBLE," +
-                    "merch_val_dpa DOUBLE," +
-                    "merch_to_chipbin_YN CHAR(1) DEFAULT 'N'," +
-                    "bc_wt_gt DOUBLE," +
-                    "bc_vol_cf DOUBLE," +
-                    "DateTimeCreated CHAR(22))";
-            }
-
-            public void CreateOpcostInputTable(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
-            {
-                p_oAdo.SqlNonQuery(p_oConn, Tables.Processor.CreateOpcostInputTableSQL(p_strTableName));
-                // No indexes currently on OpCost input table
-            }
-
-
-            static public string CreateOpcostInputTableSQL(string p_strTableName)
-            {
-                return "CREATE TABLE " + p_strTableName + " " +
-                             "(Stand text (255)," +
-                             " [Percent Slope] short," +
-                             " [One-way Yarding Distance] DOUBLE," +
-                             " YearCostCalc long," +
-                             " [Project Elevation] short," +
-                             " [Harvesting System] text (50)," +
-                             " [Chip tree per acre] single," +
-                             " [Residue fraction for chip trees] single," +
-                            " [Chip trees average volume(ft3)] single," +
-                            " [CHIPS Average Density (lbs/ft3)] single," +
-                            " [CHIPS Hwd Proportion] single," +
-                            " [Small log trees per acre] single," +
-                            " [Small log trees residue fraction] single," +
-                            " [Small log trees average volume(ft3)] single," +
-                            " [Small log trees average density(lbs/ft3)] single," +
-                            " [Small log trees hardwood proportion] single," +
-                            " [Large log trees per acre] single," +
-                            " [Large log trees residue fraction] single," +
-                            " [Large log trees average vol(ft3)] single," +
-                            " [Large log trees average density(lbs/ft3)] single," +
-                            " [Large log trees hardwood proportion] single," +
-                            " BrushCutTPA single," +
-                            " BrushCutAvgVol single," +
-                            " RxPackage_Rx_RxCycle text (255))";
-            }
-
-
-            public void CreateNewOpcostInputTable(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
-            {
-                p_oAdo.SqlNonQuery(p_oConn, Tables.Processor.CreateNewOpcostInputTableSQL(p_strTableName));
-                // No indexes currently on OpCost input table
             }
 
             public void CreateNewSQLiteOpcostInputTable(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
@@ -6143,18 +5185,8 @@ namespace FIA_Biosum_Manager
         }
         public class ProcessorScenarioRun
         {
-            static public string DefaultHarvestCostsTableDbFile { get { return @"db\scenario_results.mdb"; } }
             static public string DefaultHarvestCostsTableName { get { return "harvest_costs"; } }
-            static public string DefaultTreeVolValSpeciesDiamGroupsDbFile { get { return @"db\scenario_results.mdb"; } }
             static public string DefaultTreeVolValSpeciesDiamGroupsTableName { get { return "tree_vol_val_by_species_diam_groups"; } }
-            static public string DefaultDiametersLowSlopeTableName { get { return "DiametersLowSlope"; } }
-            static public string DefaultDiametersSteepSlopeTableName { get { return "DiametersSteepSlope"; } }
-            static public string DefaultTreeDataInLowSlopeTableName { get { return "TreeDataInLowSlope"; } }
-            static public string DefaultTreeDataInSteepSlopeTableName { get { return "TreeDataInSteepSlope"; } }
-            static public string DefaultTreeBinLowSlopeTableName { get { return "BinsLowSlope"; } }
-            static public string DefaultTreeHwdBinLowSlopeTableName { get { return "Hwd_BinsLowSlope"; } }
-            static public string DefaultTreeBinSteepSlopeTableName { get { return "BinsSteepSlope"; } }
-            static public string DefaultTreeHwdBinSteepSlopeTableName { get { return "Hwd_BinsSteepSlope"; } }
             static public string DefaultFiaTreeSpeciesRefTableName { get { return "FIA_TREE_SPECIES_REF"; } }
             static public string DefaultOpcostErrorsTableName { get { return @"opcost_errors"; } }
             static public string DefaultSqliteResultsDbFile { get { return @"db\scenario_results.db"; } }
@@ -6165,433 +5197,6 @@ namespace FIA_Biosum_Manager
             {
             }
 
-            static public string CreateDiametersTableSQL(string p_strTableName)
-            {
-                return "CREATE TABLE " + p_strTableName + " " +
-                       "(DBH Single, class text (10), Util_Logs_Bk text (1), " +
-                        "Util_Chips_Bk text (1),Res_Stmp_Bk text (1)," +
-                        "Res_Lnd_Bk text (1), Util_Logs_Br text (1)," +
-                        "Util_Chips_Br text (1)," +
-                        "Res_Stmp_Br text (1), Res_Lnd_Br text (1), " +
-                        "Util_Logs_Bl text (1), Util_Chips_Bl text (1)," +
-                        "Res_Stmp_Bl text (1), Res_Lnd_Bl text (1)," +
-                        "NonUtil_Logs_Bl text (1)," +
-                        "NonUtil_Chips_Bl text (1)," +
-                        "diam_group short, species_group INTEGER)";
-
-            }
-            //
-            //TREE DATA_IN
-            //
-            public void CreateTreeDataInTable(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
-            {
-                p_oAdo.SqlNonQuery(p_oConn, CreateTreeDataInTableSQL(p_strTableName));
-                CreateTreeDataInTableIndexes(p_oAdo, p_oConn, p_strTableName);
-            }
-            public void CreateTreeDataInTableIndexes(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
-            {
-                p_oAdo.AddIndex(p_oConn, p_strTableName, p_strTableName + "_idx1", "biosum_cond_id");
-                p_oAdo.AddIndex(p_oConn, p_strTableName, p_strTableName + "_idx2", "spcd");
-                p_oAdo.AddIndex(p_oConn, p_strTableName, p_strTableName + "_idx3", "species_group");
-                p_oAdo.AddIndex(p_oConn, p_strTableName, p_strTableName + "_idx4", "fvs_tree_id");
-            }
-            static public string CreateTreeDataInTableSQL(string p_strTableName)
-            {
-                return "CREATE TABLE " + p_strTableName + " " +
-                       "(fvs_tree_id CHAR(10), " +
-                        "biosum_cond_id CHAR(25)," +
-                        "rxpackage CHAR(3)," +
-                        "rx CHAR(3)," +
-                        "rxcycle CHAR(1)," +
-                        "spcd INTEGER," +
-                        "dia SINGLE," +
-                        "tpa DOUBLE," +
-                        "merch_vol_cf DOUBLE," +
-                        "merch_wt_gt DOUBLE," +
-                        "chip_vol_cf DOUBLE," +
-                        "chip_wt_gt DOUBLE," +
-                        "residue_fraction DOUBLE," +
-                        "slope INTEGER," +
-                        "species_group INTEGER," +
-                        "diam_group INTEGER," +
-                        "merch_to_chipbin_YN CHAR(1) DEFAULT 'N')";
-
-            }
-            //
-            //TREE BIN
-            //
-            public void CreateTreeBinTable(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
-            {
-                p_oAdo.SqlNonQuery(p_oConn, CreateTreeBinTableSQL(p_strTableName));
-                CreateTreeBinTableIndexes(p_oAdo, p_oConn, p_strTableName);
-            }
-            public void CreateTreeBinTableIndexes(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
-            {
-                p_oAdo.AddIndex(p_oConn, p_strTableName, p_strTableName + "_idx1", "fvs_tree_id");
-                p_oAdo.AddIndex(p_oConn, p_strTableName, p_strTableName + "_idx2", "biosum_cond_id");
-                p_oAdo.AddIndex(p_oConn, p_strTableName, p_strTableName + "_idx3", "species");
-                p_oAdo.AddIndex(p_oConn, p_strTableName, p_strTableName + "_idx4", "species_group");
-                p_oAdo.AddIndex(p_oConn, p_strTableName, p_strTableName + "_idx5", "diam_group");
-            }
-            static public string CreateTreeBinTableSQL(string p_strTableName)
-            {
-                return "CREATE TABLE " + p_strTableName + " " +
-                         "(FVS_TREE_ID TEXT (10)," +
-                          "BIOSUM_COND_ID text (25)," +
-                          "RXPACKAGE text (3)," +
-                          "RX text (3)," +
-                          "RXCYCLE text (1)," +
-                          "species short," +
-                            "species_group short," +
-                            "DBH single," +
-                            "diam_group short," +
-                          "BC_Util_Logs_count short," +
-                          "BC_Util_Logs_TPA single," +
-                          "BC_Util_Logs_merch_vol single," +
-                          "BC_Util_Logs_merch_wt single," +
-                          "BC_Util_Logs_biomass_vol single," +
-                          "BC_Util_Logs_biomass_wt single," +
-                          "BC_Util_Chips_count integer," +
-                          "BC_Util_Chips_TPA single," +
-                          "BC_Util_Chips_merch_wt single," +
-                          "BC_Util_Chips_merch_vol single," +
-                          "BC_Util_Chips_biomass_wt single," +
-                          "BC_Util_Chips_biomass_vol single," +
-                          "BC_NonUtil_Logs_count short," +
-                          "BC_NonUtil_Logs_TPA single," +
-                          "BC_NonUtil_Logs_merch_vol single," +
-                          "BC_NonUtil_Logs_merch_wt single," +
-                          "BC_NonUtil_Logs_biomass_vol single," +
-                          "BC_NonUtil_Logs_biomass_wt single," +
-                          "BC_NonUtil_Chips_count integer," +
-                          "BC_NonUtil_Chips_TPA single," +
-                          "BC_NonUtil_Chips_merch_wt single," +
-                          "BC_NonUtil_Chips_merch_vol single," +
-                          "BC_NonUtil_Chips_biomass_wt single," +
-                          "BC_NonUtil_Chips_biomass_vol single," +
-                          "CHIPS_Util_Logs_count integer," +
-                          "CHIPS_Util_Logs_TPA single," +
-                          "CHIPS_Util_Chips_count integer," +
-                          "CHIPS_Util_Chips_TPA single," +
-                          "CHIPS_Util_Logs_merch_vol single," +
-                          "CHIPS_Util_Logs_merch_wt single," +
-                          "CHIPS_Util_logs_biomass_vol single," +
-                          "CHIPS_Util_logs_biomass_wt single," +
-                          "CHIPS_Util_Chips_merch_vol single," +
-                          "CHIPS_Util_Chips_merch_wt single," +
-                          "CHIPS_Util_Chips_biomass_vol single," +
-                          "CHIPS_Util_Chips_biomass_wt single," +
-                          "CHIPS_NonUtil_Logs_count integer," +
-                          "CHIPS_NonUtil_Logs_TPA single," +
-                          "CHIPS_NonUtil_Chips_count integer," +
-                          "CHIPS_NonUtil_Chips_TPA single," +
-                          "CHIPS_NonUtil_Logs_merch_vol single," +
-                          "CHIPS_NonUtil_Logs_merch_wt single," +
-                          "CHIPS_NonUtil_logs_biomass_vol single," +
-                          "CHIPS_NonUtil_logs_biomass_wt single," +
-                          "CHIPS_NonUtil_Chips_merch_vol single," +
-                          "CHIPS_NonUtil_Chips_merch_wt single," +
-                          "CHIPS_NonUtil_Chips_biomass_vol single," +
-                          "CHIPS_NonUtil_Chips_biomass_wt single," +
-                          "SMLOGS_Util_Logs_count integer," +
-                          "SMLOGS_Util_Logs_TPA single," +
-                          "SMLOGS_Util_Chips_count integer," +
-                          "SMLOGS_Util_Chips_TPA single," +
-                          "SMLOGS_Util_Logs_merch_vol single," +
-                          "SMLOGS_Util_Logs_merch_wt single," +
-                          "SMLOGS_Util_logs_biomass_vol single," +
-                          "SMLOGS_Util_logs_biomass_wt single," +
-                          "SMLOGS_Util_Chips_merch_vol single," +
-                          "SMLOGS_Util_Chips_merch_wt single," +
-                          "SMLOGS_Util_Chips_biomass_vol single," +
-                          "SMLOGS_Util_Chips_biomass_wt single," +
-                          "SMLOGS_NonUtil_Logs_count integer," +
-                          "SMLOGS_NonUtil_Logs_TPA single," +
-                          "SMLOGS_NonUtil_Chips_count integer," +
-                          "SMLOGS_NonUtil_Chips_TPA single," +
-                          "SMLOGS_NonUtil_Logs_merch_vol single," +
-                          "SMLOGS_NonUtil_Logs_merch_wt single," +
-                          "SMLOGS_NonUtil_logs_biomass_vol single," +
-                          "SMLOGS_NonUtil_logs_biomass_wt single," +
-                          "SMLOGS_NonUtil_Chips_merch_vol single," +
-                          "SMLOGS_NonUtil_Chips_merch_wt single," +
-                          "SMLOGS_NonUtil_Chips_biomass_vol single," +
-                          "SMLOGS_NonUtil_Chips_biomass_wt single," +
-                          "LGLOGS_Util_Logs_count integer," +
-                          "LGLOGS_Util_Logs_TPA single," +
-                          "LGLOGS_Util_Chips_count integer," +
-                          "LGLOGS_Util_Chips_TPA single," +
-                          "LGLOGS_Util_Logs_merch_vol single," +
-                          "LGLOGS_Util_Logs_merch_wt single," +
-                          "LGLOGS_Util_logs_biomass_vol single," +
-                          "LGLOGS_Util_logs_biomass_wt single," +
-                          "LGLOGS_Util_Chips_merch_vol single," +
-                          "LGLOGS_Util_Chips_merch_wt single," +
-                          "LGLOGS_Util_Chips_biomass_vol single," +
-                          "LGLOGS_Util_Chips_biomass_wt single," +
-                          "LGLOGS_NonUtil_Logs_count integer," +
-                          "LGLOGS_NonUtil_Logs_TPA single," +
-                          "LGLOGS_NonUtil_Chips_count integer," +
-                          "LGLOGS_NonUtil_Chips_TPA single," +
-                          "LGLOGS_NonUtil_Logs_merch_vol single," +
-                          "LGLOGS_NonUtil_Logs_merch_wt single," +
-                          "LGLOGS_NonUtil_logs_biomass_vol single," +
-                          "LGLOGS_NonUtil_logs_biomass_wt single," +
-                          "LGLOGS_NonUtil_Chips_merch_vol single," +
-                          "LGLOGS_NonUtil_Chips_merch_wt single," +
-                          "LGLOGS_NonUtil_Chips_biomass_vol single," +
-                          "LGLOGS_NonUtil_Chips_biomass_wt single)";
-            }
-            //
-            //TREE HARDWOOD BIN
-            //
-            public void CreateTreeHwdBinTable(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
-            {
-                p_oAdo.SqlNonQuery(p_oConn, CreateTreeHwdBinTableSQL(p_strTableName));
-                CreateTreeHwdBinTableIndexes(p_oAdo, p_oConn, p_strTableName);
-            }
-            public void CreateTreeHwdBinTableIndexes(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
-            {
-                p_oAdo.AddIndex(p_oConn, p_strTableName, p_strTableName + "_idx1", "fvs_tree_id");
-                p_oAdo.AddIndex(p_oConn, p_strTableName, p_strTableName + "_idx2", "biosum_cond_id");
-                p_oAdo.AddIndex(p_oConn, p_strTableName, p_strTableName + "_idx3", "species");
-                p_oAdo.AddIndex(p_oConn, p_strTableName, p_strTableName + "_idx4", "species_group");
-                p_oAdo.AddIndex(p_oConn, p_strTableName, p_strTableName + "_idx5", "diam_group");
-            }
-            static public string CreateTreeHwdBinTableSQL(string p_strTableName)
-            {
-                return "CREATE TABLE " + p_strTableName + " " +
-                        "(FVS_TREE_ID text (10), " +
-                            "BIOSUM_COND_ID text (25)," +
-                            "RXPACKAGE text (3)," +
-                            "RX text (3)," +
-                            "RXCYCLE text (1)," +
-                            "species short," +
-                            "species_group short," +
-                            "DBH single," +
-                            "diam_group short," +
-                            "HWD_BC_Util_Logs_count short," +
-                            "HWD_BC_Util_Logs_TPA single," +
-                            "HWD_BC_Util_Logs_merch_vol single," +
-                            "HWD_BC_Util_Logs_merch_wt single," +
-                            "HWD_BC_Util_Logs_biomass_vol single," +
-                            "HWD_BC_Util_Logs_biomass_wt single," +
-                            "HWD_BC_Util_Chips_count integer," +
-                            "HWD_BC_Util_Chips_TPA single," +
-                            "HWD_BC_Util_Chips_merch_wt single," +
-                            "HWD_BC_Util_Chips_merch_vol single," +
-                            "HWD_BC_Util_Chips_biomass_wt single," +
-                            "HWD_BC_Util_Chips_biomass_vol single," +
-                            "HWD_BC_NonUtil_Logs_count short," +
-                            "HWD_BC_NonUtil_Logs_TPA single," +
-                            "HWD_BC_NonUtil_Logs_merch_vol single," +
-                            "HWD_BC_NonUtil_Logs_merch_wt single," +
-                            "HWD_BC_NonUtil_Logs_biomass_vol single," +
-                            "HWD_BC_NonUtil_Logs_biomass_wt single," +
-                            "HWD_BC_NonUtil_Chips_count integer," +
-                            "HWD_BC_NonUtil_Chips_TPA single," +
-                            "HWD_BC_NonUtil_Chips_merch_wt single," +
-                            "HWD_BC_NonUtil_Chips_merch_vol single," +
-                            "HWD_BC_NonUtil_Chips_biomass_wt single," +
-                            "HWD_BC_NonUtil_Chips_biomass_vol single," +
-                            "HWD_CHIPS_Util_Logs_count integer," +
-                            "HWD_CHIPS_Util_Logs_TPA single," +
-                            "HWD_CHIPS_Util_Chips_count integer," +
-                            "HWD_CHIPS_Util_Chips_TPA single," +
-                            "HWD_CHIPS_Util_Logs_merch_vol single," +
-                            "HWD_CHIPS_Util_Logs_merch_wt single," +
-                            "HWD_CHIPS_Util_logs_biomass_vol single," +
-                            "HWD_CHIPS_Util_logs_biomass_wt single," +
-                            "HWD_CHIPS_Util_Chips_merch_vol single," +
-                            "HWD_CHIPS_Util_Chips_merch_wt single," +
-                            "HWD_CHIPS_Util_Chips_biomass_vol single," +
-                            "HWD_CHIPS_Util_Chips_biomass_wt single," +
-                            "HWD_CHIPS_NonUtil_Logs_count integer," +
-                            "HWD_CHIPS_NonUtil_Logs_TPA single," +
-                            "HWD_CHIPS_NonUtil_Chips_count integer," +
-                            "HWD_CHIPS_NonUtil_Chips_TPA single," +
-                            "HWD_CHIPS_NonUtil_Logs_merch_vol single," +
-                            "HWD_CHIPS_NonUtil_Logs_merch_wt single," +
-                            "HWD_CHIPS_NonUtil_logs_biomass_vol single," +
-                            "HWD_CHIPS_NonUtil_logs_biomass_wt single," +
-                            "HWD_CHIPS_NonUtil_Chips_merch_vol single," +
-                            "HWD_CHIPS_NonUtil_Chips_merch_wt single," +
-                            "HWD_CHIPS_NonUtil_Chips_biomass_vol single," +
-                            "HWD_CHIPS_NonUtil_Chips_biomass_wt single," +
-                            "HWD_SMLOGS_Util_Logs_count integer," +
-                            "HWD_SMLOGS_Util_Logs_TPA single," +
-                            "HWD_SMLOGS_Util_Chips_count integer," +
-                            "HWD_SMLOGS_Util_Chips_TPA single," +
-                            "HWD_SMLOGS_Util_Logs_merch_vol single," +
-                            "HWD_SMLOGS_Util_Logs_merch_wt single," +
-                            "HWD_SMLOGS_Util_logs_biomass_vol single," +
-                            "HWD_SMLOGS_Util_logs_biomass_wt single," +
-                            "HWD_SMLOGS_Util_Chips_merch_vol single," +
-                            "HWD_SMLOGS_Util_Chips_merch_wt single," +
-                            "HWD_SMLOGS_Util_Chips_biomass_vol single," +
-                            "HWD_SMLOGS_Util_Chips_biomass_wt single," +
-                            "HWD_SMLOGS_NonUtil_Logs_count integer," +
-                            "HWD_SMLOGS_NonUtil_Logs_TPA single," +
-                            "HWD_SMLOGS_NonUtil_Chips_count integer," +
-                            "HWD_SMLOGS_NonUtil_Chips_TPA single," +
-                            "HWD_SMLOGS_NonUtil_Logs_merch_vol single," +
-                            "HWD_SMLOGS_NonUtil_Logs_merch_wt single," +
-                            "HWD_SMLOGS_NonUtil_logs_biomass_vol single," +
-                            "HWD_SMLOGS_NonUtil_logs_biomass_wt single," +
-                            "HWD_SMLOGS_NonUtil_Chips_merch_vol single," +
-                            "HWD_SMLOGS_NonUtil_Chips_merch_wt single," +
-                            "HWD_SMLOGS_NonUtil_Chips_biomass_vol single," +
-                            "HWD_SMLOGS_NonUtil_Chips_biomass_wt single," +
-                            "HWD_LGLOGS_Util_Logs_count integer," +
-                            "HWD_LGLOGS_Util_Logs_TPA single," +
-                            "HWD_LGLOGS_Util_Chips_count integer," +
-                            "HWD_LGLOGS_Util_Chips_TPA single," +
-                            "HWD_LGLOGS_Util_Logs_merch_vol single," +
-                            "HWD_LGLOGS_Util_Logs_merch_wt single," +
-                            "HWD_LGLOGS_Util_logs_biomass_vol single," +
-                            "HWD_LGLOGS_Util_logs_biomass_wt single," +
-                            "HWD_LGLOGS_Util_Chips_merch_vol single," +
-                            "HWD_LGLOGS_Util_Chips_merch_wt single," +
-                            "HWD_LGLOGS_Util_Chips_biomass_vol single," +
-                            "HWD_LGLOGS_Util_Chips_biomass_wt single," +
-                            "HWD_LGLOGS_NonUtil_Logs_count integer," +
-                            "HWD_LGLOGS_NonUtil_Logs_TPA single," +
-                            "HWD_LGLOGS_NonUtil_Chips_count integer," +
-                            "HWD_LGLOGS_NonUtil_Chips_TPA single," +
-                            "HWD_LGLOGS_NonUtil_Logs_merch_vol single," +
-                            "HWD_LGLOGS_NonUtil_Logs_merch_wt single," +
-                            "HWD_LGLOGS_NonUtil_logs_biomass_vol single," +
-                            "HWD_LGLOGS_NonUtil_logs_biomass_wt single," +
-                            "HWD_LGLOGS_NonUtil_Chips_merch_vol single," +
-                            "HWD_LGLOGS_NonUtil_Chips_merch_wt single," +
-                            "HWD_LGLOGS_NonUtil_Chips_biomass_vol single," +
-                            "HWD_LGLOGS_NonUtil_Chips_biomass_wt single)";
-
-            }
-            public void CreateOutputTable(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
-            {
-                p_oAdo.SqlNonQuery(p_oConn, CreateOutputTableSQL(p_strTableName));
-                CreateOutputTableIndexes(p_oAdo, p_oConn, p_strTableName);
-            }
-            public void CreateOutputTableIndexes(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
-            {
-                p_oAdo.AddPrimaryKey(p_oConn, p_strTableName, p_strTableName + "_pk", "biosum_cond_id,rxpackage,rx,rxcycle");
-
-            }
-            static public string CreateOutputTableSQL(string p_strTableName)
-            {
-
-                return "CREATE TABLE " + p_strTableName + " " +
-                             "(BIOSUM_COND_ID text (25)," +
-                             " RXPACKAGE text (3)," +
-                             " RX text (3)," +
-                             " RXCYCLE text (1)," +
-                             " elev short," +
-                             " slope short," +
-                             " gis_yard_dist_ft DOUBLE," +
-                             " [Harvesting system] text (50)," +
-                            " [CHIPS TPA] single," +
-                            " [CHIPS Average Vol (ft3)] single," +
-                            " [CHIPS Average Weight (tons)] single, " +
-                            " [CHIPS Average Density (lbs/ft3)] single, " +
-                            " [CHIPS Hwd Proportion] single," +
-                            " [CHIPS Chip Fraction] single," +
-                            " [CHIPS utilized logs (ft3)] single," +
-                            " [CHIPS utilized chips (tons)] single," +
-                            " [SMLOGS TPA] single," +
-                            " [SMLOGS Average Vol (ft3)] single," +
-                            " [SMLOGS Average Weight (tons)] single," +
-                            " [SMLOGS Average Density (lbs/ft3)] single," +
-                            " [SMLOGS Hwd Proportion] single," +
-                            " [SMLOGS Chip Fraction] single," +
-                            " [SMLOGS utilized logs (ft3)] single," +
-                            " [SMLOGS utilized chips (tons)] single," +
-                            " [LGLOGS TPA] single," +
-                            " [LGLOGS Average Vol (ft3)] single," +
-                            " [LGLOGS Average Weight (tons)] single," +
-                            " [LGLOGS Average Density (lbs/ft3)] single," +
-                            " [LGLOGS Hwd Proportion] single," +
-                            " [LGLOGS Chip Fraction] single," +
-                            " [LGLOGS utilized logs (ft3)] single," +
-                            " [LGLOGS utilized chips (tons)] single," +
-                            " [TOTAL TPA] single," +
-                            " [TOTAL Average Vol (ft3)] single," +
-                            " [TOTAL Average Weight (tons)] single," +
-                            " [TOTAL Average Density (lbs/ft3)] single," +
-                            " [TOTAL Hwd Proportion] single," +
-                            " [TOTAL Chip Fraction] single," +
-                            " [TOTAL utilized logs (ft3)] single," +
-                            " [TOTAL utilized chips (tons)] single," +
-                            " [BRUSH CUT utilized logs (ft3)] single," +
-                            " [BRUSH CUT utilized chips (tons)] single," +
-                            " [BRUSH CUT Residue at Stump Vol (ft3)] single," +
-                            " [BRUSH CUT Residue at Landing Vol (ft3)] single," +
-                            " [BRUSH CUT not utilized TPA] single," +
-                            " [BRUSH CUT not utilized Average Vol (ft3)] single," +
-                            " [BRUSH CUT not utilized Average Weight (tons)] single, " +
-                            " [BRUSH CUT not utilized Average Density (lbs/ft3)] single, " +
-                            " [BRUSH CUT not utilized Hwd Proportion] single," +
-                            " [BRUSH CUT not utilized Chip Fraction] single," +
-                            " [BRUSH CUT not utilized logs (ft3)] single," +
-                            " [BRUSH CUT not utilized chips (tons)] single)";
-
-            }
-            static public string CreateFRCSOutputTableSQL(string p_strTableName)
-            {
-                return "CREATE TABLE " + p_strTableName + " (" +
-                       "STAND CHAR(255)," +
-                       "[$/Green Ton] CHAR(255)," +
-                       "[$/CCF] CHAR(255)," +
-                       "[$/Acre] CHAR(255)," +
-                       "RxPackage_Rx_RxCycle CHAR(255))";
-            }
-            public void CreateFRCSWarningTable(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
-            {
-                p_oAdo.SqlNonQuery(p_oConn, CreateFRCSWarningTableSQL(p_strTableName));
-                CreateFRCSWarningTableIndexes(p_oAdo, p_oConn, p_strTableName);
-            }
-            public void CreateFRCSWarningTableIndexes(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
-            {
-                p_oAdo.AddPrimaryKey(p_oConn, p_strTableName, p_strTableName + "_pk", "biosum_cond_id,rxpackage,rx,rxcycle");
-
-            }
-            static public string CreateFRCSWarningTableSQL(string p_strTableName)
-            {
-                return "CREATE TABLE " + p_strTableName + " " +
-                          "(biosum_cond_id text (25)," +
-                            "RXPackage text (3)," +
-                            "RX text (3)," +
-                            "RXCycle text (1)," +
-                            "lglogpa text (30)," +
-                            "lglogpatoallpa text (30)," +
-                            "chipvol text (30)," +
-                            "lglogvol text (30)," +
-                            "smlogvol text (30)," +
-                            "alllogvol text (30)," +
-                            "allvol text (30)," +
-                            "slope text(30)," +
-                            "warning text (220))";
-
-            }
-
-
-            public void CreateTotalAdditionalHarvestCostsTable(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
-            {
-                p_oAdo.SqlNonQuery(p_oConn, CreateTotalAdditionalHarvestCostsTableSQL(p_strTableName));
-                CreateTotalAdditionalHarvestCostsTableIndexes(p_oAdo, p_oConn, p_strTableName);
-            }
-            public void CreateTotalAdditionalHarvestCostsTableIndexes(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
-            {
-                p_oAdo.AddPrimaryKey(p_oConn, p_strTableName, p_strTableName + "_pk", "biosum_cond_id,rx");
-
-            }
-            static public string CreateTotalAdditionalHarvestCostsTableSQL(string p_strTableName)
-            {
-                return "CREATE TABLE " + p_strTableName + " " +
-                          "(biosum_cond_id text (25)," +
-                            "RX text (3)," +
-                            "complete_additional_cpa double)";
-            }
             public void CreateSqliteTotalAdditionalHarvestCostsTable(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn,
                 string p_strTableName)
             {
@@ -6606,33 +5211,6 @@ namespace FIA_Biosum_Manager
                           "PRIMARY KEY(biosum_cond_id, rx))";
             }
 
-            public void CreateAdditionalKcpCpaTable(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, 
-                string p_strTableName, bool bIsWorktable)
-            {
-                p_oAdo.SqlNonQuery(p_oConn, CreateAdditionalKcpCpaTableSQL(p_strTableName, bIsWorktable));
-                CreateAdditionalKcpCpaTableIndexes(p_oAdo, p_oConn, p_strTableName);
-            }
-            public void CreateAdditionalKcpCpaTableIndexes(FIA_Biosum_Manager.ado_data_access p_oAdo, 
-                System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
-            {
-                p_oAdo.AddPrimaryKey(p_oConn, p_strTableName, p_strTableName + "_pk", "biosum_cond_id,rxPackage,rx,rxCycle");
-
-            }
-            static public string CreateAdditionalKcpCpaTableSQL(string p_strTableName, bool bIsWorktable)
-            {
-                string lastField = "DateTimeCreated CHAR(22)";
-                if (bIsWorktable)
-                {
-                    lastField = "additional_cpa DOUBLE";
-                }
-                string strSql = $@"CREATE TABLE {p_strTableName}
-                          (biosum_cond_id CHAR (25),
-                           rxPackage CHAR (3),
-                           rx CHAR (3),
-                           rxCycle CHAR (1),
-                           {lastField})";
-                return strSql;
-            }
             public void CreateSqliteAdditionalKcpCpaTable(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn,
                 string p_strTableName, bool bIsWorktable)
             {
@@ -6904,26 +5482,6 @@ namespace FIA_Biosum_Manager
                      "Description CHAR(255))";
             }
 
-            public void CreateScenarioAdditionalHarvestCostsTable(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
-            {
-                p_oAdo.SqlNonQuery(p_oConn, Tables.ProcessorScenarioRuleDefinitions.CreateScenarioAdditionalHarvestCostsTableSQL(p_strTableName));
-                CreateScenarioAdditionalHarvestCostsTableIndexes(p_oAdo, p_oConn, p_strTableName);
-            }
-            public void CreateScenarioAdditionalHarvestCostsTableIndexes(ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
-            {
-                p_oAdo.AddPrimaryKey(p_oConn, p_strTableName, p_strTableName + "_pk", "scenario_id,biosum_cond_id,rx");
-                p_oAdo.AddIndex(p_oConn, p_strTableName, p_strTableName + "_plotrx", "biosum_cond_id,rx");
-            }
-            static public string CreateScenarioAdditionalHarvestCostsTableSQL(string p_strTableName)
-            {
-                return "CREATE TABLE " + p_strTableName + " (" +
-                    "scenario_id CHAR(20)," +
-                    "biosum_cond_id CHAR(25)," +
-                    "rx CHAR(3))";
-                //"water_barring_roads_cpa DOUBLE," +
-                //"brush_cutting_cpa DOUBLE)";
-
-            }
             public void CreateSqliteScenarioAdditionalHarvestCostsTable(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
             {
                 p_oDataMgr.SqlNonQuery(p_oConn, Tables.ProcessorScenarioRuleDefinitions.CreateSqliteScenarioAdditionalHarvestCostsTableSQL(p_strTableName));
@@ -6936,28 +5494,6 @@ namespace FIA_Biosum_Manager
                     "biosum_cond_id CHAR(25)," +
                     "rx CHAR(3)," +
                     "CONSTRAINT " + p_strTableName + "_pk PRIMARY KEY (scenario_id,biosum_cond_id,rx))";
-            }
-
-            public void CreateScenarioTreeDiamGroupsTable(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
-            {
-                p_oAdo.SqlNonQuery(p_oConn, CreateScenarioTreeDiamGroupsTableSQL(p_strTableName));
-                CreateScenarioTreeDiamGroupsTableIndexes(p_oAdo, p_oConn, p_strTableName);
-
-            }
-            public void CreateScenarioTreeDiamGroupsTableIndexes(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
-            {
-                p_oAdo.AddPrimaryKey(p_oConn, p_strTableName, p_strTableName + "_pk", "diam_group,scenario_id");
-                p_oAdo.AddIndex(p_oConn, p_strTableName, p_strTableName + "_ScenarioId", "scenario_id");
-
-            }
-            public string CreateScenarioTreeDiamGroupsTableSQL(string p_strTableName)
-            {
-                return "CREATE TABLE " + p_strTableName + " (" +
-                    "scenario_id CHAR(20)," +
-                    "diam_group INTEGER DEFAULT 0," +
-                    "diam_class CHAR(15)," +
-                    "min_diam DOUBLE DEFAULT 0," +
-                    "max_diam DOUBLE DEFAULT 0)";
             }
             public void CreateSqliteScenarioTreeDiamGroupsTable(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
             {
@@ -6980,24 +5516,6 @@ namespace FIA_Biosum_Manager
                     "max_diam DOUBLE DEFAULT 0, " +
                     "PRIMARY KEY(diam_group,scenario_id))";
             }
-            public void CreateScenarioTreeSpeciesGroupsTable(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
-            {
-                p_oAdo.SqlNonQuery(p_oConn, CreateScenarioTreeSpeciesGroupsTableSQL(p_strTableName));
-                CreateScenarioTreeSpeciesGroupsTableIndexes(p_oAdo, p_oConn, p_strTableName);
-            }
-            public void CreateScenarioTreeSpeciesGroupsTableIndexes(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
-            {
-                p_oAdo.AddPrimaryKey(p_oConn, p_strTableName, p_strTableName + "_pk", "species_group,scenario_id");
-                p_oAdo.AddIndex(p_oConn, p_strTableName, p_strTableName + "_ScenarioId", "scenario_id");
-
-            }
-            public string CreateScenarioTreeSpeciesGroupsTableSQL(string p_strTableName)
-            {
-                return "CREATE TABLE " + p_strTableName + " (" +
-                    "species_group INTEGER," +
-                    "species_label CHAR(50)," +
-                    "scenario_id CHAR(20))";
-            }
             public void CreateSqliteScenarioTreeSpeciesGroupsTable(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
             {
                 p_oDataMgr.SqlNonQuery(p_oConn, CreateSqliteScenarioTreeSpeciesGroupsTableSQL(p_strTableName));
@@ -7017,15 +5535,6 @@ namespace FIA_Biosum_Manager
                     "PRIMARY KEY(species_group,scenario_id))";
             }
 
-            public void CreateScenarioTreeSpeciesGroupsListTable(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
-            {
-                p_oAdo.SqlNonQuery(p_oConn, CreateScenarioTreeSpeciesGroupsListTableSQL(p_strTableName));
-                CreateScenarioTreeSpeciesGroupsListTableIndexes(p_oAdo, p_oConn, p_strTableName);
-            }
-            public void CreateScenarioTreeSpeciesGroupsListTableIndexes(ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
-            {
-                p_oAdo.AddIndex(p_oConn, p_strTableName, p_strTableName + "_idx1", "species_group");
-            }
             public string CreateScenarioTreeSpeciesGroupsListTableSQL(string p_strTableName)
             {
                 return "CREATE TABLE " + p_strTableName + " (" +
@@ -7043,15 +5552,6 @@ namespace FIA_Biosum_Manager
             {
                 p_oDataMgr.AddIndex(p_oConn, p_strTableName, p_strTableName + "_idx1", "species_group");
             }
-            public string CreateSqliteScenarioTreeSpeciesGroupsListTableSQL(string p_strTableName)
-            {
-                return "CREATE TABLE " + p_strTableName + " (" +
-                    "species_group INTEGER," +
-                    "common_name CHAR(50), " +
-                    "spcd INTEGER," +
-                    "scenario_id CHAR(20))";
-            }
-
         }
         public class Reference
         {

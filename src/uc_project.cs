@@ -904,9 +904,9 @@ namespace FIA_Biosum_Manager
 				//contacts table
 				frmMain.g_oTables.m_oProject.CreateContactsTable(p_ado,p_ado.m_OleDbConnection,frmMain.g_oTables.m_oProject.DefaultProjectContactsTableName);
 				//datasource table
-				frmMain.g_oTables.m_oProject.CreateDatasourceTable(p_ado,p_ado.m_OleDbConnection,Tables.Project.DefaultProjectDatasourceTableName);
+				frmMain.g_oTables.m_oProject.CreateAccessDatasourceTable(p_ado,p_ado.m_OleDbConnection,Tables.Project.DefaultProjectDatasourceTableName);
 				//project table
-				frmMain.g_oTables.m_oProject.CreateProjectTable(p_ado,p_ado.m_OleDbConnection,frmMain.g_oTables.m_oProject.DefaultProjectTableName);
+				frmMain.g_oTables.m_oProject.CreateAccessProjectTable(p_ado,p_ado.m_OleDbConnection,frmMain.g_oTables.m_oProject.DefaultProjectTableName);
 				//user config table
 				frmMain.g_oTables.m_oProject.CreateUserConfigTable(p_ado,p_ado.m_OleDbConnection,frmMain.g_oTables.m_oProject.DefaultProjectUserConfigTableName);
 				p_ado.CloseConnection(p_ado.m_OleDbConnection);
@@ -1423,32 +1423,6 @@ namespace FIA_Biosum_Manager
 				dataMgr.CreateDbFile(strDestFile);
 			}
 		}
-
-		public void CreateProcessorScenarioRuleDefinitionAccessDbAndTables(string p_strPathAndFile)
-		{
-			dao_data_access oDao = new dao_data_access();
-			ado_data_access oAdo = new ado_data_access();
-
-			string strDestFile = p_strPathAndFile;
-			oDao.CreateMDB(strDestFile);
-			string strConn = oAdo.getMDBConnString(strDestFile,"admin","");
-			oAdo.OpenConnection(strConn);
-			frmMain.g_oTables.m_oScenario.CreateScenarioDatasourceTable(oAdo,oAdo.m_OleDbConnection,Tables.Scenario.DefaultScenarioDatasourceTableName);
-			frmMain.g_oTables.m_oScenario.CreateScenarioTable(oAdo,oAdo.m_OleDbConnection,Tables.Scenario.DefaultScenarioTableName);
-			frmMain.g_oTables.m_oProcessorScenarioRuleDefinitions.CreateScenarioTreeSpeciesDollarValuesTable(oAdo,oAdo.m_OleDbConnection,Tables.ProcessorScenarioRuleDefinitions.DefaultTreeSpeciesDollarValuesTableName);
-			frmMain.g_oTables.m_oProcessorScenarioRuleDefinitions.CreateScenarioHarvestMethodTable(oAdo,oAdo.m_OleDbConnection,Tables.ProcessorScenarioRuleDefinitions.DefaultHarvestMethodTableName);
-			frmMain.g_oTables.m_oProcessorScenarioRuleDefinitions.CreateScenarioCostRevenueEscalatorsTable(oAdo,oAdo.m_OleDbConnection,Tables.ProcessorScenarioRuleDefinitions.DefaultCostRevenueEscalatorsTableName);
-            frmMain.g_oTables.m_oProcessorScenarioRuleDefinitions.CreateScenarioHarvestCostColumnsTable(oAdo, oAdo.m_OleDbConnection, Tables.ProcessorScenarioRuleDefinitions.DefaultHarvestCostColumnsTableName);
-            frmMain.g_oTables.m_oProcessorScenarioRuleDefinitions.CreateScenarioAdditionalHarvestCostsTable(oAdo, oAdo.m_OleDbConnection, Tables.ProcessorScenarioRuleDefinitions.DefaultAdditionalHarvestCostsTableName);
-            frmMain.g_oTables.m_oProcessorScenarioRuleDefinitions.CreateScenarioMoveInCostsTable(oAdo, oAdo.m_OleDbConnection, Tables.ProcessorScenarioRuleDefinitions.DefaultMoveInCostsTableName);
-            frmMain.g_oTables.m_oProcessorScenarioRuleDefinitions.CreateScenarioTreeDiamGroupsTable(oAdo, oAdo.m_OleDbConnection, Tables.ProcessorScenarioRuleDefinitions.DefaultTreeDiamGroupsTableName);
-            frmMain.g_oTables.m_oProcessorScenarioRuleDefinitions.CreateScenarioTreeSpeciesGroupsListTable(oAdo, oAdo.m_OleDbConnection, Tables.ProcessorScenarioRuleDefinitions.DefaultTreeSpeciesGroupsListTableName);
-            frmMain.g_oTables.m_oProcessorScenarioRuleDefinitions.CreateScenarioTreeSpeciesGroupsTable(oAdo, oAdo.m_OleDbConnection, Tables.ProcessorScenarioRuleDefinitions.DefaultTreeSpeciesGroupsTableName);
-			oAdo.CloseConnection(oAdo.m_OleDbConnection);
-
-			oDao = null;
-		}
-
         public void CreateProcessorScenarioRuleDefinitionDbAndTables(string p_strPathAndFile)
         {
             DataMgr dataMgr = new DataMgr();
