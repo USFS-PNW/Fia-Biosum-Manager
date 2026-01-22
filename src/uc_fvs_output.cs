@@ -2697,13 +2697,13 @@ namespace FIA_Biosum_Manager
                                     //FVS CREATED SEEDLING TREES
                                     oDataMgr.m_strSQL =
                                        "CREATE TABLE cutlist_fvs_created_seedlings_work_table AS " +
-                                       "SELECT DISTINCT c.StandID AS biosum_cond_id,'" + p_strPackage.Trim() + "' AS rxpackage," +
-                                       "'" + strRx.Trim() + "' AS rx,'" + strCycle.Trim() + "' AS rxcycle," +
-                                        "cast(t.year as text) as rxyear,'" +
-                                       p_strVariant + "' AS fvs_variant, " +
-                                       "Trim(t.treeid) AS fvs_tree_id, " +
-                                       "t.SpeciesFia AS fvs_species, t.TPA, ROUND(t.DBH,1) AS dbh , t.Ht, t.pctcr, " +
-                                       "t.treeval, t.mortpa, t.mdefect, t.bapctile, t.dg, t.htg, " +
+                                        "SELECT DISTINCT c.StandID AS biosum_cond_id, '" + p_strPackage.Trim() + "' AS rxpackage," +
+                                        "'" + strRx.Trim() + "' AS rx,'" + strCycle.Trim() + "' AS rxcycle," +
+                                        "cast(t.year as text) as rxyear,'" + p_strVariant + "' AS fvs_variant, " +
+                                        "CAST(SUBSTR(c.StandID, 6, 2) AS INTEGER) AS STATECD, CAST(SUBSTR(c.StandID, 12, 3) AS INTEGER) AS COUNTYCD, " +
+                                        "CAST(SUBSTR(c.StandID, 16, 6) AS INTEGER) AS PLOT, Trim(t.treeid) AS fvs_tree_id, t.SpeciesFia AS fvs_species, t.TPA, " +
+                                        "ROUND(t.DBH, 1) AS DBH, round(t.Ht) as ht, cast (t.Year AS text) AS invyr, pctcr, t.treeval," +
+                                        "mortpa, mdefect, bapctile, t.dg, t.htg, " +
                                        "CASE WHEN t.dbh < 1.0 AND t.TPA > 0 THEN 1 ELSE null END AS STATUSCD, " +
                                        "'Y' AS FvsCreatedTree_YN," +
                                        "'" + m_strDateTimeCreated + "' AS DateTimeCreated " +
@@ -2715,15 +2715,15 @@ namespace FIA_Biosum_Manager
                                     //FVS CREATED SEEDLING TREES 
                                     oDataMgr.m_strSQL =
                                        "CREATE TABLE cutlist_fvs_created_seedlings_work_table AS " +
-                                       "SELECT DISTINCT c.StandID AS biosum_cond_id,'" + p_strPackage.Trim() + "' AS rxpackage," +
-                                       "'" + strRx.Trim() + "' AS rx,'" + strCycle.Trim() + "' AS rxcycle," +
-                                       "cast(t.year as text) as rxyear,'" +
-                                       p_strVariant + "' AS fvs_variant, " +
-                                       "Trim(t.treeid) AS fvs_tree_id, " +
-                                       "t.SpeciesFia AS fvs_species, t.TPA, ROUND(t.DBH,1) AS dbh , t.Ht, t.pctcr, " +
-                                       "t.treeval, t.mortpa, t.mdefect, t.bapctile, t.dg, t.htg, " +
-                                       "CASE WHEN t.dbh < 1.0 AND t.TPA > 0 THEN 1 ELSE null END AS STATUSCD, " +
-                                       "'Y' AS FvsCreatedTree_YN," +
+                                        "SELECT DISTINCT c.StandID AS biosum_cond_id, '" + p_strPackage.Trim() + "' AS rxpackage," +
+                                        "'" + strRx.Trim() + "' AS rx,'" + strCycle.Trim() + "' AS rxcycle," +
+                                        "cast(t.year as text) as rxyear,'" + p_strVariant + "' AS fvs_variant, " +
+                                        "CAST(SUBSTR(c.StandID, 6, 2) AS INTEGER) AS STATECD, CAST(SUBSTR(c.StandID, 12, 3) AS INTEGER) AS COUNTYCD, " +
+                                        "CAST(SUBSTR(c.StandID, 16, 6) AS INTEGER) AS PLOT, Trim(t.treeid) AS fvs_tree_id, t.SpeciesFia AS fvs_species, t.TPA, " +
+                                        "ROUND(t.DBH, 1) AS DBH, round(t.Ht) as ht, cast (t.Year AS text) AS invyr, pctcr, t.treeval," +
+                                        "mortpa, mdefect, bapctile, t.dg, t.htg, " +
+                                        "CASE WHEN t.dbh < 1.0 AND t.TPA > 0 THEN 1 ELSE null END AS STATUSCD, " +
+                                        "'Y' AS FvsCreatedTree_YN," +
                                        "'" + m_strDateTimeCreated + "' AS DateTimeCreated " +
                                        "FROM FVSOUT." + Tables.FVS.DefaultFVSCasesTempTableName + " c," + strFVSOutTableLink + " t " +
                                        "WHERE c.CaseID = t.CaseID AND substr(t.treeid, 1, 2) = 'ES' AND " +
@@ -2789,10 +2789,10 @@ namespace FIA_Biosum_Manager
                     frmMain.g_oDelegate.ExecuteControlMethod((System.Windows.Forms.Control)this.m_frmTherm.lblMsg, "Refresh");
                     if (oDataMgr.TableExist(conn, Tables.VolumeAndBiomass.BiosumVolumesInputTable))
                         oDataMgr.SqlNonQuery(conn, "DROP TABLE " + Tables.VolumeAndBiomass.BiosumVolumesInputTable);
-                    frmMain.g_oTables.m_oFvs.CreateSQLiteInputBiosumVolumesTable(oDataMgr, conn, Tables.VolumeAndBiomass.BiosumVolumesInputTable);
-                    oDataMgr.m_strSQL = Queries.VolumeAndBiomass.FVSOut.BuildInputSQLiteTableForVolumeCalculation_Step1(
+                    frmMain.g_oTables.m_oFvs.CreateTvbcInputBiosumVolumesTable(oDataMgr, conn, Tables.VolumeAndBiomass.BiosumVolumesInputTable);
+                    oDataMgr.m_strSQL = Queries.VolumeAndBiomass.FVSOut.BuildInputTvbcTableForVolumeCalculation_Step1(
                                        Tables.VolumeAndBiomass.BiosumVolumesInputTable,
-                                       strFvsTreeTable, p_strPackage, p_strVariant);
+                                       strFvsTreeTable);
 
                     if (m_bDebug && frmMain.g_intDebugLevel > 2)
                         this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + oDataMgr.m_strSQL + "\r\n");
@@ -2841,7 +2841,7 @@ namespace FIA_Biosum_Manager
 
                     //join plot, cond, and tree table to oracle input tree volumes table.
                     //NOTE: this query handles existing FIADB trees that have been grown forward.
-                    oDataMgr.m_strSQL = Queries.VolumeAndBiomass.FVSOut.BuildInputTableForVolumeCalculation_Step2(
+                    oDataMgr.m_strSQL = Queries.VolumeAndBiomass.FVSOut.BuildInputTableForTvbcVolumeCalculation_Step2(
                         Tables.VolumeAndBiomass.BiosumVolumesInputTable,
                         m_oQueries.m_oFIAPlot.m_strTreeTable,
                         m_oQueries.m_oFIAPlot.m_strPlotTable,
@@ -2878,16 +2878,6 @@ namespace FIA_Biosum_Manager
                     oDataMgr.m_strSQL = $@"UPDATE {strFvsTreeTable} as b SET statuscd=t.statuscd
                         FROM {m_oQueries.m_oFIAPlot.m_strTreeTable} t WHERE t.biosum_cond_id=b.biosum_cond_id AND TRIM(t.fvs_tree_id)=b.fvs_tree_id
                         AND rxpackage='{p_strPackage.Trim()}' AND fvs_variant='{p_strVariant.Trim()}' and dbh < 1.0";
-                    if (m_bDebug && frmMain.g_intDebugLevel > 2)
-                        this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + oDataMgr.m_strSQL + "\r\n");
-                    oDataMgr.SqlNonQuery(oConn, oDataMgr.m_strSQL);
-                    if (m_bDebug && frmMain.g_intDebugLevel > 2)
-                        this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
-
-                    //Update FVSCreatedTrees precipitation=plot.precipitation
-                    oDataMgr.m_strSQL = Queries.VolumeAndBiomass.FVSOut.BuildInputSQLiteTableForVolumeCalculation_Step2a(
-                        Tables.VolumeAndBiomass.BiosumVolumesInputTable, m_oQueries.m_oFIAPlot.m_strPlotTable,
-                        m_oQueries.m_oFIAPlot.m_strCondTable);
                     if (m_bDebug && frmMain.g_intDebugLevel > 2)
                         this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + oDataMgr.m_strSQL + "\r\n");
                     oDataMgr.SqlNonQuery(oConn, oDataMgr.m_strSQL);
@@ -2955,20 +2945,20 @@ namespace FIA_Biosum_Manager
                         oConn.Close();
                     }
 
-                    if (System.IO.File.Exists(frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\" + Tables.VolumeAndBiomass.DefaultSqliteWorkDatabase) == false)
+                    if (System.IO.File.Exists(frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\" + Tables.VolumeAndBiomass.DefaultTvbcWorkDatabase) == false)
                     {
                         m_intError = -1;
-                        m_strError = frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\" + Tables.VolumeAndBiomass.DefaultSqliteWorkDatabase + " not found";
+                        m_strError = frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\" + Tables.VolumeAndBiomass.DefaultTvbcWorkDatabase + " not found";
                     }
-                    if (m_intError == 0 && System.IO.File.Exists(frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\BioSumComps.JAR") == false)
+                    if (m_intError == 0 && System.IO.File.Exists(frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\FIA_TreeVBC.jar") == false)
                     {
                         m_intError = -1;
-                        m_strError = frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\BioSumComps.JAR not found";
+                        m_strError = frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\FIA_TreeVBC.jar not found";
                     }
-                    if (m_intError == 0 && System.IO.File.Exists(frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\fcs_tree_calc.bat") == false)
+                    if (m_intError == 0 && System.IO.File.Exists(frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\tvbc_tree_calc.bat") == false)
                     {
                         m_intError = -1;
-                        m_strError = frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\fcs_tree_calc.bat not found";
+                        m_strError = frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\tvbc_tree_calc.bat not found";
                     }
                     if (m_intError == 0)
                     {
@@ -2976,17 +2966,17 @@ namespace FIA_Biosum_Manager
                         //RE-CONNECT TO SQLITE AND REMOVE DATA FROM FCS SQLITE DB
                         //
                         oDataMgr.OpenConnection(false, 1, strTreeTempDbFile, "BIOSUM");
-                        oDataMgr.SqlNonQuery(oDataMgr.m_Connection, "ATTACH DATABASE '" + frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\" + Tables.VolumeAndBiomass.DefaultSqliteWorkDatabase +
-                            "' AS FCS");
-                        oDataMgr.SqlNonQuery(oDataMgr.m_Connection, $"DELETE FROM FCS.{Tables.VolumeAndBiomass.BiosumVolumeCalcTable}");
+                        oDataMgr.SqlNonQuery(oDataMgr.m_Connection, "ATTACH DATABASE '" + frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\" + Tables.VolumeAndBiomass.DefaultTvbcWorkDatabase +
+                            "' AS TVBC");
+                        oDataMgr.SqlNonQuery(oDataMgr.m_Connection, $"DELETE FROM {Tables.VolumeAndBiomass.TvbcTreeDataCalcTable}");
                         UpdateTherm(m_frmTherm.progressBar1,
                             m_intProgressStepTotalCount,
                             m_intProgressStepTotalCount);
 
                         //insert records from table biosum_volumes_input (BiosumVolumesInputTable)
                         //into table fcs_biosum_volumes_input (FcsBiosumVolumesInputTable)
-                        oDataMgr.m_strSQL = Queries.VolumeAndBiomass.FVSOut.BuildInputSQLiteBiosumCalcTable_Step7(
-                            Tables.VolumeAndBiomass.BiosumVolumesInputTable, $"FCS.{Tables.VolumeAndBiomass.BiosumVolumeCalcTable}");
+                        oDataMgr.m_strSQL = Queries.VolumeAndBiomass.FVSOut.BuildInputTvbcBiosumCalcTable_Step7(
+                            Tables.VolumeAndBiomass.BiosumVolumesInputTable, $"{Tables.VolumeAndBiomass.TvbcTreeDataCalcTable}");
                         if (m_bDebug && frmMain.g_intDebugLevel > 2)
                             this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + oDataMgr.m_strSQL + "\r\n");
                         oDataMgr.SqlNonQuery(oDataMgr.m_Connection, oDataMgr.m_strSQL);

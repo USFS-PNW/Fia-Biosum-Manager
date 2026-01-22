@@ -4417,6 +4417,18 @@ namespace FIA_Biosum_Manager
                            WHERE rxpackage='{p_strRxPackage.Trim()}' AND fvs_variant='{p_strFvsVariant.Trim()}' and dbh >= 1.0";
                 }
 
+                public static string BuildInputTvbcTableForVolumeCalculation_Step1(string p_strInputVolumesTable, string p_strFvsTreeTable)
+                {
+                    string strColumns = @"id,biosum_cond_id,invyr,spcd,dbh,ht,actualht,cr,fvs_tree_id, fvscreatedtree_yn";
+                    string strValues = $@"id,biosum_cond_id, cast(rxyear as integer) as invyr," +
+                        "CASE WHEN FvsCreatedTree_YN='Y' THEN cast(fvs_species as integer) ELSE -1 END AS spcd, " +
+                        "dbh,ht,ht,pctcr,fvs_tree_id, fvscreatedtree_yn";
+                    return $@"INSERT INTO {p_strInputVolumesTable} ({strColumns})  
+                           SELECT {strValues} 
+                           FROM {p_strFvsTreeTable}
+                           WHERE dbh >= 1.0";
+                }
+
                 /// <summary>
                 /// Update tree fields with values from the MASTER.TREE records
                 /// </summary>
@@ -4431,6 +4443,18 @@ namespace FIA_Biosum_Manager
                         SET (spcd,statuscd,treeclcd,cull,roughcull,decaycd,balive,precipitation,ecosubcd,stdorgcd,actualht) 
                         = (select t.spcd, case when t.statuscd is null then 1 else t.statuscd end,treeclcd, case when t.cull is null then 0 else t.cull end,case when t.roughcull is null then 0 else t.roughcull end,
                         case when t.decaycd is null then 0 else t.decaycd end,c.balive, p.precipitation, p.ecosubcd, c.stdorgcd, 
+                        case when t.actualht <> t.ht then {p_strInputVolumesTable}.ht - t.ht + t.actualht else {p_strInputVolumesTable}.actualht end
+                        FROM {p_strFIATreeTable} t inner join {p_strFIACondTable} c, {p_strFIAPlotTable} p
+                        WHERE t.biosum_cond_id = c.biosum_cond_id and {p_strInputVolumesTable}.biosum_cond_id = c.biosum_cond_id and c.biosum_plot_id = p.biosum_plot_id and {p_strInputVolumesTable}.fvs_tree_id = trim(t.fvs_tree_id))
+                        WHERE FvsCreatedTree_YN = 'N'";
+                }
+
+                public static string BuildInputTableForTvbcVolumeCalculation_Step2(string p_strInputVolumesTable, string p_strFIATreeTable, string p_strFIAPlotTable, string p_strFIACondTable)
+                {
+                    return $@"UPDATE {p_strInputVolumesTable} 
+                        SET (spcd,statuscd,treeclcd,cull,roughcull,decaycd,balive,ecosubcd,stdorgcd,actualht) 
+                        = (select t.spcd, case when t.statuscd is null then 1 else t.statuscd end,treeclcd, case when t.cull is null then 0 else t.cull end,case when t.roughcull is null then 0 else t.roughcull end,
+                        case when t.decaycd is null then 0 else t.decaycd end,c.balive, p.ecosubcd, c.stdorgcd, 
                         case when t.actualht <> t.ht then {p_strInputVolumesTable}.ht - t.ht + t.actualht else {p_strInputVolumesTable}.actualht end
                         FROM {p_strFIATreeTable} t inner join {p_strFIACondTable} c, {p_strFIAPlotTable} p
                         WHERE t.biosum_cond_id = c.biosum_cond_id and {p_strInputVolumesTable}.biosum_cond_id = c.biosum_cond_id and c.biosum_plot_id = p.biosum_plot_id and {p_strInputVolumesTable}.fvs_tree_id = trim(t.fvs_tree_id))
@@ -4644,6 +4668,20 @@ namespace FIA_Biosum_Manager
                         "CAST((SUBSTR(BIOSUM_COND_ID,6,2)) AS INTEGER) AS STATECD, CAST((SUBSTR(BIOSUM_COND_ID,12,3)) AS INTEGER) AS COUNTYCD,CAST((SUBSTR(BIOSUM_COND_ID,16,6)) AS LONG) AS PLOT," +
                         "INVYR, TRIM(VOL_LOC_GRP),ID AS TREE,SPCD,DBH AS DIA,ROUND(HT),ROUND(ACTUALHT),CR,STATUSCD,TREECLCD,ROUGHCULL,CULL,DECAYCD,TOTAGE," +
                         "CAST(ID AS TEXT) AS TRE_CN,BIOSUM_COND_ID AS CND_CN,SUBSTR(BIOSUM_COND_ID,1,LENGTH(BIOSUM_COND_ID)-1) AS PLT_CN, DIAHTCD, BALIVE, PRECIPITATION, STANDING_DEAD_CD";
+
+                    return $@"INSERT INTO {p_strBiosumVolumesTable} ({strColumns}) SELECT {strValues} FROM {p_strInputVolumesTable}";
+                }
+
+                public static string BuildInputTvbcBiosumCalcTable_Step7(string p_strInputVolumesTable, string p_strBiosumVolumesTable)
+                {
+                    string strColumns = "BIOSUM_COND_ID,STATECD,CONFIG_ID,SPN,DIA,HT,ACTUALHT," +
+                                        "STDORGCD,CR,STATUSCD,TREECLCD,ROUGHCULL,CULL,CULL_FLD,DECAYCD, DIAHTCD, BALIVE,STANDING_DEAD_CD," +
+                                        "SITREE,WDLDSTEM,ECOSUBCD,HTDMP,CULLFORM,CULLMSTOP,TRE_CN,FVS_TREE_ID";
+
+                    string strValues =
+                        "BIOSUM_COND_ID,CAST((SUBSTR(BIOSUM_COND_ID,6,2)) AS INTEGER) AS STATECD," +
+                        "TRIM(VOL_LOC_GRP) AS CONFIG_ID,SPCD AS SPN,DBH AS DIA,ROUND(HT),ROUND(ACTUALHT),STDORGCD,CR,STATUSCD,TREECLCD,ROUGHCULL,CULL,CULL_FLD,DECAYCD," +
+                        "DIAHTCD,BALIVE,STANDING_DEAD_CD,SITREE,WDLDSTEM,ECOSUBCD,HTDMP,CULLFORM,CULLMSTOP,CAST(ID AS TEXT) AS TRE_CN,FVS_TREE_ID";
 
                     return $@"INSERT INTO {p_strBiosumVolumesTable} ({strColumns}) SELECT {strValues} FROM {p_strInputVolumesTable}";
                 }
