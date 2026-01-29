@@ -407,17 +407,17 @@ namespace FIA_Biosum_Manager
                         conn.Open();
                         if (!oDataMgr.TableExist(conn, Tables.ProcessorScenarioRun.DefaultHarvestCostsTableName))
                         {
-                            frmMain.g_oTables.m_oProcessor.CreateSqliteHarvestCostsTable(oDataMgr,
+                            frmMain.g_oTables.m_oProcessor.CreateHarvestCostsTable(oDataMgr,
                                 conn, Tables.ProcessorScenarioRun.DefaultHarvestCostsTableName);
                         }
                         if (!oDataMgr.TableExist(conn, Tables.ProcessorScenarioRun.DefaultTreeVolValSpeciesDiamGroupsTableName))
                         {
-                            frmMain.g_oTables.m_oProcessor.CreateSqliteTreeVolValSpeciesDiamGroupsTable(oDataMgr,
+                            frmMain.g_oTables.m_oProcessor.CreateTreeVolValSpeciesDiamGroupsTable(oDataMgr,
                                 conn, Tables.ProcessorScenarioRun.DefaultTreeVolValSpeciesDiamGroupsTableName, true);
                         }
                         if (!oDataMgr.TableExist(conn, Tables.ProcessorScenarioRun.DefaultAddKcpCpaTableName))
                         {
-                            frmMain.g_oTables.m_oProcessorScenarioRun.CreateSqliteAdditionalKcpCpaTable(oDataMgr,
+                            frmMain.g_oTables.m_oProcessorScenarioRun.CreateAdditionalKcpCpaTable(oDataMgr,
                                 conn, Tables.ProcessorScenarioRun.DefaultAddKcpCpaTableName, false);
                         }
                     }

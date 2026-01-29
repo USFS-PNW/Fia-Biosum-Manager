@@ -430,11 +430,11 @@ namespace FIA_Biosum_Manager
                         using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strScenarioResultsConn))
                         {
                             conn.Open();
-                            frmMain.g_oTables.m_oProcessor.CreateSqliteHarvestCostsTable(dataMgr,
+                            frmMain.g_oTables.m_oProcessor.CreateHarvestCostsTable(dataMgr,
                                 conn, Tables.ProcessorScenarioRun.DefaultHarvestCostsTableName);
-                            frmMain.g_oTables.m_oProcessor.CreateSqliteTreeVolValSpeciesDiamGroupsTable(dataMgr,
+                            frmMain.g_oTables.m_oProcessor.CreateTreeVolValSpeciesDiamGroupsTable(dataMgr,
                                 conn, Tables.ProcessorScenarioRun.DefaultTreeVolValSpeciesDiamGroupsTableName, true);
-                            frmMain.g_oTables.m_oProcessorScenarioRun.CreateSqliteAdditionalKcpCpaTable(dataMgr,
+                            frmMain.g_oTables.m_oProcessorScenarioRun.CreateAdditionalKcpCpaTable(dataMgr,
                                 conn, Tables.ProcessorScenarioRun.DefaultAddKcpCpaTableName, false);
                         }
                     }

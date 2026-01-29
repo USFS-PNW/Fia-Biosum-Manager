@@ -1160,7 +1160,7 @@ namespace FIA_Biosum_Manager
             using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(m_oDataMgr.GetConnectionString(strSqliteDb)))
             {
                 conn.Open();
-                frmMain.g_oTables.m_oProcessor.CreateSqliteHarvestCostsTable(m_oDataMgr, conn, p_strHarvestCostTableName);
+                frmMain.g_oTables.m_oProcessor.CreateHarvestCostsTable(m_oDataMgr, conn, p_strHarvestCostTableName);
                 if (!bInactiveVarRxPackage)
                 {
                     m_oDataMgr.m_strSQL = Queries.ProcessorScenarioRun.AppendToOPCOSTHarvestCostsTable(
@@ -1187,7 +1187,7 @@ namespace FIA_Biosum_Manager
             using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(m_oDataMgr.GetConnectionString(p_strTempDb)))
             {
                 conn.Open();
-                frmMain.g_oTables.m_oProcessorScenarioRun.CreateSqliteTotalAdditionalHarvestCostsTable(
+                frmMain.g_oTables.m_oProcessorScenarioRun.CreateTotalAdditionalHarvestCostsTable(
                     m_oDataMgr, conn, "HarvestCostsTotalAdditionalWorkTable");
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "Created HarvestCostsTotalAdditionalWorkTable \r\n");
@@ -1398,7 +1398,7 @@ namespace FIA_Biosum_Manager
                         frmMain.g_oUtils.WriteText(m_strDebugFile, $@"Dropped {p_strAddCostsWorktable} {Environment.NewLine}");
                 }
                 //create additional cpa work table to itemize additional costs
-                frmMain.g_oTables.m_oProcessorScenarioRun.CreateSqliteAdditionalKcpCpaTable(
+                frmMain.g_oTables.m_oProcessorScenarioRun.CreateAdditionalKcpCpaTable(
                     m_oDataMgr, conn, p_strAddCostsWorktable, true);
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                     frmMain.g_oUtils.WriteText(m_strDebugFile, $@"Created {p_strAddCostsWorktable} {Environment.NewLine}");

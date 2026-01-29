@@ -2692,11 +2692,11 @@ namespace FIA_Biosum_Manager
             {
             }
 
-            public void CreateSqliteHarvestCostsTable(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
+            public void CreateHarvestCostsTable(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
             {
-                p_oDataMgr.SqlNonQuery(p_oConn, Tables.Processor.CreateSqliteHarvestCostsTableSQL(p_strTableName));
+                p_oDataMgr.SqlNonQuery(p_oConn, Tables.Processor.CreateHarvestCostsTableSQL(p_strTableName));
             }
-            static public string CreateSqliteHarvestCostsTableSQL(string p_strTableName)
+            static public string CreateHarvestCostsTableSQL(string p_strTableName)
             {
                 return "CREATE TABLE " + p_strTableName + " (" +
                     "biosum_cond_id CHAR(25)," +
@@ -2713,7 +2713,7 @@ namespace FIA_Biosum_Manager
                     "DateTimeCreated CHAR(22)," +
                     "CONSTRAINT " + p_strTableName + "_pk PRIMARY KEY (biosum_cond_id,rxpackage,rx,rxcycle))";
             }
-            static public string CreateSqliteAdditionalHarvestCostsTableSQL(string p_strTableName)
+            static public string CreateAdditionalHarvestCostsTableSQL(string p_strTableName)
             {
                 return "CREATE TABLE " + p_strTableName + " (" +
                     "biosum_cond_id TEXT," +
@@ -2721,16 +2721,16 @@ namespace FIA_Biosum_Manager
                     "PRIMARY KEY(biosum_cond_id,rx))";
             }
 
-            public void CreateSqliteTreeVolValSpeciesDiamGroupsTable(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, 
+            public void CreateTreeVolValSpeciesDiamGroupsTable(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, 
                 string p_strTableName, bool p_bCreateIdColumn)
             {
-                p_oDataMgr.SqlNonQuery(p_oConn, Tables.Processor.CreateSqliteTreeVolValSpeciesDiamGroupsTableSQL(p_strTableName, p_bCreateIdColumn));
+                p_oDataMgr.SqlNonQuery(p_oConn, Tables.Processor.CreateTreeVolValSpeciesDiamGroupsTableSQL(p_strTableName, p_bCreateIdColumn));
                 p_oDataMgr.AddIndex(p_oConn, p_strTableName, p_strTableName + "_idx1", "biosum_cond_id,rxpackage,rx,rxcycle");
                 p_oDataMgr.AddIndex(p_oConn, p_strTableName, p_strTableName + "_idx2", "rx");
                 p_oDataMgr.AddIndex(p_oConn, p_strTableName, p_strTableName + "_idx3", "species_group");
                 p_oDataMgr.AddIndex(p_oConn, p_strTableName, p_strTableName + "_idx4", "diam_group");
             }
-            static public string CreateSqliteTreeVolValSpeciesDiamGroupsTableSQL(string p_strTableName, bool p_bCreateIdColumn)
+            static public string CreateTreeVolValSpeciesDiamGroupsTableSQL(string p_strTableName, bool p_bCreateIdColumn)
             {
                 string strSQL = "CREATE TABLE " + p_strTableName + " (";
                 if (p_bCreateIdColumn)
@@ -2760,13 +2760,13 @@ namespace FIA_Biosum_Manager
                 return strSQL;
             }
 
-            public void CreateNewSQLiteOpcostInputTable(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
+            public void CreateOpcostInputTable(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
             {
-                p_oDataMgr.SqlNonQuery(p_oConn, Tables.Processor.CreateNewOpcostInputTableSQL(p_strTableName));
+                p_oDataMgr.SqlNonQuery(p_oConn, Tables.Processor.CreateOpcostInputTableSQL(p_strTableName));
                 // No indexes currently on OpCost input table
             }
 
-            static public string CreateNewOpcostInputTableSQL(string p_strTableName)
+            static public string CreateOpcostInputTableSQL(string p_strTableName)
             {
                 return "CREATE TABLE " + p_strTableName + " " +
                              "(Stand text (255)," +
@@ -2861,30 +2861,12 @@ namespace FIA_Biosum_Manager
             public Scenario()
             {
             }
-            public void CreateScenarioTable(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
+            
+            public void CreateScenarioTable(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
             {
-                p_oAdo.SqlNonQuery(p_oConn, CreateScenarioTableSQL(p_strTableName));
-                CreateScenarioTableIndexes(p_oAdo, p_oConn, p_strTableName);
-            }
-            public void CreateScenarioTableIndexes(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
-            {
-                p_oAdo.AddPrimaryKey(p_oConn, p_strTableName, p_strTableName + "_pk", "scenario_id");
+                p_oDataMgr.SqlNonQuery(p_oConn, CreateScenarioTableSQL(p_strTableName));
             }
             public static string CreateScenarioTableSQL(string p_strTableName)
-            {
-                return "CREATE TABLE " + p_strTableName + " (" +
-                    "scenario_id CHAR(20)," +
-                    "description MEMO," +
-                    "path CHAR(254)," +
-                    "file CHAR(50)," +
-                    "notes MEMO)";
-            }
-
-            public void CreateSqliteScenarioTable(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
-            {
-                p_oDataMgr.SqlNonQuery(p_oConn, CreateSqliteScenarioTableSQL(p_strTableName));
-            }
-            public static string CreateSqliteScenarioTableSQL(string p_strTableName)
             {
                 return "CREATE TABLE " + p_strTableName + " (" +
                     "scenario_id CHAR(20) NOT NULL PRIMARY KEY," +
@@ -2894,34 +2876,16 @@ namespace FIA_Biosum_Manager
                     "notes VARCHAR(4000))";
             }
 
-            public void CreateScenarioDatasourceTable(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
+            public void CreateScenarioDatasourceTable(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
             {
-                p_oAdo.SqlNonQuery(p_oConn, CreateScenarioDatasourceTableSQL(p_strTableName));
-                CreateScenarioDatasourceTableIndexes(p_oAdo, p_oConn, p_strTableName);
+                p_oDataMgr.SqlNonQuery(p_oConn, CreateScenarioDatasourceTableSQL(p_strTableName));
+                CreateScenarioDatasourceTableIndexes(p_oDataMgr, p_oConn, p_strTableName);
             }
-            public void CreateScenarioDatasourceTableIndexes(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
-            {
-                p_oAdo.AddIndex(p_oConn, p_strTableName, p_strTableName + "_idx", "scenario_id");
-            }
-            public static string CreateScenarioDatasourceTableSQL(string p_strTableName)
-            {
-                return "CREATE TABLE " + p_strTableName + " (" +
-                    "scenario_id CHAR(20)," +
-                    "table_type CHAR(60)," +
-                    "path CHAR(254)," +
-                    "file CHAR(50)," +
-                    "table_name CHAR(50))";
-            }
-            public void CreateSqliteScenarioDatasourceTable(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
-            {
-                p_oDataMgr.SqlNonQuery(p_oConn, CreateSqliteScenarioDatasourceTableSQL(p_strTableName));
-                CreateSqliteScenarioDatasourceTableIndexes(p_oDataMgr, p_oConn, p_strTableName);
-            }
-            public void CreateSqliteScenarioDatasourceTableIndexes(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
+            public void CreateScenarioDatasourceTableIndexes(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
             {
                 p_oDataMgr.AddIndex(p_oConn, p_strTableName, p_strTableName + "_idx", "scenario_id");
             }
-            public static string CreateSqliteScenarioDatasourceTableSQL(string p_strTableName)
+            public static string CreateScenarioDatasourceTableSQL(string p_strTableName)
             {
                 return "CREATE TABLE " + p_strTableName + " (" +
                     "scenario_id CHAR(20)," +
@@ -2946,12 +2910,12 @@ namespace FIA_Biosum_Manager
             {
             }
 
-            public void CreateSqliteTotalAdditionalHarvestCostsTable(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn,
+            public void CreateTotalAdditionalHarvestCostsTable(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn,
                 string p_strTableName)
             {
-                p_oDataMgr.SqlNonQuery(p_oConn, CreateSqliteTotalAdditionalHarvestCostsTableSQL(p_strTableName));           
+                p_oDataMgr.SqlNonQuery(p_oConn, CreateTotalAdditionalHarvestCostsTableSQL(p_strTableName));           
             }
-            static public string CreateSqliteTotalAdditionalHarvestCostsTableSQL(string p_strTableName)
+            static public string CreateTotalAdditionalHarvestCostsTableSQL(string p_strTableName)
             {
                 return "CREATE TABLE " + p_strTableName + " " +
                           "(biosum_cond_id char(25)," +
@@ -2960,12 +2924,12 @@ namespace FIA_Biosum_Manager
                           "PRIMARY KEY(biosum_cond_id, rx))";
             }
 
-            public void CreateSqliteAdditionalKcpCpaTable(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn,
+            public void CreateAdditionalKcpCpaTable(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn,
                 string p_strTableName, bool bIsWorktable)
             {
-                p_oDataMgr.SqlNonQuery(p_oConn, CreateSqliteAdditionalKcpCpaTableSQL(p_strTableName, bIsWorktable));
+                p_oDataMgr.SqlNonQuery(p_oConn, CreateAdditionalKcpCpaTableSQL(p_strTableName, bIsWorktable));
             }
-            static public string CreateSqliteAdditionalKcpCpaTableSQL(string p_strTableName, bool bIsWorktable)
+            static public string CreateAdditionalKcpCpaTableSQL(string p_strTableName, bool bIsWorktable)
             {
                 string lastField = "DateTimeCreated CHAR(22),";
                 if (bIsWorktable)
@@ -3006,15 +2970,10 @@ namespace FIA_Biosum_Manager
             {
             }
 
-            public void CreateScenarioTreeSpeciesDollarValuesTable(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
+            public void CreateScenarioTreeSpeciesDollarValuesTable(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
             {
-                p_oAdo.SqlNonQuery(p_oConn, CreateScenarioTreeSpeciesDollarValuesTableSQL(p_strTableName));
-                CreateScenarioTreeSpeciesDollarValuesTableIndexes(p_oAdo, p_oConn, p_strTableName);
-            }
-            public void CreateScenarioTreeSpeciesDollarValuesTableIndexes(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
-            {
-                //p_oAdo.AddAutoNumber(p_oConn,p_strTableName,"id");
-                //p_oAdo.AddPrimaryKey(p_oConn,p_strTableName,p_strTableName + "_pk","scenario_id,id");
+                p_oDataMgr.SqlNonQuery(p_oConn, CreateScenarioTreeSpeciesDollarValuesTableSQL(p_strTableName));
+                // This table didn't have any indexes in the MS AccessVersion
             }
             static public string CreateScenarioTreeSpeciesDollarValuesTableSQL(string p_strTableName)
             {
@@ -3026,61 +2985,16 @@ namespace FIA_Biosum_Manager
                     "merch_value DOUBLE DEFAULT 0," +
                     "chip_value DOUBLE DEFAULT 0)";
             }
-
-            public void CreateSqliteScenarioTreeSpeciesDollarValuesTable(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
+            public void CreateScenarioHarvestMethodTable(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
             {
-                p_oDataMgr.SqlNonQuery(p_oConn, CreateSqliteScenarioTreeSpeciesDollarValuesTableSQL(p_strTableName));
-                // This table didn't have any indexes in the MS AccessVersion
+                p_oDataMgr.SqlNonQuery(p_oConn, Tables.ProcessorScenarioRuleDefinitions.CreateScenarioHarvestMethodTableSQL(p_strTableName));
+                CreateScenarioHarvestMethodTableIndexes(p_oDataMgr, p_oConn, p_strTableName);
             }
-            static public string CreateSqliteScenarioTreeSpeciesDollarValuesTableSQL(string p_strTableName)
-            {
-                return "CREATE TABLE " + p_strTableName + " (" +
-                    "scenario_id CHAR(20)," +
-                    "species_group INTEGER," +
-                    "diam_group INTEGER," +
-                    "wood_bin CHAR(1) DEFAULT 'M'," +
-                    "merch_value DOUBLE DEFAULT 0," +
-                    "chip_value DOUBLE DEFAULT 0)";
-            }
-            public void CreateScenarioHarvestMethodTable(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
-            {
-                p_oAdo.SqlNonQuery(p_oConn, Tables.ProcessorScenarioRuleDefinitions.CreateScenarioHarvestMethodTableSQL(p_strTableName));
-                CreateScenarioHarvestMethodTableIndexes(p_oAdo, p_oConn, p_strTableName);
-            }
-            public void CreateScenarioHarvestMethodTableIndexes(ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
-            {
-                p_oAdo.AddIndex(p_oConn, p_strTableName, p_strTableName + "_ScenarioId", "scenario_id");
-            }
-            static public string CreateScenarioHarvestMethodTableSQL(string p_strTableName)
-            {
-                return "CREATE TABLE " + p_strTableName + " (" +
-                    "scenario_id CHAR(20)," +
-                    "HarvestMethodLowSlope CHAR(50)," +
-                    "HarvestMethodSteepSlope CHAR(50)," +
-                    "MaxCableYardingDistance SINGLE," +
-                    "MaxHelicopterCableYardingDistance SINGLE," +
-                    "min_chip_dbh SINGLE," +
-                    "min_sm_log_dbh SINGLE," +
-                    "min_lg_log_dbh SINGLE," +
-                    "SteepSlope INTEGER," +
-                    "min_dbh_steep_slope SINGLE," +
-                    "ProcessLowSlopeYN CHAR(1) DEFAULT 'Y'," +
-                    "ProcessSteepSlopeYN CHAR(1) DEFAULT 'Y', " +
-                    "WoodlandMerchAsPercentOfTotalVol INTEGER, " +
-                    "SaplingMerchAsPercentOfTotalVol INTEGER, " +
-                    "CullPctThreshold INTEGER, " +
-                    "HarvestMethodSelection CHAR(15))";
-            }
-            public void CreateSqliteScenarioHarvestMethodTable(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
-            {
-                p_oDataMgr.SqlNonQuery(p_oConn, Tables.ProcessorScenarioRuleDefinitions.CreateSqliteScenarioHarvestMethodTableSQL(p_strTableName));
-                CreateSqliteScenarioHarvestMethodTableIndexes(p_oDataMgr, p_oConn, p_strTableName);
-            }
-            public void CreateSqliteScenarioHarvestMethodTableIndexes(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
+            public void CreateScenarioHarvestMethodTableIndexes(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
             {
                 p_oDataMgr.AddIndex(p_oConn, p_strTableName, p_strTableName + "_ScenarioId", "scenario_id");
             }
-            static public string CreateSqliteScenarioHarvestMethodTableSQL(string p_strTableName)
+            static public string CreateScenarioHarvestMethodTableSQL(string p_strTableName)
             {
                 return "CREATE TABLE " + p_strTableName + " (" +
                     "scenario_id CHAR(20)," +
@@ -3101,34 +3015,16 @@ namespace FIA_Biosum_Manager
                     "HarvestMethodSelection CHAR(15))";
             }
 
-            public void CreateScenarioMoveInCostsTable(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
+            public void CreateScenarioMoveInCostsTable(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
             {
-                p_oAdo.SqlNonQuery(p_oConn, Tables.ProcessorScenarioRuleDefinitions.CreateScenarioMoveInCostsTableSQL(p_strTableName));
-                CreateScenarioHarvestMethodTableIndexes(p_oAdo, p_oConn, p_strTableName);
+                p_oDataMgr.SqlNonQuery(p_oConn, Tables.ProcessorScenarioRuleDefinitions.CreateScenarioMoveInCostsTableSQL(p_strTableName));
+                CreateScenarioMoveInCostsTableIndexes(p_oDataMgr, p_oConn, p_strTableName);
             }
-            public void CreateScenarioMoveInCostsTableIndexes(ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
-            {
-                p_oAdo.AddIndex(p_oConn, p_strTableName, p_strTableName + "_ScenarioId", "scenario_id");
-            }
-            static public string CreateScenarioMoveInCostsTableSQL(string p_strTableName)
-            {
-                return "CREATE TABLE " + p_strTableName + " (" +
-                    "scenario_id CHAR(20)," +
-                    "yard_dist_threshold SINGLE," +
-                    "assumed_harvest_area_ac SINGLE," +
-                    "move_in_time_multiplier SINGLE," +
-                    "move_in_hours_addend SINGLE)";
-            }
-            public void CreateSqliteScenarioMoveInCostsTable(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
-            {
-                p_oDataMgr.SqlNonQuery(p_oConn, Tables.ProcessorScenarioRuleDefinitions.CreateSqliteScenarioMoveInCostsTableSQL(p_strTableName));
-                CreateSqliteScenarioMoveInCostsTableIndexes(p_oDataMgr, p_oConn, p_strTableName);
-            }
-            public void CreateSqliteScenarioMoveInCostsTableIndexes(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
+            public void CreateScenarioMoveInCostsTableIndexes(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
             {
                 p_oDataMgr.AddIndex(p_oConn, p_strTableName, p_strTableName + "_ScenarioId", "scenario_id");
             }
-            static public string CreateSqliteScenarioMoveInCostsTableSQL(string p_strTableName)
+            static public string CreateScenarioMoveInCostsTableSQL(string p_strTableName)
             {
                 return "CREATE TABLE " + p_strTableName + " (" +
                     "scenario_id CHAR(20)," +
@@ -3138,40 +3034,16 @@ namespace FIA_Biosum_Manager
                     "move_in_hours_addend DOUBLE)";
             }
 
-            public void CreateScenarioCostRevenueEscalatorsTable(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
+            public void CreateScenarioCostRevenueEscalatorsTable(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
             {
-                p_oAdo.SqlNonQuery(p_oConn, Tables.ProcessorScenarioRuleDefinitions.CreateScenarioCostRevenueEscalatorsTableSQL(p_strTableName));
-                CreateScenarioCostRevenueEscalatorsTableIndexes(p_oAdo, p_oConn, p_strTableName);
+                p_oDataMgr.SqlNonQuery(p_oConn, Tables.ProcessorScenarioRuleDefinitions.CreateScenarioCostRevenueEscalatorsTableSQL(p_strTableName));
+                CreateScenarioCostRevenueEscalatorsTableIndexes(p_oDataMgr, p_oConn, p_strTableName);
             }
-            public void CreateScenarioCostRevenueEscalatorsTableIndexes(ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
-            {
-                p_oAdo.AddIndex(p_oConn, p_strTableName, p_strTableName + "_ScenarioId", "scenario_id");
-            }
-            static public string CreateScenarioCostRevenueEscalatorsTableSQL(string p_strTableName)
-            {
-                return "CREATE TABLE " + p_strTableName + " (" +
-                    "scenario_id CHAR(20)," +
-                    "EscalatorOperatingCosts_Cycle2 DECIMAL (4,2) DEFAULT 1.00," +
-                    "EscalatorOperatingCosts_Cycle3 DECIMAL (4,2) DEFAULT 1.00," +
-                    "EscalatorOperatingCosts_Cycle4 DECIMAL (4,2) DEFAULT 1.00," +
-                    "EscalatorMerchWoodRevenue_Cycle2 DECIMAL (4,2) DEFAULT 1.00," +
-                    "EscalatorMerchWoodRevenue_Cycle3 DECIMAL (4,2) DEFAULT 1.00," +
-                    "EscalatorMerchWoodRevenue_Cycle4 DECIMAL (4,2) DEFAULT 1.00," +
-                    "EscalatorEnergyWoodRevenue_Cycle2 DECIMAL (4,2) DEFAULT 1.00," +
-                    "EscalatorEnergyWoodRevenue_Cycle3 DECIMAL (4,2) DEFAULT 1.00," +
-                    "EscalatorEnergyWoodRevenue_Cycle4 DECIMAL (4,2) DEFAULT 1.00)";
-
-            }
-            public void CreateSqliteScenarioCostRevenueEscalatorsTable(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
-            {
-                p_oDataMgr.SqlNonQuery(p_oConn, Tables.ProcessorScenarioRuleDefinitions.CreateSqliteScenarioCostRevenueEscalatorsTableSQL(p_strTableName));
-                CreateSqliteScenarioCostRevenueEscalatorsTableIndexes(p_oDataMgr, p_oConn, p_strTableName);
-            }
-            public void CreateSqliteScenarioCostRevenueEscalatorsTableIndexes(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
+            public void CreateScenarioCostRevenueEscalatorsTableIndexes(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
             {
                p_oDataMgr.AddIndex(p_oConn, p_strTableName, p_strTableName + "_ScenarioId", "scenario_id");
             }
-            static public string CreateSqliteScenarioCostRevenueEscalatorsTableSQL(string p_strTableName)
+            static public string CreateScenarioCostRevenueEscalatorsTableSQL(string p_strTableName)
             {
                 return "CREATE TABLE " + p_strTableName + " (" +
                     "scenario_id CHAR(20)," +
@@ -3185,35 +3057,16 @@ namespace FIA_Biosum_Manager
                     "EscalatorEnergyWoodRevenue_Cycle3 DOUBLE DEFAULT 1," +
                     "EscalatorEnergyWoodRevenue_Cycle4 DOUBLE DEFAULT 1)";
             }
-            public void CreateScenarioHarvestCostColumnsTable(FIA_Biosum_Manager.ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
+            public void CreateScenarioHarvestCostColumnsTable(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
             {
-                p_oAdo.SqlNonQuery(p_oConn, Tables.ProcessorScenarioRuleDefinitions.CreateScenarioHarvestCostColumnsTableSQL(p_strTableName));
-                CreateScenarioHarvestCostColumnsTableIndexes(p_oAdo, p_oConn, p_strTableName);
+                p_oDataMgr.SqlNonQuery(p_oConn, Tables.ProcessorScenarioRuleDefinitions.CreateScenarioHarvestCostColumnsTableSQL(p_strTableName));
+                CreateScenarioHarvestCostColumnsTableIndexes(p_oDataMgr, p_oConn, p_strTableName);
             }
-            public void CreateScenarioHarvestCostColumnsTableIndexes(ado_data_access p_oAdo, System.Data.OleDb.OleDbConnection p_oConn, string p_strTableName)
-            {
-                p_oAdo.AddIndex(p_oConn, p_strTableName, p_strTableName + "_ScenarioId", "scenario_id");
-            }
-            static public string CreateScenarioHarvestCostColumnsTableSQL(string p_strTableName)
-            {
-                return "CREATE TABLE " + p_strTableName + " (" +
-                     "scenario_id CHAR(20)," +
-                     "ColumnName CHAR(50)," +
-                     "rx CHAR(3)," +
-                     "Default_CPA DECIMAL (6,2)," +
-                     "Description CHAR(255))";
-
-            }
-            public void CreateSqliteScenarioHarvestCostColumnsTable(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
-            {
-                p_oDataMgr.SqlNonQuery(p_oConn, Tables.ProcessorScenarioRuleDefinitions.CreateSqliteScenarioHarvestCostColumnsTableSQL(p_strTableName));
-                CreateSqliteScenarioHarvestCostColumnsTableIndexes(p_oDataMgr, p_oConn, p_strTableName);
-            }
-            public void CreateSqliteScenarioHarvestCostColumnsTableIndexes(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
+            public void CreateScenarioHarvestCostColumnsTableIndexes(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
             {
                 p_oDataMgr.AddIndex(p_oConn, p_strTableName, p_strTableName + "_ScenarioId", "scenario_id");
             }
-            static public string CreateSqliteScenarioHarvestCostColumnsTableSQL(string p_strTableName)
+            static public string CreateScenarioHarvestCostColumnsTableSQL(string p_strTableName)
             {
                 return "CREATE TABLE " + p_strTableName + " (" +
                      "scenario_id CHAR(20)," +
@@ -3223,12 +3076,12 @@ namespace FIA_Biosum_Manager
                      "Description CHAR(255))";
             }
 
-            public void CreateSqliteScenarioAdditionalHarvestCostsTable(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
+            public void CreateScenarioAdditionalHarvestCostsTable(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
             {
-                p_oDataMgr.SqlNonQuery(p_oConn, Tables.ProcessorScenarioRuleDefinitions.CreateSqliteScenarioAdditionalHarvestCostsTableSQL(p_strTableName));
+                p_oDataMgr.SqlNonQuery(p_oConn, Tables.ProcessorScenarioRuleDefinitions.CreateScenarioAdditionalHarvestCostsTableSQL(p_strTableName));
                 p_oDataMgr.AddIndex(p_oConn, p_strTableName, p_strTableName + "_plotrx", "biosum_cond_id,rx");
             }
-            static public string CreateSqliteScenarioAdditionalHarvestCostsTableSQL(string p_strTableName)
+            static public string CreateScenarioAdditionalHarvestCostsTableSQL(string p_strTableName)
             {
                 return "CREATE TABLE " + p_strTableName + " (" +
                     "scenario_id CHAR(20)," +
@@ -3236,18 +3089,18 @@ namespace FIA_Biosum_Manager
                     "rx CHAR(3)," +
                     "CONSTRAINT " + p_strTableName + "_pk PRIMARY KEY (scenario_id,biosum_cond_id,rx))";
             }
-            public void CreateSqliteScenarioTreeDiamGroupsTable(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
+            public void CreateScenarioTreeDiamGroupsTable(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
             {
-                p_oDataMgr.SqlNonQuery(p_oConn, CreateSqliteScenarioTreeDiamGroupsTableSQL(p_strTableName));
-                CreateSqliteScenarioTreeDiamGroupsTableIndexes(p_oDataMgr, p_oConn, p_strTableName);
+                p_oDataMgr.SqlNonQuery(p_oConn, CreateScenarioTreeDiamGroupsTableSQL(p_strTableName));
+                CreateScenarioTreeDiamGroupsTableIndexes(p_oDataMgr, p_oConn, p_strTableName);
 
             }
-            public void CreateSqliteScenarioTreeDiamGroupsTableIndexes(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
+            public void CreateScenarioTreeDiamGroupsTableIndexes(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
             {
                 p_oDataMgr.AddIndex(p_oConn, p_strTableName, p_strTableName + "_ScenarioId", "scenario_id");
 
             }
-            public string CreateSqliteScenarioTreeDiamGroupsTableSQL(string p_strTableName)
+            public string CreateScenarioTreeDiamGroupsTableSQL(string p_strTableName)
             {
                 return "CREATE TABLE " + p_strTableName + " (" +
                     "scenario_id CHAR(20)," +
@@ -3257,17 +3110,17 @@ namespace FIA_Biosum_Manager
                     "max_diam DOUBLE DEFAULT 0, " +
                     "PRIMARY KEY(diam_group,scenario_id))";
             }
-            public void CreateSqliteScenarioTreeSpeciesGroupsTable(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
+            public void CreateScenarioTreeSpeciesGroupsTable(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
             {
-                p_oDataMgr.SqlNonQuery(p_oConn, CreateSqliteScenarioTreeSpeciesGroupsTableSQL(p_strTableName));
-                CreateSqliteScenarioTreeSpeciesGroupsTableIndexes(p_oDataMgr, p_oConn, p_strTableName);
+                p_oDataMgr.SqlNonQuery(p_oConn, CreateScenarioTreeSpeciesGroupsTableSQL(p_strTableName));
+                CreateScenarioTreeSpeciesGroupsTableIndexes(p_oDataMgr, p_oConn, p_strTableName);
             }
-            public void CreateSqliteScenarioTreeSpeciesGroupsTableIndexes(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
+            public void CreateScenarioTreeSpeciesGroupsTableIndexes(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
             {
                 p_oDataMgr.AddIndex(p_oConn, p_strTableName, p_strTableName + "_ScenarioId", "scenario_id");
 
             }
-            public string CreateSqliteScenarioTreeSpeciesGroupsTableSQL(string p_strTableName)
+            public string CreateScenarioTreeSpeciesGroupsTableSQL(string p_strTableName)
             {
                 return "CREATE TABLE " + p_strTableName + " (" +
                     "species_group INTEGER," +
@@ -3284,12 +3137,12 @@ namespace FIA_Biosum_Manager
                     "spcd INTEGER," +
                     "scenario_id CHAR(20))";
             }
-            public void CreateSqliteScenarioTreeSpeciesGroupsListTable(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
+            public void CreateScenarioTreeSpeciesGroupsListTable(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
             {
                 p_oDataMgr.SqlNonQuery(p_oConn, CreateScenarioTreeSpeciesGroupsListTableSQL(p_strTableName));
-                CreateSqliteScenarioTreeSpeciesGroupsListTableIndexes(p_oDataMgr, p_oConn, p_strTableName);
+                CreateScenarioTreeSpeciesGroupsListTableIndexes(p_oDataMgr, p_oConn, p_strTableName);
             }
-            public void CreateSqliteScenarioTreeSpeciesGroupsListTableIndexes(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
+            public void CreateScenarioTreeSpeciesGroupsListTableIndexes(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
             {
                 p_oDataMgr.AddIndex(p_oConn, p_strTableName, p_strTableName + "_idx1", "species_group");
             }

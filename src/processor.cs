@@ -606,7 +606,7 @@ namespace FIA_Biosum_Manager
                 using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(SQLite.GetConnectionString(m_strSqliteConnection)))
                 {
                     conn.Open();
-                    frmMain.g_oTables.m_oProcessor.CreateNewSQLiteOpcostInputTable(SQLite, conn, m_strOpcostTableName);
+                    frmMain.g_oTables.m_oProcessor.CreateOpcostInputTable(SQLite, conn, m_strOpcostTableName);
                 }
 
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
@@ -946,7 +946,7 @@ namespace FIA_Biosum_Manager
                     SQLite.SqlNonQuery(conn, "DROP TABLE " + m_strTvvTableName);
 
                 // create tree vol val work table (TreeVolValLowSlope); Re-use the sql from tree vol val but don't create the indexes
-                SQLite.SqlNonQuery(conn, Tables.Processor.CreateSqliteTreeVolValSpeciesDiamGroupsTableSQL(m_strTvvTableName, false));
+                SQLite.SqlNonQuery(conn, Tables.Processor.CreateTreeVolValSpeciesDiamGroupsTableSQL(m_strTvvTableName, false));
                 
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "createTreeVolValWorkTable: Read trees into tree vol val - " + System.DateTime.Now.ToString() + "\r\n");

@@ -1937,9 +1937,9 @@ namespace FIA_Biosum_Manager
                 frmMain.g_oTables.m_oOptimizerScenarioResults.CreateFvsWeightedVariableRefTable(p_dataMgr, conn, Tables.OptimizerScenarioResults.DefaultScenarioResultsFvsWeightedVariablesRefTableName);
                 frmMain.g_oTables.m_oOptimizerScenarioResults.CreateEconWeightedVariableRefTable(p_dataMgr, conn, Tables.OptimizerScenarioResults.DefaultScenarioResultsEconWeightedVariablesRefTableName);
                 frmMain.g_oTables.m_oOptimizerScenarioResults.CreateSpeciesGroupRefTable(p_dataMgr, conn, Tables.OptimizerScenarioResults.DefaultScenarioResultsSpeciesGroupRefTableName);
-                frmMain.g_oTables.m_oProcessorScenarioRuleDefinitions.CreateSqliteScenarioAdditionalHarvestCostsTable(p_dataMgr, conn, Tables.ProcessorScenarioRuleDefinitions.DefaultAdditionalHarvestCostsTableName + "_C");
-                frmMain.g_oTables.m_oProcessor.CreateSqliteHarvestCostsTable(p_dataMgr, conn, Tables.ProcessorScenarioRun.DefaultHarvestCostsTableName + "_C");
-                frmMain.g_oTables.m_oProcessor.CreateSqliteTreeVolValSpeciesDiamGroupsTable(p_dataMgr, conn, Tables.ProcessorScenarioRun.DefaultTreeVolValSpeciesDiamGroupsTableName + "_C", true);
+                frmMain.g_oTables.m_oProcessorScenarioRuleDefinitions.CreateScenarioAdditionalHarvestCostsTable(p_dataMgr, conn, Tables.ProcessorScenarioRuleDefinitions.DefaultAdditionalHarvestCostsTableName + "_C");
+                frmMain.g_oTables.m_oProcessor.CreateHarvestCostsTable(p_dataMgr, conn, Tables.ProcessorScenarioRun.DefaultHarvestCostsTableName + "_C");
+                frmMain.g_oTables.m_oProcessor.CreateTreeVolValSpeciesDiamGroupsTable(p_dataMgr, conn, Tables.ProcessorScenarioRun.DefaultTreeVolValSpeciesDiamGroupsTableName + "_C", true);
                 frmMain.g_oTables.m_oOptimizerScenarioRuleDef.CreateScenarioPSitesTable(p_dataMgr, conn, Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioPSitesTableName + "_C");
                 frmMain.g_oTables.m_oOptimizerScenarioResults.CreateHarvestMethodRefTable(p_dataMgr, conn, Tables.OptimizerScenarioResults.DefaultScenarioResultsHarvestMethodRefTableName);
                 frmMain.g_oTables.m_oOptimizerScenarioResults.CreateRxPackageRefTable(p_dataMgr, conn, Tables.OptimizerScenarioResults.DefaultScenarioResultsRxPackageRefTableName);

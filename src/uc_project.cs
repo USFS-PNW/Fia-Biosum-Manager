@@ -1230,13 +1230,13 @@ namespace FIA_Biosum_Manager
             {
 				conn.Open();
 				frmMain.g_oTables.m_oOptimizerScenarioRuleDef.CreateScenarioCostsTable(dataMgr, conn, Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioCostsTableName);
-				frmMain.g_oTables.m_oScenario.CreateSqliteScenarioDatasourceTable(dataMgr, conn, Tables.Scenario.DefaultScenarioDatasourceTableName);
+				frmMain.g_oTables.m_oScenario.CreateScenarioDatasourceTable(dataMgr, conn, Tables.Scenario.DefaultScenarioDatasourceTableName);
 				frmMain.g_oTables.m_oOptimizerScenarioRuleDef.CreateScenarioHarvestCostColumnsTable(dataMgr, conn, Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioHarvestCostColumnsTableName);
 				frmMain.g_oTables.m_oOptimizerScenarioRuleDef.CreateScenarioLandOwnerGroupsTable(dataMgr, conn, Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioLandOwnerGroupsTableName);
 				frmMain.g_oTables.m_oOptimizerScenarioRuleDef.CreateScenarioPlotFilterTable(dataMgr, conn, Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioPlotFilterTableName);
 				frmMain.g_oTables.m_oOptimizerScenarioRuleDef.CreateScenarioPSitesTable(dataMgr, conn, Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioPSitesTableName);
 				frmMain.g_oTables.m_oOptimizerScenarioRuleDef.CreateScenarioLastTieBreakRankTable(dataMgr, conn, Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioLastTieBreakRankTableName);
-				frmMain.g_oTables.m_oScenario.CreateSqliteScenarioTable(dataMgr, conn, Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableName);
+				frmMain.g_oTables.m_oScenario.CreateScenarioTable(dataMgr, conn, Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableName);
 				frmMain.g_oTables.m_oOptimizerScenarioRuleDef.CreateScenarioFVSVariablesTable(dataMgr, conn, Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioFvsVariablesTableName);
 				frmMain.g_oTables.m_oOptimizerScenarioRuleDef.CreateScenarioFVSVariableOverallEffectiveTable(dataMgr, conn, Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioFvsVariablesOverallEffectiveTableName);
 				frmMain.g_oTables.m_oOptimizerScenarioRuleDef.CreateScenarioFVSVariablesOptimizationTable(dataMgr, conn, Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioFvsVariablesOptimizationTableName);
@@ -1262,17 +1262,17 @@ namespace FIA_Biosum_Manager
             using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(dataMgr.GetConnectionString(p_strPathAndFile)))
             {
                 conn.Open();
-                frmMain.g_oTables.m_oScenario.CreateSqliteScenarioDatasourceTable(dataMgr, conn, Tables.Scenario.DefaultScenarioDatasourceTableName);
-                frmMain.g_oTables.m_oScenario.CreateSqliteScenarioTable(dataMgr, conn, Tables.Scenario.DefaultScenarioTableName);
-                frmMain.g_oTables.m_oProcessorScenarioRuleDefinitions.CreateSqliteScenarioTreeSpeciesDollarValuesTable(dataMgr, conn, Tables.ProcessorScenarioRuleDefinitions.DefaultTreeSpeciesDollarValuesTableName);
-                frmMain.g_oTables.m_oProcessorScenarioRuleDefinitions.CreateSqliteScenarioHarvestMethodTable(dataMgr, conn, Tables.ProcessorScenarioRuleDefinitions.DefaultHarvestMethodTableName);
-                frmMain.g_oTables.m_oProcessorScenarioRuleDefinitions.CreateSqliteScenarioCostRevenueEscalatorsTable(dataMgr, conn, Tables.ProcessorScenarioRuleDefinitions.DefaultCostRevenueEscalatorsTableName);
-                frmMain.g_oTables.m_oProcessorScenarioRuleDefinitions.CreateSqliteScenarioHarvestCostColumnsTable(dataMgr, conn, Tables.ProcessorScenarioRuleDefinitions.DefaultHarvestCostColumnsTableName);
-                frmMain.g_oTables.m_oProcessorScenarioRuleDefinitions.CreateSqliteScenarioAdditionalHarvestCostsTable(dataMgr, conn, Tables.ProcessorScenarioRuleDefinitions.DefaultAdditionalHarvestCostsTableName);
-                frmMain.g_oTables.m_oProcessorScenarioRuleDefinitions.CreateSqliteScenarioMoveInCostsTable(dataMgr, conn, Tables.ProcessorScenarioRuleDefinitions.DefaultMoveInCostsTableName);
-                frmMain.g_oTables.m_oProcessorScenarioRuleDefinitions.CreateSqliteScenarioTreeDiamGroupsTable(dataMgr, conn, Tables.ProcessorScenarioRuleDefinitions.DefaultTreeDiamGroupsTableName);
-                frmMain.g_oTables.m_oProcessorScenarioRuleDefinitions.CreateSqliteScenarioTreeSpeciesGroupsListTable(dataMgr, conn, Tables.ProcessorScenarioRuleDefinitions.DefaultTreeSpeciesGroupsListTableName);
-                frmMain.g_oTables.m_oProcessorScenarioRuleDefinitions.CreateSqliteScenarioTreeSpeciesGroupsTable(dataMgr, conn, Tables.ProcessorScenarioRuleDefinitions.DefaultTreeSpeciesGroupsTableName);
+                frmMain.g_oTables.m_oScenario.CreateScenarioDatasourceTable(dataMgr, conn, Tables.Scenario.DefaultScenarioDatasourceTableName);
+                frmMain.g_oTables.m_oScenario.CreateScenarioTable(dataMgr, conn, Tables.Scenario.DefaultScenarioTableName);
+                frmMain.g_oTables.m_oProcessorScenarioRuleDefinitions.CreateScenarioTreeSpeciesDollarValuesTable(dataMgr, conn, Tables.ProcessorScenarioRuleDefinitions.DefaultTreeSpeciesDollarValuesTableName);
+                frmMain.g_oTables.m_oProcessorScenarioRuleDefinitions.CreateScenarioHarvestMethodTable(dataMgr, conn, Tables.ProcessorScenarioRuleDefinitions.DefaultHarvestMethodTableName);
+                frmMain.g_oTables.m_oProcessorScenarioRuleDefinitions.CreateScenarioCostRevenueEscalatorsTable(dataMgr, conn, Tables.ProcessorScenarioRuleDefinitions.DefaultCostRevenueEscalatorsTableName);
+                frmMain.g_oTables.m_oProcessorScenarioRuleDefinitions.CreateScenarioHarvestCostColumnsTable(dataMgr, conn, Tables.ProcessorScenarioRuleDefinitions.DefaultHarvestCostColumnsTableName);
+                frmMain.g_oTables.m_oProcessorScenarioRuleDefinitions.CreateScenarioAdditionalHarvestCostsTable(dataMgr, conn, Tables.ProcessorScenarioRuleDefinitions.DefaultAdditionalHarvestCostsTableName);
+                frmMain.g_oTables.m_oProcessorScenarioRuleDefinitions.CreateScenarioMoveInCostsTable(dataMgr, conn, Tables.ProcessorScenarioRuleDefinitions.DefaultMoveInCostsTableName);
+                frmMain.g_oTables.m_oProcessorScenarioRuleDefinitions.CreateScenarioTreeDiamGroupsTable(dataMgr, conn, Tables.ProcessorScenarioRuleDefinitions.DefaultTreeDiamGroupsTableName);
+                frmMain.g_oTables.m_oProcessorScenarioRuleDefinitions.CreateScenarioTreeSpeciesGroupsListTable(dataMgr, conn, Tables.ProcessorScenarioRuleDefinitions.DefaultTreeSpeciesGroupsListTableName);
+                frmMain.g_oTables.m_oProcessorScenarioRuleDefinitions.CreateScenarioTreeSpeciesGroupsTable(dataMgr, conn, Tables.ProcessorScenarioRuleDefinitions.DefaultTreeSpeciesGroupsTableName);
             }
         }
 

@@ -96,7 +96,7 @@ namespace FIA_Biosum_Manager
 
                 //create a work table from the additional harvests costs table
                 //
-                dataMgr.m_strSQL = Tables.Processor.CreateSqliteAdditionalHarvestCostsTableSQL(m_strAddHarvCostsWorkTable);
+                dataMgr.m_strSQL = Tables.Processor.CreateAdditionalHarvestCostsTableSQL(m_strAddHarvCostsWorkTable);
                 dataMgr.SqlNonQuery(oConn, dataMgr.m_strSQL);
                 dataMgr.AddIndex(oConn, m_strAddHarvCostsWorkTable, $@"{m_strAddHarvCostsWorkTable}__plotrx", "biosum_cond_id,rx");
 
@@ -370,7 +370,7 @@ namespace FIA_Biosum_Manager
                 }
                 //create a work table from the additional harvests costs table
                 //
-                dataMgr.m_strSQL = Tables.Processor.CreateSqliteAdditionalHarvestCostsTableSQL(m_strAddHarvCostsWorkTable);
+                dataMgr.m_strSQL = Tables.Processor.CreateAdditionalHarvestCostsTableSQL(m_strAddHarvCostsWorkTable);
                 dataMgr.SqlNonQuery(oConn, dataMgr.m_strSQL);
                 //attach processor scenario definitions
                 dataMgr.m_strSQL = $@"ATTACH '{strScenarioDB}' AS DEFINITIONS";
