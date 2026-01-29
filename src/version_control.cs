@@ -171,7 +171,7 @@ namespace FIA_Biosum_Manager
                     }
                 }
             }
-            //UpdateDatasources_5_12_1();
+            UpdateDatasources_5_12_1();
             frmMain.g_oFrmMain.DeactivateStandByAnimation();
 
             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
@@ -1581,7 +1581,7 @@ namespace FIA_Biosum_Manager
             {
                 copyConn.Open();
                 oAdo.m_strSQL = "INSERT INTO " + Tables.Project.DefaultProjectTableName + "_1 " +
-                    "(proj_id, created_by, created_date, company, description, notes, project_root_directory, application_version) " +
+                    "(proj_id, created_by, created_date, organization, description, notes, project_root_directory, application_version) " +
                     "SELECT proj_id, created_by, created_date, company, description, notes, project_root_directory, application_version " +
                     " FROM " + Tables.Project.DefaultProjectTableName;
                 oAdo.SqlNonQuery(copyConn, oAdo.m_strSQL);

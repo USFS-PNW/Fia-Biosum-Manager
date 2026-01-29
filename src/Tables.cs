@@ -61,7 +61,7 @@ namespace FIA_Biosum_Manager
                     "proj_id CHAR(20) PRIMARY KEY," +
                     "created_by CHAR(30)," +
                     "created_date CHAR(22)," +
-                    "company CHAR(100)," +
+                    "organization CHAR(100)," +
                     "description CHAR(255)," +
                     "notes CHAR(255)," +
                     "project_root_directory CHAR(254)," +

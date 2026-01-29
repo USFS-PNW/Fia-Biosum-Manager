@@ -2233,7 +2233,7 @@ namespace FIA_Biosum_Manager
 				this.frmProject.uc_project1.txtProjectId.Text = this.frmProject.uc_project1.m_strNewProjectId;
 				this.frmProject.uc_project1.txtName.Text = this.frmProject.uc_project1.m_strNewName;
 				this.frmProject.uc_project1.txtDate.Text = this.frmProject.uc_project1.m_strNewDate;
-				this.frmProject.uc_project1.txtOrganization.Text = this.frmProject.uc_project1.m_strNewCompany;
+				this.frmProject.uc_project1.txtOrganization.Text = this.frmProject.uc_project1.m_strNewOrganization;
 				this.frmProject.uc_project1.txtDescription.Text = this.frmProject.uc_project1.m_strNewDescription ;
 				this.frmProject.uc_project1.txtRootDirectory.Text = this.frmProject.uc_project1.m_strNewRootDirectory;
 				this.frmProject.uc_project1.m_strProjectId = this.frmProject.uc_project1.m_strNewProjectId;
@@ -2247,7 +2247,7 @@ namespace FIA_Biosum_Manager
                     frmMain.g_oUtils.WriteText(frmProject.uc_project1.m_strDebugFile, "Project File:               " + frmProject.uc_project1.m_strProjectFile + "\r\n");
                     frmMain.g_oUtils.WriteText(frmProject.uc_project1.m_strDebugFile, "Project Date:               " + frmProject.uc_project1.txtDate.Text.Trim() + "\r\n");
                     frmMain.g_oUtils.WriteText(frmProject.uc_project1.m_strDebugFile, "Current Date/Time:          " + DateTime.Now.ToString() + "\r\n");
-                    frmMain.g_oUtils.WriteText(frmProject.uc_project1.m_strDebugFile, "Company:                    " + frmProject.uc_project1.txtOrganization.Text.Trim() + "\r\n");
+                    frmMain.g_oUtils.WriteText(frmProject.uc_project1.m_strDebugFile, "Organization:                    " + frmProject.uc_project1.txtOrganization.Text.Trim() + "\r\n");
                     frmMain.g_oUtils.WriteText(frmProject.uc_project1.m_strDebugFile, "Description:                " + frmProject.uc_project1.txtDescription.Text.Trim() + "\r\n");
                 }
 
@@ -2324,7 +2324,7 @@ namespace FIA_Biosum_Manager
 				frmTemp.frmProject.uc_project1.txtProjectId.Text = this.frmProject.uc_project1.m_strNewProjectId;
 				frmTemp.frmProject.uc_project1.txtName.Text = this.frmProject.uc_project1.m_strNewName;
 				frmTemp.frmProject.uc_project1.txtDate.Text = this.frmProject.uc_project1.m_strNewDate;
-				frmTemp.frmProject.uc_project1.txtOrganization.Text = this.frmProject.uc_project1.m_strNewCompany;
+				frmTemp.frmProject.uc_project1.txtOrganization.Text = this.frmProject.uc_project1.m_strNewOrganization;
 				frmTemp.frmProject.uc_project1.txtDescription.Text = this.frmProject.uc_project1.m_strNewDescription ;
 				frmTemp.frmProject.uc_project1.txtRootDirectory.Text = this.frmProject.uc_project1.m_strNewRootDirectory;
 				frmTemp.frmProject.uc_project1.m_strProjectId = this.frmProject.uc_project1.m_strNewProjectId;
@@ -2339,7 +2339,7 @@ namespace FIA_Biosum_Manager
                     frmMain.g_oUtils.WriteText(frmTemp.frmProject.uc_project1.m_strDebugFile, "Project File:               " + frmProject.uc_project1.m_strProjectFile + "\r\n");
                     frmMain.g_oUtils.WriteText(frmTemp.frmProject.uc_project1.m_strDebugFile, "Project Date:               " + frmProject.uc_project1.txtDate.Text.Trim() + "\r\n");
                     frmMain.g_oUtils.WriteText(frmTemp.frmProject.uc_project1.m_strDebugFile, "Current Date/Time           " + DateTime.Now.ToString() + "\r\n") ;
-                    frmMain.g_oUtils.WriteText(frmTemp.frmProject.uc_project1.m_strDebugFile, "Company:                    " + frmProject.uc_project1.txtOrganization.Text.Trim() + "\r\n");
+                    frmMain.g_oUtils.WriteText(frmTemp.frmProject.uc_project1.m_strDebugFile, "Organization:                    " + frmProject.uc_project1.txtOrganization.Text.Trim() + "\r\n");
                     frmMain.g_oUtils.WriteText(frmTemp.frmProject.uc_project1.m_strDebugFile, "Description:                " + frmProject.uc_project1.txtDescription.Text.Trim() + "\r\n");
                 }
 
@@ -2380,7 +2380,7 @@ namespace FIA_Biosum_Manager
 		    this.frmProject.uc_project1.m_strNewProjectId="";
             this.frmProject.uc_project1.m_strNewName="";
 		    this.frmProject.uc_project1.m_strNewDate="";
-		    this.frmProject.uc_project1.m_strNewCompany="";
+		    this.frmProject.uc_project1.m_strNewOrganization="";
 		    this.frmProject.uc_project1.m_strNewDescription="";
 		    this.frmProject.uc_project1.m_strNewRootDirectory="";
 			this.frmProject.uc_project1.m_strNewProjectVersion="";

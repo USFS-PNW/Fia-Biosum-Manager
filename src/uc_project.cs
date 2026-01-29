@@ -24,7 +24,7 @@ namespace FIA_Biosum_Manager
 		public string m_strNewProjectId="";
         public string m_strNewName="";
 		public string m_strNewDate="";
-		public string m_strNewCompany="";
+		public string m_strNewOrganization="";
 		public string m_strNewDescription="";
 		public string m_strNewRootDirectory="";
 		public string m_strNewProjectVersion="";
@@ -173,7 +173,7 @@ namespace FIA_Biosum_Manager
 					m_strNewProjectId=p_ado.m_OleDbDataReader["proj_id"].ToString().Trim();
                     m_strNewName=p_ado.m_OleDbDataReader["created_by"].ToString().Trim();
 				    m_strNewDate=p_ado.m_OleDbDataReader["created_date"].ToString();
-		            m_strNewCompany=p_ado.m_OleDbDataReader["company"].ToString().Trim();
+		            m_strNewOrganization=p_ado.m_OleDbDataReader["company"].ToString().Trim();
 		            m_strNewDescription=p_ado.m_OleDbDataReader["description"].ToString().Trim();
 		            m_strNewRootDirectory=p_ado.m_OleDbDataReader["project_root_directory"].ToString();
                     
@@ -272,7 +272,7 @@ namespace FIA_Biosum_Manager
 						m_strNewProjectId = p_dataMgr.m_DataReader["proj_id"].ToString().Trim();
 						m_strNewName = p_dataMgr.m_DataReader["created_by"].ToString().Trim();
 						m_strNewDate = p_dataMgr.m_DataReader["created_date"].ToString();
-						m_strNewCompany = p_dataMgr.m_DataReader["company"].ToString().Trim();
+						m_strNewOrganization = p_dataMgr.m_DataReader["organization"].ToString().Trim();
 						m_strNewDescription = p_dataMgr.m_DataReader["description"].ToString().Trim();
 						m_strNewRootDirectory = p_dataMgr.m_DataReader["project_root_directory"].ToString();
 
@@ -667,7 +667,7 @@ namespace FIA_Biosum_Manager
 			}
 			else 
 			{
-				this.OpenProjectTable(this.m_strProjectDirectory,this.m_strProjectFile);
+				this.OpenProjectTableNew(this.m_strProjectDirectory,this.m_strProjectFile);
 			}
 		    this.m_strAction="";
 		    
@@ -1005,7 +1005,7 @@ namespace FIA_Biosum_Manager
 						strDesc = p_dataMgr.FixString(this.txtDescription.Text.Trim(), "'", "''");
                     }
 					p_dataMgr.m_strSQL = "INSERT INTO project (" +
-						"proj_id, created_by, created_date, company, description, project_root_directory, application_version) " +
+						"proj_id, created_by, created_date, organization, description, project_root_directory, application_version) " +
 						"VALUES (" +
 						"'" + this.txtProjectId.Text.Trim() + "', " +
 						"'" + this.txtName.Text.Trim() + "', " +
@@ -1150,7 +1150,7 @@ namespace FIA_Biosum_Manager
 				p_dataMgr.m_strSQL = "UPDATE project " +
 					"SET created_by = '" + this.txtName.Text + "', " +
 					"proj_id = '" + this.txtProjectId.Text.Trim() + "', " +
-					"company = '" + this.txtOrganization.Text + "', " +
+					"organization = '" + this.txtOrganization.Text + "', " +
 					"description = '" + strDesc + "', " +
 					"project_root_directory = '" + this.txtRootDirectory.Text + "'";
 				p_dataMgr.SqlNonQuery(strConn, p_dataMgr.m_strSQL);
@@ -1357,7 +1357,7 @@ namespace FIA_Biosum_Manager
                 }
                     
                 
-				this.OpenProjectTable(this.m_strNewProjectDirectory, this.m_strNewProjectFile);
+				this.OpenProjectTableNew(this.m_strNewProjectDirectory, this.m_strNewProjectFile);
                 
 			}
 			else 
