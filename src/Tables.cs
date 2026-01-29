@@ -966,6 +966,8 @@ namespace FIA_Biosum_Manager
             static public string FcsTreeCalcBat { get { return "fcs_tree_calc.bat"; } }
             static public string FiaTreeVBCJar { get { return "FIA_TreeVBC.jar"; } }
             static public string TvbcTreeCalcBat { get { return "tvbc_tree_calc.bat"; } }
+            static public string DefaultTvbcWorkDatabase { get { return "tvbc_tree_data.db"; } }
+            static public string TvbcTreeDataCalcTable { get { return "tvbc_tree_data"; } }
             static public string ExportBiosumVolumesDatabase { get { return "TreeTroubleshooter.db"; } }
 
             // These are the columns on the biosum_calc table
@@ -1034,10 +1036,6 @@ namespace FIA_Biosum_Manager
                     };
                 }
             }
-
-            static public string DefaultTvbcWorkDatabase { get { return "tvbc_tree_data.db"; } }
-            static public string TvbcVolumesOutputTable { get { return "tvbc_volumes_input"; } }
-
             public void CreateBiosumVolumesOutputTable(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
             {
                 p_oDataMgr.SqlNonQuery(p_oConn, CreateBiosumVolumesOutputTableSQL(p_strTableName));
@@ -1478,7 +1476,71 @@ namespace FIA_Biosum_Manager
                     "fvs_tree_id CHAR(10)," +
                     "FvsCreatedTree_YN CHAR(1) DEFAULT 'N'," +
                     "CONSTRAINT " + p_strTableName + "_pk PRIMARY KEY(id))";
+            }
+            public void CreateTvbcInputBiosumVolumesTable(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
+            {
+                p_oDataMgr.SqlNonQuery(p_oConn, CreateTvbcInputBiosumVolumesTableSQL(p_strTableName));
+                CreateInputBiosumVolumesTableIndexes(p_oDataMgr, p_oConn, p_strTableName);
+            }
 
+            public string CreateTvbcInputBiosumVolumesTableSQL(string p_strTableName)
+            {
+                return "CREATE TABLE " + p_strTableName + " (" +
+                    "id INTEGER," +
+                    "biosum_cond_id CHAR(25)," +
+                    "invyr INTEGER," +
+                    //"fvs_variant CHAR(2)," +
+                    "spcd INTEGER," +
+                    "dbh DOUBLE," +
+                    "ht DOUBLE," +
+                    "actualht DOUBLE," +
+                    "vol_loc_grp CHAR(10)," +
+                    "statuscd INTEGER," +
+                    "treeclcd INTEGER," +
+                    "cr DOUBLE," +
+                    "cull DOUBLE," +
+                    "roughcull DOUBLE," +
+                    "decaycd INTEGER," +
+                    //"totage DOUBLE," +
+                    //"SUBP INTEGER," +
+                    //"FORMCL INTEGER," +
+                    //"CULLBF DOUBLE," +
+                    "sitree INTEGER, " +
+                    "wdldstem INTEGER," +
+                    "upper_dia DOUBLE," +
+                    "upper_dia_ht DOUBLE," +
+                    "centroid_dia DOUBLE," +
+                    "centroid_dia_ht_actual DOUBLE," +
+                    //"sawht DOUBLE," +
+                    "htdmp DOUBLE," +
+                    //"boleht DOUBLE," +
+                    //"cullcf DOUBLE," +
+                    "cull_fld DOUBLE," +
+                    //"culldead DOUBLE," +
+                    "cullform DOUBLE," +
+                    "cullmstop DOUBLE," +
+                    //"cfsnd DOUBLE," +
+                    //"bfsnd DOUBLE," +
+                    //"precipitation DOUBLE," +
+                    "balive DOUBLE," +
+                    "diahtcd INTEGER," +
+                    "standing_dead_cd INTEGER," +
+                    //"volcfsnd_calc DOUBLE," +
+                    //"drybio_bole_calc DOUBLE," +
+                    //"drybio_top_calc DOUBLE," +
+                    //"drybio_sapling_calc DOUBLE," +
+                    //"drybio_wdld_spp_calc DOUBLE," +
+                    "ecosubcd CHAR(7)," +
+                    "stdorgcd INTEGER," +
+                    //"volcfnet DOUBLE," +
+                    //"volcfgrs DOUBLE," +
+                    //"volcsgrs DOUBLE," +
+                    //"drybiom DOUBLE," +
+                    //"drybiot DOUBLE," +
+                    //"voltsgrs DOUBLE," +
+                    "fvs_tree_id CHAR(10)," +
+                    "FvsCreatedTree_YN CHAR(1) DEFAULT 'N'," +
+                    "CONSTRAINT " + p_strTableName + "_pk PRIMARY KEY(id))";
             }
             public void CreateInputFCSBiosumVolumesTable(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
             {
