@@ -160,7 +160,7 @@ namespace FIA_Biosum_Manager
 			}
 			catch (Exception e)
             {
-				string test = e.StackTrace;
+				string er = e.StackTrace;
             }
 
            
