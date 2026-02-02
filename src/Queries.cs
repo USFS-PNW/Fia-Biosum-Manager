@@ -4482,6 +4482,13 @@ namespace FIA_Biosum_Manager
                         FROM {strFiaTreeSpeciesRefTable} r
                         WHERE CAST(b.spcd as integer)=r.spcd and b.fvscreatedtree_yn='Y'";
                 }
+                public static string BuildInputTableForVolumeCalculationEcoSubCdFvs(string p_strFIAPlotTable, string p_strFIACondTable)
+                {
+                    return $@"UPDATE {Tables.VolumeAndBiomass.BiosumVolumesInputTable}
+                        set ecosubcd = p.ecosubcd, stdorgcd = c.stdorgcd from {p_strFIACondTable} c, {p_strFIAPlotTable} p
+                        where {Tables.VolumeAndBiomass.BiosumVolumesInputTable}.biosum_cond_id = c.biosum_cond_id and 
+                        c.biosum_plot_id = p.biosum_plot_id and fvscreatedtree_yn = 'Y'";
+                }
 
                 /// <summary>
                 /// Update biosum_volumes_input fields (precipitation)
@@ -4751,6 +4758,23 @@ namespace FIA_Biosum_Manager
                 /// <param name="p_strFvsTreeTable"></param>
                 /// <param name="p_strBiosumCalcOutputTable"></param>
                 /// <returns></returns>
+                public static string BuildInputTableForVolumeCalculation_Step9(string p_strFvsTreeTable, string p_strBiosumCalcOutputTable, string p_fvsVariant, string p_rxPackage)
+                {
+                    utils oUtils = new utils();
+                    return $@"UPDATE {p_strFvsTreeTable} 
+                           SET ({oUtils.ConvertArrayToList(Tables.VolumeAndBiomass.TvbcVolAndBio, ",")}) 
+                               = (select {oUtils.ConvertArrayToList(Tables.VolumeAndBiomass.TvbcVolAndBio, ",")} FROM TVBC.{p_strBiosumCalcOutputTable}
+                                 WHERE {p_strFvsTreeTable}.id = TVBC.{p_strBiosumCalcOutputTable}.tre_cn2)
+                               WHERE fvs_variant = '{p_fvsVariant}' AND rxpackage = '{p_rxPackage}'";
+                }
+
+                /// <summary>
+                /// Update the FVS_TREE table with the volumes and biomass
+                /// values that FCS returned
+                /// </summary>
+                /// <param name="p_strFvsTreeTable"></param>
+                /// <param name="p_strBiosumCalcOutputTable"></param>
+                /// <returns></returns>
                 public static string BuildInputSQLiteTableForVolumeCalculation_Step10(string p_strFvsTreeTable, string p_strBiosumCalcOutputTable, 
                     string p_fvsVariant, string p_rxPackage)
                 {
@@ -4760,6 +4784,24 @@ namespace FIA_Biosum_Manager
                                = (select volcfnet_calc, volcfsnd_calc, volcsgrs_calc, voltsgrs_calc,
                                  standing_dead_cd, statuscd, decaycd FROM FCS.{p_strBiosumCalcOutputTable}
                                  WHERE {p_strFvsTreeTable}.id = FCS.{p_strBiosumCalcOutputTable}.tree)
+                                 WHERE fvs_variant = '{p_fvsVariant}' AND rxpackage = '{p_rxPackage}'";
+                    // Note: standing_dead_cd, statuscd, decaycd aren't calculated by FCS but this was an easy way to populate it from master.tree
+                }
+
+                /// <summary>
+                /// Update the FVS_TREE table with the volumes and biomass
+                /// values that FCS returned
+                /// </summary>
+                /// <param name="p_strFvsTreeTable"></param>
+                /// <param name="p_strBiosumCalcOutputTable"></param>
+                /// <returns></returns>
+                public static string BuildInputTableForVolumeCalculation_Step10(string p_strFvsTreeTable, string p_strBiosumCalcOutputTable,
+                    string p_fvsVariant, string p_rxPackage)
+                {
+                    return $@"UPDATE {p_strFvsTreeTable} 
+                           SET (standing_dead_cd, statuscd, decaycd) 
+                               = (select standing_dead_cd, statuscd, decaycd FROM TVBC.{p_strBiosumCalcOutputTable}
+                                 WHERE {p_strFvsTreeTable}.id = TVBC.{p_strBiosumCalcOutputTable}.tre_cn2)
                                  WHERE fvs_variant = '{p_fvsVariant}' AND rxpackage = '{p_rxPackage}'";
                     // Note: standing_dead_cd, statuscd, decaycd aren't calculated by FCS but this was an easy way to populate it from master.tree
                 }

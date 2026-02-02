@@ -2628,7 +2628,8 @@ namespace FIA_Biosum_Manager
             static public string FiaTreeVBCJar { get { return "FIA_TreeVBC.jar"; } }
             static public string TvbcTreeCalcBat { get { return "tvbc_tree_calc.bat"; } }
             static public string DefaultTvbcWorkDatabase { get { return "tvbc_tree_data.db"; } }
-            static public string TvbcTreeDataCalcTable { get { return "tvbc_tree_data"; } }
+            static public string TvbcTreeDataTable { get { return "tvbc_tree_data"; } }           
+            static public string TvbcTreeDataCalcTable { get { return "tvbc_tree_data_calc"; } }
             static public string ExportBiosumVolumesDatabase { get { return "TreeTroubleshooter.db"; } }
 
             // These are the columns on the biosum_calc table
