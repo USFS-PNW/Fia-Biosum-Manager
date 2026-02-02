@@ -171,7 +171,7 @@ namespace FIA_Biosum_Manager
                     }
                 }
             }
-            //UpdateDatasources_5_12_1();
+            UpdateDatasources_5_12_1();
             frmMain.g_oFrmMain.DeactivateStandByAnimation();
 
             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
@@ -1526,6 +1526,7 @@ namespace FIA_Biosum_Manager
             }
 
             // Migrate project database
+            frmMain.g_sbpInfo.Text = "Version Update: Moving project and datasource tables ...Stand by";
             ODBCMgr oODBCMgr = new ODBCMgr();
             utils oUtils = new utils();
             dao_data_access oDao = new dao_data_access();
@@ -1536,65 +1537,85 @@ namespace FIA_Biosum_Manager
             if (!System.IO.File.Exists(strDestFile))
             {
                 oDataMgr.CreateDbFile(strDestFile);
-            }
 
-            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(strDestFile)))
-            {
-                conn.Open();
+                bool bProjTableMigrate = false;
+                bool bProjDSTableMigrate = false;
 
-                if (!oDataMgr.TableExist(conn, Tables.Project.DefaultProjectTableName))
+                using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(strDestFile)))
                 {
-                    frmMain.g_oTables.m_oProject.CreateProjectTable(oDataMgr, conn, Tables.Project.DefaultProjectTableName);
+                    conn.Open();
+
+                    if (!oDataMgr.TableExist(conn, Tables.Project.DefaultProjectTableName))
+                    {
+                        bProjTableMigrate = true;
+                        frmMain.g_oTables.m_oProject.CreateProjectTable(oDataMgr, conn, Tables.Project.DefaultProjectTableName);
+                    }
+
+                    if (!oDataMgr.TableExist(conn, Tables.Project.DefaultProjectDatasourceTableName))
+                    {
+                        bProjDSTableMigrate = true;
+                        frmMain.g_oTables.m_oProject.CreateDatasourceTable(oDataMgr, conn, Tables.Project.DefaultProjectDatasourceTableName);
+                    }
                 }
 
-                if (!oDataMgr.TableExist(conn, Tables.Project.DefaultProjectDatasourceTableName))
+                if (bProjTableMigrate || bProjDSTableMigrate)
                 {
-                    frmMain.g_oTables.m_oProject.CreateDatasourceTable(oDataMgr, conn, Tables.Project.DefaultProjectDatasourceTableName);
+                    // Create DSN if needed
+                    if (oODBCMgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.ProjectDsnName))
+                    {
+                        oODBCMgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.ProjectDsnName);
+                    }
+                    oODBCMgr.CreateUserSQLiteDSN(ODBCMgr.DSN_KEYS.ProjectDsnName, strDestFile);
+
+                    // Set new temporary database
+                    string strTempAccdb = oUtils.getRandomFile(frmMain.g_oEnv.strTempDir, "accdb");
+                    oDao.CreateMDB(strTempAccdb);
+
+                    // Link tables to temporary database
+                    if (bProjTableMigrate)
+                    {
+                        oDao.CreateTableLink(strTempAccdb, Tables.Project.DefaultProjectTableName, strSourceFile, Tables.Project.DefaultProjectTableName);
+                        oDao.CreateSQLiteTableLink(strTempAccdb, Tables.Project.DefaultProjectTableName, Tables.Project.DefaultProjectTableName + "_1",
+                        ODBCMgr.DSN_KEYS.ProjectDsnName, strDestFile);
+                    }
+                    if (bProjDSTableMigrate)
+                    {
+                        oDao.CreateTableLink(strTempAccdb, Tables.Project.DefaultProjectDatasourceTableName, strSourceFile, Tables.Project.DefaultProjectDatasourceTableName);
+                        oDao.CreateSQLiteTableLink(strTempAccdb, Tables.Project.DefaultProjectDatasourceTableName, Tables.Project.DefaultProjectDatasourceTableName + "_1",
+                        ODBCMgr.DSN_KEYS.ProjectDsnName, strDestFile);
+                    }
+                    System.Threading.Thread.Sleep(4000);
+
+                    // Copy tables
+                    string strConn = oAdo.getMDBConnString(strTempAccdb, "", "");
+                    using (OleDbConnection copyConn = new OleDbConnection(strConn))
+                    {
+                        copyConn.Open();
+
+                        if (bProjTableMigrate)
+                        {
+                            oAdo.m_strSQL = "INSERT INTO " + Tables.Project.DefaultProjectTableName + "_1 " +
+                            "(proj_id, created_by, created_date, organization, description, notes, project_root_directory, application_version) " +
+                            "SELECT proj_id, created_by, created_date, company, description, notes, project_root_directory, application_version " +
+                            " FROM " + Tables.Project.DefaultProjectTableName;
+                            oAdo.SqlNonQuery(copyConn, oAdo.m_strSQL);
+
+                            oAdo.m_strSQL = "DROP TABLE " + Tables.Project.DefaultProjectTableName + "_1";
+                            oAdo.SqlNonQuery(copyConn, oAdo.m_strSQL);
+                        }
+                        
+                        if (bProjDSTableMigrate)
+                        {
+                            oAdo.m_strSQL = "INSERT INTO " + Tables.Project.DefaultProjectDatasourceTableName + "_1 " +
+                            "SELECT * FROM " + Tables.Project.DefaultProjectDatasourceTableName;
+                            oAdo.SqlNonQuery(copyConn, oAdo.m_strSQL);
+
+                            oAdo.m_strSQL = "DROP TABLE " + Tables.Project.DefaultProjectDatasourceTableName + "_1";
+                            oAdo.SqlNonQuery(copyConn, oAdo.m_strSQL);
+                        }
+                    }
                 }
-            }
-
-            // Create DSN if needed
-            if (oODBCMgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.ProjectDsnName))
-            {
-                oODBCMgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.ProjectDsnName);
-            }
-            oODBCMgr.CreateUserSQLiteDSN(ODBCMgr.DSN_KEYS.ProjectDsnName, strDestFile);
-
-            // Set new temporary database
-            string strTempAccdb = oUtils.getRandomFile(frmMain.g_oEnv.strTempDir, "accdb");
-            oDao.CreateMDB(strTempAccdb);
-
-            // Link access tables to temporary database
-            oDao.CreateTableLink(strTempAccdb, Tables.Project.DefaultProjectTableName, strSourceFile, Tables.Project.DefaultProjectTableName);
-            oDao.CreateTableLink(strTempAccdb, Tables.Project.DefaultProjectDatasourceTableName, strSourceFile, Tables.Project.DefaultProjectDatasourceTableName);
-
-            // Create SQLite table links
-            oDao.CreateSQLiteTableLink(strTempAccdb, Tables.Project.DefaultProjectTableName, Tables.Project.DefaultProjectTableName + "_1",
-                ODBCMgr.DSN_KEYS.ProjectDsnName, strDestFile);
-            oDao.CreateSQLiteTableLink(strTempAccdb, Tables.Project.DefaultProjectDatasourceTableName, Tables.Project.DefaultProjectDatasourceTableName + "_1",
-                ODBCMgr.DSN_KEYS.ProjectDsnName, strDestFile);
-            System.Threading.Thread.Sleep(4000);
-
-            // Copy tables
-            string strConn = oAdo.getMDBConnString(strTempAccdb, "", "");
-            using (OleDbConnection copyConn = new OleDbConnection(strConn))
-            {
-                copyConn.Open();
-                oAdo.m_strSQL = "INSERT INTO " + Tables.Project.DefaultProjectTableName + "_1 " +
-                    "(proj_id, created_by, created_date, organization, description, notes, project_root_directory, application_version) " +
-                    "SELECT proj_id, created_by, created_date, company, description, notes, project_root_directory, application_version " +
-                    " FROM " + Tables.Project.DefaultProjectTableName;
-                oAdo.SqlNonQuery(copyConn, oAdo.m_strSQL);
-
-                oAdo.m_strSQL = "INSERT INTO " + Tables.Project.DefaultProjectDatasourceTableName + "_1 " +
-                    "SELECT * FROM " + Tables.Project.DefaultProjectDatasourceTableName;
-                oAdo.SqlNonQuery(copyConn, oAdo.m_strSQL);
-
-                oAdo.m_strSQL = "DROP TABLE " + Tables.Project.DefaultProjectTableName + "_1";
-                oAdo.SqlNonQuery(copyConn, oAdo.m_strSQL);
-
-                oAdo.m_strSQL = "DROP TABLE " + Tables.Project.DefaultProjectDatasourceTableName + "_1";
-                oAdo.SqlNonQuery(copyConn, oAdo.m_strSQL);
+                
             }
 
             
