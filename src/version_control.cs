@@ -171,7 +171,7 @@ namespace FIA_Biosum_Manager
                     }
                 }
             }
-            UpdateDatasources_5_12_1();
+            //UpdateDatasources_5_12_1();
             frmMain.g_oFrmMain.DeactivateStandByAnimation();
 
             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)

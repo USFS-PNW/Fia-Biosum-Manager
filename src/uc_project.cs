@@ -154,7 +154,14 @@ namespace FIA_Biosum_Manager
             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                 frmMain.g_oUtils.WriteText(m_strDebugFile, "uc_project.OpenProjectTable: Open DBFile with Connection String=" + strConn + "\r\n");
 
-			p_ado.OpenConnection(strConn);
+			try
+			{
+				p_ado.OpenConnection(strConn);
+			}
+			catch (Exception e)
+            {
+				string test = e.StackTrace;
+            }
 
            
             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
