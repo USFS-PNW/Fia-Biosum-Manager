@@ -699,6 +699,7 @@ namespace FIA_Biosum_Manager
 			int x;
 			int intAt = 0;
 			string strDesc="";
+			string strOrg = "";
 
 			//validate the input
 			//project id
@@ -1012,13 +1013,17 @@ namespace FIA_Biosum_Manager
                     {
 						strDesc = p_dataMgr.FixString(this.txtDescription.Text.Trim(), "'", "''");
                     }
+					if (this.txtOrganization.Text.Trim().Length > 0)
+                    {
+						strOrg = p_dataMgr.FixString(this.txtOrganization.Text.Trim(), "'", "''");
+                    }
 					p_dataMgr.m_strSQL = "INSERT INTO project (" +
 						"proj_id, created_by, created_date, organization, description, project_root_directory, application_version) " +
 						"VALUES (" +
 						"'" + this.txtProjectId.Text.Trim() + "', " +
 						"'" + this.txtName.Text.Trim() + "', " +
 						"'" + this.txtDate.Text + "', " +
-						"'" + this.txtOrganization.Text.Trim() + "', " +
+						"'" + strOrg + "', " +
 						"'" + strDesc + "', " +
 						"'" + this.txtRootDirectory.Text + "', " +
 						"'" + frmMain.g_strAppVer + "')";
@@ -1155,10 +1160,14 @@ namespace FIA_Biosum_Manager
                 {
 					strDesc = p_dataMgr.FixString(this.txtDescription.Text.Trim(), "'", "''");
                 }
+				if (this.txtOrganization.Text.Trim().Length > 0)
+				{
+					strOrg = p_dataMgr.FixString(this.txtOrganization.Text.Trim(), "'", "''");
+				}
 				p_dataMgr.m_strSQL = "UPDATE project " +
 					"SET created_by = '" + this.txtName.Text + "', " +
 					"proj_id = '" + this.txtProjectId.Text.Trim() + "', " +
-					"organization = '" + this.txtOrganization.Text + "', " +
+					"organization = '" + strOrg + "', " +
 					"description = '" + strDesc + "', " +
 					"project_root_directory = '" + this.txtRootDirectory.Text + "'";
 				p_dataMgr.SqlNonQuery(strConn, p_dataMgr.m_strSQL);
