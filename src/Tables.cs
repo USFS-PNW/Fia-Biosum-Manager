@@ -967,8 +967,10 @@ namespace FIA_Biosum_Manager
             static public string FiaTreeVBCJar { get { return "FIA_TreeVBC.jar"; } }
             static public string TvbcTreeCalcBat { get { return "tvbc_tree_calc.bat"; } }
             static public string DefaultTvbcWorkDatabase { get { return "tvbc_tree_data.db"; } }
-            static public string TvbcTreeDataCalcTable { get { return "tvbc_tree_data"; } }
+            static public string TvbcTreeDataTable { get { return "tvbc_tree_data"; } }           
+            static public string TvbcTreeDataCalcTable { get { return "tvbc_tree_data_calc"; } }
             static public string ExportBiosumVolumesDatabase { get { return "TreeTroubleshooter.db"; } }
+            static public string DefaultEcoSubCdRefTable { get { return "ECOSUBCD_REF"; } }
 
             // These are the columns on the biosum_calc table
             static public List<Tuple<string, utils.DataType>> ColumnsAndDataTypes
@@ -1488,6 +1490,9 @@ namespace FIA_Biosum_Manager
                 return "CREATE TABLE " + p_strTableName + " (" +
                     "id INTEGER," +
                     "biosum_cond_id CHAR(25)," +
+                    "statecd INTEGER," +
+                    "countycd INTEGER," +
+                    "plot INTEGER," +
                     "invyr INTEGER," +
                     //"fvs_variant CHAR(2)," +
                     "spcd INTEGER," +

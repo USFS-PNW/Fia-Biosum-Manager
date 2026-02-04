@@ -2815,6 +2815,22 @@ namespace FIA_Biosum_Manager
                     if (m_bDebug && frmMain.g_intDebugLevel > 2)
                         this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
 
+                    // Set ECOSUBCD for FVS-Created trees
+                    oDataMgr.m_strSQL = Queries.VolumeAndBiomass.FVSOut.BuildInputTableForVolumeCalculationEcoSubCdFvs(m_oQueries.m_oFIAPlot.m_strPlotTable, m_oQueries.m_oFIAPlot.m_strCondTable);
+                    if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                        this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + oDataMgr.m_strSQL + "\r\n");
+                    oDataMgr.SqlNonQuery(oConn, oDataMgr.m_strSQL);
+                    if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                        this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
+
+                    // Overwrite ECOSUBCD for ALL trees, if needed, from ECOSUBCD_REF; biosum_ref.db was already attached above
+                    oDataMgr.m_strSQL = Queries.VolumeAndBiomass.FVSOut.BuildInputTableForVolumeCalculationEcoSubAll(Tables.VolumeAndBiomass.BiosumVolumesInputTable);
+                    if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                        this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + oDataMgr.m_strSQL + "\r\n");
+                    oDataMgr.SqlNonQuery(oConn, oDataMgr.m_strSQL);
+                    if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                        this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
+
                     //Set STATUSCD for seedlings; It is populated from FCS for all other trees
                     oDataMgr.m_strSQL = $@"UPDATE {strFvsTreeTable} as b SET statuscd=t.statuscd
                         FROM {m_oQueries.m_oFIAPlot.m_strTreeTable} t WHERE t.biosum_cond_id=b.biosum_cond_id AND TRIM(t.fvs_tree_id)=b.fvs_tree_id
@@ -2920,6 +2936,9 @@ namespace FIA_Biosum_Manager
                         oDataMgr.SqlNonQuery(oDataMgr.m_Connection, "ATTACH DATABASE '" + frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\" + Tables.VolumeAndBiomass.DefaultSqliteWorkDatabase +
                             "' AS FCS");
                         oDataMgr.SqlNonQuery(oDataMgr.m_Connection, $"DELETE FROM FCS.{Tables.VolumeAndBiomass.BiosumVolumeCalcTable}");
+                        oDataMgr.SqlNonQuery(oDataMgr.m_Connection, "ATTACH DATABASE '" + frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\" + Tables.VolumeAndBiomass.DefaultTvbcWorkDatabase +
+                            "' AS TVBC");
+                        oDataMgr.SqlNonQuery(oDataMgr.m_Connection, $"DELETE FROM {Tables.VolumeAndBiomass.TvbcTreeDataTable}");
                         UpdateTherm(m_frmTherm.progressBar1,
                             m_intProgressStepTotalCount,
                             m_intProgressStepTotalCount);
@@ -2928,6 +2947,8 @@ namespace FIA_Biosum_Manager
                         //into table fcs_biosum_volumes_input (FcsBiosumVolumesInputTable)
                         oDataMgr.m_strSQL = Queries.VolumeAndBiomass.FVSOut.BuildInputSQLiteBiosumCalcTable_Step7(
                             Tables.VolumeAndBiomass.BiosumVolumesInputTable, $"FCS.{Tables.VolumeAndBiomass.BiosumVolumeCalcTable}");
+                        oDataMgr.m_strSQL = Queries.VolumeAndBiomass.FVSOut.BuildInputTvbcBiosumCalcTable_Step7(
+                            Tables.VolumeAndBiomass.BiosumVolumesInputTable, $"{Tables.VolumeAndBiomass.TvbcTreeDataTable}");
                         if (m_bDebug && frmMain.g_intDebugLevel > 2)
                             this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + oDataMgr.m_strSQL + "\r\n");
                         oDataMgr.SqlNonQuery(oDataMgr.m_Connection, oDataMgr.m_strSQL);
@@ -2939,6 +2960,13 @@ namespace FIA_Biosum_Manager
                         if (oDataMgr.TableExist(oDataMgr.m_Connection, "CULL_TOTAL_WORK_TABLE"))
                             oDataMgr.SqlNonQuery(oDataMgr.m_Connection, "DROP TABLE CULL_TOTAL_WORK_TABLE");
 
+                        oDataMgr.m_strSQL = "DETACH DATABASE 'TVBC'";
+                        if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                            this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + oDataMgr.m_strSQL + "\r\n");
+                        oDataMgr.SqlNonQuery(oDataMgr.m_Connection, oDataMgr.m_strSQL);
+                        if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                            this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
+
                         //
                         //RUN JAVA APP TO CALCULATE VOLUME/BIOMASS
                         //
@@ -2947,11 +2975,11 @@ namespace FIA_Biosum_Manager
                             frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)m_frmTherm.lblMsg, "Text", "Package:" + p_strPackage.Trim() + " Running volume calculations for " + strFvsTreeTable);
                             frmMain.g_oDelegate.ExecuteControlMethod((System.Windows.Forms.Control)this.m_frmTherm.lblMsg, "Refresh");
 
-                            frmMain.g_oUtils.RunProcess(frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum", "fcs_tree_calc.bat", "BAT");
-                            if (System.IO.File.Exists(frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\fcs_error_msg.txt"))
+                            frmMain.g_oUtils.RunProcess(frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum", "tvbc_tree_calc.bat", "BAT");
+                            if (System.IO.File.Exists(frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\tvbc_error_msg.txt"))
                             {
                                 // Read entire text file content in one string  
-                                m_strError = System.IO.File.ReadAllText(frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\fcs_error_msg.txt");
+                                m_strError = System.IO.File.ReadAllText(frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\tvbc_error_msg.txt");
                                 if (m_strError.IndexOf("JAVA.EXE", 0) > 0)
                                 {
                                     m_strError = "Problem detected running JAVA.EXE";
@@ -2965,39 +2993,85 @@ namespace FIA_Biosum_Manager
                         //
                         if (m_intError == 0)
                         {
+                            // Add integer key to calculation output table
+                            using (System.Data.SQLite.SQLiteConnection conn =
+                                new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\" + Tables.VolumeAndBiomass.DefaultTvbcWorkDatabase)))
+                            {
+                                conn.Open();
+                                if (!oDataMgr.ColumnExist(conn, Tables.VolumeAndBiomass.TvbcTreeDataCalcTable, "TRE_CN2"))
+                                {
+                                    oDataMgr.AddColumn(conn, Tables.VolumeAndBiomass.TvbcTreeDataCalcTable, "TRE_CN2", "INTEGER", "");
+                                    oDataMgr.SqlNonQuery(conn, $@"UPDATE {Tables.VolumeAndBiomass.TvbcTreeDataCalcTable} SET TRE_CN2 = cast(TRE_CN AS iNTEGER)");
+                                    oDataMgr.AddIndex(conn, Tables.VolumeAndBiomass.TvbcTreeDataCalcTable, "tvbc_calc_idx1", "TRE_CN2");
+                                }
+                            }
+
                             if (m_bDebug && frmMain.g_intDebugLevel > 2)
                                 this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n SQLite connection status: " + oDataMgr.m_Connection.State + "\r\n");
                             bool bAttached = oDataMgr.DatabaseAttached(oDataMgr.m_Connection,
-                                frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\" + Tables.VolumeAndBiomass.DefaultSqliteWorkDatabase);
+                                frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\" + Tables.VolumeAndBiomass.DefaultTvbcWorkDatabase);
                             if (!bAttached)
                             {
-                                oDataMgr.SqlNonQuery(oDataMgr.m_Connection, "ATTACH DATABASE '" + frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\" + Tables.VolumeAndBiomass.DefaultSqliteWorkDatabase +
-                                "' AS FCS");
+                                oDataMgr.SqlNonQuery(oDataMgr.m_Connection, "ATTACH DATABASE '" + frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\" + Tables.VolumeAndBiomass.DefaultTvbcWorkDatabase +
+                                "' AS TVBC");
                             }
 
                             UpdateTherm(m_frmTherm.progressBar1, 3, 6);
 
                             frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)m_frmTherm.lblMsg, "Text", "Package:" + p_strPackage.Trim() + " Write calculation results to " + strFvsTreeTable);
                             frmMain.g_oDelegate.ExecuteControlMethod((System.Windows.Forms.Control)this.m_frmTherm.lblMsg, "Refresh");
-                            //update calculated fields from biosum_calc table
-                            //into table fvs_tree
-                            oDataMgr.m_strSQL = Queries.VolumeAndBiomass.FVSOut.BuildInputSQLiteTableForVolumeCalculation_Step9(
-                                strFvsTreeTable, Tables.VolumeAndBiomass.BiosumVolumeCalcTable, p_strVariant.Trim(), p_strPackage.Trim());
+
+                            //update calculated fields from biosum_calc table into table fvs_CutTree
+                            System.Data.SQLite.SQLiteCommand command = oDataMgr.m_Connection.CreateCommand();
+                            oDataMgr.m_strSQL = Queries.VolumeAndBiomass.FVSOut.BuildInputTableForVolumeCalculation_Step9(
+                                strFvsTreeTable, Tables.VolumeAndBiomass.TvbcTreeDataCalcTable, p_strVariant.Trim(), p_strPackage.Trim());
                             if (m_bDebug && frmMain.g_intDebugLevel > 2)
                                 this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + oDataMgr.m_strSQL + "\r\n");
-                            oDataMgr.SqlNonQuery(oDataMgr.m_Connection, oDataMgr.m_strSQL);
+
+                                using (System.Data.SQLite.SQLiteTransaction oTransaction = oDataMgr.m_Connection.BeginTransaction(IsolationLevel.ReadCommitted))
+                                {
+                                    try
+                                    {
+                                        command.Transaction = oTransaction;
+                                        command.CommandText = oDataMgr.m_strSQL;
+                                        command.ExecuteNonQuery();
+                                        oTransaction.Commit();
+                                    }
+                                    catch (Exception err)
+                                    {
+                                        m_intError = -1;
+                                        MessageBox.Show(err.Message);
+                                        oTransaction.Rollback();
+                                    }
+                                }
+
                             if (m_bDebug && frmMain.g_intDebugLevel > 2)
                                 this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
 
-                            oDataMgr.m_strSQL = Queries.VolumeAndBiomass.FVSOut.BuildInputSQLiteTableForVolumeCalculation_Step10(
-                                strFvsTreeTable, Tables.VolumeAndBiomass.BiosumVolumeCalcTable, p_strVariant.Trim(), p_strPackage.Trim());
+                            oDataMgr.m_strSQL = Queries.VolumeAndBiomass.FVSOut.BuildInputTableForVolumeCalculation_Step10(
+                                    strFvsTreeTable, Tables.VolumeAndBiomass.TvbcTreeDataCalcTable, p_strVariant.Trim(), p_strPackage.Trim());
                             if (m_bDebug && frmMain.g_intDebugLevel > 2)
                                 this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + oDataMgr.m_strSQL + "\r\n");
-                            oDataMgr.SqlNonQuery(oDataMgr.m_Connection, oDataMgr.m_strSQL);
+                            using (System.Data.SQLite.SQLiteTransaction oTransaction = oDataMgr.m_Connection.BeginTransaction(IsolationLevel.ReadCommitted))
+                            {
+                                try
+                                {
+                                    command.Transaction = oTransaction;
+                                    command.CommandText = oDataMgr.m_strSQL;
+                                    command.ExecuteNonQuery();
+                                    oTransaction.Commit();
+                                }
+                                catch (Exception err)
+                                {
+                                    m_intError = -1;
+                                    MessageBox.Show(err.Message);
+                                    oTransaction.Rollback();
+                                }
+                            }
                             if (m_bDebug && frmMain.g_intDebugLevel > 2)
                                 this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
 
-                            oDataMgr.m_strSQL = "DETACH DATABASE 'FCS'";
+                            oDataMgr.m_strSQL = "DETACH DATABASE 'TVBC'";
                             if (m_bDebug && frmMain.g_intDebugLevel > 2)
                                 this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + oDataMgr.m_strSQL + "\r\n");
                             oDataMgr.SqlNonQuery(oDataMgr.m_Connection, oDataMgr.m_strSQL);
@@ -3036,7 +3110,7 @@ namespace FIA_Biosum_Manager
                         }
 
                         // DELETE SEEDLINGS FROM CUTTREE TABLE; INFOREST TABLE TBD
-                        if (strFvsTreeTable.Equals(Tables.FVS.DefaultFVSCutTreeTableName))
+                        if (strFvsTreeTable.Equals(Tables.FVS.DefaultFVSCutTreeTableName) || strFvsTreeTable.Equals(Tables.FVS.DefaultFVSCutTreeTvbcTableName))
                         {
                             oDataMgr.m_strSQL = $@"DELETE FROM {strFvsTreeTable} WHERE DBH < 1.0";
                             if (m_bDebug && frmMain.g_intDebugLevel > 2)
@@ -7541,7 +7615,7 @@ namespace FIA_Biosum_Manager
                                     if (m_bDebug && frmMain.g_intDebugLevel > 1)
                                         this.WriteText(m_strDebugFile, "\r\nEND:Copy production file to work file: Source File Name:" + strTreeListDbFile + " Destination File Name:" + strTreeTempDbFile + " " + System.DateTime.Now.ToString() + "\r\n");
                                     RunAppend_UpdateFVSTreeTables(strPackage, strVariant, strRx1, strRx2, strRx3, strRx4, strTreeTempDbFile, ref intItemError, ref strItemError);
-                                    //RunAppend_UpdateFVSTreeTableTvbc(strPackage, strVariant, strRx1, strRx2, strRx3, strRx4, strTreeTempDbFile, ref intItemError, ref strItemError);
+                                    RunAppend_UpdateFVSTreeTableTvbc(strPackage, strVariant, strRx1, strRx2, strRx3, strRx4, strTreeTempDbFile, ref intItemError, ref strItemError);
 
                                     //copy the work db file over the production file
                                     if (m_bDebug && frmMain.g_intDebugLevel > 1)
