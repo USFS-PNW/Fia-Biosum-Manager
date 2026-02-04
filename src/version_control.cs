@@ -1617,8 +1617,9 @@ namespace FIA_Biosum_Manager
                 }
                 
             }
+            frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectFile = "project.db";
 
-            
+
         }
 
             // Method to compare two versions.
