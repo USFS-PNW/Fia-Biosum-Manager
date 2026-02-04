@@ -27,7 +27,7 @@ namespace FIA_Biosum_Manager
         public frmScanAndSynchronizeProjectRootFolderTool()
         {
             InitializeComponent();
-            this.lblCurrentProjectRootFolder.Text = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim();
+            this.lblCurrentProjectRootFolder.Text = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim();
             loadvalues();
             
         }

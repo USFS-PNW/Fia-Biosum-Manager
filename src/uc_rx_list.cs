@@ -1280,7 +1280,7 @@ namespace FIA_Biosum_Manager
         {
             // Check for SQLite elements
             DataMgr dataMgr = new DataMgr();
-            string strTreeDb = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSTreeListDbFile;
+            string strTreeDb = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() + Tables.FVS.DefaultFVSTreeListDbFile;
             if (!File.Exists(strTreeDb))
             {
                 dataMgr.CreateDbFile(strTreeDb);
@@ -1639,8 +1639,8 @@ namespace FIA_Biosum_Manager
 
 		public void CreateTableLinksToFVSPrePostTables(string p_strDestinationDbFile)
         {
-			string strFVSPrePostPathAndDbFile = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + Tables.FVS.DefaultFVSOutPrePostDbFile;
-			string strFVSWeightedPathAndDbFile = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + Tables.OptimizerScenarioResults.DefaultCalculatedPrePostFVSVariableTableDbFile;
+			string strFVSPrePostPathAndDbFile = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() + "\\" + Tables.FVS.DefaultFVSOutPrePostDbFile;
+			string strFVSWeightedPathAndDbFile = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() + "\\" + Tables.OptimizerScenarioResults.DefaultCalculatedPrePostFVSVariableTableDbFile;
 			dao_data_access oDao = new dao_data_access();
 			DataMgr oDataMgr = new DataMgr();
 
@@ -2191,7 +2191,7 @@ namespace FIA_Biosum_Manager
             {
                 conn.Open();
                 // Attach the FVSOut.db
-                dataMgr.m_strSQL = "ATTACH DATABASE '" + frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
+                dataMgr.m_strSQL = "ATTACH DATABASE '" + frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() +
                                     Tables.FVS.DefaultFVSOutDbFile + "' AS FVS";
                 dataMgr.SqlNonQuery(conn, dataMgr.m_strSQL);
 

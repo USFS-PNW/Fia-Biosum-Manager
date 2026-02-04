@@ -261,7 +261,7 @@ namespace FIA_Biosum_Manager
             }
 
                 InitializePrePostSeqNumTables(SQLite);
-                string strDbConn = SQLite.GetConnectionString($@"{frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim()}\{Tables.FVS.DefaultFVSPrePostSeqNumTableDbFile}");
+                string strDbConn = SQLite.GetConnectionString($@"{frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim()}\{Tables.FVS.DefaultFVSPrePostSeqNumTableDbFile}");
                 m_oRxTools.LoadFVSOutputPrePostRxCycleSeqNum(strDbConn, m_oCurFVSPrepostSeqNumItem_Collection);
                 m_oCurFVSPrepostSeqNumItem_Collection.CopyProperties(m_oSavFVSPrepostSeqNumItem_Collection, m_oCurFVSPrepostSeqNumItem_Collection);
                 m_oQueries.m_oFvs.LoadDatasource = true;
@@ -287,7 +287,7 @@ namespace FIA_Biosum_Manager
                 {
                     m_rxPackages = m_rxPackages.TrimEnd(',');
                 }
-                string strDbConnection = SQLite.GetConnectionString(frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + Tables.FVS.DefaultFVSOutDbFile);
+                string strDbConnection = SQLite.GetConnectionString(frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() + "\\" + Tables.FVS.DefaultFVSOutDbFile);
                 IList<string> lstFvsOutTables = m_oRxTools.GetFvsOutTableNames(SQLite, strDbConnection);
                 IList<string> lstExcludedTables = new List<string> { "FVS_CASES", "FVS_CUTLIST", "FVS_TREELIST", "FVS_ATRTLIST" };
                 // Remove tables we don't wish to show on the list
@@ -389,9 +389,9 @@ namespace FIA_Biosum_Manager
         public static void InitializePrePostSeqNumTables()
         {
             DataMgr oDataMgr = new DataMgr();
-            if (! System.IO.File.Exists($@"{frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim()}\{Tables.FVS.DefaultFVSPrePostSeqNumTableDbFile}"))
+            if (! System.IO.File.Exists($@"{frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim()}\{Tables.FVS.DefaultFVSPrePostSeqNumTableDbFile}"))
             {
-                oDataMgr.CreateDbFile($@"{frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim()}\{Tables.FVS.DefaultFVSPrePostSeqNumTableDbFile}");
+                oDataMgr.CreateDbFile($@"{frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim()}\{Tables.FVS.DefaultFVSPrePostSeqNumTableDbFile}");
             }
             InitializePrePostSeqNumTables(oDataMgr);
         }
@@ -458,7 +458,7 @@ namespace FIA_Biosum_Manager
             string strValueList = "";
             int x;
 
-            string dbConn = p_oDataMgr.GetConnectionString($@"{frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim()}\{Tables.FVS.DefaultFVSPrePostSeqNumTableDbFile}");
+            string dbConn = p_oDataMgr.GetConnectionString($@"{frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim()}\{Tables.FVS.DefaultFVSPrePostSeqNumTableDbFile}");
             using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(dbConn))
             {
                 conn.Open();
@@ -1179,7 +1179,7 @@ namespace FIA_Biosum_Manager
             int x, y, z;
             string strValues = "";
             bool bDelete = false;
-            string strDbConn = SQLite.GetConnectionString($@"{frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim()}\{Tables.FVS.DefaultFVSPrePostSeqNumTableDbFile}");
+            string strDbConn = SQLite.GetConnectionString($@"{frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim()}\{Tables.FVS.DefaultFVSPrePostSeqNumTableDbFile}");
             using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strDbConn))
             {
                 conn.Open();

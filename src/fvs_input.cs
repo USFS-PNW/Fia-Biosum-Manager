@@ -359,7 +359,7 @@ namespace FIA_Biosum_Manager
        
         private void PopulateFuelColumns(SQLite.ADO.DataMgr oDataMgr, System.Data.SQLite.SQLiteConnection conn, string strStandTable)
         {
-            string strDWMTablesDb = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\db\\master_aux.db";
+            string strDWMTablesDb = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() + "\\db\\master_aux.db";
             FIA_Biosum_Manager.Datasource oProjectDs = new Datasource();
             string strBioSumRefDb = frmMain.g_oEnv.strApplicationDataDirectory.Trim() +
                         frmMain.g_strBiosumDataDir + "\\" + Tables.Reference.DefaultBiosumReferenceFile;

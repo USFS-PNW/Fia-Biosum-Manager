@@ -271,7 +271,7 @@ namespace FIA_Biosum_Manager
 			//intscenario = getScenarioCount() + 1;
             string strScenario = getNextScenarioId();
             this.txtScenarioId.Text = strScenario;
-			this.txtScenarioPath.Text = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + ScenarioType + "\\" + this.txtScenarioId.Text;
+			this.txtScenarioPath.Text = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() + "\\" + ScenarioType + "\\" + this.txtScenarioId.Text;
 			this.txtScenarioId.Focus();
 			this.txtDescription.Enabled=true;
 			this.txtDescription.Text = "";
@@ -449,14 +449,14 @@ namespace FIA_Biosum_Manager
             //
             //copy the project data source values to the scenario data source
             //
-            string strScenarioDBDir = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + ScenarioType + "\\db";
+            string strScenarioDBDir = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() + "\\" + ScenarioType + "\\db";
             string strScenarioFile = "scenario_" + ScenarioType + "_rule_definitions.db";
             StringBuilder strScenarioFullPath = new StringBuilder(strScenarioDBDir);
             strScenarioFullPath.Append("\\");
             strScenarioFullPath.Append(strScenarioFile);
             string strScenarioConn = dataMgr.GetConnectionString(strScenarioFullPath.ToString());
 
-            string strProjDBDir = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\db";
+            string strProjDBDir = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() + "\\db";
             string strProjFile = "project.db";
             StringBuilder strProjFullPath = new StringBuilder(strProjDBDir);
             strProjFullPath.Append("\\");
@@ -565,7 +565,7 @@ namespace FIA_Biosum_Manager
         public void UpdateDescription()
 		{
 			string strDesc="";
-            string strScenarioDBDir = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + ScenarioType + "\\db";
+            string strScenarioDBDir = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() + "\\" + ScenarioType + "\\db";
             SQLite.ADO.DataMgr oDataMgr = new SQLite.ADO.DataMgr();
             string strScenarioFile = "scenario_" + ScenarioType + "_rule_definitions.db";
             StringBuilder strScenarioFullPath = new StringBuilder(strScenarioDBDir);
@@ -655,7 +655,7 @@ namespace FIA_Biosum_Manager
                     return false;
             }
 
-            string strScenarioDir = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + ScenarioType + "\\db";
+            string strScenarioDir = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() + "\\" + ScenarioType + "\\db";
             string strFile = "scenario_" + ScenarioType + "_rule_definitions.db";
             string strFolderToDelete = "";
             strFullPath = new StringBuilder(strScenarioDir);

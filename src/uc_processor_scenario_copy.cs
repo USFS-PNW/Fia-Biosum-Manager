@@ -64,7 +64,7 @@ namespace FIA_Biosum_Manager
             //
             //scenario mdb connection
             string strProcessorScenarioDB =
-              frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
+              frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() +
               "\\processor\\" + Tables.ProcessorScenarioRuleDefinitions.DefaultDbFile;
 
             SQLite.ADO.DataMgr oDataMgr = new SQLite.ADO.DataMgr();            

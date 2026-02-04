@@ -63,7 +63,7 @@ namespace FIA_Biosum_Manager
             //SCENARIO DB
             //
             string strScenarioDB =
-                frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
+                frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() +
                 "\\processor\\" + Tables.ProcessorScenarioRuleDefinitions.DefaultDbFile;
             //
             //SCENARIO ID
@@ -306,7 +306,7 @@ namespace FIA_Biosum_Manager
         {
                 SQLite.ADO.DataMgr dataMgr = new SQLite.ADO.DataMgr();
                 string strScenarioDB =
-                    frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
+                    frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() +
                     "\\processor\\" + Tables.ProcessorScenarioRuleDefinitions.DefaultDbFile;
                 string strConn = dataMgr.GetConnectionString(strScenarioDB);
                 using (System.Data.SQLite.SQLiteConnection oConn = new System.Data.SQLite.SQLiteConnection(strConn))
@@ -332,7 +332,7 @@ namespace FIA_Biosum_Manager
             //SCENARIO MDB
             //
             string strScenarioDB =
-                frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
+                frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() +
                 "\\processor\\" + Tables.ProcessorScenarioRuleDefinitions.DefaultDbFile;
             //
             //SCENARIO ID
@@ -656,7 +656,7 @@ namespace FIA_Biosum_Manager
                 //SCENARIO MDB
                 //
                 string strScenarioDB =
-                    frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
+                    frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() +
                     "\\processor\\" + Tables.ProcessorScenarioRuleDefinitions.DefaultDbFile;
                 SQLite.ADO.DataMgr oDataMgr = new SQLite.ADO.DataMgr();
                 oDataMgr = new SQLite.ADO.DataMgr();
@@ -1480,7 +1480,7 @@ namespace FIA_Biosum_Manager
             frmPrevExp.uc_previous_expressions1.Visible = true;
 
             string strScenarioDB =
-                frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
+                frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() +
                 "\\processor\\" + Tables.ProcessorScenarioRuleDefinitions.DefaultDbFile;
             SQLite.ADO.DataMgr dataMgr = new SQLite.ADO.DataMgr();
             using (System.Data.SQLite.SQLiteConnection oConn = new System.Data.SQLite.SQLiteConnection(dataMgr.GetConnectionString(TempDb)))
@@ -1607,7 +1607,7 @@ namespace FIA_Biosum_Manager
 
             frmPrevExp.uc_previous_expressions1.Visible = true;
 
-            string strScenarioDB = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
+            string strScenarioDB = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() +
                 "\\processor\\" + Tables.ProcessorScenarioRuleDefinitions.DefaultDbFile;
             SQLite.ADO.DataMgr dataMgr = new SQLite.ADO.DataMgr();
             string strConn = dataMgr.GetConnectionString(strScenarioDB);

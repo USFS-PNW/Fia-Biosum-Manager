@@ -329,7 +329,7 @@ namespace FIA_Biosum_Manager
             //
             ScenarioId = this.ReferenceProcessorScenarioForm.uc_scenario1.txtScenarioId.Text.Trim().ToLower();
             string strScenarioDB =
-                frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
+                frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() +
                 "\\processor\\" + Tables.ProcessorScenarioRuleDefinitions.DefaultDbFile;
             ReferenceProcessorScenarioForm.m_oProcessorScenarioTools.LoadEscalators(ReferenceProcessorScenarioForm.LoadedQueries, 
                 strScenarioDB, ReferenceProcessorScenarioForm.m_oProcessorScenarioItem);
@@ -568,7 +568,7 @@ namespace FIA_Biosum_Manager
                 //
                 SQLite.ADO.DataMgr oDataMgr = new SQLite.ADO.DataMgr();
                 string strScenarioDB =
-                    frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
+                    frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() +
                     "\\processor\\" + Tables.ProcessorScenarioRuleDefinitions.DefaultDbFile;
                 oDataMgr.OpenConnection(oDataMgr.GetConnectionString(strScenarioDB));
                 if (oDataMgr.m_intError != 0)

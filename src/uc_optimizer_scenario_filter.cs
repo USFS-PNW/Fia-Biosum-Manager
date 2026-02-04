@@ -391,7 +391,7 @@ namespace FIA_Biosum_Manager
 			DataMgr oDataMgr = new DataMgr();
 			string strScenarioId = this.ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem.ScenarioId.Trim();
 			string strScenarioDB =
-				frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" +
+				frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() + "\\" +
 				Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableDbFile;
 
 			using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(strScenarioDB)))
@@ -665,7 +665,7 @@ namespace FIA_Biosum_Manager
 			macrosubst oMacroSubst = new macrosubst();
 			oMacroSubst.ReferenceSQLMacroSubstitutionVariableCollection = frmMain.g_oSQLMacroSubstitutionVariable_Collection;
 			FIA_Biosum_Manager.Datasource oDs = new Datasource();
-			oDs.m_strDataSourceDBFile = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" +
+			oDs.m_strDataSourceDBFile = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() + "\\" +
 				Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableDbFile;
 			oDs.m_strDataSourceTableName = "scenario_datasource";
 			oDs.m_strScenarioId = this.ReferenceOptimizerScenarioForm.uc_scenario1.txtScenarioId.Text;
@@ -830,7 +830,7 @@ namespace FIA_Biosum_Manager
 			DataMgr oDataMgr = new DataMgr();
 			utils p_utils = new utils();
 			FIA_Biosum_Manager.Datasource oDs = new Datasource();
-			oDs.m_strDataSourceDBFile = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" +
+			oDs.m_strDataSourceDBFile = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() + "\\" +
 				Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableDbFile;
 			oDs.m_strDataSourceTableName = "scenario_datasource";
 			oDs.m_strScenarioId = this.ReferenceOptimizerScenarioForm.uc_scenario1.txtScenarioId.Text;
@@ -917,7 +917,7 @@ namespace FIA_Biosum_Manager
 			DataMgr oDataMgr = new DataMgr();
 			utils p_utils = new utils();
 			FIA_Biosum_Manager.Datasource oDs = new Datasource();
-			oDs.m_strDataSourceDBFile = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" +
+			oDs.m_strDataSourceDBFile = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() + "\\" +
 				Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableDbFile;
 			oDs.m_strDataSourceTableName = "scenario_datasource";
 			oDs.m_strScenarioId = this.ReferenceOptimizerScenarioForm.uc_scenario1.txtScenarioId.Text;

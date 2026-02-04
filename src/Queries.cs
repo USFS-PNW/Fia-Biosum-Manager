@@ -85,7 +85,7 @@ namespace FIA_Biosum_Manager
         }
         protected void LoadLimitedDatasources()
 		{
-			string strProjDir=frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim();
+			string strProjDir=frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim();
 			
 			m_oDataSource = new Datasource();
 			m_oDataSource.LoadTableColumnNamesAndDataTypes=false;
@@ -99,7 +99,7 @@ namespace FIA_Biosum_Manager
 		}
 		protected void LoadLimitedDatasources(string p_strScenarioType, string p_strScenarioId)
 		{
-			string strProjDir=frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim();
+			string strProjDir=frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim();
 			
 			m_oDataSource = new Datasource();
 			m_oDataSource.LoadTableColumnNamesAndDataTypes=false;

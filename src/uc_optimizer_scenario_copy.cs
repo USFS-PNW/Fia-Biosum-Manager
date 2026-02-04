@@ -65,7 +65,7 @@ namespace FIA_Biosum_Manager
             //
             //scenario db connection
             string strOptimizerScenarioDB =
-              frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" +
+              frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() + "\\" +
               Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableDbFile;
             //
             //get a list of all the scenarios
@@ -291,7 +291,7 @@ namespace FIA_Biosum_Manager
                 lblMsg.Text = "Loading Treatment Optimizer Scenario " + p_strScenarioId.Trim() + "...Stand By";
                 lblMsg.Show();
                 lblMsg.Refresh();
-                m_oOptimizerScenarioTools.LoadAll(frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" +
+                m_oOptimizerScenarioTools.LoadAll(frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() + "\\" +
                 Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableDbFile,
                 m_oQueries, p_strScenarioId.Trim(), m_oOptimizerScenarioItem_Collection);
                 lblMsg.Hide();

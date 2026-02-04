@@ -1691,7 +1691,7 @@ namespace FIA_Biosum_Manager
 			DataMgr oDataMgr = new DataMgr();
 			string strScenarioId = this.ReferenceOptimizerScenarioForm.uc_scenario1.txtScenarioId.Text.Trim();
 			string strScenarioDB =
-				frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" +
+				frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() + "\\" +
 				Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableDbFile;
 			using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(strScenarioDB)))
             {
@@ -3552,12 +3552,12 @@ namespace FIA_Biosum_Manager
 			this.m_intError = 0;
 			this.m_strError = "Audit Results \r\n";
 			this.m_strError = m_strError + "-------------\r\n\r\n";
-			string fvsDb = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSOutPrePostDbFile;
+			string fvsDb = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() + Tables.FVS.DefaultFVSOutPrePostDbFile;
 			using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(fvsDb)))
             {
 				conn.Open();
 
-				string weightedDb = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + Tables.OptimizerScenarioResults.DefaultCalculatedPrePostFVSVariableTableDbFile;
+				string weightedDb = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() + "\\" + Tables.OptimizerScenarioResults.DefaultCalculatedPrePostFVSVariableTableDbFile;
 				if (!oDataMgr.DatabaseAttached(conn, weightedDb))
 				{
 					oDataMgr.m_strSQL = "ATTACH DATABASE '" + weightedDb + "' AS weighted";

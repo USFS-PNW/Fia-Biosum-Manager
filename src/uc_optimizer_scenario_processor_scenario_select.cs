@@ -119,7 +119,7 @@ namespace FIA_Biosum_Manager
             DataMgr oDataMgr = new DataMgr();
             string strScenarioId = this.ReferenceOptimizerScenarioForm.uc_scenario1.txtScenarioId.Text.Trim();
             string strScenarioDB =
-                frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" +
+                frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() + "\\" +
                 Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableDbFile;
             using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(strScenarioDB)))
             {

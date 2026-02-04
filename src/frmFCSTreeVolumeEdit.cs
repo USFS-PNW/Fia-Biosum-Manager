@@ -189,7 +189,7 @@ namespace FIA_Biosum_Manager
                     }
                 }
             }
-            if (frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim().Length > 0)
+            if (frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim().Length > 0)
             {
                 // We have an open project
                 m_oQueries.m_oFvs.LoadDatasource = true;
@@ -199,7 +199,7 @@ namespace FIA_Biosum_Manager
                 //
                 //OPEN CONNECTION TO TREELIST DB FILE
                 //
-                string strFvsTreeListDb = $@"{frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim()}{Tables.FVS.DefaultFVSTreeListDbFile}";
+                string strFvsTreeListDb = $@"{frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim()}{Tables.FVS.DefaultFVSTreeListDbFile}";
                 string strFVSTreeTableName = "";
                 if (File.Exists(strFvsTreeListDb))
                 {
@@ -2063,7 +2063,7 @@ namespace FIA_Biosum_Manager
             }
             else
             {
-                string strFvsOutDb = $@"{frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim()}{Tables.FVS.DefaultFVSTreeListDbFile}";
+                string strFvsOutDb = $@"{frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim()}{Tables.FVS.DefaultFVSTreeListDbFile}";
                 using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(m_oDataMgr.GetConnectionString(strFvsOutDb)))
                 {
                     conn.Open();
@@ -2128,7 +2128,7 @@ namespace FIA_Biosum_Manager
             {
                 conn.Open();
                 // Attach FVSOUT_TREE_LIST.db to populate worktables
-                m_oDataMgr.m_strSQL = $@"ATTACH DATABASE '{frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim()}{Tables.FVS.DefaultFVSTreeListDbFile}' AS TREES";
+                m_oDataMgr.m_strSQL = $@"ATTACH DATABASE '{frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim()}{Tables.FVS.DefaultFVSTreeListDbFile}' AS TREES";
                 m_oDataMgr.SqlNonQuery(conn, m_oDataMgr.m_strSQL);
 
                 // Attach master.db to populate worktables
@@ -2155,7 +2155,7 @@ namespace FIA_Biosum_Manager
 
                 // FVS trees
                 // Attach PREPOST_FVSOUT.db to populate worktables
-                m_oDataMgr.m_strSQL = $@"ATTACH DATABASE '{frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSOutPrePostDbFile}' AS FVSOUT";
+                m_oDataMgr.m_strSQL = $@"ATTACH DATABASE '{frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() + Tables.FVS.DefaultFVSOutPrePostDbFile}' AS FVSOUT";
                 m_oDataMgr.SqlNonQuery(conn, m_oDataMgr.m_strSQL);
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                     frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, m_oDataMgr.m_strSQL + "\r\n\r\n");

@@ -1318,7 +1318,7 @@ namespace FIA_Biosum_Manager
 
         private void InitializeDatasource()
 		{
-			string strProjDir=frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim();
+			string strProjDir=frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim();
 			
 			m_oDatasource = new Datasource();
 			m_oDatasource.LoadTableColumnNamesAndDataTypes=false;
@@ -3970,7 +3970,7 @@ namespace FIA_Biosum_Manager
             String strFiaDL = "FIADB." + m_strDwmDuffLitterTable;
             String strFiaTS = "FIADB." + m_strDwmTransectSegmentTable;
 
-            string strMasterAuxDb = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\db\\master_aux.db";
+            string strMasterAuxDb = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() + "\\db\\master_aux.db";
 
             //If any of the FIADB source DWM tables do not exist,
             //show message, uncheck the DWM checkbox, return early
@@ -5342,7 +5342,7 @@ namespace FIA_Biosum_Manager
                             " WHERE biosum_status_cd=9");
                     }
 
-                    string strMasterAuxConn = SQLite.GetConnectionString(frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\db\\master_aux.db");
+                    string strMasterAuxConn = SQLite.GetConnectionString(frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() + "\\db\\master_aux.db");
                     using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strMasterAuxConn))
                     {
                         conn.Open();
@@ -6150,7 +6150,7 @@ namespace FIA_Biosum_Manager
 
         private IDictionary<string, List<string>> QueryStateEvalids()
         {
-            m_strMasterDbFile = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" +
+            m_strMasterDbFile = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() + "\\" +
                 frmMain.g_oTables.m_oFIAPlot.DefaultPopTableDbFile;
             IDictionary<string, List<String>> dictStateEvalid = new Dictionary<string, List<String>>(); //Creates new dictionary
             string strConnection = SQLite.GetConnectionString(m_strMasterDbFile);
@@ -6313,7 +6313,7 @@ namespace FIA_Biosum_Manager
 
         private void SaveLoadConfigurationTxt(System.Data.SQLite.SQLiteConnection p_conn)
         {
-            string strConfigTxtFile = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\db\\biosum_plot_input_configuration.txt";
+            string strConfigTxtFile = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() + "\\db\\biosum_plot_input_configuration.txt";
             StringBuilder stringBuilder = new StringBuilder();
             stringBuilder.AppendLine("========================================================");
             stringBuilder.AppendLine("Plot data loaded: " + DateTime.Now.ToString());

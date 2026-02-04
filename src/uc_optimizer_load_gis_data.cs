@@ -54,7 +54,7 @@ namespace FIA_Biosum_Manager
                 return;
             }
             bool bTablesHaveData;
-            bool bTablesExist = m_oGisTools.CheckForExistingData(frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim(), out bTablesHaveData);
+            bool bTablesExist = m_oGisTools.CheckForExistingData(frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim(), out bTablesHaveData);
             ckBackupData.Visible = bTablesHaveData;
             if (ckBackupData.Visible)
             {

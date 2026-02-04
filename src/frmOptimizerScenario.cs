@@ -1065,7 +1065,7 @@ namespace FIA_Biosum_Manager
             m_oQueries.LoadDatasources(true, "optimizer", this.m_oOptimizerScenarioItem.ScenarioId);
 
             this.m_oOptimizerScenarioTools.LoadAll(
-                frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" +
+                frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() + "\\" +
                 Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableDbFile,
                 m_oQueries, m_oOptimizerScenarioItem.ScenarioId,
                 m_oOptimizerScenarioItem_Collection);
@@ -3187,7 +3187,7 @@ namespace FIA_Biosum_Manager
 
             //scenario db connection
             string strProcessorScenarioDB =
-                frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
+                frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() +
                 "\\processor\\" + Tables.ProcessorScenarioRuleDefinitions.DefaultDbFile;
             //
             //get a list of all the scenarios
@@ -3686,7 +3686,7 @@ namespace FIA_Biosum_Manager
                 System.Collections.Generic.IList<string>>();
 
             // Connect to and pull from PREPOST_FVSOUT.db
-            string strTargetDb = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSOutPrePostDbFile;
+            string strTargetDb = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() + Tables.FVS.DefaultFVSOutPrePostDbFile;
 
             using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(p_oDataMgr.GetConnectionString(strTargetDb)))
             {
@@ -3766,7 +3766,7 @@ namespace FIA_Biosum_Manager
                 }
             }
             // Connect to and pull from prepost_fvs_weighted.db
-            strTargetDb = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + Tables.OptimizerScenarioResults.DefaultCalculatedPrePostFVSVariableTableDbFile;
+            strTargetDb = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() + "\\" + Tables.OptimizerScenarioResults.DefaultCalculatedPrePostFVSVariableTableDbFile;
 
             using (System.Data.SQLite.SQLiteConnection weightedConn = new System.Data.SQLite.SQLiteConnection(p_oDataMgr.GetConnectionString(strTargetDb)))
             {
@@ -3844,7 +3844,7 @@ namespace FIA_Biosum_Manager
             p_oWeightedVariableCollection.Clear();
             DataMgr p_oDataMgr = new DataMgr();
 
-            string optimizerDefDbFile = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + Tables.OptimizerDefinitions.DefaultDbFile;
+            string optimizerDefDbFile = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() + "\\" + Tables.OptimizerDefinitions.DefaultDbFile;
             using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(p_oDataMgr.GetConnectionString(optimizerDefDbFile)))
             {
                 conn.Open();
@@ -3888,7 +3888,7 @@ namespace FIA_Biosum_Manager
             if (p_oWeightedVariable != null)
             {
                 DataMgr oDataMgr = new DataMgr();
-                string strEconConn = oDataMgr.GetConnectionString(frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + Tables.OptimizerDefinitions.DefaultDbFile);
+                string strEconConn = oDataMgr.GetConnectionString(frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() + "\\" + Tables.OptimizerDefinitions.DefaultDbFile);
                 using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strEconConn))
                 {
                     conn.Open();

@@ -215,7 +215,7 @@ namespace FIA_Biosum_Manager
             {
                 if (!System.IO.File.Exists($@"{ReferenceProjectDirectory.Trim()}\{Tables.FVS.DefaultFVSPrePostSeqNumTableDbFile}"))
                 {
-                    oDataMgr.CreateDbFile($@"{frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim()}\{Tables.FVS.DefaultFVSPrePostSeqNumTableDbFile}");
+                    oDataMgr.CreateDbFile($@"{frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim()}\{Tables.FVS.DefaultFVSPrePostSeqNumTableDbFile}");
                 }
                 string dbConn = oDataMgr.GetConnectionString($@"{ReferenceProjectDirectory.Trim()}\{Tables.FVS.DefaultFVSPrePostSeqNumTableDbFile}");
                 using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(dbConn))
@@ -465,7 +465,7 @@ namespace FIA_Biosum_Manager
                     string targetFvs = Tables.OptimizerDefinitions.DefaultCalculatedFVSVariablesTableName + "_1";
                     string targetVariables = Tables.OptimizerDefinitions.DefaultCalculatedOptimizerVariablesTableName + "_1";
 
-                    string strCalculatedVariablesPathAndAccdbFile = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + Tables.OptimizerDefinitions.DefaultDbFile;
+                    string strCalculatedVariablesPathAndAccdbFile = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() + "\\" + Tables.OptimizerDefinitions.DefaultDbFile;
                     // Link to all tables in source database for optimizer_definitons
                     oDao.CreateTableLinks(strTempAccdb, strCalculatedVariablesPathAndAccdbFile);
                     oDao.CreateSQLiteTableLink(strTempAccdb, Tables.OptimizerDefinitions.DefaultCalculatedEconVariablesTableName, targetEcon,
@@ -592,14 +592,14 @@ namespace FIA_Biosum_Manager
 
                 // MIGRATE GIS DATA
                 // Check if Processor parameters in SQLite
-                string strTest = $@"{frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim()}\processor\{Tables.ProcessorScenarioRuleDefinitions.DefaultDbFile}";
+                string strTest = $@"{frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim()}\processor\{Tables.ProcessorScenarioRuleDefinitions.DefaultDbFile}";
                 if (!System.IO.File.Exists(strTest))
                 {
                     System.Windows.Forms.MessageBox.Show("Processor parameters have not been migrated to SQLite. SQLite GIS data cannot be loaded!", "FIA Biosum");
                     return;
                 }
                 // Check if Optimizer parameters in SQLite
-                strTest = $@"{frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim()}\{Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableDbFile}";
+                strTest = $@"{frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim()}\{Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableDbFile}";
                 if (!System.IO.File.Exists(strTest))
                 {
                     System.Windows.Forms.MessageBox.Show("Optimizer parameters have not been migrated to SQLite. SQLite GIS data cannot be loaded!", "FIA Biosum");
@@ -713,7 +713,7 @@ namespace FIA_Biosum_Manager
                                 }
                             }
                         }
-                        strConn = oDataMgr.GetConnectionString($@"{frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim()}\processor\{Tables.ProcessorScenarioRuleDefinitions.DefaultDbFile}");
+                        strConn = oDataMgr.GetConnectionString($@"{frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim()}\processor\{Tables.ProcessorScenarioRuleDefinitions.DefaultDbFile}");
                         using (System.Data.SQLite.SQLiteConnection scenarioConn = new System.Data.SQLite.SQLiteConnection(strConn))
                         {
                             scenarioConn.Open();
@@ -1533,6 +1533,8 @@ namespace FIA_Biosum_Manager
             ado_data_access oAdo = new ado_data_access();
             strDestFile = ReferenceProjectDirectory.Trim() + "\\db\\project.db";
             strSourceFile = ReferenceProjectDirectory.Trim() + "\\db\\project.mdb";
+            string strRootDir = "";
+            string strProjDir = "";
 
             if (!System.IO.File.Exists(strDestFile))
             {
@@ -1594,11 +1596,31 @@ namespace FIA_Biosum_Manager
 
                         if (bProjTableMigrate)
                         {
+                            oAdo.m_strSQL = "SELECT project_root_directory FROM " + Tables.Project.DefaultProjectTableName;
+                            oAdo.SqlQueryReader(copyConn, oAdo.m_strSQL);
+                            
+                            if (oAdo.m_OleDbDataReader.HasRows)
+                            {
+                                while (oAdo.m_OleDbDataReader.Read())
+                                {
+                                    strProjDir = oAdo.m_OleDbDataReader["project_root_directory"].ToString().Trim();
+                                }
+                            }
+                            oAdo.m_OleDbDataReader.Close();
+
+                            int intLastSlash = strProjDir.LastIndexOf('\\');
+                            if (intLastSlash > 0)
+                            {
+                                strRootDir = strProjDir.Substring(0, intLastSlash);
+                            }
+
                             oAdo.m_strSQL = "INSERT INTO " + Tables.Project.DefaultProjectTableName + "_1 " +
                             "(proj_id, created_by, created_date, organization, description, notes, project_root_directory, application_version) " +
-                            "SELECT proj_id, created_by, created_date, company, description, notes, project_root_directory, application_version " +
+                            "SELECT proj_id, created_by, created_date, company, description, notes, '" + strRootDir + "', application_version " +
                             " FROM " + Tables.Project.DefaultProjectTableName;
                             oAdo.SqlNonQuery(copyConn, oAdo.m_strSQL);
+
+                            oAdo.m_strSQL = 
 
                             oAdo.m_strSQL = "DROP TABLE " + Tables.Project.DefaultProjectTableName + "_1";
                             oAdo.SqlNonQuery(copyConn, oAdo.m_strSQL);
@@ -1618,14 +1640,15 @@ namespace FIA_Biosum_Manager
                 
             }
             frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectFile = "project.db";
-
+            frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text = strRootDir;
+            frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory = strProjDir;
 
         }
 
             // Method to compare two versions.
             // Returns 1 if v2 is smaller, -1 
             // if v1 is smaller, 0 if equal 
-            public int VersionCompare(string v1, string v2)
+        public int VersionCompare(string v1, string v2)
         {
             // vnum stores each numeric 
             // part of version 

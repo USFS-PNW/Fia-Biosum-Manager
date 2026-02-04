@@ -66,7 +66,7 @@ namespace FIA_Biosum_Manager
 
         private void InitializeDatasource()
         {
-            m_strProjDir = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim();
+            m_strProjDir = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim();
 
             m_oDatasource = new Datasource();
             m_oDatasource.LoadTableColumnNamesAndDataTypes = false;

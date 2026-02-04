@@ -1313,10 +1313,10 @@ namespace FIA_Biosum_Manager
                     oFrmScenario.Text = "Treatment Optimizer: Optimization Scenario (" + oFrmOptimizerScenario.uc_scenario_open1.txtScenarioId.Text.Trim() + ")";
                     oFrmScenario.m_bScenarioOpen = true;
                     oFrmScenario.HelpChapter = "EDIT_SCENARIO";
-                    oFrmScenario.uc_datasource1.strDataSourceMDBFile = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableDbFile;
+                    oFrmScenario.uc_datasource1.strDataSourceMDBFile = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() + "\\" + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableDbFile;
                     oFrmScenario.uc_datasource1.strDataSourceTable = "scenario_datasource";
                     oFrmScenario.uc_datasource1.strScenarioId = oFrmOptimizerScenario.uc_scenario_open1.txtScenarioId.Text.Trim();
-                    oFrmScenario.uc_datasource1.strProjectDirectory = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim();
+                    oFrmScenario.uc_datasource1.strProjectDirectory = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim();
                     oFrmScenario.uc_datasource1.LoadValues();
                     if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
                         frmMain.g_oUtils.WriteText(frmProject.uc_project1.m_strDebugFile, "OpenOptimizerScenario: Loaded datasource values\r\n");
@@ -1352,10 +1352,10 @@ namespace FIA_Biosum_Manager
                     oFrmScenario.Text = "Treatment Optimizer: Optimization Scenario (" + oFrmOptimizerScenario.uc_scenario1.txtScenarioId.Text.Trim() + ")";
                     oFrmScenario.m_bScenarioOpen = true;
                     oFrmScenario.HelpChapter = "EDIT_SCENARIO";
-                    oFrmScenario.uc_datasource1.strDataSourceMDBFile = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableDbFile;
+                    oFrmScenario.uc_datasource1.strDataSourceMDBFile = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() + "\\" + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableDbFile;
                     oFrmScenario.uc_datasource1.strDataSourceTable = "scenario_datasource";
                     oFrmScenario.uc_datasource1.strScenarioId = oFrmOptimizerScenario.uc_scenario1.txtScenarioId.Text.Trim();
-                    oFrmScenario.uc_datasource1.strProjectDirectory = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim();
+                    oFrmScenario.uc_datasource1.strProjectDirectory = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim();
                     oFrmScenario.uc_datasource1.LoadValues();
                     if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
                         frmMain.g_oUtils.WriteText(frmProject.uc_project1.m_strDebugFile, "OpenOptimizerScenario: Loaded datasource values\r\n");
@@ -1401,10 +1401,10 @@ namespace FIA_Biosum_Manager
 					oFrmScenario.m_bScenarioOpen = true;
 
                     
-					oFrmScenario.uc_datasource1.strDataSourceMDBFile =  frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\processor\\db\\scenario_processor_rule_definitions.mdb";
+					oFrmScenario.uc_datasource1.strDataSourceMDBFile =  frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() + "\\processor\\db\\scenario_processor_rule_definitions.mdb";
 					oFrmScenario.uc_datasource1.strDataSourceTable = "scenario_datasource";
 					oFrmScenario.uc_datasource1.strScenarioId = oFrmProcessorScenario.uc_scenario_open1.txtScenarioId.Text.Trim();
-					oFrmScenario.uc_datasource1.strProjectDirectory = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim();
+					oFrmScenario.uc_datasource1.strProjectDirectory = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim();
                     oFrmScenario.uc_datasource1.LoadValues();
                     oFrmScenario.uc_scenario1.strScenarioDescription = oFrmProcessorScenario.uc_scenario_open1.strScenarioDescription;
 					oFrmScenario.uc_scenario1.strScenarioId = oFrmProcessorScenario.uc_scenario_open1.strScenarioId;
@@ -1435,10 +1435,10 @@ namespace FIA_Biosum_Manager
 					frmProcessorScenario oFrmScenario = new frmProcessorScenario(this);
 					oFrmScenario.Text = "Processor: Scenario (" + oFrmProcessorScenario.uc_scenario1.txtScenarioId.Text.Trim() + ")";
 					oFrmScenario.m_bScenarioOpen = true;
-					oFrmScenario.uc_datasource1.strDataSourceMDBFile =  frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\processor\\db\\scenario_processor_rule_definitions.mdb";
+					oFrmScenario.uc_datasource1.strDataSourceMDBFile =  frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() + "\\processor\\db\\scenario_processor_rule_definitions.mdb";
 					oFrmScenario.uc_datasource1.strDataSourceTable = "scenario_datasource";
 					oFrmScenario.uc_datasource1.strScenarioId = oFrmProcessorScenario.uc_scenario1.txtScenarioId.Text.Trim();
-					oFrmScenario.uc_datasource1.strProjectDirectory = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim();
+					oFrmScenario.uc_datasource1.strProjectDirectory = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim();
                     oFrmScenario.uc_datasource1.LoadValues();
 					oFrmScenario.uc_scenario1.strScenarioDescription = oFrmProcessorScenario.uc_scenario1.strScenarioDescription;
 					oFrmScenario.uc_scenario1.strScenarioId = oFrmProcessorScenario.uc_scenario1.strScenarioId;
@@ -1642,11 +1642,11 @@ namespace FIA_Biosum_Manager
                             this.m_frmDataSource.BackColor = System.Drawing.SystemColors.Control;
                             this.m_frmDataSource.Text = "Database: Project Data Sources";
                             this.m_frmDataSource.MdiParent = this;
-                            FIA_Biosum_Manager.uc_datasource p_uc = new uc_datasource(this.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\db\\project.db");
+                            FIA_Biosum_Manager.uc_datasource p_uc = new uc_datasource(this.frmProject.uc_project1.m_strProjectDirectory.Trim() + "\\db\\project.db");
                             this.m_frmDataSource.Controls.Add(p_uc);
                             p_uc.Dock = System.Windows.Forms.DockStyle.Fill;
 
-                            p_uc.strProjectDirectory = this.frmProject.uc_project1.txtRootDirectory.Text.Trim();
+                            p_uc.strProjectDirectory = this.frmProject.uc_project1.m_strProjectDirectory.Trim();
 
 
 
@@ -1903,7 +1903,7 @@ namespace FIA_Biosum_Manager
                 this.m_frmDbSQLite.Text = "Database: Manage Tables";
                 this.m_frmDbSQLite.MdiParent = this;
 
-                FIA_Biosum_Manager.uc_db p_uc = new uc_db(this.frmProject.uc_project1.txtRootDirectory.Text.Trim());
+                FIA_Biosum_Manager.uc_db p_uc = new uc_db(this.frmProject.uc_project1.m_strProjectDirectory.Trim());
                 if (p_uc.m_intError < 0)
                 {
                     this.m_frmDbSQLite.Dispose();
@@ -2010,7 +2010,7 @@ namespace FIA_Biosum_Manager
                 this.m_frmFvsOutput.MaximizeBox = true;
                 this.m_frmFvsOutput.BackColor = System.Drawing.SystemColors.Control;
                 this.m_frmFvsOutput.Text = "FVS: Process FVS Output";
-                FIA_Biosum_Manager.uc_fvs_output p_uc = new uc_fvs_output(this.frmProject.uc_project1.txtRootDirectory.Text.Trim());
+                FIA_Biosum_Manager.uc_fvs_output p_uc = new uc_fvs_output(this.frmProject.uc_project1.m_strProjectDirectory.Trim());
                 if (p_uc.m_intError < 0)
                 {
                     this.m_frmFvsOutput.Dispose();
@@ -2096,7 +2096,7 @@ namespace FIA_Biosum_Manager
                 this.m_frmFvsInput.Controls.Add(p_uc);
                 this.m_frmFvsInput.FVSInputUserControl = p_uc;
 
-                p_uc.strProjectDirectory = this.frmProject.uc_project1.txtRootDirectory.Text.Trim();
+                p_uc.strProjectDirectory = this.frmProject.uc_project1.m_strProjectDirectory.Trim();
                 p_uc.strProjectId = this.frmProject.uc_project1.txtProjectId.Text.Trim();
 
 
@@ -2675,14 +2675,14 @@ namespace FIA_Biosum_Manager
 				}
 			}
 
-            if (this.frmProject.uc_project1.txtRootDirectory.Text.Trim().Length > 0)
+            if (this.frmProject.uc_project1.m_strProjectDirectory.Trim().Length > 0)
             {
                                 
                 //delete any temporary FRCS files
-                if (System.IO.Directory.Exists(frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\FRCS"))
+                if (System.IO.Directory.Exists(frmProject.uc_project1.m_strProjectDirectory.Trim() + "\\FRCS"))
                 {
                     strFiles = new string[100];
-                    strFiles = System.IO.Directory.GetFiles(frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\FRCS", "fia_biosum_*.xls");
+                    strFiles = System.IO.Directory.GetFiles(frmProject.uc_project1.m_strProjectDirectory.Trim() + "\\FRCS", "fia_biosum_*.xls");
                     for (int x = 0; x <= strFiles.GetUpperBound(0); x++)
                     {
                         if (strFiles[x].Trim().Length > 0)

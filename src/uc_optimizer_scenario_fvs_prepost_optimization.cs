@@ -1327,7 +1327,7 @@ namespace FIA_Biosum_Manager
             DataMgr oDataMgr = new DataMgr();
             string strScenarioId = this.ReferenceOptimizerScenarioForm.uc_scenario1.txtScenarioId.Text.Trim();
             string strScenarioDB =
-                frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" +
+                frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() + "\\" +
                 Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableDbFile;
             using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(strScenarioDB)))
             {
@@ -2032,7 +2032,7 @@ namespace FIA_Biosum_Manager
                         oOptVariableItemCollection.Item(x).strFVSVariableName.Trim().ToUpper() != "NOT DEFINED" &&
                         oOptVariableItemCollection.Item(x).strFVSVariableName.IndexOf(".") > -1)
                     {
-                        string fvsPrePostDb = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSOutPrePostDbFile;
+                        string fvsPrePostDb = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() + Tables.FVS.DefaultFVSOutPrePostDbFile;
                         if (System.IO.File.Exists(fvsPrePostDb))
                         {
                             DataMgr oDataMgr = new DataMgr();
@@ -2041,7 +2041,7 @@ namespace FIA_Biosum_Manager
                                 conn.Open();
                                 if (oDataMgr.m_intError == 0)
                                 {
-                                    string fvsWeightedDb = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + Tables.OptimizerScenarioResults.DefaultCalculatedPrePostFVSVariableTableDbFile;
+                                    string fvsWeightedDb = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() + "\\" + Tables.OptimizerScenarioResults.DefaultCalculatedPrePostFVSVariableTableDbFile;
                                     if (!oDataMgr.DatabaseAttached(conn, fvsWeightedDb))
                                     {
                                         oDataMgr.m_strSQL = "ATTACH DATABASE '" + fvsWeightedDb + "' AS weighted";

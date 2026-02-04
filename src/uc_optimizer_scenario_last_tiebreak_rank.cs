@@ -149,7 +149,7 @@ namespace FIA_Biosum_Manager
 			try
 			{
 				string strScenarioDB =
-				frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" +
+				frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() + "\\" +
 				Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableDbFile;
 				using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(strScenarioDB)))
                 {
@@ -200,7 +200,7 @@ namespace FIA_Biosum_Manager
 			 **scenario db connection
 			 ***************************************************/
 			if (oDataMgr.m_intError != 0) return;
-			string strScenarioDB = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "//" + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableDbFile;
+			string strScenarioDB = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() + "//" + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableDbFile;
 			string strConn = oDataMgr.GetConnectionString(strScenarioDB);
 			using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strConn))
             {

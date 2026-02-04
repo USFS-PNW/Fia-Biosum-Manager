@@ -2844,7 +2844,7 @@ namespace FIA_Biosum_Manager
         private void btnDeleteFvsVariable_Click(object sender, EventArgs e)
         {
             DataMgr oDataMgr = new DataMgr();
-            string strScenarioDir = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim();
+            string strScenarioDir = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim();
             string strScenarioConn = oDataMgr.GetConnectionString(strScenarioDir + "\\" + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableDbFile);
             string[] strPieces = LblSelectedVariable.Text.Split('.');
 
@@ -2914,7 +2914,7 @@ namespace FIA_Biosum_Manager
                 string strPostTable = "POST_" + strPieces[0] + "_WEIGHTED";
                 List<string> lstFields = new List<string> {lblFvsVariableName.Text, lblFvsVariableName.Text + "_null_count"};
                 string strCopyCols = "";
-                string strPrePostConn = oDataMgr.GetConnectionString(frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + Tables.OptimizerScenarioResults.DefaultCalculatedPrePostFVSVariableTableDbFile);
+                string strPrePostConn = oDataMgr.GetConnectionString(frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() + "\\" + Tables.OptimizerScenarioResults.DefaultCalculatedPrePostFVSVariableTableDbFile);
 
                 using (SQLiteConnection prePostConn = new SQLiteConnection(strPrePostConn))
                 {
@@ -2985,7 +2985,7 @@ namespace FIA_Biosum_Manager
 
         public void BtnDeleteEconVariable_Click(object sender, EventArgs e)
         {
-            string strScenarioDir = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim();
+            string strScenarioDir = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim();
             DataMgr oDataMgr = new DataMgr();
             string strScenarioConn = oDataMgr.GetConnectionString(strScenarioDir + "\\" + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableDbFile);
 
