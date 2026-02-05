@@ -2259,7 +2259,7 @@ namespace FIA_Biosum_Manager
                 {
                     this.frmProject.uc_project1.SetProjectPathEnvironmentVariablesSqlite();
                 }
-				if (frmProject.uc_project1.m_strAction != "NEW")
+                if (frmProject.uc_project1.m_strAction != "NEW")
 				{
 					oVersCtl.ReferenceProjectDirectory=this.frmProject.uc_project1.m_strProjectDirectory;
                     // Warn if application version < project version
@@ -2317,7 +2317,7 @@ namespace FIA_Biosum_Manager
 			{
 				frmMain frmTemp = new frmMain();
                 frmTemp.frmProject.uc_project1.m_strDebugFile = frmMain.g_oEnv.strTempDir + @"\FIA_Biosum_DebugLog_" + this.frmProject.uc_project1.m_strNewProjectId.Trim() + "_" + String.Format("{0:yyyyMMdd}", DateTime.Now) + ".txt";
-				frmTemp.frmProject.uc_project1.m_strProjectDirectory = strNewProjectDirectory; 
+                frmTemp.frmProject.uc_project1.m_strProjectDirectory = strNewProjectDirectory; 
 				frmTemp.frmProject.uc_project1.m_strProjectFile = strNewProjectFile; 
 				frmTemp.frmProject.uc_project1.lblTitle.Text = "Project Properties";
 				frmTemp.Text = "FIA Biosum Manager (" + this.frmProject.uc_project1.m_strNewProjectId + ")";
