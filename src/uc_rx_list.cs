@@ -1,11 +1,8 @@
 using System;
-using System.Collections;
 using System.ComponentModel;
 using SQLite.ADO;
-using System.Data;
 using System.IO;
 using System.Linq;
-using System.Text.RegularExpressions;
 using System.Windows.Forms;
 
 namespace FIA_Biosum_Manager
@@ -884,20 +881,6 @@ namespace FIA_Biosum_Manager
 		public RxTools()
 		{
 		}
-
-		//public void LoadAllRxItemsFromTableIntoRxCollection(string p_strDbFile,Queries p_oQueries,RxItem_Collection p_oRxItemCollection)
-		//{
-		//	ado_data_access oAdo = new ado_data_access();
-		//	oAdo.OpenConnection(oAdo.getMDBConnString(p_strDbFile,"",""));
-		//	if (oAdo.m_intError==0)
-		//	{ 
-  //              this.LoadAllRxItemsFromTableIntoRxCollection(p_oQueries, p_oRxItemCollection);
-		//	}
-		//	m_intError=oAdo.m_intError;
-		//	oAdo.CloseConnection(oAdo.m_OleDbConnection);
-		//	oAdo=null;
-		//}
-
         public void LoadAllRxItemsFromTableIntoRxCollection(Queries p_oQueries, RxItem_Collection p_oRxItemCollection)
         {
 
@@ -1268,16 +1251,6 @@ namespace FIA_Biosum_Manager
 			}
 			return strRxList;
 		}
-		public void CopyRxItemsToPackageItem(FIA_Biosum_Manager.RxItem_Collection p_RxItemCollection, FIA_Biosum_Manager.RxPackageItem p_oRxPackageItem)
-		{
-
-		}
-
-		public string GetListOfFVSVariantsInPlotTable(ado_data_access p_oAdo,System.Data.OleDb.OleDbConnection p_oConn,string p_strPlotTable)
-		{
-			return p_oAdo.CreateCommaDelimitedList(p_oConn,"SELECT DISTINCT fvs_variant FROM " +  p_strPlotTable +  " WHERE fvs_variant IS NOT NULL","");
-		}
-
         public static bool ValidFVSTable(string p_strTableName)
         {
             int x;
@@ -1652,95 +1625,6 @@ namespace FIA_Biosum_Manager
             }
             
         }
-
-		public void CreateTableLinksToFVSPrePostTables(string p_strDestinationDbFile)
-        {
-			string strFVSPrePostPathAndDbFile = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + Tables.FVS.DefaultFVSOutPrePostDbFile;
-			string strFVSWeightedPathAndDbFile = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + Tables.OptimizerScenarioResults.DefaultCalculatedPrePostFVSVariableTableSqliteDbFile;
-			dao_data_access oDao = new dao_data_access();
-			DataMgr oDataMgr = new DataMgr();
-
-			if (!System.IO.File.Exists(p_strDestinationDbFile))
-            {
-				oDao.CreateMDB(p_strDestinationDbFile);
-            }
-
-			string[] strTableNames = new string[1];
-			int intCount = 0;
-
-			// attach pre/post tables
-			using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(strFVSPrePostPathAndDbFile)))
-			{
-				conn.Open();
-				strTableNames = oDataMgr.getTableNames(conn);
-				intCount = strTableNames.Length;
-				conn.Close();
-			}
-			if (oDataMgr.m_intError == 0)
-			{
-				if (intCount > 0)
-				{
-					ODBCMgr odbcmgr = new ODBCMgr();
-					if (odbcmgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.FVSPrePostDsnName))
-					{
-						odbcmgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.FVSPrePostDsnName);
-					}
-					odbcmgr.CreateUserSQLiteDSN(ODBCMgr.DSN_KEYS.FVSPrePostDsnName, strFVSPrePostPathAndDbFile);
-
-					for (int x = 0; x <= intCount - 1; x++)
-					{
-						oDao.CreateSQLiteTableLink(p_strDestinationDbFile, strTableNames[x], strTableNames[x], ODBCMgr.DSN_KEYS.FVSPrePostDsnName, strFVSPrePostPathAndDbFile);
-						if (oDao.m_intError != 0)
-						{
-							oDao.m_strError = strTableNames[x] + " !!Error Creating Table Link!!!";
-							this.m_intError = oDao.m_intError;
-							break;
-						}
-					}
-
-					if (odbcmgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.FVSPrePostDsnName))
-					{
-						odbcmgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.FVSPrePostDsnName);
-					}
-				}
-			}
-
-			// attach pre/post weighted tables
-			if (System.IO.File.Exists(strFVSWeightedPathAndDbFile))
-            {
-				using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(strFVSWeightedPathAndDbFile)))
-				{
-					conn.Open();
-					strTableNames = oDataMgr.getTableNames(conn);
-					intCount = strTableNames.Length;
-					conn.Close();
-				}
-			}
-			if (oDataMgr.m_intError == 0)
-			{
-				if (intCount > 0)
-				{
-					ODBCMgr odbcmgr = new ODBCMgr();
-					if (odbcmgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.PrePostFvsWeightedDsnName))
-					{
-						odbcmgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.PrePostFvsWeightedDsnName);
-					}
-					odbcmgr.CreateUserSQLiteDSN(ODBCMgr.DSN_KEYS.PrePostFvsWeightedDsnName, strFVSWeightedPathAndDbFile);
-
-					for (int x = 0; x <= intCount - 1; x++)
-					{
-						oDao.CreateSQLiteTableLink(p_strDestinationDbFile, strTableNames[x], strTableNames[x], ODBCMgr.DSN_KEYS.PrePostFvsWeightedDsnName, strFVSWeightedPathAndDbFile);
-						if (oDao.m_intError != 0)
-						{
-							oDao.m_strError = strTableNames[x] + " !!Error Creating Table Link!!!";
-							this.m_intError = oDao.m_intError;
-							break;
-						}
-					}
-				}
-			}
-		}
-
         public string TreatmentProperties(FIA_Biosum_Manager.RxItem_Collection p_oColl)
         {
             string strLine = "";

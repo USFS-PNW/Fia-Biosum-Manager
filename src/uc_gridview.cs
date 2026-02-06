@@ -20,11 +20,7 @@ namespace FIA_Biosum_Manager
 		private System.Windows.Forms.StatusBarPanel sbMsg;
 		private System.Windows.Forms.StatusBarPanel sbQueryRecordCount;
 		private System.Windows.Forms.StatusBarPanel sbDisplayedRecordCount;
-		private System.Windows.Forms.ToolBar toolBar1;
 		private System.Windows.Forms.ImageList imageList1;
-		private System.Windows.Forms.ToolBarButton btnStructure;
-		private System.Windows.Forms.ToolBarButton btnMaxSize;
-		private System.Windows.Forms.ToolBarButton btnPrint;
 		private System.Windows.Forms.Button btnClose;
 		private System.ComponentModel.IContainer components;
 	    public  System.Data.DataSet m_ds;
@@ -46,8 +42,6 @@ namespace FIA_Biosum_Manager
 		private int m_intMouseUpCurrRow=-1;
 		public System.Windows.Forms.TextBox txtDropDown;
 		private string m_strSQL;
-
-		public System.Windows.Forms.ToolBarButton btnSave;
 		private int m_intBiosumIdColumn=0;
 		private string[] m_strColumnsToEdit;
 		private int m_intColumnsToEditCount;
@@ -110,7 +104,6 @@ namespace FIA_Biosum_Manager
 			this.m_da = new System.Data.SQLite.SQLiteDataAdapter();
 
 			this.m_dg.Left = 5;
-			this.toolBar1.Left = 5;
 			this.btnClose.Top = this.groupBox1.Top + 10;
 
 			this.m_dg.Width = this.groupBox1.Width - 10;
@@ -267,7 +260,6 @@ namespace FIA_Biosum_Manager
             this.m_da = new System.Data.SQLite.SQLiteDataAdapter();
 
             this.m_dg.Left = 5;
-			this.toolBar1.Left = 5;
 			this.btnClose.Top = this.groupBox1.Top + 10;
 
 			this.m_dg.Width = this.groupBox1.Width - 10;
@@ -534,11 +526,6 @@ namespace FIA_Biosum_Manager
             this.btnLast = new System.Windows.Forms.ToolBarButton();
             this.imageList1 = new System.Windows.Forms.ImageList(this.components);
             this.btnClose = new System.Windows.Forms.Button();
-            this.toolBar1 = new System.Windows.Forms.ToolBar();
-            this.btnStructure = new System.Windows.Forms.ToolBarButton();
-            this.btnMaxSize = new System.Windows.Forms.ToolBarButton();
-            this.btnPrint = new System.Windows.Forms.ToolBarButton();
-            this.btnSave = new System.Windows.Forms.ToolBarButton();
             this.statusBar1 = new System.Windows.Forms.StatusBar();
             this.sbMsg = new System.Windows.Forms.StatusBarPanel();
             this.sbQueryRecordCount = new System.Windows.Forms.StatusBarPanel();
@@ -558,10 +545,10 @@ namespace FIA_Biosum_Manager
             this.m_dg.Name = "m_dg";
             this.m_dg.Size = new System.Drawing.Size(632, 320);
             this.m_dg.TabIndex = 0;
-            this.m_dg.MouseUp += new System.Windows.Forms.MouseEventHandler(this.m_dg_MouseUp);
-            this.m_dg.MouseDown += new System.Windows.Forms.MouseEventHandler(this.m_dg_MouseDown);
-            this.m_dg.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.m_dg_KeyPress);
             this.m_dg.Navigate += new System.Windows.Forms.NavigateEventHandler(this.dataGrid1_Navigate);
+            this.m_dg.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.m_dg_KeyPress);
+            this.m_dg.MouseDown += new System.Windows.Forms.MouseEventHandler(this.m_dg_MouseDown);
+            this.m_dg.MouseUp += new System.Windows.Forms.MouseEventHandler(this.m_dg_MouseUp);
             // 
             // groupBox1
             // 
@@ -569,7 +556,6 @@ namespace FIA_Biosum_Manager
             this.groupBox1.Controls.Add(this.btnSQL);
             this.groupBox1.Controls.Add(this.toolBar2);
             this.groupBox1.Controls.Add(this.btnClose);
-            this.groupBox1.Controls.Add(this.toolBar1);
             this.groupBox1.Controls.Add(this.statusBar1);
             this.groupBox1.Controls.Add(this.m_dg);
             this.groupBox1.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -578,8 +564,8 @@ namespace FIA_Biosum_Manager
             this.groupBox1.Size = new System.Drawing.Size(664, 456);
             this.groupBox1.TabIndex = 1;
             this.groupBox1.TabStop = false;
-            this.groupBox1.Resize += new System.EventHandler(this.groupBox1_Resize);
             this.groupBox1.Enter += new System.EventHandler(this.groupBox1_Enter);
+            this.groupBox1.Resize += new System.EventHandler(this.groupBox1_Resize);
             // 
             // txtDropDown
             // 
@@ -677,49 +663,6 @@ namespace FIA_Biosum_Manager
             this.btnClose.Size = new System.Drawing.Size(32, 32);
             this.btnClose.TabIndex = 38;
             this.btnClose.Click += new System.EventHandler(this.btnClose_Click);
-            // 
-            // toolBar1
-            // 
-            this.toolBar1.Buttons.AddRange(new System.Windows.Forms.ToolBarButton[] {
-            this.btnStructure,
-            this.btnMaxSize,
-            this.btnPrint,
-            this.btnSave});
-            this.toolBar1.Divider = false;
-            this.toolBar1.Dock = System.Windows.Forms.DockStyle.None;
-            this.toolBar1.DropDownArrows = true;
-            this.toolBar1.ImageList = this.imageList1;
-            this.toolBar1.Location = new System.Drawing.Point(24, 30);
-            this.toolBar1.Name = "toolBar1";
-            this.toolBar1.ShowToolTips = true;
-            this.toolBar1.Size = new System.Drawing.Size(128, 26);
-            this.toolBar1.TabIndex = 37;
-            this.toolBar1.ButtonClick += new System.Windows.Forms.ToolBarButtonClickEventHandler(this.toolBar1_ButtonClick);
-            // 
-            // btnStructure
-            // 
-            this.btnStructure.ImageIndex = 4;
-            this.btnStructure.Name = "btnStructure";
-            this.btnStructure.ToolTipText = "Structure";
-            // 
-            // btnMaxSize
-            // 
-            this.btnMaxSize.ImageIndex = 5;
-            this.btnMaxSize.Name = "btnMaxSize";
-            this.btnMaxSize.ToolTipText = "Maximum Size";
-            // 
-            // btnPrint
-            // 
-            this.btnPrint.ImageIndex = 6;
-            this.btnPrint.Name = "btnPrint";
-            this.btnPrint.ToolTipText = "Print Report";
-            // 
-            // btnSave
-            // 
-            this.btnSave.Enabled = false;
-            this.btnSave.ImageIndex = 9;
-            this.btnSave.Name = "btnSave";
-            this.btnSave.ToolTipText = "Save ";
             // 
             // statusBar1
             // 
@@ -881,10 +824,6 @@ namespace FIA_Biosum_Manager
 			if (this.DataSetName.Trim().Length > 0) this.ReferenceGridViewForm.RemoveGridViewCollectionItem(this.DataSetName);
 			this.Dispose();
 		}
-		private void m_da_Disposed(object sender, EventArgs e)
-		{
-				this.m_bAdapterDisposed=true;
-		}
 
 		private void btnSQL_MouseDown(object sender, System.Windows.Forms.MouseEventArgs e)
 		{
@@ -910,47 +849,6 @@ namespace FIA_Biosum_Manager
 
 		private void uc_gridview_Resize(object sender, System.EventArgs e)
 		{
-
-		}
-
-		private void toolBar1_ButtonClick(object sender, System.Windows.Forms.ToolBarButtonClickEventArgs e)
-		{
-            if (m_dg == null || this.m_ds==null) return;
-			switch (this.toolBar1.Buttons.IndexOf(e.Button))
-			{
-				case 0:    //view and print structure
-					TableStructure tempTableStructure = new TableStructure(this.m_ds.Tables[this.m_dg.CaptionText],"VIEW");
-					break;
-				case 1:     //max size the grid if it is in a multi-pane view
-                    if (this.ReferenceGridViewForm != null)
-                    {
-                        if (((frmGridView)this.ParentForm).toolBar1.Buttons[0].Pushed == true) return;
-                        ((frmGridView)this.ParentForm).GridViewMaxSize(this.m_dg.CaptionText);
-                    }
-					break;
-				case 2:
-					frmDialog frmTemp = new frmDialog();
-					frmTemp.Visible=false;
-					uc_print_report_wizard uc_print_report_wizard1 = new uc_print_report_wizard(this.m_dg,this.m_dg.CaptionText);
-					frmTemp.Controls.Add(uc_print_report_wizard1);
-					frmTemp.MaximizeBox = false;
-					frmTemp.MinimizeBox = false;
-					frmTemp.Width = uc_print_report_wizard1.m_DialogWd;
-					frmTemp.Height = uc_print_report_wizard1.m_DialogHt;
-					frmTemp.Text = "Print Report Wizard";
-					uc_print_report_wizard1.Dock = System.Windows.Forms.DockStyle.Fill;
-					frmTemp.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
-					uc_print_report_wizard1.Visible=true;
-					frmTemp.ShowDialog();
-
-					break;
-
-				case 3:  //save gridview contents
-					this.savevalues();
-                    break;
-				
-                
-			}
 
 		}
 
@@ -1147,7 +1045,6 @@ namespace FIA_Biosum_Manager
 			p_dtChanges = null;
 
 			this.m_dg.CurrentRowIndex = intCurrRow;
-			this.btnSave.Enabled = false;
 			if (m_intError == 0)
 			{
 				if (this.ReferenceGridViewForm.ReferenceProcessorScenarioForm != null)
@@ -1589,7 +1486,6 @@ namespace FIA_Biosum_Manager
                                         {
                                             m_dg[x, this.m_intPopupColumn] = frmTemp.txtBox.Text.Replace("$", "");
                                         }
-                                        if (this.btnSave.Enabled == false) this.btnSave.Enabled = true;
                                         intModifyCount++;
                                     }
                                 }
@@ -2205,7 +2101,6 @@ namespace FIA_Biosum_Manager
             this.m_da = new System.Data.SQLite.SQLiteDataAdapter();
 
             this.m_dg.Left = 5;
-            this.toolBar1.Left = 5;
             this.btnClose.Top = this.groupBox1.Top + 10;
 
             this.m_dg.Width = this.groupBox1.Width - 10;
@@ -2479,7 +2374,6 @@ namespace FIA_Biosum_Manager
 			this.m_bEdit = bEdit;
 			this.uc_gridview1 = p_uc_gridview;
 			this.TextBox.KeyDown += new KeyEventHandler(TextBox_KeyDown);
-			this.TextBox.Leave += new EventHandler(TextBox_Leave);
 			this.TextBox.Enter += new EventHandler(TextBox_Enter);
 
 		
@@ -2522,19 +2416,7 @@ namespace FIA_Biosum_Manager
 		private void TextBox_Enter(object sender, EventArgs e)
 		{
 			this.m_strLastKey="";
-		}
-		private void TextBox_Leave(object sender, EventArgs e)
-		{
-			if (this.m_bEdit == true)
-			{
-				if (this.m_strLastKey.Trim().Length > 0)
-				{
-					if (this.uc_gridview1.btnSave.Enabled==false) this.uc_gridview1.btnSave.Enabled=true;
-				}
-			}
-		}
-
-		     
+		}		     
 	}
 
 }

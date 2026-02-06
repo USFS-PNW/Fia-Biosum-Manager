@@ -251,13 +251,7 @@
     <Compile Include="delegate.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="dsn_admin.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="env.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="excel_latebinding.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="frmAbout.cs">
@@ -336,9 +330,6 @@
     <Compile Include="macrosubst.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="printing.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="processor.cs" />
     <Compile Include="project_properties_html_report.cs">
       <SubType>Code</SubType>
@@ -355,9 +346,6 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Tables.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="TableStructure.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="txtDollarsAndCents.cs">
@@ -418,9 +406,6 @@
       <SubType>UserControl</SubType>
     </Compile>
     <Compile Include="uc_plot_input.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="uc_print_report_wizard.cs">
       <SubType>UserControl</SubType>
     </Compile>
     <Compile Include="uc_processor_scenario_additional_harvest_cost_columns.cs">
@@ -741,9 +726,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="uc_plot_input.resx">
       <DependentUpon>uc_plot_input.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="uc_print_report_wizard.resx">
-      <DependentUpon>uc_print_report_wizard.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="uc_processor_scenario_additional_harvest_cost_columns.resx">
       <DependentUpon>uc_processor_scenario_additional_harvest_cost_columns.cs</DependentUpon>
