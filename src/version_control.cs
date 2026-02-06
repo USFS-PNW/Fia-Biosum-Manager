@@ -1534,7 +1534,6 @@ namespace FIA_Biosum_Manager
             strDestFile = ReferenceProjectDirectory.Trim() + "\\db\\project.db";
             strSourceFile = ReferenceProjectDirectory.Trim() + "\\db\\project.mdb";
             string strRootDir = "";
-            string strProjDir = "";
 
             if (!System.IO.File.Exists(strDestFile))
             {
@@ -1596,27 +1595,10 @@ namespace FIA_Biosum_Manager
 
                         if (bProjTableMigrate)
                         {
-                            oAdo.m_strSQL = "SELECT project_root_directory FROM " + Tables.Project.DefaultProjectTableName;
-                            oAdo.SqlQueryReader(copyConn, oAdo.m_strSQL);
-                            
-                            if (oAdo.m_OleDbDataReader.HasRows)
-                            {
-                                while (oAdo.m_OleDbDataReader.Read())
-                                {
-                                    strProjDir = oAdo.m_OleDbDataReader["project_root_directory"].ToString().Trim();
-                                }
-                            }
-                            oAdo.m_OleDbDataReader.Close();
-
-                            int intLastSlash = strProjDir.LastIndexOf('\\');
-                            if (intLastSlash > 0)
-                            {
-                                strRootDir = strProjDir.Substring(0, intLastSlash);
-                            }
 
                             oAdo.m_strSQL = "INSERT INTO " + Tables.Project.DefaultProjectTableName + "_1 " +
-                            "(proj_id, created_by, created_date, organization, description, notes, project_root_directory, application_version) " +
-                            "SELECT proj_id, created_by, created_date, company, description, notes, '" + strRootDir + "', application_version " +
+                            "(proj_id, created_by, created_date, organization, description, notes, project_directory, application_version) " +
+                            "SELECT proj_id, created_by, created_date, company, description, notes, project_root_directory, application_version " +
                             " FROM " + Tables.Project.DefaultProjectTableName;
                             oAdo.SqlNonQuery(copyConn, oAdo.m_strSQL);
 
@@ -1639,8 +1621,13 @@ namespace FIA_Biosum_Manager
                 }
 
                 frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectFile = "project.db";
+                frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text;
+                int intLastSlash = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.LastIndexOf('\\');
+                if (intLastSlash > 0)
+                {
+                    strRootDir = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Substring(0, intLastSlash);
+                }
                 frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text = strRootDir;
-                frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory = strProjDir;
             }
             
 

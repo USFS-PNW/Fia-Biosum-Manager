@@ -64,7 +64,7 @@ namespace FIA_Biosum_Manager
                     "organization CHAR(100)," +
                     "description CHAR(255)," +
                     "notes CHAR(255)," +
-                    "project_root_directory CHAR(254)," +
+                    "project_directory CHAR(254)," +
                     "application_version CHAR(11))";     
             }
 

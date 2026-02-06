@@ -18,6 +18,7 @@ namespace FIA_Biosum_Manager
 		//project variables
 		public bool boolProjectOpen = false;
         public string m_strDebugFile = "";
+
 		//new project variables
 		public string m_strNewProjectFile = "";
 		public string m_strNewProjectDirectory = "";
@@ -28,6 +29,8 @@ namespace FIA_Biosum_Manager
 		public string m_strNewDescription="";
 		public string m_strNewRootDirectory="";
 		public string m_strNewProjectVersion="";
+
+		public string m_strOldProjectDirectory = "";
 
 		//current open project
 		public string m_strProjectId="";
@@ -279,7 +282,12 @@ namespace FIA_Biosum_Manager
 						m_strNewDate = p_dataMgr.m_DataReader["created_date"].ToString();
 						m_strNewOrganization = p_dataMgr.m_DataReader["organization"].ToString().Trim();
 						m_strNewDescription = p_dataMgr.m_DataReader["description"].ToString().Trim();
-						m_strNewRootDirectory = p_dataMgr.m_DataReader["project_root_directory"].ToString();
+						m_strOldProjectDirectory = p_dataMgr.m_DataReader["project_directory"].ToString();
+						int intLastSlash = m_strOldProjectDirectory.LastIndexOf('\\');
+						if (intLastSlash > 0)
+						{
+							m_strNewRootDirectory = m_strOldProjectDirectory.Substring(0, intLastSlash);
+						}
 
 						if (bAppVerColumnExist)
 						{
@@ -1016,7 +1024,7 @@ namespace FIA_Biosum_Manager
 						strOrg = p_dataMgr.FixString(this.txtOrganization.Text.Trim(), "'", "''");
                     }
 					p_dataMgr.m_strSQL = "INSERT INTO project (" +
-						"proj_id, created_by, created_date, organization, description, project_root_directory, application_version) " +
+						"proj_id, created_by, created_date, organization, description, project_directory, application_version) " +
 						"VALUES (" +
 						"'" + this.txtProjectId.Text.Trim() + "', " +
 						"'" + this.txtName.Text.Trim() + "', " +
@@ -1167,7 +1175,7 @@ namespace FIA_Biosum_Manager
 					"proj_id = '" + this.txtProjectId.Text.Trim() + "', " +
 					"organization = '" + strOrg + "', " +
 					"description = '" + strDesc + "', " +
-					"project_root_directory = '" + this.txtRootDirectory.Text + "'";
+					"project_directory = '" + this.txtRootDirectory.Text + "'";
 				p_dataMgr.SqlNonQuery(strConn, p_dataMgr.m_strSQL);
 				this.m_strProjectId = this.txtProjectId.Text.Trim();
 				((frmMain)this.ParentForm.ParentForm).Text = "Fia Biosum Manager (" + this.m_strProjectId + ")";
@@ -1650,19 +1658,12 @@ namespace FIA_Biosum_Manager
 			string strSQL = "";
 			string strOldProjDir = "";
             string strProjDir = "";
-			string strRootDir = "";
-            
-            frmMain.g_oGeneralMacroSubstitutionVariable_Collection.Item(frmMain.OLDPROJDIR).VariableSubstitutionString = this.txtRootDirectory.Text.Trim() + "\\" + this.txtProjectId.Text.Trim();
+
+			frmMain.g_oGeneralMacroSubstitutionVariable_Collection.Item(frmMain.OLDPROJDIR).VariableSubstitutionString = this.m_strOldProjectDirectory.Trim();
             frmMain.g_oGeneralMacroSubstitutionVariable_Collection.Item(frmMain.PROJDIR).VariableSubstitutionString = this.m_strProjectDirectory.Trim();
 
             strProjDir = m_strProjectDirectory.Trim();
-            strOldProjDir = this.txtRootDirectory.Text.Trim() + "\\" + this.txtProjectId.Text.Trim();
-			int intLastSlash = strProjDir.LastIndexOf('\\');
-			if (intLastSlash > 0)
-			{
-				strRootDir = strProjDir.Substring(0, intLastSlash);
-			}
-
+			strOldProjDir = m_strOldProjectDirectory.Trim();
 			if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
                 frmMain.g_oUtils.WriteText(m_strDebugFile, "uc_project.SetProjectPathEnvironmentVariables: Replace old project directory (" + strOldProjDir + ") with new project directory (" + strProjDir + ")\r\n");
             
@@ -1681,7 +1682,7 @@ namespace FIA_Biosum_Manager
 			using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strConn))
             {
 				conn.Open();
-				strSQL = "UPDATE project SET project_root_directory = '" + strRootDir + "' " +
+				strSQL = "UPDATE project SET project_directory = '" + strProjDir + "' " +
 					"WHERE proj_id = '" + this.txtProjectId.Text.Trim() + "'";
 				if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
 					frmMain.g_oUtils.WriteText(m_strDebugFile, "uc_project.SetProjectPathEnvironmentVariables: Execute SQL \r\n" + strSQL + "\r\n");
