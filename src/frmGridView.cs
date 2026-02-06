@@ -208,12 +208,7 @@ namespace FIA_Biosum_Manager
 				//get a reference to the gridview object and kill it
 				p_gridview = new uc_gridview();
 				p_gridview.ReferenceGridViewForm=this;
-				p_gridview = this.uc_gridview_collection1.Item(a).getGridViewObject;
-				if (p_gridview.btnSave.Enabled==true)
-				{
-					p_gridview.savevalues();
-				}
-				
+				p_gridview = this.uc_gridview_collection1.Item(a).getGridViewObject;				
 			}
 
 		}

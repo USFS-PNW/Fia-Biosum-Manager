@@ -30,7 +30,6 @@ namespace FIA_Biosum_Manager
         private string m_strOPCOSTRefPath;
         
         RxTools m_oRxTools = new RxTools();
-        excel_latebinding.excel_latebinding m_oExcel=null;
         FIA_Biosum_Manager.RxPackageItem_Collection m_oRxPackageItem_Collection = null;
         FIA_Biosum_Manager.RxItem_Collection m_oRxItem_Collection = null;
         FIA_Biosum_Manager.RxPackageItem m_oRxPackageItem = null;
@@ -2007,12 +2006,6 @@ namespace FIA_Biosum_Manager
 
         private void RunScenario_Finished()
         {
-            //if (m_oExcel.ExcelFileName.Trim().Length > 0) System.IO.File.Delete(m_oExcel.ExcelFileName);
-            if (m_oExcel != null)
-            {
-                m_oExcel.ReleaseComObjects();
-                m_oExcel = null;
-            }
             uc_filesize_monitor1.EndMonitoringFile();
             uc_filesize_monitor2.EndMonitoringFile();
             frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)ReferenceProcessorScenarioForm.tlbScenario, "Enabled", true);
