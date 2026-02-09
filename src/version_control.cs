@@ -1618,6 +1618,22 @@ namespace FIA_Biosum_Manager
                             oAdo.SqlNonQuery(copyConn, oAdo.m_strSQL);
                         }
                     }
+
+                    if (bProjTableMigrate)
+                    {
+                        using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(strDestFile)))
+                        {
+                            conn.Open();
+
+                            string[] arrFields = oDataMgr.getFieldNamesArray(conn, "SELECT * FROM " + Tables.Project.DefaultProjectDatasourceTableName);
+                            foreach (string field in arrFields)
+                            {
+                                oDataMgr.m_strSQL = "UPDATE " + Tables.Project.DefaultProjectDatasourceTableName +
+                                    " SET " + field + " = TRIM(" + field + ")";
+                                oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+                            }
+                        }
+                    }
                 }
 
                 frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectFile = "project.db";
