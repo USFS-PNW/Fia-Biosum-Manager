@@ -269,12 +269,6 @@
     <Compile Include="frmGridView.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="frmHaulCostCustom.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="frmLeft.cs">
-      <SubType>Form</SubType>
-    </Compile>
     <Compile Include="frmMain.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -632,12 +626,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="frmGridView.resx">
       <DependentUpon>frmGridView.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="frmHaulCostCustom.resx">
-      <DependentUpon>frmHaulCostCustom.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="frmLeft.resx">
-      <DependentUpon>frmLeft.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="frmMain.resx">
       <DependentUpon>frmMain.cs</DependentUpon>
