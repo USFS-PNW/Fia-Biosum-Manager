@@ -201,7 +201,7 @@ namespace FIA_Biosum_Manager
         //splasher
         //
         public System.Threading.Thread standByAnimationThread;
-        private MenuItem mnuToolsProjectRootFolder;
+        private MenuItem mnuToolsProjectFolder;
         public StandByAnimation.StandByAnimation standByAnimation;
         private MenuItem mnuReleaseNotes;
         private MenuItem mnuToolsPath;
@@ -467,7 +467,7 @@ namespace FIA_Biosum_Manager
             this.mnuSettings = new System.Windows.Forms.MenuItem();
             this.mnuTools = new System.Windows.Forms.MenuItem();
             this.mnuToolsFCS = new System.Windows.Forms.MenuItem();
-            this.mnuToolsProjectRootFolder = new System.Windows.Forms.MenuItem();
+            this.mnuToolsProjectFolder = new System.Windows.Forms.MenuItem();
             this.mnuToolsPath = new System.Windows.Forms.MenuItem();
             this.mnuHelp = new System.Windows.Forms.MenuItem();
             this.mnuHelpBiosummatic = new System.Windows.Forms.MenuItem();
@@ -620,7 +620,7 @@ namespace FIA_Biosum_Manager
             this.mnuTools.Index = 3;
             this.mnuTools.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] {
             this.mnuToolsFCS,
-            this.mnuToolsProjectRootFolder,
+            this.mnuToolsProjectFolder,
             this.mnuToolsPath});
             this.mnuTools.Text = "Tools";
             // 
@@ -630,12 +630,12 @@ namespace FIA_Biosum_Manager
             this.mnuToolsFCS.Text = "Tree Volume and Biomass Calculator Troubleshooter Tool";
             this.mnuToolsFCS.Click += new System.EventHandler(this.mnuToolsFCS_Click);
             // 
-            // mnuToolsProjectRootFolder
+            // mnuToolsProjectFolder
             // 
-            this.mnuToolsProjectRootFolder.Enabled = false;
-            this.mnuToolsProjectRootFolder.Index = 1;
-            this.mnuToolsProjectRootFolder.Text = "Scan and Synchronize Project Root Folder Tool";
-            this.mnuToolsProjectRootFolder.Click += new System.EventHandler(this.mnuToolsProjectRootFolder_Click);
+            this.mnuToolsProjectFolder.Enabled = false;
+            this.mnuToolsProjectFolder.Index = 1;
+            this.mnuToolsProjectFolder.Text = "Scan and Synchronize Project Folder Tool";
+            this.mnuToolsProjectFolder.Click += new System.EventHandler(this.mnuToolsProjectFolder_Click);
             // 
             // mnuToolsPath
             // 
@@ -2243,7 +2243,7 @@ namespace FIA_Biosum_Manager
                     frmMain.g_oUtils.WriteText(frmProject.uc_project1.m_strDebugFile, "**Project Properties**\r\n");
                     frmMain.g_oUtils.WriteText(frmProject.uc_project1.m_strDebugFile, "Project ID:                 " + frmProject.uc_project1.txtProjectId.Text.Trim() + "\r\n");
                     frmMain.g_oUtils.WriteText(frmProject.uc_project1.m_strDebugFile, "Project Name:               " + frmProject.uc_project1.txtName.Text.Trim() + "\r\n");
-                    frmMain.g_oUtils.WriteText(frmProject.uc_project1.m_strDebugFile, "Project Root Directory:     " + frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\r\n");
+                    frmMain.g_oUtils.WriteText(frmProject.uc_project1.m_strDebugFile, "Project Directory:          " + frmProject.uc_project1.m_strProjectDirectory.Trim() + "\r\n");
                     frmMain.g_oUtils.WriteText(frmProject.uc_project1.m_strDebugFile, "Project File:               " + frmProject.uc_project1.m_strProjectFile + "\r\n");
                     frmMain.g_oUtils.WriteText(frmProject.uc_project1.m_strDebugFile, "Project Date:               " + frmProject.uc_project1.txtDate.Text.Trim() + "\r\n");
                     frmMain.g_oUtils.WriteText(frmProject.uc_project1.m_strDebugFile, "Current Date/Time:          " + DateTime.Now.ToString() + "\r\n");
@@ -2304,7 +2304,7 @@ namespace FIA_Biosum_Manager
 				this.m_pnlCurrent.Enabled=true;
 				this.btnProject.Enabled=true;
 				this.btnSave.Enabled=true;
-                this.mnuToolsProjectRootFolder.Enabled = true;
+                this.mnuToolsProjectFolder.Enabled = true;
 				this.mnuView.Enabled=true;
 				
 				this.mnuFileSaveProject.Enabled=true;
@@ -2335,7 +2335,7 @@ namespace FIA_Biosum_Manager
                     frmMain.g_oUtils.WriteText(frmTemp.frmProject.uc_project1.m_strDebugFile, "**Project Properties**\r\n");
                     frmMain.g_oUtils.WriteText(frmTemp.frmProject.uc_project1.m_strDebugFile, "Project ID:                 " + frmProject.uc_project1.txtProjectId.Text.Trim() + "\r\n");
                     frmMain.g_oUtils.WriteText(frmTemp.frmProject.uc_project1.m_strDebugFile, "Project Name:               " + frmProject.uc_project1.txtName.Text.Trim() + "\r\n");
-                    frmMain.g_oUtils.WriteText(frmTemp.frmProject.uc_project1.m_strDebugFile, "Project Root Directory:     " + frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\r\n");
+                    frmMain.g_oUtils.WriteText(frmTemp.frmProject.uc_project1.m_strDebugFile, "Project Directory:          " + frmProject.uc_project1.m_strProjectDirectory.Trim() + "\r\n");
                     frmMain.g_oUtils.WriteText(frmTemp.frmProject.uc_project1.m_strDebugFile, "Project File:               " + frmProject.uc_project1.m_strProjectFile + "\r\n");
                     frmMain.g_oUtils.WriteText(frmTemp.frmProject.uc_project1.m_strDebugFile, "Project Date:               " + frmProject.uc_project1.txtDate.Text.Trim() + "\r\n");
                     frmMain.g_oUtils.WriteText(frmTemp.frmProject.uc_project1.m_strDebugFile, "Current Date/Time           " + DateTime.Now.ToString() + "\r\n") ;
@@ -2366,7 +2366,7 @@ namespace FIA_Biosum_Manager
 				frmTemp.m_pnlCurrent.Enabled=true;
 				frmTemp.btnProject.Enabled=true;
 				frmTemp.btnSave.Enabled=true;
-                mnuToolsProjectRootFolder.Enabled = true;
+                mnuToolsProjectFolder.Enabled = true;
 				
 				frmTemp.mnuView.Enabled=true;
 				
@@ -3492,7 +3492,7 @@ namespace FIA_Biosum_Manager
             
         }
 
-        private void mnuToolsProjectRootFolder_Click(object sender, EventArgs e)
+        private void mnuToolsProjectFolder_Click(object sender, EventArgs e)
         {
             this.ActivateStandByAnimation(
                this.WindowState,
@@ -3500,7 +3500,7 @@ namespace FIA_Biosum_Manager
                this.Height,
                this.Width,
                this.Top);
-            frmScanAndSynchronizeProjectRootFolderTool oForm = new frmScanAndSynchronizeProjectRootFolderTool();
+            frmScanAndSynchronizeProjectFolderTool oForm = new frmScanAndSynchronizeProjectFolderTool();
             oForm.MdiParent = this;
             this.DeactivateStandByAnimation();
             oForm.Show();

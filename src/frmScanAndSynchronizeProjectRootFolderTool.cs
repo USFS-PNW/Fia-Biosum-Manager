@@ -10,7 +10,7 @@ using SQLite.ADO;
 
 namespace FIA_Biosum_Manager
 {
-    public partial class frmScanAndSynchronizeProjectRootFolderTool : Form
+    public partial class frmScanAndSynchronizeProjectFolderTool : Form
     {
         const int COLUMN_NULL = 0;
         const int COLUMN_DATASOURCE = 1;
@@ -24,10 +24,10 @@ namespace FIA_Biosum_Manager
 
         bool m_bSyncd = false;
 
-        public frmScanAndSynchronizeProjectRootFolderTool()
+        public frmScanAndSynchronizeProjectFolderTool()
         {
             InitializeComponent();
-            this.lblCurrentProjectRootFolder.Text = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim();
+            this.lblCurrentProjectFolder.Text = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim();
             loadvalues();
             
         }
@@ -58,9 +58,9 @@ namespace FIA_Biosum_Manager
             //
             //PROJECT DATA SOURCES
             //
-            string strProjectDbPath = this.lblCurrentProjectRootFolder.Text.Trim() + "\\db\\" + frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectFile;
-            string strOptimizerDbPath = this.lblCurrentProjectRootFolder.Text.Trim() + "\\" + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableDbFile;
-            string strProcessorDbPath = this.lblCurrentProjectRootFolder.Text.Trim() + "\\processor\\" + Tables.ProcessorScenarioRuleDefinitions.DefaultDbFile;
+            string strProjectDbPath = this.lblCurrentProjectFolder.Text.Trim() + "\\db\\" + frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectFile;
+            string strOptimizerDbPath = this.lblCurrentProjectFolder.Text.Trim() + "\\" + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableDbFile;
+            string strProcessorDbPath = this.lblCurrentProjectFolder.Text.Trim() + "\\processor\\" + Tables.ProcessorScenarioRuleDefinitions.DefaultDbFile;
             bool bOptimizerExists = false;
             bool bProcessorExists = false;
 
@@ -143,7 +143,7 @@ namespace FIA_Biosum_Manager
                                 FileStatusSubItem.BackColor = System.Drawing.Color.Red;
                                 intPathNF++;
                             }
-                            if (p_dataMgr.m_DataReader["Path"].ToString().ToUpper().Contains(lblCurrentProjectRootFolder.Text.Trim().ToUpper()))
+                            if (p_dataMgr.m_DataReader["Path"].ToString().ToUpper().Contains(lblCurrentProjectFolder.Text.Trim().ToUpper()))
                             {
                                 ListViewItem.ListViewSubItem SyncStatusSubItem =
                                       entryListItem.SubItems.Add("Yes");
@@ -162,7 +162,7 @@ namespace FIA_Biosum_Manager
                         }
                     }
                     lblFolderPaths.Text = intPathNF.ToString().Trim();
-                    lblProjectRootFolderNotFound.Text = intRootNF.ToString().Trim();
+                    lblProjectFolderNotFound.Text = intRootNF.ToString().Trim();
                     p_dataMgr.m_DataReader.Close();
                 }
                 
@@ -171,7 +171,7 @@ namespace FIA_Biosum_Manager
             p_dataMgr = null;
         }
        
-        private void frmScanAndSynchronizeProjectRootFolderTool_Resize(object sender, EventArgs e)
+        private void frmScanAndSynchronizeProjectFolderTool_Resize(object sender, EventArgs e)
         {
             ResizeForm();
         }
@@ -221,9 +221,9 @@ namespace FIA_Biosum_Manager
             
             DataMgr p_dataMgr = new DataMgr();
 
-            string strProjectDbPath = this.lblCurrentProjectRootFolder.Text.Trim() + "\\db\\" + frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectFile;
-            string strOptimizerDbPath = this.lblCurrentProjectRootFolder.Text.Trim() + "\\" + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableDbFile;
-            string strProcessorDbPath = this.lblCurrentProjectRootFolder.Text.Trim() + "\\processor\\" + Tables.ProcessorScenarioRuleDefinitions.DefaultDbFile;
+            string strProjectDbPath = this.lblCurrentProjectFolder.Text.Trim() + "\\db\\" + frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectFile;
+            string strOptimizerDbPath = this.lblCurrentProjectFolder.Text.Trim() + "\\" + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableDbFile;
+            string strProcessorDbPath = this.lblCurrentProjectFolder.Text.Trim() + "\\processor\\" + Tables.ProcessorScenarioRuleDefinitions.DefaultDbFile;
 
             for (int x = 0; x <= lvDatasources.Items.Count - 1; x++)
             {
@@ -305,7 +305,7 @@ namespace FIA_Biosum_Manager
                         string strRemainder =
                             lvDatasources.Items[x].SubItems[COLUMN_PATH].Text.Trim().Substring(strReplace.Trim().Length + 1, lvDatasources.Items[x].SubItems[COLUMN_PATH].Text.Trim().Length - strReplace.Trim().Length - 1);
 
-                        string strNewString = lblCurrentProjectRootFolder.Text.Trim() + "\\" + strRemainder;
+                        string strNewString = lblCurrentProjectFolder.Text.Trim() + "\\" + strRemainder;
                         lvDatasources.Items[x].SubItems[COLUMN_PATH].Text = strNewString;
 
                     }
@@ -321,7 +321,7 @@ namespace FIA_Biosum_Manager
                         intPathNF++;
 
                     }
-                    if (lvDatasources.Items[x].SubItems[COLUMN_PATH].Text.Trim().ToUpper().Contains(lblCurrentProjectRootFolder.Text.Trim().ToUpper()))
+                    if (lvDatasources.Items[x].SubItems[COLUMN_PATH].Text.Trim().ToUpper().Contains(lblCurrentProjectFolder.Text.Trim().ToUpper()))
                     {
                         lvDatasources.Items[x].SubItems[COLUMN_SYNCD].Text = "Yes";
                         lvDatasources.Items[x].SubItems[COLUMN_SYNCD].BackColor = Color.Green;
@@ -336,7 +336,7 @@ namespace FIA_Biosum_Manager
                 }
             }
             lblFolderPaths.Text = intPathNF.ToString().Trim();
-            lblProjectRootFolderNotFound.Text = intRootNF.ToString().Trim();
+            lblProjectFolderNotFound.Text = intRootNF.ToString().Trim();
             if (intRootNF > 0) btnAnalyze.Enabled = true; else btnAnalyze.Enabled = false;
 
         }
@@ -392,7 +392,7 @@ namespace FIA_Biosum_Manager
             {
                 FIA_Biosum_Manager.frmDialog oDlg = new frmDialog();
                 oDlg.Text = "FIA Biosum: Scan and Analyze";
-                oDlg.uc_select_list_item1.lblTitle.Text = "Suggested Out-of-Sync Project Root Folder(s)";
+                oDlg.uc_select_list_item1.lblTitle.Text = "Suggested Out-of-Sync Project Folder(s)";
                 oDlg.uc_select_list_item1.listBox1.Sorted = false;
                 oDlg.uc_select_list_item1.lblMsg.Hide();
 
