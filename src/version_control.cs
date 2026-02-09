@@ -169,6 +169,18 @@ namespace FIA_Biosum_Manager
                         UpdateProjectVersionFile(strProjVersionFile);
                         bPerformCheck = false;
                     }
+                    // Upgraded from 5.12.0 to 5.12.1 (project.mdb to SQLite)
+                    else if ((Convert.ToInt16(m_strAppVerArray[APP_VERSION_MAJOR]) == 5 &&
+                        Convert.ToInt16(m_strAppVerArray[APP_VERSION_MINOR1]) == 12 &&
+                        Convert.ToInt16(m_strAppVerArray[APP_VERSION_MINOR2]) == 1) &&
+                        (Convert.ToInt16(m_strProjectVersionArray[APP_VERSION_MAJOR]) == 5 &&
+                        Convert.ToInt16(m_strProjectVersionArray[APP_VERSION_MINOR1]) == 12 &&
+                        Convert.ToInt16(m_strProjectVersionArray[APP_VERSION_MINOR2]) == 0))
+                    {
+                        UpdateDatasources_5_12_1();
+                        UpdateProjectVersionFile(strProjVersionFile);
+                        bPerformCheck = false;
+                    }
                 }
             }
             frmMain.g_oFrmMain.DeactivateStandByAnimation();
