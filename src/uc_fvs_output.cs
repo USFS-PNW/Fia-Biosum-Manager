@@ -50,9 +50,9 @@ namespace FIA_Biosum_Manager
         private List<string> m_strFVSPreAppendAuditTables = null;
         private List<string> m_strFVSPostAppendAuditTables = null;
 		private string m_strProjDir="";
-        private string m_strFvsTreeDb= frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() + Tables.FVS.DefaultFVSTreeListDbFile;
-        private string m_strFvsOutDb = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() + Tables.FVS.DefaultFVSOutDbFile;
-        private string m_strFvsPrePostDb = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() + Tables.FVS.DefaultFVSOutPrePostDbFile;
+        private string m_strFvsTreeDb= frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSTreeListDbFile;
+        private string m_strFvsOutDb = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSOutDbFile;
+        private string m_strFvsPrePostDb = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSOutPrePostDbFile;
         private string m_dbConn = "";
         private string m_missingFvsOutDb = "This project has no valid /fvs/data/FVSOut.db. Multiple FVS Out functions will not work! Please use FVS to generate an /fvs/data/FVSOut.db file.";
 
@@ -568,7 +568,7 @@ namespace FIA_Biosum_Manager
                         lstRunTitles.Add(strCurRunTitle);
 
                         long lngPreSummaryRecords = 0;
-                        string strSummaryConnect = $@"{frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim()}{Tables.FVS.DefaultFVSOutPrePostDbFile}";
+                        string strSummaryConnect = $@"{frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim()}{Tables.FVS.DefaultFVSOutPrePostDbFile}";
                         if (System.IO.File.Exists(strSummaryConnect))
                         {
                             using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(SQLite.GetConnectionString(strSummaryConnect)))
@@ -619,7 +619,7 @@ namespace FIA_Biosum_Manager
                         }   // END IF FVS_OUT.DB EXISTS                   
                     }
                     // Warning for older projects without FVSOut.db (and cutlist)
-                    if (!FvsOutWithRequiredTable(frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim(), Tables.FVS.DefaultFVSCasesTableName))
+                    if (!FvsOutWithRequiredTable(frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim(), Tables.FVS.DefaultFVSCasesTableName))
                     {
                         MessageBox.Show(m_missingFvsOutDb, "FIA Biosum", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
                     }
@@ -1093,8 +1093,6 @@ namespace FIA_Biosum_Manager
 			}			
 		}
 
-        
-        
         private void RunAppend_UpdatePrePostTable(string p_strTempDb, string p_strPackage, string p_strVariant, string p_strRx1, string p_strRx2, string p_strRx3, string p_strRx4, bool p_bUpdatePreTableWithVariant,
             int p_intListViewItem, ref int p_intError, ref string p_strError, string p_strRunTitle)
         {
@@ -1170,11 +1168,6 @@ namespace FIA_Biosum_Manager
                     uc_filesize_monitor1.BeginMonitoringFile(p_strTempDb, 2000000000, "2GB");
                     uc_filesize_monitor1.Information = "The temporary DB file listed above is a copy of the production DB file " + frmMain.g_oUtils.getFileName(m_strFvsPrePostDb);
                 }
-                //else if (uc_filesize_monitor2.File.Trim().Length == 0)
-                //{
-                //    uc_filesize_monitor2.BeginMonitoringFile(m_oPrePostDbFileItem_Collection.Item(y).FullPath.Trim(), 2000000000, "2GB");
-                //    //uc_filesize_monitor2.Information = "Base year potential fire table for variant " + strVariant;
-                //}
 
                 string strConn = SQLite.GetConnectionString(p_strTempDb);
                 string strFVSOutTable = lstTableNames[y].ToUpper();
@@ -1203,7 +1196,7 @@ namespace FIA_Biosum_Manager
                         this.WriteText(m_strDebugFile, "DONE: " + System.DateTime.Now.ToString() + "\r\n");
 
                     // Attach FVS_AUDITS.db
-                    string strAuditDbFile = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() + Tables.FVS.DefaultFVSAuditsDbFile;
+                    string strAuditDbFile = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSAuditsDbFile;
                     if (!SQLite.DatabaseAttached(conn, strAuditDbFile))
                     {
                         SQLite.m_strSQL = "ATTACH DATABASE '" + strAuditDbFile + "' AS AUDITS";
@@ -1752,7 +1745,7 @@ namespace FIA_Biosum_Manager
                     // Always the case. If this method is run without appending the prepost tables, it should be updated to build the sequence
                     // number tables in the temp database.
                     string strSeqNumMatrix = "FVS_SUMMARY_PREPOST_SEQNUM_MATRIX";
-                    string strAuditsFile = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() + Tables.FVS.DefaultFVSAuditsDbFile;
+                    string strAuditsFile = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSAuditsDbFile;
                     if (!oDataMgr.DatabaseAttached(conn, strAuditsFile))
                     {
                         oDataMgr.m_strSQL = $@"ATTACH DATABASE '{strAuditsFile}' AS AUDITS";
@@ -1776,7 +1769,7 @@ namespace FIA_Biosum_Manager
                         oDataMgr.SqlNonQuery(conn, "DROP TABLE cutlist_rowid_work_table");
 
                     // Attach FVSOut.db
-                    oDataMgr.m_strSQL = "ATTACH DATABASE '" + frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() +
+                    oDataMgr.m_strSQL = "ATTACH DATABASE '" + frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
                         Tables.FVS.DefaultFVSOutDbFile + "' AS FVSOUT";
                     if (m_bDebug && frmMain.g_intDebugLevel > 2)
                         this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + oDataMgr.m_strSQL + "\r\n");
@@ -2452,7 +2445,7 @@ namespace FIA_Biosum_Manager
                     // Always the case. If this method is run without appending the prepost tables, it should be updated to build the sequence
                     // number tables in the temp database.
                     string strSeqNumMatrix = "FVS_SUMMARY_PREPOST_SEQNUM_MATRIX";
-                    string strAuditsFile = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() + Tables.FVS.DefaultFVSAuditsDbFile;
+                    string strAuditsFile = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSAuditsDbFile;
                     if (!oDataMgr.DatabaseAttached(conn, strAuditsFile))
                     {
                         oDataMgr.m_strSQL = $@"ATTACH DATABASE '{strAuditsFile}' AS AUDITS";
@@ -2476,7 +2469,7 @@ namespace FIA_Biosum_Manager
                         oDataMgr.SqlNonQuery(conn, "DROP TABLE cutlist_rowid_work_table");
 
                     // Attach FVSOut.db
-                    oDataMgr.m_strSQL = "ATTACH DATABASE '" + frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() +
+                    oDataMgr.m_strSQL = "ATTACH DATABASE '" + frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
                         Tables.FVS.DefaultFVSOutDbFile + "' AS FVSOUT";
                     if (m_bDebug && frmMain.g_intDebugLevel > 2)
                         this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + oDataMgr.m_strSQL + "\r\n");
@@ -2638,13 +2631,13 @@ namespace FIA_Biosum_Manager
                                     //FVS CREATED SEEDLING TREES
                                     oDataMgr.m_strSQL =
                                        "CREATE TABLE cutlist_fvs_created_seedlings_work_table AS " +
-                                       "SELECT DISTINCT c.StandID AS biosum_cond_id,'" + p_strPackage.Trim() + "' AS rxpackage," +
-                                       "'" + strRx.Trim() + "' AS rx,'" + strCycle.Trim() + "' AS rxcycle," +
-                                        "cast(t.year as text) as rxyear,'" +
-                                       p_strVariant + "' AS fvs_variant, " +
-                                       "Trim(t.treeid) AS fvs_tree_id, " +
-                                       "t.SpeciesFia AS fvs_species, t.TPA, ROUND(t.DBH,1) AS dbh , t.Ht, t.pctcr, " +
-                                       "t.treeval, t.mortpa, t.mdefect, t.bapctile, t.dg, t.htg, " +
+                                        "SELECT DISTINCT c.StandID AS biosum_cond_id, '" + p_strPackage.Trim() + "' AS rxpackage," +
+                                        "'" + strRx.Trim() + "' AS rx,'" + strCycle.Trim() + "' AS rxcycle," +
+                                        "cast(t.year as text) as rxyear,'" + p_strVariant + "' AS fvs_variant, " +
+                                        "CAST(SUBSTR(c.StandID, 6, 2) AS INTEGER) AS STATECD, CAST(SUBSTR(c.StandID, 12, 3) AS INTEGER) AS COUNTYCD, " +
+                                        "CAST(SUBSTR(c.StandID, 16, 6) AS INTEGER) AS PLOT, Trim(t.treeid) AS fvs_tree_id, t.SpeciesFia AS fvs_species, t.TPA, " +
+                                        "ROUND(t.DBH, 1) AS DBH, round(t.Ht) as ht, cast (t.Year AS text) AS invyr, pctcr, t.treeval," +
+                                        "mortpa, mdefect, bapctile, t.dg, t.htg, " +
                                        "CASE WHEN t.dbh < 1.0 AND t.TPA > 0 THEN 1 ELSE null END AS STATUSCD, " +
                                        "'Y' AS FvsCreatedTree_YN," +
                                        "'" + m_strDateTimeCreated + "' AS DateTimeCreated " +
@@ -2656,15 +2649,15 @@ namespace FIA_Biosum_Manager
                                     //FVS CREATED SEEDLING TREES 
                                     oDataMgr.m_strSQL =
                                        "CREATE TABLE cutlist_fvs_created_seedlings_work_table AS " +
-                                       "SELECT DISTINCT c.StandID AS biosum_cond_id,'" + p_strPackage.Trim() + "' AS rxpackage," +
-                                       "'" + strRx.Trim() + "' AS rx,'" + strCycle.Trim() + "' AS rxcycle," +
-                                       "cast(t.year as text) as rxyear,'" +
-                                       p_strVariant + "' AS fvs_variant, " +
-                                       "Trim(t.treeid) AS fvs_tree_id, " +
-                                       "t.SpeciesFia AS fvs_species, t.TPA, ROUND(t.DBH,1) AS dbh , t.Ht, t.pctcr, " +
-                                       "t.treeval, t.mortpa, t.mdefect, t.bapctile, t.dg, t.htg, " +
-                                       "CASE WHEN t.dbh < 1.0 AND t.TPA > 0 THEN 1 ELSE null END AS STATUSCD, " +
-                                       "'Y' AS FvsCreatedTree_YN," +
+                                        "SELECT DISTINCT c.StandID AS biosum_cond_id, '" + p_strPackage.Trim() + "' AS rxpackage," +
+                                        "'" + strRx.Trim() + "' AS rx,'" + strCycle.Trim() + "' AS rxcycle," +
+                                        "cast(t.year as text) as rxyear,'" + p_strVariant + "' AS fvs_variant, " +
+                                        "CAST(SUBSTR(c.StandID, 6, 2) AS INTEGER) AS STATECD, CAST(SUBSTR(c.StandID, 12, 3) AS INTEGER) AS COUNTYCD, " +
+                                        "CAST(SUBSTR(c.StandID, 16, 6) AS INTEGER) AS PLOT, Trim(t.treeid) AS fvs_tree_id, t.SpeciesFia AS fvs_species, t.TPA, " +
+                                        "ROUND(t.DBH, 1) AS DBH, round(t.Ht) as ht, cast (t.Year AS text) AS invyr, pctcr, t.treeval," +
+                                        "mortpa, mdefect, bapctile, t.dg, t.htg, " +
+                                        "CASE WHEN t.dbh < 1.0 AND t.TPA > 0 THEN 1 ELSE null END AS STATUSCD, " +
+                                        "'Y' AS FvsCreatedTree_YN," +
                                        "'" + m_strDateTimeCreated + "' AS DateTimeCreated " +
                                        "FROM FVSOUT." + Tables.FVS.DefaultFVSCasesTempTableName + " c," + strFVSOutTableLink + " t " +
                                        "WHERE c.CaseID = t.CaseID AND substr(t.treeid, 1, 2) = 'ES' AND " +
@@ -2730,10 +2723,11 @@ namespace FIA_Biosum_Manager
                     frmMain.g_oDelegate.ExecuteControlMethod((System.Windows.Forms.Control)this.m_frmTherm.lblMsg, "Refresh");
                     if (oDataMgr.TableExist(conn, Tables.VolumeAndBiomass.BiosumVolumesInputTable))
                         oDataMgr.SqlNonQuery(conn, "DROP TABLE " + Tables.VolumeAndBiomass.BiosumVolumesInputTable);
-                    frmMain.g_oTables.m_oFvs.CreateInputBiosumVolumesTable(oDataMgr, conn, Tables.VolumeAndBiomass.BiosumVolumesInputTable);
-                    oDataMgr.m_strSQL = Queries.VolumeAndBiomass.FVSOut.BuildInputSQLiteTableForVolumeCalculation_Step1(
+                    //This should be calling the tvbc versions
+                    frmMain.g_oTables.m_oFvs.CreateTvbcInputBiosumVolumesTable(oDataMgr, conn, Tables.VolumeAndBiomass.BiosumVolumesInputTable);
+                    oDataMgr.m_strSQL = Queries.VolumeAndBiomass.FVSOut.BuildInputTvbcTableForVolumeCalculation_Step1(
                                        Tables.VolumeAndBiomass.BiosumVolumesInputTable,
-                                       strFvsTreeTable, p_strPackage, p_strVariant);
+                                       strFvsTreeTable);
 
                     if (m_bDebug && frmMain.g_intDebugLevel > 2)
                         this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + oDataMgr.m_strSQL + "\r\n");
@@ -2782,7 +2776,7 @@ namespace FIA_Biosum_Manager
 
                     //join plot, cond, and tree table to oracle input tree volumes table.
                     //NOTE: this query handles existing FIADB trees that have been grown forward.
-                    oDataMgr.m_strSQL = Queries.VolumeAndBiomass.FVSOut.BuildInputTableForVolumeCalculation_Step2(
+                    oDataMgr.m_strSQL = Queries.VolumeAndBiomass.FVSOut.BuildInputTableForTvbcVolumeCalculation_Step2(
                         Tables.VolumeAndBiomass.BiosumVolumesInputTable,
                         m_oQueries.m_oFIAPlot.m_strTreeTable,
                         m_oQueries.m_oFIAPlot.m_strPlotTable,
@@ -2835,16 +2829,6 @@ namespace FIA_Biosum_Manager
                     oDataMgr.m_strSQL = $@"UPDATE {strFvsTreeTable} as b SET statuscd=t.statuscd
                         FROM {m_oQueries.m_oFIAPlot.m_strTreeTable} t WHERE t.biosum_cond_id=b.biosum_cond_id AND TRIM(t.fvs_tree_id)=b.fvs_tree_id
                         AND rxpackage='{p_strPackage.Trim()}' AND fvs_variant='{p_strVariant.Trim()}' and dbh < 1.0";
-                    if (m_bDebug && frmMain.g_intDebugLevel > 2)
-                        this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + oDataMgr.m_strSQL + "\r\n");
-                    oDataMgr.SqlNonQuery(oConn, oDataMgr.m_strSQL);
-                    if (m_bDebug && frmMain.g_intDebugLevel > 2)
-                        this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
-
-                    //Update FVSCreatedTrees precipitation=plot.precipitation
-                    oDataMgr.m_strSQL = Queries.VolumeAndBiomass.FVSOut.BuildInputSQLiteTableForVolumeCalculation_Step2a(
-                        Tables.VolumeAndBiomass.BiosumVolumesInputTable, m_oQueries.m_oFIAPlot.m_strPlotTable,
-                        m_oQueries.m_oFIAPlot.m_strCondTable);
                     if (m_bDebug && frmMain.g_intDebugLevel > 2)
                         this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + oDataMgr.m_strSQL + "\r\n");
                     oDataMgr.SqlNonQuery(oConn, oDataMgr.m_strSQL);
@@ -2912,20 +2896,20 @@ namespace FIA_Biosum_Manager
                         oConn.Close();
                     }
 
-                    if (System.IO.File.Exists(frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\" + Tables.VolumeAndBiomass.DefaultSqliteWorkDatabase) == false)
+                    if (System.IO.File.Exists(frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\" + Tables.VolumeAndBiomass.DefaultTvbcWorkDatabase) == false)
                     {
                         m_intError = -1;
-                        m_strError = frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\" + Tables.VolumeAndBiomass.DefaultSqliteWorkDatabase + " not found";
+                        m_strError = frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\" + Tables.VolumeAndBiomass.DefaultTvbcWorkDatabase + " not found";
                     }
-                    if (m_intError == 0 && System.IO.File.Exists(frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\BioSumComps.JAR") == false)
+                    if (m_intError == 0 && System.IO.File.Exists(frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\FIA_TreeVBC.jar") == false)
                     {
                         m_intError = -1;
-                        m_strError = frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\BioSumComps.JAR not found";
+                        m_strError = frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\FIA_TreeVBC.jar not found";
                     }
-                    if (m_intError == 0 && System.IO.File.Exists(frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\fcs_tree_calc.bat") == false)
+                    if (m_intError == 0 && System.IO.File.Exists(frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\tvbc_tree_calc.bat") == false)
                     {
                         m_intError = -1;
-                        m_strError = frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\fcs_tree_calc.bat not found";
+                        m_strError = frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\tvbc_tree_calc.bat not found";
                     }
                     if (m_intError == 0)
                     {
@@ -2933,9 +2917,6 @@ namespace FIA_Biosum_Manager
                         //RE-CONNECT TO SQLITE AND REMOVE DATA FROM FCS SQLITE DB
                         //
                         oDataMgr.OpenConnection(false, 1, strTreeTempDbFile, "BIOSUM");
-                        oDataMgr.SqlNonQuery(oDataMgr.m_Connection, "ATTACH DATABASE '" + frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\" + Tables.VolumeAndBiomass.DefaultSqliteWorkDatabase +
-                            "' AS FCS");
-                        oDataMgr.SqlNonQuery(oDataMgr.m_Connection, $"DELETE FROM FCS.{Tables.VolumeAndBiomass.BiosumVolumeCalcTable}");
                         oDataMgr.SqlNonQuery(oDataMgr.m_Connection, "ATTACH DATABASE '" + frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\" + Tables.VolumeAndBiomass.DefaultTvbcWorkDatabase +
                             "' AS TVBC");
                         oDataMgr.SqlNonQuery(oDataMgr.m_Connection, $"DELETE FROM {Tables.VolumeAndBiomass.TvbcTreeDataTable}");
@@ -2945,8 +2926,6 @@ namespace FIA_Biosum_Manager
 
                         //insert records from table biosum_volumes_input (BiosumVolumesInputTable)
                         //into table fcs_biosum_volumes_input (FcsBiosumVolumesInputTable)
-                        oDataMgr.m_strSQL = Queries.VolumeAndBiomass.FVSOut.BuildInputSQLiteBiosumCalcTable_Step7(
-                            Tables.VolumeAndBiomass.BiosumVolumesInputTable, $"FCS.{Tables.VolumeAndBiomass.BiosumVolumeCalcTable}");
                         oDataMgr.m_strSQL = Queries.VolumeAndBiomass.FVSOut.BuildInputTvbcBiosumCalcTable_Step7(
                             Tables.VolumeAndBiomass.BiosumVolumesInputTable, $"{Tables.VolumeAndBiomass.TvbcTreeDataTable}");
                         if (m_bDebug && frmMain.g_intDebugLevel > 2)
@@ -3337,7 +3316,7 @@ namespace FIA_Biosum_Manager
             if (m_oFVSPrePostSeqNumItemCollection == null) m_oFVSPrePostSeqNumItemCollection = new FVSPrePostSeqNumItem_Collection();
 
             // Loads the sequence number configurations from db\fvsmaster.db\fvs_output_prepost_seqnum
-            string strDbConn = SQLite.GetConnectionString($@"{frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim()}\{Tables.FVS.DefaultFVSPrePostSeqNumTableDbFile}");
+            string strDbConn = SQLite.GetConnectionString($@"{frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim()}\{Tables.FVS.DefaultFVSPrePostSeqNumTableDbFile}");
             m_oRxTools.LoadFVSOutputPrePostRxCycleSeqNum(strDbConn, m_oFVSPrePostSeqNumItemCollection);
 
             int x,y;
@@ -3370,7 +3349,7 @@ namespace FIA_Biosum_Manager
                 this.val_data();
 
                 // We'll add the table links a single audit db rather than the fvs out .mdbs as we did previously
-                strAuditDbFile = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() + Tables.FVS.DefaultFVSAuditsDbFile;
+                strAuditDbFile = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSAuditsDbFile;
                 strDbFile = System.IO.Path.GetFileName(Tables.FVS.DefaultFVSOutDbFile);
                 if (!System.IO.File.Exists(strAuditDbFile))
                 {
@@ -3498,12 +3477,12 @@ namespace FIA_Biosum_Manager
 
                             if (m_bDebug)
                                 frmMain.g_oUtils.WriteText(m_strDebugFile, "START: Building FVSOut.db indexes" + System.DateTime.Now.ToString() + "\r\n");
-                            m_oRxTools.CreateFvsOutDbIndexes(frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() + Tables.FVS.DefaultFVSOutDbFile);
+                            m_oRxTools.CreateFvsOutDbIndexes(frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSOutDbFile);
                             if (m_bDebug)
                                 frmMain.g_oUtils.WriteText(m_strDebugFile, "END: Built FVSOut.db indexes" + System.DateTime.Now.ToString() + "\r\n");
 
 
-                            string strConn = SQLite.GetConnectionString(frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() + Tables.FVS.DefaultFVSOutDbFile);
+                            string strConn = SQLite.GetConnectionString(frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSOutDbFile);
                             using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strConn))
                             {
                                 conn.Open();
@@ -3556,9 +3535,9 @@ namespace FIA_Biosum_Manager
                                             GetPrePostSeqNumConfiguration("FVS_SUMMARY", strPackage);
 
                                             // attach audit.db
-                                            if (!SQLite.DatabaseAttached(conn, frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() + Tables.FVS.DefaultFVSAuditsDbFile))
+                                            if (!SQLite.DatabaseAttached(conn, frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSAuditsDbFile))
                                             {
-                                                SQLite.m_strSQL = $@"ATTACH DATABASE '{frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() + Tables.FVS.DefaultFVSAuditsDbFile}' AS AUDIT";
+                                                SQLite.m_strSQL = $@"ATTACH DATABASE '{frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSAuditsDbFile}' AS AUDIT";
                                                 SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
                                             }
 
@@ -3867,7 +3846,7 @@ namespace FIA_Biosum_Manager
                             }
 
                             // Delete temporary FVS_POTFIRE_TEMP
-                            string strAudit = SQLite.GetConnectionString(frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() + Tables.FVS.DefaultFVSAuditsDbFile);
+                            string strAudit = SQLite.GetConnectionString(frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSAuditsDbFile);
                             using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strAudit))
                             {
                                 conn.Open();
@@ -4371,7 +4350,7 @@ namespace FIA_Biosum_Manager
 
                             // With the SQLite rewrite, we run the queries in a temp database instead of PostAudit.accdb
                             // The permanent audit tables are in the new SQLite audits.db
-                            strAuditDbFile = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() + Tables.FVS.DefaultFVSAuditsDbFile;
+                            strAuditDbFile = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSAuditsDbFile;
                             string strTempDb = frmMain.g_oUtils.getRandomFile(frmMain.g_oEnv.strTempDir, "db");
                             SQLite.CreateDbFile(strTempDb);
                             string strTempCutListTable = "tmpCutTree";
@@ -5152,9 +5131,9 @@ namespace FIA_Biosum_Manager
             int x;
 
             // attach audit.db
-            if (! SQLite.DatabaseAttached(conn, frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() + Tables.FVS.DefaultFVSAuditsDbFile))
+            if (! SQLite.DatabaseAttached(conn, frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSAuditsDbFile))
             {
-                SQLite.m_strSQL = $@"ATTACH DATABASE '{frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() + Tables.FVS.DefaultFVSAuditsDbFile}' AS AUDIT";
+                SQLite.m_strSQL = $@"ATTACH DATABASE '{frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSAuditsDbFile}' AS AUDIT";
                 SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
             }
 
@@ -5434,7 +5413,7 @@ namespace FIA_Biosum_Manager
             string strAuditTable = "audit_fvs_tree_id";
             string strSeqNumMatrixTable = "FVS_CUTLIST_PREPOST_SEQNUM_MATRIX";
 
-            string strAuditConn = SQLite.GetConnectionString(frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() + Tables.FVS.DefaultFVSAuditsDbFile);
+            string strAuditConn = SQLite.GetConnectionString(frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSAuditsDbFile);
             using (System.Data.SQLite.SQLiteConnection auditConn = new System.Data.SQLite.SQLiteConnection(strAuditConn))
             {
                 auditConn.Open();
@@ -5641,7 +5620,6 @@ namespace FIA_Biosum_Manager
             uc_filesize_monitor1.EndMonitoringFile();
             uc_filesize_monitor2.EndMonitoringFile();
             uc_filesize_monitor3.EndMonitoringFile();
-            //RunAppend_CloseDbConnections(m_oPrePostDbFileItem_Collection);
             //frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.GroupBox)grpboxAppend, "Enabled", true);
             //frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.GroupBox)grpboxAudit, "Enabled", true);
             //frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.GroupBox)grpBoxPostAudit, "Enabled", true);
@@ -5843,7 +5821,7 @@ namespace FIA_Biosum_Manager
                 m_oLvAlternateColors.DelegateListViewItem(lstFvsOutput.SelectedItems[0]);
 
                 //Enable/Disable PRE-APPEND Audit Tables; PRE-APPEND audit tables are included in the FVS_AUDITS.db
-                string strAuditDbPath = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() + Tables.FVS.DefaultFVSAuditsDbFile;
+                string strAuditDbPath = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSAuditsDbFile;
                 using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(SQLite.GetConnectionString(strAuditDbPath)))
                 {
                     if (System.IO.File.Exists(strAuditDbPath))
@@ -6184,12 +6162,12 @@ namespace FIA_Biosum_Manager
         private void RunCreateFVSOut_BioSum_Start()
         {
             // Warning for older projects without FVSOut.db
-            if (!System.IO.File.Exists(frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() + Tables.FVS.DefaultFVSOutDbFile))
+            if (!System.IO.File.Exists(frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSOutDbFile))
             {
                 MessageBox.Show(m_missingFvsOutDb, "FIA Biosum", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
                 return;
             }
-            string strBiosumDbPath = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() + Tables.FVS.DefaultFVSOutBiosumDbFile;
+            string strBiosumDbPath = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSOutBiosumDbFile;
             if (System.IO.File.Exists(strBiosumDbPath))
             {
                 var result = MessageBox.Show(strBiosumDbPath + " already exists. Do you wish to overwrite this file?",
@@ -6275,13 +6253,13 @@ namespace FIA_Biosum_Manager
                         frmMain.g_oDelegate.ExecuteControlMethod((System.Windows.Forms.Control)this.m_frmTherm.lblMsg, "Refresh");
 
 
-                        m_strLogFile = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() + $@"/fvs/data/FVSOut_BioSum_" + m_strLogDate.Replace(" ", "_") + ".txt";
+                        m_strLogFile = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + $@"/fvs/data/FVSOut_BioSum_" + m_strLogDate.Replace(" ", "_") + ".txt";
 
                         frmMain.g_oUtils.WriteText(m_strLogFile, "CREATING FVSOUT_BIOSUM.DB \r\n");
                         frmMain.g_oUtils.WriteText(m_strLogFile, "--------- \r\n\r\n");
                         frmMain.g_oUtils.WriteText(m_strLogFile, "Date/Time:" + System.DateTime.Now.ToString().Trim() + "\r\n");
 
-                        string strBiosumDbPath = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() + Tables.FVS.DefaultFVSOutBiosumDbFile;
+                        string strBiosumDbPath = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSOutBiosumDbFile;
 
                         SQLite.CreateDbFile(strBiosumDbPath);
                         frmMain.g_oUtils.WriteText(m_strLogFile, "Created " + strBiosumDbPath + " file \r\n\r\n");
@@ -6290,7 +6268,7 @@ namespace FIA_Biosum_Manager
                         frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.lblMsg, "Text", "Querying table schemas from FVSOut.db");
                         frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.progressBar1, "Value", m_intProgressStepCurrentCount);
 
-                        string strConnection = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() + Tables.FVS.DefaultFVSOutDbFile;
+                        string strConnection = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSOutDbFile;
                         Dictionary<string, string> dictCreateTableQueries = populateTableQueryDictionaries(SQLite.GetConnectionString(strConnection));
                         frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.progressBar1, "Maximum", dictCreateTableQueries.Keys.Count + 5);
 
@@ -6430,7 +6408,7 @@ namespace FIA_Biosum_Manager
         private void RunFVSInForestTable_Start()
         {
             // Warning for older projects without FVSOut.db
-            if (!System.IO.File.Exists(frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() + Tables.FVS.DefaultFVSOutDbFile))
+            if (!System.IO.File.Exists(frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSOutDbFile))
             {
                 MessageBox.Show(m_missingFvsOutDb, "FIA Biosum", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
                 return;
@@ -6497,9 +6475,9 @@ namespace FIA_Biosum_Manager
                 // Keep track of whether there are trees to calculate metrics
                 bool bRunFics = false;
                 List<string> lstRunTitles = new List<string>();
-                if (System.IO.File.Exists(frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() + Tables.FVS.DefaultFVSOutDbFile))
+                if (System.IO.File.Exists(frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSOutDbFile))
             {
-                string strConn = SQLite.GetConnectionString(frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() + Tables.FVS.DefaultFVSOutDbFile);
+                string strConn = SQLite.GetConnectionString(frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSOutDbFile);
                 using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strConn))
                 {
                     conn.Open();
@@ -6526,7 +6504,7 @@ namespace FIA_Biosum_Manager
             if (bTreeList)
                 {
                 string strTreeTempDbFile = frmMain.g_oUtils.getRandomFile(frmMain.g_oEnv.strTempDir, "db");
-                string strTreeListDbFile = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() + Tables.FVS.DefaultFVSTreeListDbFile;
+                string strTreeListDbFile = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSTreeListDbFile;
                 //copy the production file to the temp folder which will be used as the work db file.
                 if (m_bDebug && frmMain.g_intDebugLevel > 1)
                     this.WriteText(strDebugFile, "\r\nSTART:Copy production file to work file: Source File Name:" + strTreeListDbFile + " Destination File Name:" + strTreeTempDbFile + " " + System.DateTime.Now.ToString() + "\r\n");
@@ -6557,7 +6535,7 @@ namespace FIA_Biosum_Manager
                         {
                             conn.Open();
                             // Attach FVSOut.db
-                            SQLite.m_strSQL = "ATTACH DATABASE '" + frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() +
+                            SQLite.m_strSQL = "ATTACH DATABASE '" + frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
                                 Tables.FVS.DefaultFVSOutDbFile + "' AS fvsout";
                             if (m_bDebug && frmMain.g_intDebugLevel > 2)
                                 this.WriteText(strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + SQLite.m_strSQL + "\r\n");
@@ -7118,7 +7096,7 @@ namespace FIA_Biosum_Manager
         {
             int z;
             string[] strSourceTableArray = new string[0];
-            string strFvsOutDb = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() + Tables.FVS.DefaultFVSOutDbFile;
+            string strFvsOutDb = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSOutDbFile;
             using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(SQLite.GetConnectionString(strFvsOutDb)))
             {
                 conn.Open();
@@ -7233,7 +7211,7 @@ namespace FIA_Biosum_Manager
             if (SQLite.TableExist(conn, p_strSourceTableName) || SQLite.AttachedTableExist(conn,p_strSourceTableName))
             {
                 if (m_oFVSPrePostSeqNumItemCollection == null) m_oFVSPrePostSeqNumItemCollection = new FVSPrePostSeqNumItem_Collection();
-                string strParamConn = SQLite.GetConnectionString(frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() + "\\" + Tables.FVS.DefaultFVSPrePostSeqNumTableDbFile);
+                string strParamConn = SQLite.GetConnectionString(frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + Tables.FVS.DefaultFVSPrePostSeqNumTableDbFile);
                 m_oRxTools.LoadFVSOutputPrePostRxCycleSeqNum(strParamConn, m_oFVSPrePostSeqNumItemCollection);
 
                 if (!p_strSourceTableName.Trim().ToUpper().Equals("FVS_POTFIRE_TEMP"))
@@ -7367,7 +7345,7 @@ namespace FIA_Biosum_Manager
                 }
 
                 if (m_oFVSPrePostSeqNumItemCollection == null) m_oFVSPrePostSeqNumItemCollection = new FVSPrePostSeqNumItem_Collection();
-                string strDbConn = SQLite.GetConnectionString($@"{frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim()}\{Tables.FVS.DefaultFVSPrePostSeqNumTableDbFile}");
+                string strDbConn = SQLite.GetConnectionString($@"{frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim()}\{Tables.FVS.DefaultFVSPrePostSeqNumTableDbFile}");
                 m_oRxTools.LoadFVSOutputPrePostRxCycleSeqNum(strDbConn, m_oFVSPrePostSeqNumItemCollection);
 
                 m_intProgressOverallCurrentCount = 0;
@@ -7383,7 +7361,7 @@ namespace FIA_Biosum_Manager
                 this.val_data();
 
                 // Ensure that indexes are on the FVSOut.db
-                m_oRxTools.CreateFvsOutDbIndexes(frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() + Tables.FVS.DefaultFVSOutDbFile);
+                m_oRxTools.CreateFvsOutDbIndexes(frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSOutDbFile);
 
                 if (m_intError == 0)
                 {
@@ -7507,7 +7485,7 @@ namespace FIA_Biosum_Manager
                                 this.WriteText(m_strDebugFile, "strOutDirAndFile=" + m_strFvsOutDb + "  \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
 
                             frmMain.g_oDelegate.SetStatusBarPanelTextValue(frmMain.g_sbpInfo.Parent, 1, "Processing " + m_strFvsOutDb + "...Stand By");
-                            strAuditDbFile = $@"{frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim()}{Tables.FVS.DefaultFVSAuditsDbFile}";
+                            strAuditDbFile = $@"{frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim()}{Tables.FVS.DefaultFVSAuditsDbFile}";
 
                             //
                             //CREATE PREPOST SEQNUM MATRIX TABLES
@@ -7604,10 +7582,10 @@ namespace FIA_Biosum_Manager
                                 frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.lblMsg, "Text", "Processing Variant:" + strVariant.Trim() + " Package:" + strPackage.Trim() + " Update " + m_strFvsTreeTable + " table");
 
                                 // Only try to load if there is a cut list in the FVSOut.db
-                                if (FvsOutWithRequiredTable(frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim(), "FVS_CutList"))
+                                if (FvsOutWithRequiredTable(frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim(), "FVS_CutList"))
                                 {
                                     string strTreeTempDbFile = frmMain.g_oUtils.getRandomFile(frmMain.g_oEnv.strTempDir, "db");
-                                    string strTreeListDbFile = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() + Tables.FVS.DefaultFVSTreeListDbFile;
+                                    string strTreeListDbFile = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSTreeListDbFile;
                                     //copy the production file to the temp folder which will be used as the work db file.
                                     if (m_bDebug && frmMain.g_intDebugLevel > 1)
                                         this.WriteText(m_strDebugFile, "\r\nSTART:Copy production file to work file: Source File Name:" + strTreeListDbFile + " Destination File Name:" + strTreeTempDbFile + " " + System.DateTime.Now.ToString() + "\r\n");
@@ -7687,7 +7665,7 @@ namespace FIA_Biosum_Manager
                     }
                 }
 
-                string strFvsOutConn = SQLite.GetConnectionString(frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() + Tables.FVS.DefaultFVSOutDbFile);
+                string strFvsOutConn = SQLite.GetConnectionString(frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSOutDbFile);
                 // Delete temporary FVS_CASES_TEMP
                 using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strFvsOutConn))
                 {
