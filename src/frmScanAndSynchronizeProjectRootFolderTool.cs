@@ -355,15 +355,7 @@ namespace FIA_Biosum_Manager
                     string strProjectRootFolder = "";
                     string strDatasource = lvDatasources.Items[x].SubItems[COLUMN_DATASOURCE].Text.Trim();
                     string strPath = lvDatasources.Items[x].SubItems[COLUMN_PATH].Text.Trim().ToUpper();
-                    if (strDatasource == "Project")
-                    {
-                        intIndex = strPath.IndexOf(@"\DB", 0);
-                        if (intIndex > 0)
-                        {
-                            strProjectRootFolder = strPath.Substring(0, intIndex + 1);
-                        }
-                    }
-                    else if (strDatasource == "TreatmentOptimizer")
+                    if (strDatasource == "TreatmentOptimizer")
                     {
                         // THIS CONDITION WILL BE MET BY THE 'NA' ROWS THAT ARE LISTED FOR EACH SCENARIO GENERATED FROM THE CORE scenario_core_rule_definitions.mdb\scenario table
                         intIndex = strPath.IndexOf(@"\OPTIMIZER\", 0);
@@ -380,6 +372,17 @@ namespace FIA_Biosum_Manager
                         {
                             strProjectRootFolder = strPath.Substring(0, intIndex + 1);
                         }
+                    }
+                    intIndex = strPath.IndexOf(@"\DB", 0);
+                    if (intIndex > 0)
+                    {
+                        strProjectRootFolder = strPath.Substring(0, intIndex + 1);
+                    }
+                    intIndex = -1;
+                    intIndex = strPath.IndexOf(@"\GIS", 0);
+                    if (intIndex > 0)
+                    {
+                        strProjectRootFolder = strPath.Substring(0, intIndex + 1);
                     }
                     if (strProjectRootFolder.Trim().Length > 0)
                     {
