@@ -1332,6 +1332,30 @@ namespace FIA_Biosum_Manager
 
 					if (this.m_strNewProjectFile.EndsWith(".mdb") || this.m_strNewProjectFile.EndsWith(".mde") || this.m_strNewProjectFile.EndsWith(".accdb"))
                     {
+						// Warn if trying to open project.mdb with version 5.12.1
+						string strProjVersionFile = m_strNewProjectDirectory + "\\application.version";
+						string strProjVersion = "";
+						if (System.IO.File.Exists(strProjVersionFile))
+						{
+							using (System.IO.StreamReader reader = new System.IO.StreamReader(strProjVersionFile))
+							{
+								string strTemp = reader.ReadLine();
+								if (strTemp != null)
+								{
+									strProjVersion = strTemp.Trim();
+								}
+							}
+						}
+						if (strProjVersion == "5.12.1")
+						{
+							System.Text.StringBuilder sb = new System.Text.StringBuilder();
+							sb.Append("WARNING: You are trying to open an Access project database instead of a SQLite project database! ");
+							sb.Append("BioSum version v5.12.1 requires using a SQLite project.db.");
+							System.Windows.Forms.DialogResult res =
+								System.Windows.Forms.MessageBox.Show(sb.ToString(), "FIA Biosum", System.Windows.Forms.MessageBoxButtons.OK);
+							this.m_intError = -1;
+							return;
+						}
 						this.OpenProjectTable(this.m_strNewProjectDirectory, this.m_strNewProjectFile);
 					}
                     else
