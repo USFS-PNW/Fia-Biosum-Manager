@@ -187,7 +187,7 @@ namespace FIA_Biosum_Manager
         public const int PROJDIR = 0;
         public const int OLDPROJDIR = 1;
 
-        public static string g_strAppVer = "5.12.0";
+        public static string g_strAppVer = "5.12.1";
         public static string g_strBiosumDataDir = "\\FIABiosum";
         public static int g_intRefDbVer = 8;
         public static int g_intRefSqliteDbVer = 15;
