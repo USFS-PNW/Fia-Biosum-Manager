@@ -282,11 +282,16 @@ namespace FIA_Biosum_Manager
 						m_strNewDate = p_dataMgr.m_DataReader["created_date"].ToString();
 						m_strNewOrganization = p_dataMgr.m_DataReader["organization"].ToString().Trim();
 						m_strNewDescription = p_dataMgr.m_DataReader["description"].ToString().Trim();
-						m_strOldProjectDirectory = p_dataMgr.m_DataReader["project_directory"].ToString();
+						m_strOldProjectDirectory = p_dataMgr.m_DataReader["project_directory"].ToString().Trim();
 						int intLastSlash = m_strOldProjectDirectory.LastIndexOf('\\');
 						if (intLastSlash > 0)
 						{
 							m_strNewRootDirectory = m_strOldProjectDirectory.Substring(0, intLastSlash);
+						}
+						if (m_strNewProjectId != m_strOldProjectDirectory.Substring(intLastSlash + 1))
+						{
+							m_strNewProjectId = m_strOldProjectDirectory.Substring(intLastSlash + 1);
+
 						}
 
 						if (bAppVerColumnExist)
@@ -648,8 +653,9 @@ namespace FIA_Biosum_Manager
 
 		private void btnEdit_Click(object sender, System.EventArgs e)
 		{
-			this.grpboxProjectDirectory.Enabled=true;
-			this.txtDate.Enabled=false;
+            this.grpboxProjectDirectory.Enabled = true;
+			this.txtProjectId.Enabled = false;
+            this.txtDate.Enabled=false;
 
 			this.grpboxCreated.Enabled=true;
 			this.grpboxOrganization.Enabled=true;
@@ -766,7 +772,7 @@ namespace FIA_Biosum_Manager
 				return;
 			}
 
-			this.m_strProjectDirectory = this.txtRootDirectory.Text.Trim() + this.txtProjectId.Text.Trim();
+			this.m_strProjectDirectory = this.txtRootDirectory.Text.Trim() + "\\" + this.txtProjectId.Text.Trim();
 
 			try
 			{
@@ -1031,7 +1037,7 @@ namespace FIA_Biosum_Manager
 						"'" + this.txtDate.Text + "', " +
 						"'" + strOrg + "', " +
 						"'" + strDesc + "', " +
-						"'" + this.txtRootDirectory.Text + "', " +
+						"'" + this.m_strProjectDirectory + "', " +
 						"'" + frmMain.g_strAppVer + "')";
 					p_dataMgr.SqlNonQuery(oConn, p_dataMgr.m_strSQL);
 
@@ -1706,6 +1712,12 @@ namespace FIA_Biosum_Manager
 			using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strConn))
             {
 				conn.Open();
+
+				strSQL = "UPDATE project SET proj_id = '" + this.txtProjectId.Text.Trim() + "'";
+				if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+					frmMain.g_oUtils.WriteText(m_strDebugFile, "uc_project.SetProjectPathEnvironmentVariables: Execute SQL \r\n" + strSQL + "\r\n");
+				oDataMgr.SqlNonQuery(conn, strSQL);
+
 				strSQL = "UPDATE project SET project_directory = '" + strProjDir + "' " +
 					"WHERE proj_id = '" + this.txtProjectId.Text.Trim() + "'";
 				if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
