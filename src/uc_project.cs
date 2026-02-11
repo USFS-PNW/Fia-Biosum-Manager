@@ -251,6 +251,7 @@ namespace FIA_Biosum_Manager
 				frmMain.g_oUtils.WriteText(m_strDebugFile, "uc_project.OpenProjectTable: Instantiate DataMgr \r\n");
 
 			DataMgr p_dataMgr = new DataMgr();
+			int intLastSlash;
 
 			string strFullPath = strProjDir + "\\DB\\" + strFile;
 			if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
@@ -283,16 +284,6 @@ namespace FIA_Biosum_Manager
 						m_strNewOrganization = p_dataMgr.m_DataReader["organization"].ToString().Trim();
 						m_strNewDescription = p_dataMgr.m_DataReader["description"].ToString().Trim();
 						m_strOldProjectDirectory = p_dataMgr.m_DataReader["project_directory"].ToString().Trim();
-						int intLastSlash = m_strOldProjectDirectory.LastIndexOf('\\');
-						if (intLastSlash > 0)
-						{
-							m_strNewRootDirectory = m_strOldProjectDirectory.Substring(0, intLastSlash);
-						}
-						if (m_strNewProjectId != m_strOldProjectDirectory.Substring(intLastSlash + 1))
-						{
-							m_strNewProjectId = m_strOldProjectDirectory.Substring(intLastSlash + 1);
-
-						}
 
 						if (bAppVerColumnExist)
 						{
@@ -319,6 +310,18 @@ namespace FIA_Biosum_Manager
 					if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
 						frmMain.g_oUtils.WriteText(m_strDebugFile, "uc_project.OpenProjectTable: !!Failed to open project file!! Error=" + m_strError + "\r\n");
 				}
+			}
+			intLastSlash = strProjDir.LastIndexOf('\\');
+			if (intLastSlash > 0)
+			{
+				m_strNewRootDirectory = strProjDir.Substring(0, intLastSlash);
+			}
+			intLastSlash = -1;
+			intLastSlash = strProjDir.LastIndexOf('\\');
+			if (m_strNewProjectId != strProjDir.Substring(intLastSlash + 1))
+			{
+				m_strNewProjectId = strProjDir.Substring(intLastSlash + 1);
+
 			}
 			p_dataMgr = null;
 
