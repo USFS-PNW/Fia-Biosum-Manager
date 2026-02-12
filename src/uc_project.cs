@@ -184,7 +184,7 @@ namespace FIA_Biosum_Manager
 				    m_strNewDate=p_ado.m_OleDbDataReader["created_date"].ToString();
 		            m_strNewOrganization=p_ado.m_OleDbDataReader["company"].ToString().Trim();
 		            m_strNewDescription=p_ado.m_OleDbDataReader["description"].ToString().Trim();
-		            m_strNewRootDirectory=p_ado.m_OleDbDataReader["project_root_directory"].ToString();
+		            m_strOldProjectDirectory=p_ado.m_OleDbDataReader["project_root_directory"].ToString();
                     
 					if (bAppVerColumnExist)
 					{
@@ -1571,11 +1571,11 @@ namespace FIA_Biosum_Manager
 			string strOldProjDir = "";
 			string strProjDir = "";
 
-			frmMain.g_oGeneralMacroSubstitutionVariable_Collection.Item(frmMain.OLDPROJDIR).VariableSubstitutionString = this.txtRootDirectory.Text.Trim();
+			frmMain.g_oGeneralMacroSubstitutionVariable_Collection.Item(frmMain.OLDPROJDIR).VariableSubstitutionString = this.m_strOldProjectDirectory.Trim();
 			frmMain.g_oGeneralMacroSubstitutionVariable_Collection.Item(frmMain.PROJDIR).VariableSubstitutionString = this.m_strProjectDirectory.Trim();
 
 			strProjDir = m_strProjectDirectory.Trim();
-			strOldProjDir = this.txtRootDirectory.Text.Trim();
+			strOldProjDir = this.m_strOldProjectDirectory.Trim();
 
 			if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
 				frmMain.g_oUtils.WriteText(m_strDebugFile, "uc_project.SetProjectPathEnvironmentVariables: Replace old project directory (" + strOldProjDir + ") with new project directory (" + strProjDir + ")\r\n");
