@@ -26,8 +26,6 @@ namespace FIA_Biosum_Manager
 
 		private int m_intError=0;
 		public System.Data.DataSet m_ds;
-		public System.Data.OleDb.OleDbConnection m_conn;
-		public System.Data.OleDb.OleDbDataAdapter m_da;
         public RunOptimizer m_oRunOptimizer;
 		public string m_strCustomPlotSQL="";
 		private FIA_Biosum_Manager.frmGridView m_frmGridView;
@@ -479,7 +477,7 @@ namespace FIA_Biosum_Manager
             proc.StartInfo.UseShellExecute = true;
             try
             {
-                proc.StartInfo.FileName = ReferenceOptimizerScenarioForm.uc_scenario1.txtScenarioPath.Text.Trim() + "\\" + Tables.OptimizerScenarioResults.DefaultScenarioResultsSqliteDbFile;
+                proc.StartInfo.FileName = ReferenceOptimizerScenarioForm.uc_scenario1.txtScenarioPath.Text.Trim() + "\\" + Tables.OptimizerScenarioResults.DefaultScenarioResultsDbFile;
             }
             catch
             {
@@ -509,13 +507,12 @@ namespace FIA_Biosum_Manager
         private void viewAuditTables()
         {
             string strConn = "";
-            int x;
             DataMgr oDataMgr = new DataMgr();
             this.m_frmGridView = new frmGridView();
             this.m_frmGridView.Text = "Treatment Optimizer: Audit";
             lblMsg.Text = "";
             lblMsg.Show();
-            string strDbPathAndFile = this.ReferenceOptimizerScenarioForm.uc_scenario1.txtScenarioPath.Text.Trim() + "\\db\\" + Tables.Audit.DefaultCondAuditTableSqliteDbFile;
+            string strDbPathAndFile = this.ReferenceOptimizerScenarioForm.uc_scenario1.txtScenarioPath.Text.Trim() + "\\db\\" + Tables.Audit.DefaultCondAuditTableDbFile;
 
             if (System.IO.File.Exists(strDbPathAndFile) == true)
             {
@@ -554,7 +551,7 @@ namespace FIA_Biosum_Manager
 		}
 
 		/// <summary>
-		/// every optimizer_results.accdb table is viewed in a uc_gridview control
+		/// every optimizer_results.db table is viewed in a uc_gridview control
 		/// </summary>
         private void viewResultsTables()
         {
@@ -565,7 +562,7 @@ namespace FIA_Biosum_Manager
             strTableNames = new string[1];
             DataMgr p_dataMgr = new DataMgr();
 
-            strDBPathAndFile = this.ReferenceOptimizerScenarioForm.uc_scenario1.txtScenarioPath.Text.Trim() + "\\" + Tables.OptimizerScenarioResults.DefaultScenarioResultsSqliteDbFile;
+            strDBPathAndFile = this.ReferenceOptimizerScenarioForm.uc_scenario1.txtScenarioPath.Text.Trim() + "\\" + Tables.OptimizerScenarioResults.DefaultScenarioResultsDbFile;
             strConn = p_dataMgr.GetConnectionString(strDBPathAndFile);
 
             using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strConn))
@@ -941,8 +938,8 @@ namespace FIA_Biosum_Manager
             {
                 if (ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem.m_oProcessorScenarioItem_Collection.Item(x).Selected)
                 {
-                    string strProcessorRuleDefsDb = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
-                    "\\processor\\" + Tables.ProcessorScenarioRuleDefinitions.DefaultSqliteDbFile;
+                    string strProcessorRuleDefsDb = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() +
+                    "\\processor\\" + Tables.ProcessorScenarioRuleDefinitions.DefaultDbFile;
 
                     string strProcessorScenarioId = ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem.m_oProcessorScenarioItem_Collection.Item(x).ScenarioId;
 
@@ -1149,7 +1146,7 @@ namespace FIA_Biosum_Manager
                     {
 
                         frmMain.g_oUtils.WriteText(m_strDebugFile, "Project: " + frmMain.g_oFrmMain.frmProject.uc_project1.txtProjectId.Text + "\r\n");
-                        frmMain.g_oUtils.WriteText(m_strDebugFile, "Project Directory: " + frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text + "\r\n");
+                        frmMain.g_oUtils.WriteText(m_strDebugFile, "Project Directory: " + frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory + "\r\n");
                         frmMain.g_oUtils.WriteText(m_strDebugFile, "Scenario Directory: " + ReferenceUserControlScenarioRun.ReferenceOptimizerScenarioForm.uc_scenario1.txtScenarioPath.Text.Trim() + "\r\n");
                         frmMain.g_oUtils.WriteText(m_strDebugFile, "---------------------------------------------------------------\r\n");
                     }
@@ -1207,7 +1204,7 @@ namespace FIA_Biosum_Manager
 
                 string strScenarioOutputFolder = ReferenceUserControlScenarioRun.ReferenceOptimizerScenarioForm.uc_scenario1.txtScenarioPath.Text.Trim();
                 m_strSystemResultsDbPathAndFile = frmMain.g_oUtils.getRandomFile(frmMain.g_oEnv.strTempDir, "db");
-                CopyScenarioResultsTable(m_strSystemResultsDbPathAndFile, strScenarioOutputFolder + "\\" + Tables.OptimizerScenarioResults.DefaultScenarioResultsSqliteDbFile);
+                CopyScenarioResultsTable(m_strSystemResultsDbPathAndFile, strScenarioOutputFolder + "\\" + Tables.OptimizerScenarioResults.DefaultScenarioResultsDbFile);
 
                 intListViewIndex = FIA_Biosum_Manager.uc_optimizer_scenario_run.GetListViewItemIndex(
                     ReferenceUserControlScenarioRun.listViewEx1, "Populate Context Database");
@@ -1215,7 +1212,7 @@ namespace FIA_Biosum_Manager
                 if ((bool)frmMain.g_oDelegate.GetControlPropertyValue((System.Windows.Forms.Control)oCheckBox, "Checked", false) == true)
                 {
                     m_strContextDbPathAndFile = frmMain.g_oUtils.getRandomFile(frmMain.g_oEnv.strTempDir, "db");
-                    CopyScenarioResultsTable(m_strContextDbPathAndFile, strScenarioOutputFolder + "\\" + Tables.OptimizerScenarioResults.DefaultScenarioResultsContextSqliteDbFile);
+                    CopyScenarioResultsTable(m_strContextDbPathAndFile, strScenarioOutputFolder + "\\" + Tables.OptimizerScenarioResults.DefaultScenarioResultsContextDbFile);
                 }
 
                 m_strFVSPrePostValidComboDbPathAndFile = frmMain.g_oUtils.getRandomFile(frmMain.g_oEnv.strTempDir, "db");
@@ -1639,16 +1636,16 @@ namespace FIA_Biosum_Manager
                         string strFileDate = oDate.ToString(strDateFormat);
                         strFileDate = strFileDate.Replace("/", "_"); strFileDate = strFileDate.Replace(":", "_");
                         CreateHtml();
-                        CopyScenarioResultsTable(strScenarioOutputFolder + "\\" + Tables.OptimizerScenarioResults.DefaultScenarioResultsSqliteDbFile, m_strSystemResultsDbPathAndFile);
+                        CopyScenarioResultsTable(strScenarioOutputFolder + "\\" + Tables.OptimizerScenarioResults.DefaultScenarioResultsDbFile, m_strSystemResultsDbPathAndFile);
                         if (!String.IsNullOrEmpty(m_strContextDbPathAndFile))
-                            CopyScenarioResultsTable(strScenarioOutputFolder + "\\" + Tables.OptimizerScenarioResults.DefaultScenarioResultsContextSqliteDbFile, m_strContextDbPathAndFile);
+                            CopyScenarioResultsTable(strScenarioOutputFolder + "\\" + Tables.OptimizerScenarioResults.DefaultScenarioResultsContextDbFile, m_strContextDbPathAndFile);
                         m_strSystemResultsDbPathAndFile = ReferenceUserControlScenarioRun.ReferenceOptimizerScenarioForm.uc_scenario1.txtScenarioPath.Text.Trim() + "\\" +
-                            Tables.OptimizerScenarioResults.DefaultScenarioResultsSqliteDbFile;
+                            Tables.OptimizerScenarioResults.DefaultScenarioResultsDbFile;
                         m_strFVSPrePostValidComboDbPathAndFile = ReferenceUserControlScenarioRun.ReferenceOptimizerScenarioForm.uc_scenario1.txtScenarioPath.Text.Trim() + "\\db\\validcombo_fvspre.db";
 
                         CopyScenarioResultsTable(
                             ReferenceUserControlScenarioRun.ReferenceOptimizerScenarioForm.uc_scenario1.txtScenarioPath.Text.Trim() + "\\db\\optimizer_results_" + m_strOptimizationTableName + "_" + strFileDate.Trim() + ".db",
-                            ReferenceUserControlScenarioRun.ReferenceOptimizerScenarioForm.uc_scenario1.txtScenarioPath.Text.Trim() + "\\" + Tables.OptimizerScenarioResults.DefaultScenarioResultsSqliteDbFile);
+                            ReferenceUserControlScenarioRun.ReferenceOptimizerScenarioForm.uc_scenario1.txtScenarioPath.Text.Trim() + "\\" + Tables.OptimizerScenarioResults.DefaultScenarioResultsDbFile);
                     }
 
                     if (frmMain.g_bDebug)
@@ -1732,7 +1729,7 @@ namespace FIA_Biosum_Manager
         {
             DataMgr oDataMgr = new DataMgr();
 
-            string strDbPathAndFile = ReferenceUserControlScenarioRun.ReferenceOptimizerScenarioForm.uc_scenario1.txtScenarioPath.Text.Trim() + "\\db\\" + Tables.Audit.DefaultCondAuditTableSqliteDbFile;
+            string strDbPathAndFile = ReferenceUserControlScenarioRun.ReferenceOptimizerScenarioForm.uc_scenario1.txtScenarioPath.Text.Trim() + "\\db\\" + Tables.Audit.DefaultCondAuditTableDbFile;
             if (!System.IO.File.Exists(strDbPathAndFile))
             {
                 oDataMgr.CreateDbFile(strDbPathAndFile);
@@ -1744,11 +1741,11 @@ namespace FIA_Biosum_Manager
                 oConn.Open();
                 if (!oDataMgr.TableExist(oConn, Tables.Audit.DefaultCondAuditTableName))
                 {
-                    frmMain.g_oTables.m_oAudit.CreateCondAuditTableSqlite(oDataMgr, oConn, Tables.Audit.DefaultCondAuditTableName);
+                    frmMain.g_oTables.m_oAudit.CreateCondAuditTable(oDataMgr, oConn, Tables.Audit.DefaultCondAuditTableName);
                 }
                 if (!oDataMgr.TableExist(oConn, Tables.Audit.DefaultCondRxAuditTableName))
                 {
-                    frmMain.g_oTables.m_oAudit.CreatePlotCondRxAuditTableSqlite(oDataMgr, oConn, Tables.Audit.DefaultCondRxAuditTableName);
+                    frmMain.g_oTables.m_oAudit.CreatePlotCondRxAuditTable(oDataMgr, oConn, Tables.Audit.DefaultCondRxAuditTableName);
                 }
             }
             oDataMgr = null;
@@ -1861,9 +1858,6 @@ namespace FIA_Biosum_Manager
                 p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
             }
         }
-		/// <summary>
-		/// create links to the tables located in the optimizer_results.accdb file
-		/// </summary>
 		
         private void CreateOptimizerResultTables()
         {
@@ -1894,20 +1888,20 @@ namespace FIA_Biosum_Manager
                     strColumnFilterName = this.m_oOptimizationVariable.strRevenueAttribute;
                 }
 
-                frmMain.g_oTables.m_oOptimizerScenarioResults.CreateSqliteValidComboTable(oDataMgr, conn, Tables.OptimizerScenarioResults.DefaultScenarioResultsValidCombosTableName);
-                frmMain.g_oTables.m_oOptimizerScenarioResults.CreateSqliteValidComboFVSPrePostTable(oDataMgr, conn, Tables.OptimizerScenarioResults.DefaultScenarioResultsValidCombosFVSPrePostTableName);
-                frmMain.g_oTables.m_oOptimizerScenarioResults.CreateSqliteTieBreakerTable(oDataMgr, conn, Tables.OptimizerScenarioResults.DefaultScenarioResultsTieBreakerTableName);
-                frmMain.g_oTables.m_oOptimizerScenarioResults.CreateSqliteOptimizationTable(oDataMgr, conn, this.ReferenceOptimizerScenarioForm.OutputTablePrefix + Tables.OptimizerScenarioResults.DefaultScenarioResultsOptimizationTableSuffix, strColumnFilterName);
-                frmMain.g_oTables.m_oOptimizerScenarioResults.CreateSqliteEffectiveTable(oDataMgr, conn, this.ReferenceOptimizerScenarioForm.OutputTablePrefix + Tables.OptimizerScenarioResults.DefaultScenarioResultsEffectiveTableSuffix, strColumnFilterName);
+                frmMain.g_oTables.m_oOptimizerScenarioResults.CreateValidComboTable(oDataMgr, conn, Tables.OptimizerScenarioResults.DefaultScenarioResultsValidCombosTableName);
+                frmMain.g_oTables.m_oOptimizerScenarioResults.CreateValidComboFVSPrePostTable(oDataMgr, conn, Tables.OptimizerScenarioResults.DefaultScenarioResultsValidCombosFVSPrePostTableName);
+                frmMain.g_oTables.m_oOptimizerScenarioResults.CreateTieBreakerTable(oDataMgr, conn, Tables.OptimizerScenarioResults.DefaultScenarioResultsTieBreakerTableName);
+                frmMain.g_oTables.m_oOptimizerScenarioResults.CreateOptimizationTable(oDataMgr, conn, this.ReferenceOptimizerScenarioForm.OutputTablePrefix + Tables.OptimizerScenarioResults.DefaultScenarioResultsOptimizationTableSuffix, strColumnFilterName);
+                frmMain.g_oTables.m_oOptimizerScenarioResults.CreateEffectiveTable(oDataMgr, conn, this.ReferenceOptimizerScenarioForm.OutputTablePrefix + Tables.OptimizerScenarioResults.DefaultScenarioResultsEffectiveTableSuffix, strColumnFilterName);
                 string strScenarioResultsBestRxSummaryTableName = this.ReferenceOptimizerScenarioForm.OutputTablePrefix + Tables.OptimizerScenarioResults.DefaultScenarioResultsBestRxSummaryTableSuffix;
-                frmMain.g_oTables.m_oOptimizerScenarioResults.CreateSqliteBestRxSummaryTable(oDataMgr, conn, strScenarioResultsBestRxSummaryTableName);
-                frmMain.g_oTables.m_oOptimizerScenarioResults.CreateSqliteBestRxSummaryTable(oDataMgr, conn, strScenarioResultsBestRxSummaryTableName + "_before_tiebreaks");
-                frmMain.g_oTables.m_oOptimizerScenarioResults.CreateSqliteProductYieldsTable(oDataMgr, conn, Tables.OptimizerScenarioResults.DefaultScenarioResultsEconByRxCycleTableName);
-                frmMain.g_oTables.m_oOptimizerScenarioResults.CreateSqliteEconByRxUtilSumTable(oDataMgr, conn, Tables.OptimizerScenarioResults.DefaultScenarioResultsEconByRxUtilSumTableName);
-                frmMain.g_oTables.m_oOptimizerScenarioResults.CreateSqlitePostEconomicWeightedTable(oDataMgr, conn, Tables.OptimizerScenarioResults.DefaultScenarioResultsPostEconomicWeightedTableName);
-                frmMain.g_oTables.m_oOptimizerScenarioResults.CreateSqliteHaulCostTable(oDataMgr, conn, Tables.OptimizerScenarioResults.DefaultScenarioResultsHaulCostsTableName);
-                frmMain.g_oTables.m_oOptimizerScenarioResults.CreateSqliteCondPsiteTable(oDataMgr, conn, Tables.OptimizerScenarioResults.DefaultScenarioResultsCondPsiteTableName);
-                frmMain.g_oTables.m_oOptimizerScenarioResults.CreateSqliteVersionTable(oDataMgr, conn, Tables.OptimizerScenarioResults.DefaultScenarioResultsVersionTableName);
+                frmMain.g_oTables.m_oOptimizerScenarioResults.CreateBestRxSummaryTable(oDataMgr, conn, strScenarioResultsBestRxSummaryTableName);
+                frmMain.g_oTables.m_oOptimizerScenarioResults.CreateBestRxSummaryTable(oDataMgr, conn, strScenarioResultsBestRxSummaryTableName + "_before_tiebreaks");
+                frmMain.g_oTables.m_oOptimizerScenarioResults.CreateProductYieldsTable(oDataMgr, conn, Tables.OptimizerScenarioResults.DefaultScenarioResultsEconByRxCycleTableName);
+                frmMain.g_oTables.m_oOptimizerScenarioResults.CreateEconByRxUtilSumTable(oDataMgr, conn, Tables.OptimizerScenarioResults.DefaultScenarioResultsEconByRxUtilSumTableName);
+                frmMain.g_oTables.m_oOptimizerScenarioResults.CreatePostEconomicWeightedTable(oDataMgr, conn, Tables.OptimizerScenarioResults.DefaultScenarioResultsPostEconomicWeightedTableName);
+                frmMain.g_oTables.m_oOptimizerScenarioResults.CreateHaulCostTable(oDataMgr, conn, Tables.OptimizerScenarioResults.DefaultScenarioResultsHaulCostsTableName);
+                frmMain.g_oTables.m_oOptimizerScenarioResults.CreateCondPsiteTable(oDataMgr, conn, Tables.OptimizerScenarioResults.DefaultScenarioResultsCondPsiteTableName);
+                frmMain.g_oTables.m_oOptimizerScenarioResults.CreateVersionTable(oDataMgr, conn, Tables.OptimizerScenarioResults.DefaultScenarioResultsVersionTableName);
 
             }
         }
@@ -1939,20 +1933,20 @@ namespace FIA_Biosum_Manager
                     }
                 }
 
-                frmMain.g_oTables.m_oOptimizerScenarioResults.CreateSqliteDiameterSpeciesGroupRefTable(p_dataMgr, conn, Tables.OptimizerScenarioResults.DefaultScenarioResultsDiameterSpeciesGroupRefTableName);
-                frmMain.g_oTables.m_oOptimizerScenarioResults.CreateSqliteFvsWeightedVariableRefTable(p_dataMgr, conn, Tables.OptimizerScenarioResults.DefaultScenarioResultsFvsWeightedVariablesRefTableName);
-                frmMain.g_oTables.m_oOptimizerScenarioResults.CreateSqliteEconWeightedVariableRefTable(p_dataMgr, conn, Tables.OptimizerScenarioResults.DefaultScenarioResultsEconWeightedVariablesRefTableName);
-                frmMain.g_oTables.m_oOptimizerScenarioResults.CreateSqliteSpeciesGroupRefTable(p_dataMgr, conn, Tables.OptimizerScenarioResults.DefaultScenarioResultsSpeciesGroupRefTableName);
-                frmMain.g_oTables.m_oProcessorScenarioRuleDefinitions.CreateSqliteScenarioAdditionalHarvestCostsTable(p_dataMgr, conn, Tables.ProcessorScenarioRuleDefinitions.DefaultAdditionalHarvestCostsTableName + "_C");
-                frmMain.g_oTables.m_oProcessor.CreateSqliteHarvestCostsTable(p_dataMgr, conn, Tables.ProcessorScenarioRun.DefaultHarvestCostsTableName + "_C");
-                frmMain.g_oTables.m_oProcessor.CreateSqliteTreeVolValSpeciesDiamGroupsTable(p_dataMgr, conn, Tables.ProcessorScenarioRun.DefaultTreeVolValSpeciesDiamGroupsTableName + "_C", true);
-                frmMain.g_oTables.m_oOptimizerScenarioRuleDef.CreateSqliteScenarioPSitesTable(p_dataMgr, conn, Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioPSitesTableName + "_C");
-                frmMain.g_oTables.m_oOptimizerScenarioResults.CreateSqliteHarvestMethodRefTable(p_dataMgr, conn, Tables.OptimizerScenarioResults.DefaultScenarioResultsHarvestMethodRefTableName);
-                frmMain.g_oTables.m_oOptimizerScenarioResults.CreateSqliteRxPackageRefTable(p_dataMgr, conn, Tables.OptimizerScenarioResults.DefaultScenarioResultsRxPackageRefTableName);
-                frmMain.g_oTables.m_oFvs.CreateSqliteRxHarvestCostColumnTable(p_dataMgr, conn, Tables.FVS.DefaultRxHarvestCostColumnsTableName + "_C");
+                frmMain.g_oTables.m_oOptimizerScenarioResults.CreateDiameterSpeciesGroupRefTable(p_dataMgr, conn, Tables.OptimizerScenarioResults.DefaultScenarioResultsDiameterSpeciesGroupRefTableName);
+                frmMain.g_oTables.m_oOptimizerScenarioResults.CreateFvsWeightedVariableRefTable(p_dataMgr, conn, Tables.OptimizerScenarioResults.DefaultScenarioResultsFvsWeightedVariablesRefTableName);
+                frmMain.g_oTables.m_oOptimizerScenarioResults.CreateEconWeightedVariableRefTable(p_dataMgr, conn, Tables.OptimizerScenarioResults.DefaultScenarioResultsEconWeightedVariablesRefTableName);
+                frmMain.g_oTables.m_oOptimizerScenarioResults.CreateSpeciesGroupRefTable(p_dataMgr, conn, Tables.OptimizerScenarioResults.DefaultScenarioResultsSpeciesGroupRefTableName);
+                frmMain.g_oTables.m_oProcessorScenarioRuleDefinitions.CreateScenarioAdditionalHarvestCostsTable(p_dataMgr, conn, Tables.ProcessorScenarioRuleDefinitions.DefaultAdditionalHarvestCostsTableName + "_C");
+                frmMain.g_oTables.m_oProcessor.CreateHarvestCostsTable(p_dataMgr, conn, Tables.ProcessorScenarioRun.DefaultHarvestCostsTableName + "_C");
+                frmMain.g_oTables.m_oProcessor.CreateTreeVolValSpeciesDiamGroupsTable(p_dataMgr, conn, Tables.ProcessorScenarioRun.DefaultTreeVolValSpeciesDiamGroupsTableName + "_C", true);
+                frmMain.g_oTables.m_oOptimizerScenarioRuleDef.CreateScenarioPSitesTable(p_dataMgr, conn, Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioPSitesTableName + "_C");
+                frmMain.g_oTables.m_oOptimizerScenarioResults.CreateHarvestMethodRefTable(p_dataMgr, conn, Tables.OptimizerScenarioResults.DefaultScenarioResultsHarvestMethodRefTableName);
+                frmMain.g_oTables.m_oOptimizerScenarioResults.CreateRxPackageRefTable(p_dataMgr, conn, Tables.OptimizerScenarioResults.DefaultScenarioResultsRxPackageRefTableName);
+                frmMain.g_oTables.m_oFvs.CreateRxHarvestCostColumnTable(p_dataMgr, conn, Tables.FVS.DefaultRxHarvestCostColumnsTableName + "_C");
 
                 // Add the ad hoc additional harvest cost columns to table
-                string strProcessorPath = ((frmMain)this._frmScenario.ParentForm).frmProject.uc_project1.m_strProjectDirectory + "\\processor\\" + Tables.ProcessorScenarioRuleDefinitions.DefaultSqliteDbFile;
+                string strProcessorPath = ((frmMain)this._frmScenario.ParentForm).frmProject.uc_project1.m_strProjectDirectory + "\\processor\\" + Tables.ProcessorScenarioRuleDefinitions.DefaultDbFile;
 
                 p_dataMgr.m_strSQL = "ATTACH DATABASE '" + strProcessorPath + "' AS processor_defs";
                 p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
@@ -1978,7 +1972,7 @@ namespace FIA_Biosum_Manager
         /// </summary>
         private void CopyScenarioResultsTable(string p_strDestPathAndDbFileName, string p_strSourcePathAndDbFileName)
         {
-            SQLite.ADO.DataMgr oDataMgr = new SQLite.ADO.DataMgr();
+            DataMgr oDataMgr = new DataMgr();
 
             if (System.IO.File.Exists(p_strSourcePathAndDbFileName))
             {
@@ -1992,7 +1986,7 @@ namespace FIA_Biosum_Manager
         }
 
         /// <summary>
-        /// create links to the tables located in the validcombo.mdb file
+        /// create tables located in the validcombo.db file
         /// </summary>
         private void CreateValidComboTables()
         {
@@ -2022,8 +2016,8 @@ namespace FIA_Biosum_Manager
                         oDataMgr.SqlNonQuery(conn, "DROP TABLE " + strTableNames[x]);
                     }
                 }
-                frmMain.g_oTables.m_oOptimizerScenarioResults.CreateSqliteValidComboFVSPreTable(oDataMgr, conn, Tables.OptimizerScenarioResults.DefaultScenarioResultsValidCombosFVSPreTableName);
-                frmMain.g_oTables.m_oOptimizerScenarioResults.CreateSqliteValidComboFVSPostTable(oDataMgr, conn, Tables.OptimizerScenarioResults.DefaultScenarioResultsValidCombosFVSPostTableName);
+                frmMain.g_oTables.m_oOptimizerScenarioResults.CreateValidComboFVSPreTable(oDataMgr, conn, Tables.OptimizerScenarioResults.DefaultScenarioResultsValidCombosFVSPreTableName);
+                frmMain.g_oTables.m_oOptimizerScenarioResults.CreateValidComboFVSPostTable(oDataMgr, conn, Tables.OptimizerScenarioResults.DefaultScenarioResultsValidCombosFVSPostTableName);
 
             }
 
@@ -2265,8 +2259,8 @@ namespace FIA_Biosum_Manager
             {
                 workConn.Open();
 
-                p_dataMgr.m_strSQL = "ATTACH DATABASE '" + frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + 
-                    Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableSqliteDbFile + "' AS rule_defs";
+                p_dataMgr.m_strSQL = "ATTACH DATABASE '" + frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() + "\\" + 
+                    Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableDbFile + "' AS rule_defs";
                 p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
 
                 p_dataMgr.m_strSQL = "DELETE FROM scenario_psites_work_table";
@@ -2312,8 +2306,8 @@ namespace FIA_Biosum_Manager
                 p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
 
                 /**************************************************
-                 * Insert plot_id/cond_id records into PSITE_ACCESSIBLE_WORKTABLE
-                 * ************************************************/
+                * Insert plot_id/cond_id records into PSITE_ACCESSIBLE_WORKTABLE
+                * ************************************************/
                 p_dataMgr.m_strSQL = "INSERT INTO " + Tables.OptimizerScenarioResults.DefaultScenarioResultsPSiteAccessibleWorkTableName +
                     " (biosum_cond_id, biosum_plot_id) " +
                     "SELECT DISTINCT biosum_cond_id, biosum_plot_id " +
@@ -3414,7 +3408,7 @@ namespace FIA_Biosum_Manager
                     p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
                 }
 
-                frmMain.g_oTables.m_oOptimizerScenarioResults.CreateSqliteTreeVolValSumTable(p_dataMgr, workConn, m_strTreeVolValSumTable);
+                frmMain.g_oTables.m_oOptimizerScenarioResults.CreateTreeVolValSumTable(p_dataMgr, workConn, m_strTreeVolValSumTable);
 
                 FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
 
@@ -3513,7 +3507,7 @@ namespace FIA_Biosum_Manager
             {
                 workConn.Open();
 
-                p_dataMgr.m_strSQL = "ATTACH DATABASE '" + ReferenceUserControlScenarioRun.ReferenceOptimizerScenarioForm.uc_scenario1.txtScenarioPath.Text.Trim() + "\\db\\" + Tables.Audit.DefaultCondAuditTableSqliteDbFile + "' AS audit";
+                p_dataMgr.m_strSQL = "ATTACH DATABASE '" + ReferenceUserControlScenarioRun.ReferenceOptimizerScenarioForm.uc_scenario1.txtScenarioPath.Text.Trim() + "\\db\\" + Tables.Audit.DefaultCondAuditTableDbFile + "' AS audit";
                 p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
 
                 p_dataMgr.m_strSQL = "ATTACH DATABASE '" + m_strPlotPathAndFile + "' AS master";
@@ -3525,10 +3519,10 @@ namespace FIA_Biosum_Manager
                 p_dataMgr.m_strSQL = "ATTACH DATABASE '" + m_strHarvestMethodsPathAndFile + "' AS ref";
                 p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
 
-                p_dataMgr.m_strSQL = "ATTACH DATABASE '" + frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + Tables.OptimizerScenarioResults.DefaultCalculatedPrePostFVSVariableTableSqliteDbFile + "' AS calc_prepost_fvsout";
+                p_dataMgr.m_strSQL = "ATTACH DATABASE '" + frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() + "\\" + Tables.OptimizerScenarioResults.DefaultCalculatedPrePostFVSVariableTableDbFile + "' AS calc_prepost_fvsout";
                 p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
 
-                p_dataMgr.m_strSQL = "ATTACH DATABASE '" + frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSOutPrePostDbFile + "' AS prepost_fvsout";
+                p_dataMgr.m_strSQL = "ATTACH DATABASE '" + frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() + Tables.FVS.DefaultFVSOutPrePostDbFile + "' AS prepost_fvsout";
                 p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
 
                 p_dataMgr.m_strSQL = "ATTACH DATABASE '" + m_strFVSPrePostValidComboDbPathAndFile + "' AS valid_combo";
@@ -3953,7 +3947,7 @@ namespace FIA_Biosum_Manager
                     frmMain.g_oDelegate.ExecuteControlMethod((Control)ReferenceUserControlScenarioRun, "Refresh");
 
                     _uc_scenario_run.uc_filesize_monitor4.BeginMonitoringFile(
-                        ReferenceUserControlScenarioRun.ReferenceOptimizerScenarioForm.uc_scenario1.txtScenarioPath.Text.Trim() + "\\db\\" + Tables.Audit.DefaultCondAuditTableSqliteDbFile, 2000000000, "2GB");
+                        ReferenceUserControlScenarioRun.ReferenceOptimizerScenarioForm.uc_scenario1.txtScenarioPath.Text.Trim() + "\\db\\" + Tables.Audit.DefaultCondAuditTableDbFile, 2000000000, "2GB");
 
                     if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
                         frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n--cond_audit--\r\n\r\n");
@@ -4381,11 +4375,11 @@ namespace FIA_Biosum_Manager
                 resultsConn.Open();
 
                 //attach FVS prepost weighted database
-                p_dataMgr.m_strSQL = "ATTACH DATABASE '" + frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + Tables.OptimizerScenarioResults.DefaultCalculatedPrePostFVSVariableTableSqliteDbFile + "' AS fvs_weighted";
+                p_dataMgr.m_strSQL = "ATTACH DATABASE '" + frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() + "\\" + Tables.OptimizerScenarioResults.DefaultCalculatedPrePostFVSVariableTableDbFile + "' AS fvs_weighted";
                 p_dataMgr.SqlNonQuery(resultsConn, p_dataMgr.m_strSQL);
 
                 //attach FVS prepost
-                p_dataMgr.m_strSQL = "ATTACH DATABASE '" + frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSOutPrePostDbFile + "' AS fvs_out";
+                p_dataMgr.m_strSQL = "ATTACH DATABASE '" + frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() + Tables.FVS.DefaultFVSOutPrePostDbFile + "' AS fvs_out";
                 p_dataMgr.SqlNonQuery(resultsConn, p_dataMgr.m_strSQL);
 
                 //get all the column names in the effective table
@@ -4797,9 +4791,9 @@ namespace FIA_Biosum_Manager
                     strPostTable = "POST_" + strCol[0].Trim();
                     strPostColumn = strCol[1].Trim();
 
-                    p_dataMgr.m_strSQL = "ATTACH DATABASE '" + frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSOutPrePostDbFile + "' AS prepost_fvsout";
+                    p_dataMgr.m_strSQL = "ATTACH DATABASE '" + frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() + Tables.FVS.DefaultFVSOutPrePostDbFile + "' AS prepost_fvsout";
                     p_dataMgr.SqlNonQuery(resultsConn, p_dataMgr.m_strSQL);
-                    p_dataMgr.m_strSQL = "ATTACH DATABASE '" + frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + Tables.OptimizerScenarioResults.DefaultCalculatedPrePostFVSVariableTableSqliteDbFile + "' AS fvs_weighted";
+                    p_dataMgr.m_strSQL = "ATTACH DATABASE '" + frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() + "\\" + Tables.OptimizerScenarioResults.DefaultCalculatedPrePostFVSVariableTableDbFile + "' AS fvs_weighted";
                     p_dataMgr.SqlNonQuery(resultsConn, p_dataMgr.m_strSQL);
                     p_dataMgr.m_strSQL = "UPDATE " + strOptimizationTableName + " AS e " +
                         "SET change_value = CASE WHEN a." + strPostColumn + " IS NOT NULL AND b." + strPreColumn + " IS NOT NULL " +
@@ -4835,86 +4829,7 @@ namespace FIA_Biosum_Manager
             p_dataMgr = null;
         }
 
-        private string getEconomicOptimizationSqlAccess()
-        {
-            string strSql = "";
-            string strOptimizationTableName = ReferenceOptimizerScenarioForm.OutputTablePrefix +
-                Tables.OptimizerScenarioResults.DefaultScenarioResultsOptimizationTableSuffix;
-            string[] strCol = frmMain.g_oUtils.ConvertListToArray(this.m_oOptimizationVariable.strFVSVariableName, "_");
-            uc_optimizer_scenario_calculated_variables.VariableItem oItem = null;
-            foreach (uc_optimizer_scenario_calculated_variables.VariableItem oNextItem in this.ReferenceOptimizerScenarioForm.m_oWeightedVariableCollection)
-            {
-                if (oNextItem.strVariableName.Equals(this.m_oOptimizationVariable.strFVSVariableName))
-                {
-                    oItem = oNextItem;
-                    break;
-                }
-            }
-            if (strCol.Length > 1)
-            {
-                // This is a default economic variable; They always end in _1
-                if (strCol[strCol.Length - 1] == "1")
-                {
-                    // We are storing the table and field name in the database for most variables
-                    if (oItem.strVariableSource.IndexOf(".") > -1)
-                    {
-                        string[] strDatabase = frmMain.g_oUtils.ConvertListToArray(oItem.strVariableSource, ".");
-                        strSql = "UPDATE " + strOptimizationTableName + " e " +
-                                 "INNER JOIN " + strDatabase[0] + " p " +
-                                 "ON e.biosum_cond_id=p.biosum_cond_id AND " +
-                                 "e.rxpackage=p.rxpackage " +
-                                 "SET e.pre_variable_name = '" + oItem.strVariableName + "'," +
-                                 "e.post_variable_name = '" + oItem.strVariableName + "'," +
-                                 "e.pre_variable_value = IIF(p." + strDatabase[1] + " IS NOT NULL,p." + strDatabase[1] + ",0)," +
-                                 "e.post_variable_value = IIF(p." + strDatabase[1] + " IS NOT NULL,p." + strDatabase[1] + ",0)," +
-                                 "e.change_value = 0";
-                    }
-                    // We specify a calculation for the total volume
-                    else if (oItem.strVariableName.Equals("total_volume_1"))
-                    {
-                        strSql = "UPDATE " + strOptimizationTableName + " e " +
-                             "INNER JOIN " + Tables.OptimizerScenarioResults.DefaultScenarioResultsEconByRxUtilSumTableName + " p " +
-                             "ON e.biosum_cond_id=p.biosum_cond_id AND " +
-                             "e.rxpackage=p.rxpackage " +
-                             "SET e.pre_variable_name = '" + oItem.strVariableName + "'," +
-                             "e.post_variable_name = '" + oItem.strVariableName + "'," +
-                             "e.pre_variable_value = IIF(p.chip_vol_cf_utilized + p.merch_vol_cf IS NOT NULL,p.chip_vol_cf_utilized + p.merch_vol_cf,0)," +
-                             "e.post_variable_value = IIF(p.chip_vol_cf_utilized + p.merch_vol_cf IS NOT NULL,p.chip_vol_cf_utilized + p.merch_vol_cf,0)," +
-                             "e.change_value = 0";
-                    }
-                    else if (oItem.strVariableName.Equals("treatment_haul_costs_1"))
-                    {
-                        strSql = "UPDATE " + strOptimizationTableName + " e " +
-                             "INNER JOIN " + Tables.OptimizerScenarioResults.DefaultScenarioResultsEconByRxUtilSumTableName + " p " +
-                             "ON e.biosum_cond_id=p.biosum_cond_id AND " +
-                             "e.rxpackage=p.rxpackage " +
-                             "SET e.pre_variable_name = '" + oItem.strVariableName + "'," +
-                             "e.post_variable_name = '" + oItem.strVariableName + "'," +
-                             "e.pre_variable_value = HARVEST_ONSITE_COST_DPA + MERCH_HAUL_COST_DPA + IIF (MERCH_CHIP_NR_DPA < MAX_NR_DPA,0, CHIP_HAUL_COST_DPA_utilized)," +
-                             "e.post_variable_value = HARVEST_ONSITE_COST_DPA + MERCH_HAUL_COST_DPA + IIF (MERCH_CHIP_NR_DPA < MAX_NR_DPA,0, CHIP_HAUL_COST_DPA_utilized)," +
-                             "e.change_value = 0";
-                    }
-                }
-                // This is a custom-weighted economic variable
-                else
-                {
-                    if (oItem.strVariableSource.IndexOf(".") > -1)
-                    {
-                        string[] strDatabase = frmMain.g_oUtils.ConvertListToArray(oItem.strVariableSource, ".");
-                        strSql = "UPDATE " + strOptimizationTableName + " e " +
-                                 "INNER JOIN " + strDatabase[0] + " p " +
-                                 "ON e.biosum_cond_id=p.biosum_cond_id AND " +
-                                 "e.rxpackage=p.rxpackage " +
-                                 "SET e.pre_variable_name = '" + oItem.strVariableName + "'," +
-                                 "e.post_variable_name = '" + oItem.strVariableName + "'," +
-                                 "e.pre_variable_value = IIF(p." + strDatabase[1] + " IS NOT NULL,p." + strDatabase[1] + ",0)," +
-                                 "e.post_variable_value = IIF(p." + strDatabase[1] + " IS NOT NULL,p." + strDatabase[1] + ",0)," +
-                                 "e.change_value = 0";
-                    }
-                }
-            }
-            return strSql;
-        }
+        
         private string getEconomicOptimizationSql()
         {
             string strSql = "";
@@ -5058,11 +4973,11 @@ namespace FIA_Biosum_Manager
                 FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
 
                 //attach FVS prepost weighted database
-                p_dataMgr.m_strSQL = "ATTACH DATABASE '" + frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + Tables.OptimizerScenarioResults.DefaultCalculatedPrePostFVSVariableTableSqliteDbFile + "' AS fvs_weighted";
+                p_dataMgr.m_strSQL = "ATTACH DATABASE '" + frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() + "\\" + Tables.OptimizerScenarioResults.DefaultCalculatedPrePostFVSVariableTableDbFile + "' AS fvs_weighted";
                 p_dataMgr.SqlNonQuery(resultsConn, p_dataMgr.m_strSQL);
 
                 //attach FVS out database
-                p_dataMgr.m_strSQL = "ATTACH DATABASE '" + frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSOutPrePostDbFile + "' AS prepost_fvsout";
+                p_dataMgr.m_strSQL = "ATTACH DATABASE '" + frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() + Tables.FVS.DefaultFVSOutPrePostDbFile + "' AS prepost_fvsout";
                 p_dataMgr.SqlNonQuery(resultsConn, p_dataMgr.m_strSQL);
 
                 //populate the variable table.column name and its value to the tiebreaker table
@@ -5202,8 +5117,8 @@ namespace FIA_Biosum_Manager
                 oItem = oTieBreakerCollection.Item(2);  // LAST TIEBREAK RANK
                 if (oItem.bSelected)
                 {
-                    p_dataMgr.m_strSQL = "ATTACH DATABASE '" + frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" +
-                    Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableSqliteDbFile + "' AS rule_defs";
+                    p_dataMgr.m_strSQL = "ATTACH DATABASE '" + frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() + "\\" +
+                    Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableDbFile + "' AS rule_defs";
                     p_dataMgr.SqlNonQuery(resultsConn, p_dataMgr.m_strSQL);
 
                     p_dataMgr.m_strSQL = "UPDATE tiebreaker AS a " +
@@ -5269,7 +5184,7 @@ namespace FIA_Biosum_Manager
             {
                 workConn.Open();
 
-                string strScenarioDb = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text + "\\" + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableSqliteDbFile;
+                string strScenarioDb = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory + "\\" + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableDbFile;
                 p_dataMgr.m_strSQL = "ATTACH DATABASE '" + strScenarioDb + "' AS scenario";
                 p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
 
@@ -5309,34 +5224,6 @@ namespace FIA_Biosum_Manager
                 }
 
                 // Create econ_by_rx_cycle_work_table in temp work tables db
-                // Have to parse by column source
-                // Think I need to break this up into several queries
-                string strSelectSQL = "SELECT vc.biosum_cond_id, vc.rxpackage, vc.rx, vc.rxcycle, " +
-                    "tvvs.merch_vol_cf, tvvs.chip_vol_cf, tvvs.chip_wt_gt, tvvs.chip_val_dpa, tvvs.merch_wt_gt, tvvs.merch_val_dpa, hc.complete_cpa AS harvest_onsite_cost_dpa, " +
-                    "CASE WHEN psa.merch_haul_cost_dpgt IS NOT NULL THEN " +
-                    "CASE WHEN tvvs.rxcycle = '2' THEN psa.merch_haul_cost_dpgt * " + m_oProcessorScenarioItem.m_oEscalators.OperatingCostsCycle2 + " ELSE " +
-                    "CASE WHEN tvvs.rxcycle = '3' THEN psa.merch_haul_cost_dpgt * " + m_oProcessorScenarioItem.m_oEscalators.OperatingCostsCycle3 + " ELSE " +
-                    "CASE WHEN tvvs.rxcycle= '4' THEN psa.merch_haul_cost_dpgt * " + m_oProcessorScenarioItem.m_oEscalators.OperatingCostsCycle4 + " ELSE " +
-                    "psa.merch_haul_cost_dpgt END END END ELSE 0 END AS escalator_merch_haul_cpa_pt, " +
-                    "escalator_merch_haul_cpa_pt * tvvs.merch_wt_gt AS merch_haul_cost_dpa, " +
-                    "CASE WHEN psa.chip_haul_cost_dpgt IS NOT NULL THEN " +
-                    "CASE WHEN tvvs.rxcycle = '2' THEN psa.chip_haul_cost_dpgt * " + m_oProcessorScenarioItem.m_oEscalators.OperatingCostsCycle2 + " ELSE " +
-                    "CASE WHEN tvvs.rxcycle = '3' THEN psa.chip_haul_cost_dpgt * " + m_oProcessorScenarioItem.m_oEscalators.OperatingCostsCycle3 + " ELSE " +
-                    "CASE WHEN tvvs.rxcycle = '4' THEN psa.chip_haul_cost_dpgt * " + m_oProcessorScenarioItem.m_oEscalators.OperatingCostsCycle4 + " ELSE " +
-                    "psa.chip_haul_cost_dpgt END END END ELSE 0 END AS escalator_chip_haul_cpa_pt, " +
-                    "escalator_chip_haul_cpa_pt * tvvs.chip_wt_gt AS chip_haul_cost_dpa, " +
-                    "merch_val_dpa + chip_val_dpa - harvest_onsite_cost_dpa - (chip_haul_cost_dpa + merch_haul_cost_dpa) AS merch_chip_nr_dpa, " +
-                    "merch_val_dpa - harvest_onsite_cost_dpa - merch_haul_cost_dpa AS merch_nr_dpa, " +
-                    "CASE WHEN psa.chip_haul_psite IS NULL THEN 'N' ELSE 'Y' END AS usebiomass_yn, " +
-                    "0.0 AS max_nr_dpa, c.acres, c.owngrpcd, " +
-                    "CASE WHEN usebiomass_yn = 'Y' THEN merch_haul_cost_dpa + chip_haul_cost_dpa ELSE merch_haul_cost_dpa END AS haul_costs_dpa " +
-                    "FROM validcombos AS vc, " + m_strCondTable + " AS c, " + m_strHvstCostsTable.Trim() + " AS hc, " +
-                    Tables.OptimizerScenarioResults.DefaultScenarioResultsPSiteAccessibleWorkTableName + " AS psa, " + m_strTreeVolValSumTable.Trim() + " AS tvvs " +
-                    "WHERE vc.biosum_cond_id = c.biosum_cond_id AND c.biosum_cond_id = psa.biosum_cond_id AND " +
-                    "vc.biosum_cond_id = tvvs.biosum_cond_id AND vc.rxpackage = tvvs.rxpackage AND vc.rx = tvvs.rx AND " +
-                    "vc.rxcycle = tvvs.rxcycle AND vc.biosum_cond_id = hc.biosum_cond_id AND vc.rxpackage = hc.rxpackage AND " +
-                    "vc.rx = hc.rx = vc.rxcycle = hc.rx_cycle AND tvvs.place_holder = 'N'";
-
                 string fieldsAndDataTypes = "";
 
                 string field = "";
@@ -5573,7 +5460,7 @@ namespace FIA_Biosum_Manager
                 // do an outer join when appending them to be sure
 
                 string strInactiveStandsWorkTable = "InactiveStandsWorkTable";
-                strSelectSQL = "SELECT vc.biosum_cond_id, vc.rxpackage, vc.rx, vc.rxcycle, " +
+                string strSelectSQL = "SELECT vc.biosum_cond_id, vc.rxpackage, vc.rx, vc.rxcycle, " +
                             "0 AS merch_vol_cf, 0 as chip_vol_cf, 0 as chip_wt_gt, " +
                             "0 as chip_val_dpa, 0 as merch_wt_gt, 0 AS merch_val_dpa, " +
                             "hc.complete_cpa AS harvest_onsite_cost_dpa, 0 AS escalator_merch_haul_cpa_pt ," +
@@ -6399,7 +6286,7 @@ namespace FIA_Biosum_Manager
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "Copy table structure scenario_psites to scenario_psites_work_tabler\r\n");
 
-                string strRuleDefinitionsDb = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableSqliteDbFile;
+                string strRuleDefinitionsDb = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() + "\\" + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableDbFile;
                 p_dataMgr.m_strSQL = "ATTACH DATABASE '" + strRuleDefinitionsDb + "' AS rule_defs";
                 p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
 
@@ -6463,7 +6350,7 @@ namespace FIA_Biosum_Manager
                     p_dataMgr.SqlNonQuery(workConn, "DROP TABLE " + Tables.OptimizerScenarioResults.DefaultScenarioResultsPSiteAccessibleWorkTableName);
 
                 if (p_dataMgr.m_intError == 0)
-                    frmMain.g_oTables.m_oOptimizerScenarioResults.CreatePSitesWorktableSqlite(
+                    frmMain.g_oTables.m_oOptimizerScenarioResults.CreatePSitesWorktable(
                         p_dataMgr, workConn, Tables.OptimizerScenarioResults.DefaultScenarioResultsPSiteAccessibleWorkTableName);
 
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
@@ -6483,7 +6370,7 @@ namespace FIA_Biosum_Manager
                             p_dataMgr.SqlNonQuery(workConn, "DROP TABLE " + table);
                         }
 
-                        frmMain.g_oTables.m_oOptimizerScenarioResults.CreateSqliteHaulCostTable(
+                        frmMain.g_oTables.m_oOptimizerScenarioResults.CreateHaulCostTable(
                             p_dataMgr, workConn, table);
                     }
                 }
@@ -6505,7 +6392,7 @@ namespace FIA_Biosum_Manager
                             p_dataMgr.SqlNonQuery(workConn, "DROP TABLE " + table);
                         }
 
-                        frmMain.g_oTables.m_oOptimizerScenarioResults.CreateSqliteHaulCostRailroadTable(
+                        frmMain.g_oTables.m_oOptimizerScenarioResults.CreateHaulCostRailroadTable(
                             p_dataMgr, workConn, table);
                     }
                 }
@@ -6547,14 +6434,14 @@ namespace FIA_Biosum_Manager
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "--Create rx_intensity_work_table Schema--\r\n");
 
-                frmMain.g_oTables.m_oOptimizerScenarioResults.CreateIntensityWorkTableSqlite(p_dataMgr, workConn, "rx_intensity_duplicates_work_table");
+                frmMain.g_oTables.m_oOptimizerScenarioResults.CreateIntensityWorkTable(p_dataMgr, workConn, "rx_intensity_duplicates_work_table");
                 if (p_dataMgr.m_intError == 0)
                 {
-                    frmMain.g_oTables.m_oOptimizerScenarioResults.CreateIntensityWorkTableSqlite(p_dataMgr, workConn, "rx_intensity_duplicates_work_table2");
+                    frmMain.g_oTables.m_oOptimizerScenarioResults.CreateIntensityWorkTable(p_dataMgr, workConn, "rx_intensity_duplicates_work_table2");
                 }
                 if (p_dataMgr.m_intError == 0)
                 {
-                    frmMain.g_oTables.m_oOptimizerScenarioResults.CreateIntensityWorkTableSqlite(p_dataMgr, workConn, "rx_intensity_unique_work_table");
+                    frmMain.g_oTables.m_oOptimizerScenarioResults.CreateIntensityWorkTable(p_dataMgr, workConn, "rx_intensity_unique_work_table");
                 }
 
                 if (p_dataMgr.m_intError != 0)
@@ -6799,28 +6686,28 @@ namespace FIA_Biosum_Manager
                 {
                     p_dataMgr.SqlNonQuery(workConn, "DROP TABLE " + strTable);
                 }
-                p_dataMgr.SqlNonQuery(workConn, Tables.OptimizerScenarioResults.CreateSqliteBestRxSummaryTableSQL(strTable));
+                p_dataMgr.SqlNonQuery(workConn, Tables.OptimizerScenarioResults.CreateBestRxSummaryTableSQL(strTable));
                 
                 //best_rx_summury_optimization_and_tiebreaker_work_table
                 if (p_dataMgr.TableExist(workConn, "cycle1_best_rx_summary_optimization_and_tiebreaker_work_table"))
                 {
                     p_dataMgr.SqlNonQuery(workConn, "DROP TABLE cycle1_best_rx_summary_optimization_and_tiebreaker_work_table");
                 }
-                p_dataMgr.SqlNonQuery(workConn, Tables.OptimizerScenarioResults.CreateSqliteBestRxSummaryCycle1TieBreakerTableSQL("cycle1_best_rx_summary_optimization_and_tiebreaker_work_table"));
+                p_dataMgr.SqlNonQuery(workConn, Tables.OptimizerScenarioResults.CreateBestRxSummaryCycle1TieBreakerTableSQL("cycle1_best_rx_summary_optimization_and_tiebreaker_work_table"));
                 
                 //best_rx_summury_optimization_and_tiebreaker_work_table2
                 if (p_dataMgr.TableExist(workConn, "cycle1_best_rx_summary_optimization_and_tiebreaker_work_table2"))
                 {
                     p_dataMgr.SqlNonQuery(workConn, "DROP TABLE cycle1_best_rx_summary_optimization_and_tiebreaker_work_table2");
                 }
-                p_dataMgr.SqlNonQuery(workConn, Tables.OptimizerScenarioResults.CreateSqliteBestRxSummaryCycle1TieBreakerTableSQL("cycle1_best_rx_summary_optimization_and_tiebreaker_work_table2"));
+                p_dataMgr.SqlNonQuery(workConn, Tables.OptimizerScenarioResults.CreateBestRxSummaryCycle1TieBreakerTableSQL("cycle1_best_rx_summary_optimization_and_tiebreaker_work_table2"));
                 
                 //best_rx_summury_optimization_and_tiebreaker_work_table3
                 if (p_dataMgr.TableExist(workConn, "cycle1_best_rx_summary_optimization_and_tiebreaker_work_table3"))
                 {
                     p_dataMgr.SqlNonQuery(workConn, "DROP TABLE cycle1_best_rx_summary_optimization_and_tiebreaker_work_table3");
                 }
-                p_dataMgr.SqlNonQuery(workConn, Tables.OptimizerScenarioResults.CreateSqliteBestRxSummaryCycle1TieBreakerTableSQL("cycle1_best_rx_summary_optimization_and_tiebreaker_work_table3"));
+                p_dataMgr.SqlNonQuery(workConn, Tables.OptimizerScenarioResults.CreateBestRxSummaryCycle1TieBreakerTableSQL("cycle1_best_rx_summary_optimization_and_tiebreaker_work_table3"));
 
                 /**********************************************
 			     **insert unique biosum_cond_id's into the
@@ -6863,7 +6750,7 @@ namespace FIA_Biosum_Manager
                     p_dataMgr.SqlNonQuery(workConn, "DROP TABLE " + strWorkTable);
                 }
 
-                frmMain.g_oTables.m_oOptimizerScenarioResults.CreateSqliteProductYieldsTable(p_dataMgr, workConn, strWorkTable);
+                frmMain.g_oTables.m_oOptimizerScenarioResults.CreateProductYieldsTable(p_dataMgr, workConn, strWorkTable);
 
                 p_dataMgr.m_strSQL = "INSERT INTO " + strWorkTable +
                     " SELECT p.* FROM " + Tables.OptimizerScenarioResults.DefaultScenarioResultsEconByRxCycleTableName + " AS p, " +
@@ -6900,7 +6787,7 @@ namespace FIA_Biosum_Manager
                 {
                     strColumnFilterName = this.m_oOptimizationVariable.strRevenueAttribute;
                 }
-                frmMain.g_oTables.m_oOptimizerScenarioResults.CreateSqliteEffectiveTable(p_dataMgr, workConn, "cycle1_effective_optimization_treatments", strColumnFilterName);
+                frmMain.g_oTables.m_oOptimizerScenarioResults.CreateEffectiveTable(p_dataMgr, workConn, "cycle1_effective_optimization_treatments", strColumnFilterName);
 
                 p_dataMgr.m_strSQL = "INSERT INTO cycle1_effective_optimization_treatments " +
                    "SELECT e.* FROM " + ReferenceOptimizerScenarioForm.OutputTablePrefix +
@@ -7317,27 +7204,6 @@ namespace FIA_Biosum_Manager
 
 		}
 
-		private void WriteText(string p_strTextFile,string p_strText)
-		{
-			System.IO.FileStream oTextFileStream;
-			System.IO.StreamWriter oTextStreamWriter;
-
-			if (!System.IO.File.Exists(p_strTextFile))
-			{
-				oTextFileStream = new System.IO.FileStream(p_strTextFile, System.IO.FileMode.Create, 
-					System.IO.FileAccess.Write);
-			}
-			else
-			{
-				oTextFileStream = new System.IO.FileStream(p_strTextFile, System.IO.FileMode.Append, 
-					System.IO.FileAccess.Write);
-			}
-			
-			oTextStreamWriter = new System.IO.StreamWriter(oTextFileStream);
-			oTextStreamWriter.Write(p_strText);
-			oTextStreamWriter.Close();
-			oTextFileStream.Close();
-		}
 
 		/// <summary>
 		/// check and see if the user pressed the cancel button
@@ -7555,16 +7421,16 @@ namespace FIA_Biosum_Manager
             {
                 contextConn.Open();
 
-                p_dataMgr.m_strSQL = "ATTACH DATABASE '" + frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + Tables.OptimizerDefinitions.DefaultSqliteDbFile + "' AS optimizer_defs";
+                p_dataMgr.m_strSQL = "ATTACH DATABASE '" + frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() + "\\" + Tables.OptimizerDefinitions.DefaultDbFile + "' AS optimizer_defs";
                 p_dataMgr.SqlNonQuery(contextConn, p_dataMgr.m_strSQL);
 
                 p_dataMgr.m_strSQL = "ATTACH DATABASE '" + m_strProcessorResultsPathAndFile + "' AS processor_results";
                 p_dataMgr.SqlNonQuery(contextConn, p_dataMgr.m_strSQL);
 
-                p_dataMgr.m_strSQL = "ATTACH DATABASE '" + frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\processor\\" + Tables.ProcessorScenarioRuleDefinitions.DefaultSqliteDbFile + "' AS processor_rules";
+                p_dataMgr.m_strSQL = "ATTACH DATABASE '" + frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() + "\\processor\\" + Tables.ProcessorScenarioRuleDefinitions.DefaultDbFile + "' AS processor_rules";
                 p_dataMgr.SqlNonQuery(contextConn, p_dataMgr.m_strSQL);
 
-                p_dataMgr.m_strSQL = "ATTACH DATABASE '" + frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableSqliteDbFile + "' AS optimizer_rules";
+                p_dataMgr.m_strSQL = "ATTACH DATABASE '" + frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() + "\\" + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableDbFile + "' AS optimizer_rules";
                 p_dataMgr.SqlNonQuery(contextConn, p_dataMgr.m_strSQL);
 
                 p_dataMgr.m_strSQL = "ATTACH DATABASE '" + m_strHarvestMethodsPathAndFile + "' AS biosum_ref";

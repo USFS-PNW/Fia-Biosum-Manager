@@ -15,11 +15,7 @@ namespace FIA_Biosum_Manager
 	{
 		private System.Windows.Forms.GroupBox groupBox1;
 		private System.ComponentModel.IContainer components;
-		public System.Data.OleDb.OleDbDataAdapter m_OleDbDataAdapter;
 		public System.Data.DataSet m_DataSet;
-		public System.Data.OleDb.OleDbConnection m_OleDbConnectionMaster;
-		public System.Data.OleDb.OleDbConnection m_OleDbConnectionScenario;
-		public System.Data.OleDb.OleDbCommand m_OleDbCommand;
 		public System.Data.DataRelation m_DataRelation;
 		public System.Data.DataTable m_DataTable;
 		public System.Data.DataRow m_DataRow;
@@ -1331,8 +1327,8 @@ namespace FIA_Biosum_Manager
             DataMgr oDataMgr = new DataMgr();
             string strScenarioId = this.ReferenceOptimizerScenarioForm.uc_scenario1.txtScenarioId.Text.Trim();
             string strScenarioDB =
-                frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" +
-                Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableSqliteDbFile;
+                frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() + "\\" +
+                Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableDbFile;
             using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(strScenarioDB)))
             {
                 conn.Open();
@@ -2036,7 +2032,7 @@ namespace FIA_Biosum_Manager
                         oOptVariableItemCollection.Item(x).strFVSVariableName.Trim().ToUpper() != "NOT DEFINED" &&
                         oOptVariableItemCollection.Item(x).strFVSVariableName.IndexOf(".") > -1)
                     {
-                        string fvsPrePostDb = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSOutPrePostDbFile;
+                        string fvsPrePostDb = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() + Tables.FVS.DefaultFVSOutPrePostDbFile;
                         if (System.IO.File.Exists(fvsPrePostDb))
                         {
                             DataMgr oDataMgr = new DataMgr();
@@ -2045,7 +2041,7 @@ namespace FIA_Biosum_Manager
                                 conn.Open();
                                 if (oDataMgr.m_intError == 0)
                                 {
-                                    string fvsWeightedDb = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + Tables.OptimizerScenarioResults.DefaultCalculatedPrePostFVSVariableTableSqliteDbFile;
+                                    string fvsWeightedDb = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() + "\\" + Tables.OptimizerScenarioResults.DefaultCalculatedPrePostFVSVariableTableDbFile;
                                     if (!oDataMgr.DatabaseAttached(conn, fvsWeightedDb))
                                     {
                                         oDataMgr.m_strSQL = "ATTACH DATABASE '" + fvsWeightedDb + "' AS weighted";

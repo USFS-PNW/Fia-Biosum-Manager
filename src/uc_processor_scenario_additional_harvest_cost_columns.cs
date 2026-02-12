@@ -63,8 +63,8 @@ namespace FIA_Biosum_Manager
             //SCENARIO DB
             //
             string strScenarioDB =
-                frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
-                "\\processor\\" + Tables.ProcessorScenarioRuleDefinitions.DefaultSqliteDbFile;
+                frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() +
+                "\\processor\\" + Tables.ProcessorScenarioRuleDefinitions.DefaultDbFile;
             //
             //SCENARIO ID
             //
@@ -96,7 +96,7 @@ namespace FIA_Biosum_Manager
 
                 //create a work table from the additional harvests costs table
                 //
-                dataMgr.m_strSQL = Tables.Processor.CreateSqliteAdditionalHarvestCostsTableSQL(m_strAddHarvCostsWorkTable);
+                dataMgr.m_strSQL = Tables.Processor.CreateAdditionalHarvestCostsTableSQL(m_strAddHarvCostsWorkTable);
                 dataMgr.SqlNonQuery(oConn, dataMgr.m_strSQL);
                 dataMgr.AddIndex(oConn, m_strAddHarvCostsWorkTable, $@"{m_strAddHarvCostsWorkTable}__plotrx", "biosum_cond_id,rx");
 
@@ -306,8 +306,8 @@ namespace FIA_Biosum_Manager
         {
                 SQLite.ADO.DataMgr dataMgr = new SQLite.ADO.DataMgr();
                 string strScenarioDB =
-                    frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
-                    "\\processor\\" + Tables.ProcessorScenarioRuleDefinitions.DefaultSqliteDbFile;
+                    frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() +
+                    "\\processor\\" + Tables.ProcessorScenarioRuleDefinitions.DefaultDbFile;
                 string strConn = dataMgr.GetConnectionString(strScenarioDB);
                 using (System.Data.SQLite.SQLiteConnection oConn = new System.Data.SQLite.SQLiteConnection(strConn))
                 {
@@ -332,8 +332,8 @@ namespace FIA_Biosum_Manager
             //SCENARIO MDB
             //
             string strScenarioDB =
-                frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
-                "\\processor\\" + Tables.ProcessorScenarioRuleDefinitions.DefaultSqliteDbFile;
+                frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() +
+                "\\processor\\" + Tables.ProcessorScenarioRuleDefinitions.DefaultDbFile;
             //
             //SCENARIO ID
             //
@@ -370,7 +370,7 @@ namespace FIA_Biosum_Manager
                 }
                 //create a work table from the additional harvests costs table
                 //
-                dataMgr.m_strSQL = Tables.Processor.CreateSqliteAdditionalHarvestCostsTableSQL(m_strAddHarvCostsWorkTable);
+                dataMgr.m_strSQL = Tables.Processor.CreateAdditionalHarvestCostsTableSQL(m_strAddHarvCostsWorkTable);
                 dataMgr.SqlNonQuery(oConn, dataMgr.m_strSQL);
                 //attach processor scenario definitions
                 dataMgr.m_strSQL = $@"ATTACH '{strScenarioDB}' AS DEFINITIONS";
@@ -656,8 +656,8 @@ namespace FIA_Biosum_Manager
                 //SCENARIO MDB
                 //
                 string strScenarioDB =
-                    frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
-                    "\\processor\\" + Tables.ProcessorScenarioRuleDefinitions.DefaultSqliteDbFile;
+                    frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() +
+                    "\\processor\\" + Tables.ProcessorScenarioRuleDefinitions.DefaultDbFile;
                 SQLite.ADO.DataMgr oDataMgr = new SQLite.ADO.DataMgr();
                 oDataMgr = new SQLite.ADO.DataMgr();
                 oDataMgr.OpenConnection(oDataMgr.GetConnectionString(strScenarioDB));
@@ -1480,8 +1480,8 @@ namespace FIA_Biosum_Manager
             frmPrevExp.uc_previous_expressions1.Visible = true;
 
             string strScenarioDB =
-                frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
-                "\\processor\\" + Tables.ProcessorScenarioRuleDefinitions.DefaultSqliteDbFile;
+                frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() +
+                "\\processor\\" + Tables.ProcessorScenarioRuleDefinitions.DefaultDbFile;
             SQLite.ADO.DataMgr dataMgr = new SQLite.ADO.DataMgr();
             using (System.Data.SQLite.SQLiteConnection oConn = new System.Data.SQLite.SQLiteConnection(dataMgr.GetConnectionString(TempDb)))
             {
@@ -1607,8 +1607,8 @@ namespace FIA_Biosum_Manager
 
             frmPrevExp.uc_previous_expressions1.Visible = true;
 
-            string strScenarioDB = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
-                "\\processor\\" + Tables.ProcessorScenarioRuleDefinitions.DefaultSqliteDbFile;
+            string strScenarioDB = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() +
+                "\\processor\\" + Tables.ProcessorScenarioRuleDefinitions.DefaultDbFile;
             SQLite.ADO.DataMgr dataMgr = new SQLite.ADO.DataMgr();
             string strConn = dataMgr.GetConnectionString(strScenarioDB);
             using (System.Data.SQLite.SQLiteConnection oConn = new System.Data.SQLite.SQLiteConnection(strConn))

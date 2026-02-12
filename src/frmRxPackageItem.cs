@@ -428,8 +428,6 @@ namespace FIA_Biosum_Manager
                 case "Properties":
 					Properties();
 					break;
-				case "Contacts":
-					break;
 			}
 		}
 		private void OpenKCPFile()

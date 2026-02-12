@@ -137,7 +137,7 @@ namespace FIA_Biosum_Manager
 		{
             SQLite.ADO.DataMgr oDataMgr = null;
             string strNotes = this.txtNotes.Text;
-            string strProjDir = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim();
+            string strProjDir = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim();
             string strScenarioDir = strProjDir + "\\" + ScenarioType + "\\db";
 
                 oDataMgr = new SQLite.ADO.DataMgr();
@@ -170,7 +170,7 @@ namespace FIA_Biosum_Manager
         {
             string strNotes = "";
             SQLite.ADO.DataMgr dataMgr = new SQLite.ADO.DataMgr();
-            string strScenarioDBDir = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + ScenarioType + "\\db";
+            string strScenarioDBDir = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() + "\\" + ScenarioType + "\\db";
             string strScenarioFile = "scenario_" + ScenarioType + "_rule_definitions.db";
             StringBuilder strScenarioFullPath = new StringBuilder(strScenarioDBDir);
             strScenarioFullPath.Append("\\");

@@ -41,8 +41,7 @@ namespace FIA_Biosum_Manager
 		public string m_strProjectDirectory="";
 		public string m_strScenarioId="";
 		public string m_strScenarioFile="";
-        private bool m_bUsingSqlite = false;
-        private string m_strDataSourceMDBFile;
+        private string m_strDataSourceDBFile;
 		private System.Windows.Forms.ProgressBar progressBar1;
 		private System.Windows.Forms.Label lblProgress;
 		private string m_strDataSourceTable;
@@ -91,11 +90,11 @@ namespace FIA_Biosum_Manager
 
 		}
       
-		public uc_datasource(string p_strProjectMDBFile)
+		public uc_datasource(string p_strProjectDBFile)
 		{
 			// This call is required by the Windows.Forms Form Designer.
 			InitializeComponent();
-			this.m_strDataSourceMDBFile=p_strProjectMDBFile;
+			this.m_strDataSourceDBFile=p_strProjectDBFile;
 			this.m_strDataSourceTable="datasource";
 			this.lstRequiredTables.View = System.Windows.Forms.View.Details;
 			this.lblTitle.Text = "Project Data Sources";
@@ -294,11 +293,13 @@ namespace FIA_Biosum_Manager
         public void LoadValues()
         {
             LoadLstRequiredTables();
-
-            this.m_strDataSourceMDBFile = this.m_strProjectDirectory + "\\" +
-                this.ScenarioType + "\\db\\scenario_" + this.ScenarioType + "_rule_definitions.db";
-            SQLite.ADO.DataMgr dataMgr = new SQLite.ADO.DataMgr();
-            string strConn = dataMgr.GetConnectionString(this.m_strDataSourceMDBFile);
+			if (m_strScenarioId != null && this.m_strScenarioId.Trim().Length > 0)
+            {
+				this.m_strDataSourceDBFile = this.m_strProjectDirectory + "\\" +
+				this.ScenarioType + "\\db\\scenario_" + this.ScenarioType + "_rule_definitions.db";
+			}
+            DataMgr dataMgr = new DataMgr();
+            string strConn = dataMgr.GetConnectionString(this.m_strDataSourceDBFile);
             using (System.Data.SQLite.SQLiteConnection con = new System.Data.SQLite.SQLiteConnection(strConn))
             {
                 con.Open();
@@ -448,212 +449,6 @@ namespace FIA_Biosum_Manager
             this.lstRequiredTables.ListViewItemSorter = lvwColumnSorter;
         }
 
-        public void populate_listview_grid()
-		{
-
-            macrosubst oMacroSub = new macrosubst();
-            oMacroSub.ReferenceGeneralMacroSubstitutionVariableCollection = frmMain.g_oGeneralMacroSubstitutionVariable_Collection;
-
-			string strPathAndFile="";
-			string strSQL="";
-			string strConn="";
-
-
-            //@ToDo: Consider using LoadLstRequiredTables() here
-            this.lstRequiredTables.Clear();
-			this.m_oLvRowColors.InitializeRowCollection();
-
-            ado_data_access p_ado = new ado_data_access();
- 
-			this.lstRequiredTables.Columns.Add(" ",2,HorizontalAlignment.Left);
-			this.lstRequiredTables.Columns.Add("Table Type", 50, HorizontalAlignment.Left);
-			this.lstRequiredTables.Columns.Add("Path", 60, HorizontalAlignment.Left);
-			this.lstRequiredTables.Columns.Add("DB File", 60, HorizontalAlignment.Left);
-			this.lstRequiredTables.Columns.Add("File Status", 80, HorizontalAlignment.Left);
-			this.lstRequiredTables.Columns.Add("Table Name", 50, HorizontalAlignment.Left);
-			this.lstRequiredTables.Columns.Add("Table Status", 80, HorizontalAlignment.Left);
-			this.lstRequiredTables.Columns.Add("Record Count", 80, HorizontalAlignment.Left);
-			this.lstRequiredTables.Columns.Add("Table Macro Variable Name",150,HorizontalAlignment.Left);
-
-			// Create an instance of a ListView column sorter and assign it 
-			// to the ListView control.
-			lvwColumnSorter = new ListViewColumnSorter();
-			this.lstRequiredTables.ListViewItemSorter = lvwColumnSorter;
-
-
-			this.m_oLvRowColors.InitializeRowCollection();
-
-			System.Data.OleDb.OleDbConnection oConn = new System.Data.OleDb.OleDbConnection();
-			strConn = p_ado.getMDBConnString(this.m_strDataSourceMDBFile,"","");
-			oConn.ConnectionString = strConn;
-			intError = 0;
-			strError = "";
-			try
-			{
-				oConn.Open();
-			}
-			catch (System.Data.OleDb.OleDbException oleException)
-			{
-				strError = "Failed to make an oleDb connection with " + strConn;
-				MessageBox.Show (strError + " oleException=" + oleException.Message.Trim());
-				intError = -1;
-				return;
-			}
-			System.Data.OleDb.OleDbCommand oCommand = oConn.CreateCommand();
-			if (this.m_strScenarioId.Trim().Length  > 0)
-			{
-				oCommand.CommandText = "select table_type,path,file,table_name from " + this.m_strDataSourceTable + " " + 
-					" where scenario_id = '" + 
-					this.m_strScenarioId.Trim() +  "';";
-			}
-			else
-			{
-				oCommand.CommandText = "select table_type,path,file,table_name from " + this.m_strDataSourceTable + ";";
-
-			}
-            dao_data_access p_dao = new dao_data_access();
-            SQLite.ADO.DataMgr oDataMgr = new SQLite.ADO.DataMgr();
-            try
-			{
-				System.Data.OleDb.OleDbDataReader oDataReader = oCommand.ExecuteReader();
-				int x = 0;
-				
-				while (oDataReader.Read())
-				{
-					if (oDataReader["table_type"] != System.DBNull.Value &&
-						oDataReader["table_type"].ToString().Trim().Length > 0)
-					{
-						// Add a ListItem object to the ListView.
-						System.Windows.Forms.ListViewItem entryListItem =
-							lstRequiredTables.Items.Add(" ");
-						this.m_oLvRowColors.AddRow();
-						this.m_oLvRowColors.AddColumns(x,lstRequiredTables.Columns.Count);
-						entryListItem.UseItemStyleForSubItems=false;
-						this.m_oLvRowColors.ListViewSubItem(entryListItem.Index,COLUMN_NULL,entryListItem.SubItems[entryListItem.SubItems.Count-1],false);
-						this.lstRequiredTables.Items[x].SubItems.Add(oDataReader["table_type"].ToString());
-						this.m_oLvRowColors.ListViewSubItem(entryListItem.Index,TABLETYPE,entryListItem.SubItems[entryListItem.SubItems.Count-1],false);
-						this.lstRequiredTables.Items[x].SubItems.Add(oDataReader["path"].ToString());
-						this.m_oLvRowColors.ListViewSubItem(entryListItem.Index,PATH,entryListItem.SubItems[entryListItem.SubItems.Count-1],false);
-						this.lstRequiredTables.Items[x].SubItems.Add(oDataReader["file"].ToString());
-						this.m_oLvRowColors.ListViewSubItem(entryListItem.Index,DBFILE,entryListItem.SubItems[entryListItem.SubItems.Count-1],false);
-                        strPathAndFile = oMacroSub.GeneralTranslateVariableSubstitution(oDataReader["path"].ToString().Trim()) 
-                            + "\\" + oDataReader["file"].ToString().Trim();
-						if (System.IO.File.Exists(strPathAndFile) == true) 
-						{
-							ListViewItem.ListViewSubItem FileStatusSubItem = 
-								entryListItem.SubItems.Add("Found");
-							this.m_oLvRowColors.ListViewSubItem(entryListItem.Index,FILESTATUS,FileStatusSubItem,false);
-							//FileStatusSubItem.ForeColor = System.Drawing.Color.Black;
-							//FileStatusSubItem.BackColor = System.Drawing.Color.White;
-							//FileStatusSubItem.Font = new System.Drawing.Font(
-							//	"Microsoft Sans Serif", 8, System.Drawing.FontStyle.Regular);
-							FileStatusSubItem.Font = frmMain.g_oGridViewFont;
-							this.lstRequiredTables.Items[x].SubItems.Add(oDataReader["table_name"].ToString());
-							this.m_oLvRowColors.ListViewSubItem(entryListItem.Index,TABLE,entryListItem.SubItems[entryListItem.SubItems.Count-1],false);
-
-                            bool bSQLite = false;
-                            bool bTableExists = false;
-                            if (System.IO.Path.GetExtension(oDataReader["file"].ToString().Trim()).ToUpper().Equals(".DB"))
-                            {
-                                // This is an SQLite data source
-                                bSQLite = true;
-                            }
-                            //see if the table exists in the mdb database container
-                            string strTest = System.IO.Path.GetExtension(oDataReader["file"].ToString()).ToUpper();
-                            if (bSQLite == false && p_dao.TableExists(strPathAndFile,oDataReader["table_name"].ToString().Trim()) == true)
-							{
-								this.lstRequiredTables.Items[x].SubItems.Add("Found");
-								this.m_oLvRowColors.ListViewSubItem(entryListItem.Index,TABLESTATUS,entryListItem.SubItems[entryListItem.SubItems.Count-1],lstRequiredTables.Items[x].Selected);
-								strConn = p_ado.getMDBConnString(strPathAndFile,"admin","");   //"Provider=Microsoft.Jet.OLEDB.4.0;Data Source=" + strPathAndFile + ";User Id=admin;Password=;";
-								strSQL = "select count(*) from " + oDataReader["table_name"].ToString();
-								this.lstRequiredTables.Items[x].SubItems.Add(Convert.ToString(p_ado.getRecordCount(strConn,strSQL,oDataReader["table_name"].ToString())));
-								this.m_oLvRowColors.ListViewSubItem(entryListItem.Index,RECORDCOUNT,entryListItem.SubItems[entryListItem.SubItems.Count-1],lstRequiredTables.Items[x].Selected);
-                                bTableExists = true;
-                            }
-                            else if (bSQLite)
-                            {
-                                string strDbConn = oDataMgr.GetConnectionString(strPathAndFile);
-                                using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strDbConn))
-                                {
-                                    conn.Open();
-                                    if (oDataMgr.TableExist(conn, oDataReader["table_name"].ToString().Trim()) == true)
-                                    {
-                                        this.lstRequiredTables.Items[x].SubItems.Add("Found");
-                                        this.m_oLvRowColors.ListViewSubItem(entryListItem.Index, TABLESTATUS, entryListItem.SubItems[entryListItem.SubItems.Count - 1], lstRequiredTables.Items[x].Selected);
-                                        strSQL = "select count(*) from " + oDataReader["table_name"].ToString();
-                                        long lngRecordCount = oDataMgr.getRecordCount(conn, strSQL, oDataReader["table_name"].ToString());
-                                        this.lstRequiredTables.Items[x].SubItems.Add(Convert.ToString(lngRecordCount));
-                                        this.m_oLvRowColors.ListViewSubItem(entryListItem.Index, RECORDCOUNT, entryListItem.SubItems[entryListItem.SubItems.Count - 1], lstRequiredTables.Items[x].Selected);
-                                        bTableExists = true;
-                                    }
-                                }
-                            }
-                            if (!bTableExists)
-							{
-								ListViewItem.ListViewSubItem TableStatusSubItem = 
-									entryListItem.SubItems.Add("Not Found");
-								this.m_oLvRowColors.m_oRowCollection.Item(x).m_oColumnCollection.Item(TABLESTATUS).UpdateColumn=false;
-								TableStatusSubItem.ForeColor = System.Drawing.Color.White;
-								TableStatusSubItem.BackColor = System.Drawing.Color.Red;
-								//TableStatusSubItem.Font = new System.Drawing.Font(
-								//	"Microsoft Sans Serif", 8, System.Drawing.FontStyle.Regular);
-								TableStatusSubItem.Font = frmMain.g_oGridViewFont;
-								this.lstRequiredTables.Items[x].SubItems.Add("0");
-								this.m_oLvRowColors.ListViewSubItem(entryListItem.Index,RECORDCOUNT,entryListItem.SubItems[entryListItem.SubItems.Count-1],lstRequiredTables.Items[x].Selected);
-							}
-						}
-						else 
-						{
-							ListViewItem.ListViewSubItem FileStatusSubItem = 
-								entryListItem.SubItems.Add("Not Found");
-							this.m_oLvRowColors.m_oRowCollection.Item(lstRequiredTables.Items.Count-1).m_oColumnCollection.Item(FILESTATUS).UpdateColumn=false;
-							FileStatusSubItem.ForeColor = System.Drawing.Color.White;
-							FileStatusSubItem.BackColor = System.Drawing.Color.Red;
-							//FileStatusSubItem.Font = new System.Drawing.Font(
-							//	"Microsoft Sans Serif", 8, System.Drawing.FontStyle.Regular);
-							FileStatusSubItem.Font = frmMain.g_oGridViewFont;
-							this.lstRequiredTables.Items[x].SubItems.Add(oDataReader["table_name"].ToString());
-							ListViewItem.ListViewSubItem TableStatusSubItem = 
-								entryListItem.SubItems.Add("Not Found");
-							this.m_oLvRowColors.m_oRowCollection.Item(x).m_oColumnCollection.Item(TABLESTATUS).UpdateColumn=false;
-							TableStatusSubItem.ForeColor = System.Drawing.Color.White;
-							TableStatusSubItem.BackColor = System.Drawing.Color.Red;
-							//TableStatusSubItem.Font = new System.Drawing.Font(
-							//	"Microsoft Sans Serif", 8, System.Drawing.FontStyle.Regular);
-							TableStatusSubItem.Font = frmMain.g_oGridViewFont;
-							this.lstRequiredTables.Items[x].SubItems.Add("0");
-							this.m_oLvRowColors.ListViewSubItem(entryListItem.Index,RECORDCOUNT,entryListItem.SubItems[entryListItem.SubItems.Count-1],false);
-						}
-						Datasource.UpdateTableMacroVariable(entryListItem.SubItems[TABLETYPE].Text,entryListItem.SubItems[TABLE].Text);
-						this.lstRequiredTables.Items[x].SubItems.Add(Datasource.g_oCurrentSQLMacroSubstitutionVariableItem.VariableName);
-						this.m_oLvRowColors.ListViewSubItem(entryListItem.Index,DBFILE,entryListItem.SubItems[entryListItem.SubItems.Count-1],false);
-						x++;
-					}
-					
-				}
-                p_dao = null;
-                oDataReader.Close();
-			}
-			catch 
-			{
-				intError = -1;
-				strError = "The Query Command " + oCommand.CommandText.ToString() + " Failed";
-				MessageBox.Show(strError);
-				oConn.Close();
-				p_ado= null;
-				return;
-			}
-			
-			oConn.Close();
-			
-
-			this.lstRequiredTables.Columns[TABLETYPE].Width = -1;
-			
-
-
-			p_ado = null;
-		}
-		
 
 		private void uc_datasource_MouseDown(object sender, System.Windows.Forms.MouseEventArgs e)
 		{
@@ -699,148 +494,12 @@ namespace FIA_Biosum_Manager
 			switch (result)
 			{
 				case DialogResult.Yes :
-                    if (!m_bUsingSqlite)
-                    {
-                        this.populate_listview_grid();
-                    }
-                    else
-                    {
                         this.LoadValues();
-                    }
-					
 				    break;
 			}
 		}
 
 		private void EditDatasource()
-		{
-			if (this.lstRequiredTables.SelectedItems.Count == 0)
-			{
-				return;
-			}
-			string strConn="";
-			string strSQL = "";
-			int y;
-			ado_data_access p_ado = new ado_data_access();
-
-			string strMDBFullPath = this.lstRequiredTables.SelectedItems[0].SubItems[PATH].Text.Trim() + "\\" + 
-				this.lstRequiredTables.SelectedItems[0].SubItems[DBFILE].Text.Trim();
-			string strTable = this.lstRequiredTables.SelectedItems[0].SubItems[TABLE].Text.Trim();
-           
-
-			FIA_Biosum_Manager.uc_datasource_edit p_uc;
-			FIA_Biosum_Manager.frmDialog frmTemp = new frmDialog((frmMain)this.ParentForm.ParentForm);
-			frmTemp.MaximizeBox = false;
-			frmTemp.BackColor = System.Drawing.SystemColors.Control;
-			
-
-
-
-			if (this.m_strScenarioId.Trim().Length > 0)
-			{
-                if (ScenarioType.Trim().ToUpper() == "OPTIMIZER")
-                {
-                    frmTemp.Text = "Treatment Optimizer: Edit " + this.lstRequiredTables.SelectedItems[0].SubItems[TABLETYPE].Text.Trim() + " Data Source";
-                    p_uc = new uc_datasource_edit(this.m_strDataSourceMDBFile, this.m_strScenarioId);
-                }
-                else
-                {
-                    frmTemp.Text = "Prcoessor: Edit " + this.lstRequiredTables.SelectedItems[0].SubItems[TABLETYPE].Text.Trim() + " Data Source";
-                    p_uc = new uc_datasource_edit(this.m_strDataSourceMDBFile, this.m_strScenarioId);
-                }
-            }
-			else
-			{
-				frmTemp.Text = "Database: Edit " + this.lstRequiredTables.SelectedItems[0].SubItems[TABLETYPE].Text.Trim() + " Data Source";
-				p_uc = new uc_datasource_edit(this.m_strDataSourceMDBFile);
-			}
-			frmTemp.Controls.Add(p_uc);
-
-			p_uc.strProjectDirectory = this.strProjectDirectory;
-			p_uc.strScenarioId = this.strScenarioId;
-           
-			
-
-			frmTemp.Height=0;
-			frmTemp.Width=0;
-			if (p_uc.Top + p_uc.Height > frmTemp.ClientSize.Height + 2)
-			{
-				for (y=1;;y++)
-				{
-					frmTemp.Height = y;
-					if (p_uc.Top + 
-						p_uc.Height < 
-						frmTemp.ClientSize.Height)
-					{
-						break;
-					}
-				}
-
-			}
-			if (p_uc.Left + p_uc.Width > frmTemp.ClientSize.Width + 2)
-			{
-				for (y=1;;y++)
-				{
-					frmTemp.Width = y;
-					if (p_uc.Left + 
-						p_uc.Width < 
-						frmTemp.ClientSize.Width)
-					{
-						break;
-					}
-				}
-
-			}
-			frmTemp.Left = 0;
-			frmTemp.Top = 0;
-            
-			p_uc.lblMDBFile.Text = strMDBFullPath.Trim();
-			p_uc.lblTable.Text = strTable.Trim();
-			p_uc.lblTableType.Text = 
-				this.lstRequiredTables.SelectedItems[0].SubItems[TABLETYPE].Text.Trim();
-			p_uc.Dock = System.Windows.Forms.DockStyle.Fill;
-			frmTemp.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
-			frmTemp.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-									
-			System.Windows.Forms.DialogResult result = frmTemp.ShowDialog();
-			if (result==System.Windows.Forms.DialogResult.OK)
-			{
-				utils p_utils = new utils();
-				string strDir = p_utils.getDirectory(p_uc.lblNewMDBFile.Text);
-				string strFile = p_utils.getFileName(p_uc.lblNewMDBFile.Text);
-				this.lstRequiredTables.SelectedItems[0].SubItems[PATH].Text = strDir;
-				this.lstRequiredTables.SelectedItems[0].SubItems[DBFILE].Text = strFile;
-				ListViewItem.ListViewSubItem FileSubItem = 
-					this.lstRequiredTables.SelectedItems[0].SubItems[FILESTATUS];
-                
-				
-				FileSubItem.Font = frmMain.g_oGridViewFont;
-				this.lstRequiredTables.SelectedItems[0].SubItems[FILESTATUS].Text = "Found";
-				this.m_oLvRowColors.m_oRowCollection.Item(this.lstRequiredTables.SelectedItems[0].Index).m_oColumnCollection.Item(FILESTATUS).UpdateColumn=true;
-				this.m_oLvRowColors.ListViewSubItem(lstRequiredTables.SelectedItems[0].Index,FILESTATUS,FileSubItem,true);
-				this.lstRequiredTables.SelectedItems[0].SubItems[TABLE].Text = p_uc.lblNewTable.Text;
-				ListViewItem.ListViewSubItem TableSubItem = 
-					this.lstRequiredTables.SelectedItems[0].SubItems[TABLESTATUS];
-
-			
-				TableSubItem.Font = frmMain.g_oGridViewFont;
-				this.lstRequiredTables.SelectedItems[0].SubItems[TABLESTATUS].Text = "Found";
-				this.m_oLvRowColors.m_oRowCollection.Item(this.lstRequiredTables.SelectedItems[0].Index).m_oColumnCollection.Item(TABLESTATUS).UpdateColumn=true;
-				this.m_oLvRowColors.ListViewSubItem(lstRequiredTables.SelectedItems[0].Index,TABLESTATUS,TableSubItem,true);
-				p_utils = null;
-				strConn=p_ado.getMDBConnString(p_uc.lblNewMDBFile.Text.Trim(),"","");
-				strSQL = "select count(*) from " + p_uc.lblNewTable.Text.Trim();
-				this.lstRequiredTables.SelectedItems[0].SubItems[RECORDCOUNT].Text =
-					Convert.ToString(p_ado.getRecordCount(strConn,strSQL,p_uc.lblNewTable.Text.Trim()));
-
-			}
-			frmTemp.Close();
-			frmTemp.Dispose();
-			frmTemp = null;
-			p_ado = null;
-		}
-
-		private void EditDatasourceSqlite()
         {
 			if (this.lstRequiredTables.SelectedItems.Count == 0)
 			{
@@ -865,18 +524,18 @@ namespace FIA_Biosum_Manager
 				if (ScenarioType.Trim().ToUpper() == "OPTIMIZER")
 				{
 					frmTemp.Text = "Treatment Optimizer: Edit " + this.lstRequiredTables.SelectedItems[0].SubItems[TABLETYPE].Text.Trim() + " Data Source";
-					p_uc = new uc_datasource_edit(this.m_strDataSourceMDBFile, this.m_strScenarioId);
+					p_uc = new uc_datasource_edit(this.m_strDataSourceDBFile, this.m_strScenarioId);
 				}
 				else
 				{
 					frmTemp.Text = "Prcoessor: Edit " + this.lstRequiredTables.SelectedItems[0].SubItems[TABLETYPE].Text.Trim() + " Data Source";
-					p_uc = new uc_datasource_edit(this.m_strDataSourceMDBFile, this.m_strScenarioId);
+					p_uc = new uc_datasource_edit(this.m_strDataSourceDBFile, this.m_strScenarioId);
 				}
 			}
 			else
 			{
 				frmTemp.Text = "Database: Edit " + this.lstRequiredTables.SelectedItems[0].SubItems[TABLETYPE].Text.Trim() + " Data Source";
-				p_uc = new uc_datasource_edit(this.m_strDataSourceMDBFile);
+				p_uc = new uc_datasource_edit(this.m_strDataSourceDBFile);
 			}
 
 			frmTemp.Controls.Add(p_uc);
@@ -917,7 +576,7 @@ namespace FIA_Biosum_Manager
 			frmTemp.Left = 0;
 			frmTemp.Top = 0;
 
-			p_uc.lblMDBFile.Text = strDBFullPath.Trim();
+			p_uc.lblDBFile.Text = strDBFullPath.Trim();
 			p_uc.lblTable.Text = strTable.Trim();
 			p_uc.lblTableType.Text =
 				this.lstRequiredTables.SelectedItems[0].SubItems[TABLETYPE].Text.Trim();
@@ -929,8 +588,8 @@ namespace FIA_Biosum_Manager
 			if (result == System.Windows.Forms.DialogResult.OK)
 			{
 				utils p_utils = new utils();
-				string strDir = p_utils.getDirectory(p_uc.lblNewMDBFile.Text);
-				string strFile = p_utils.getFileName(p_uc.lblNewMDBFile.Text);
+				string strDir = p_utils.getDirectory(p_uc.lblNewDBFile.Text);
+				string strFile = p_utils.getFileName(p_uc.lblNewDBFile.Text);
 				this.lstRequiredTables.SelectedItems[0].SubItems[PATH].Text = strDir;
 				this.lstRequiredTables.SelectedItems[0].SubItems[DBFILE].Text = strFile;
 				ListViewItem.ListViewSubItem FileSubItem =
@@ -951,7 +610,7 @@ namespace FIA_Biosum_Manager
 				this.m_oLvRowColors.m_oRowCollection.Item(this.lstRequiredTables.SelectedItems[0].Index).m_oColumnCollection.Item(TABLESTATUS).UpdateColumn = true;
 				this.m_oLvRowColors.ListViewSubItem(lstRequiredTables.SelectedItems[0].Index, TABLESTATUS, TableSubItem, true);
 				p_utils = null;
-				strConn = p_dataMgr.GetConnectionString(p_uc.lblNewMDBFile.Text.Trim());
+				strConn = p_dataMgr.GetConnectionString(p_uc.lblNewDBFile.Text.Trim());
 				using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strConn))
                 {
 					conn.Open();
@@ -965,138 +624,7 @@ namespace FIA_Biosum_Manager
 			frmTemp = null;
 			p_dataMgr = null;
 		}
-		private void btnEdit_Click(object sender, System.EventArgs e)
-		{
-			if (this.lstRequiredTables.SelectedItems.Count == 0)
-			{
-				return;
-			}
-            string strConn="";
-			string strSQL = "";
-			int y;
-			ado_data_access p_ado = new ado_data_access();
-
-            string strMDBFullPath = this.lstRequiredTables.SelectedItems[0].SubItems[PATH].Text.Trim() + "\\" + 
-				             this.lstRequiredTables.SelectedItems[0].SubItems[DBFILE].Text.Trim();
-			string strTable = this.lstRequiredTables.SelectedItems[0].SubItems[TABLE].Text.Trim();
-           
-
-			FIA_Biosum_Manager.uc_datasource_edit p_uc;
-			FIA_Biosum_Manager.frmDialog frmTemp = new frmDialog((frmMain)this.ParentForm.ParentForm);
-			frmTemp.MaximizeBox = false;
-			frmTemp.BackColor = System.Drawing.SystemColors.Control;
-			
-			if (this.m_strScenarioId.Trim().Length > 0)
-			{
-                if (ScenarioType.Trim().ToUpper() == "OPTIMIZER")
-                {
-                    frmTemp.Text = "Treatment Optimizer: Edit " + this.lstRequiredTables.SelectedItems[0].SubItems[TABLETYPE].Text.Trim() + " Data Source";
-                    p_uc = new uc_datasource_edit(this.m_strDataSourceMDBFile, this.m_strScenarioId);
-                }
-                else
-                {
-                    frmTemp.Text = "Prcoessor: Edit " + this.lstRequiredTables.SelectedItems[0].SubItems[TABLETYPE].Text.Trim() + " Data Source";
-                    p_uc = new uc_datasource_edit(this.m_strDataSourceMDBFile, this.m_strScenarioId);
-                }
-			}
-			else
-			{
-				frmTemp.Text = "Database: Edit " + this.lstRequiredTables.SelectedItems[0].SubItems[TABLETYPE].Text.Trim() + " Data Source";
-			   	p_uc = new uc_datasource_edit(this.m_strDataSourceMDBFile);
-			}
-			frmTemp.Controls.Add(p_uc);
-
-			p_uc.strProjectDirectory = this.strProjectDirectory;
-			p_uc.strScenarioId = this.strScenarioId;
-           
-			
-
-			frmTemp.Height=0;
-			frmTemp.Width=0;
-			if (p_uc.Top + p_uc.Height > frmTemp.ClientSize.Height + 2)
-			{
-				for (y=1;;y++)
-				{
-					frmTemp.Height = y;
-					if (p_uc.Top + 
-						p_uc.Height < 
-						frmTemp.ClientSize.Height)
-					{
-						break;
-					}
-				}
-
-			}
-			if (p_uc.Left + p_uc.Width > frmTemp.ClientSize.Width + 2)
-			{
-				for (y=1;;y++)
-				{
-					frmTemp.Width = y;
-					if (p_uc.Left + 
-						p_uc.Width < 
-						frmTemp.ClientSize.Width)
-					{
-						break;
-					}
-				}
-
-			}
-			frmTemp.Left = 0;
-			frmTemp.Top = 0;
-            
-			p_uc.lblMDBFile.Text = strMDBFullPath.Trim();
-			p_uc.lblTable.Text = strTable.Trim();
-			p_uc.lblTableType.Text = 
-				this.lstRequiredTables.SelectedItems[0].SubItems[TABLETYPE].Text.Trim();
-			p_uc.Dock = System.Windows.Forms.DockStyle.Fill;
-			frmTemp.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
-			frmTemp.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-									
-			System.Windows.Forms.DialogResult result = frmTemp.ShowDialog();
-			if (result==System.Windows.Forms.DialogResult.OK)
-			{
-				utils p_utils = new utils();
-				string strDir = p_utils.getDirectory(p_uc.lblNewMDBFile.Text);
-				string strFile = p_utils.getFileName(p_uc.lblNewMDBFile.Text);
-				this.lstRequiredTables.SelectedItems[0].SubItems[PATH].Text = strDir;
-				this.lstRequiredTables.SelectedItems[0].SubItems[DBFILE].Text = strFile;
-				ListViewItem.ListViewSubItem FileSubItem = 
-					this.lstRequiredTables.SelectedItems[0].SubItems[FILESTATUS];
-                
-				// Change the expenseItem object's color and font.
-				//FileSubItem.ForeColor = System.Drawing.Color.Black;
-				//FileSubItem.BackColor = System.Drawing.Color.White;
-				//FileSubItem.Font = new System.Drawing.Font(
-				//	"Microsoft Sans Serif", 8, System.Drawing.FontStyle.Regular);
-				FileSubItem.Font = frmMain.g_oGridViewFont;
-				this.lstRequiredTables.SelectedItems[0].SubItems[FILESTATUS].Text = "Found";
-				this.m_oLvRowColors.m_oRowCollection.Item(this.lstRequiredTables.SelectedItems[0].Index).m_oColumnCollection.Item(FILESTATUS).UpdateColumn=true;
-				this.m_oLvRowColors.ListViewSubItem(lstRequiredTables.SelectedItems[0].Index,FILESTATUS,FileSubItem,true);
-				this.lstRequiredTables.SelectedItems[0].SubItems[TABLE].Text = p_uc.lblNewTable.Text;
-				ListViewItem.ListViewSubItem TableSubItem = 
-					this.lstRequiredTables.SelectedItems[0].SubItems[TABLESTATUS];
-
-				// Change the expenseItem object's color and font.
-				//TableSubItem.ForeColor = System.Drawing.Color.Black;
-				//TableSubItem.BackColor = System.Drawing.Color.White;
-				//FileSubItem.Font = new System.Drawing.Font(
-				//	"Microsoft Sans Serif", 8, System.Drawing.FontStyle.Regular);
-				TableSubItem.Font = frmMain.g_oGridViewFont;
-				this.lstRequiredTables.SelectedItems[0].SubItems[TABLESTATUS].Text = "Found";
-				this.m_oLvRowColors.m_oRowCollection.Item(this.lstRequiredTables.SelectedItems[0].Index).m_oColumnCollection.Item(TABLESTATUS).UpdateColumn=true;
-				this.m_oLvRowColors.ListViewSubItem(lstRequiredTables.SelectedItems[0].Index,TABLESTATUS,TableSubItem,true);
-				p_utils = null;
-				strConn=p_ado.getMDBConnString(p_uc.lblNewMDBFile.Text.Trim(),"","");
-				strSQL = "select count(*) from " + p_uc.lblNewTable.Text.Trim();
-				this.lstRequiredTables.SelectedItems[0].SubItems[RECORDCOUNT].Text =
-					Convert.ToString(p_ado.getRecordCount(strConn,strSQL,p_uc.lblNewTable.Text.Trim()));
-
-			}
-			frmTemp.Close();
-			frmTemp.Dispose();
-			frmTemp = null;
-			p_ado = null;
-		}
+		
 		private void CloseDatasource()
 		{
 			if (this.m_strScenarioId.Trim().Length > 0)
@@ -1332,25 +860,10 @@ namespace FIA_Biosum_Manager
 					this.CloseDatasource();
 					break;
 				case "Edit":
-					if (this.m_strScenarioId.Trim().Length > 0) // it is a processor or optimizer scenario. only these datasource tables are currently in SQLite
-                    {
-						this.EditDatasourceSqlite();
-					}
-                    else
-                    {
-						this.EditDatasource();
-					}
+					this.EditDatasource();
 					break;
 				case "Refresh":
-                    if (this.m_strScenarioId == "" || this.m_strScenarioId == null)
-                    {
-                        this.populate_listview_grid();
-                    }
-                    else
-                    {
-                        this.LoadValues();
-                    }
-					
+                    this.LoadValues();
 					break;
                 case "Help":
                     this.showHelp();
@@ -1414,11 +927,11 @@ namespace FIA_Biosum_Manager
 		{
 			set
 			{
-				this.m_strDataSourceMDBFile=value;
+				this.m_strDataSourceDBFile=value;
 			}
 			get
 			{
-				return this.m_strDataSourceMDBFile;
+				return this.m_strDataSourceDBFile;
 			}
 		}
 		public string strDataSourceTable

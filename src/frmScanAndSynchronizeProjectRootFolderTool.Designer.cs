@@ -1,6 +1,6 @@
 ﻿namespace FIA_Biosum_Manager
 {
-    partial class frmScanAndSynchronizeProjectRootFolderTool
+    partial class frmScanAndSynchronizeProjectFolderTool
     {
         /// <summary>
         /// Required designer variable.
@@ -29,7 +29,7 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(frmScanAndSynchronizeProjectRootFolderTool));
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(frmScanAndSynchronizeProjectFolderTool));
             this.lvDatasources = new System.Windows.Forms.ListView();
             this.toolBar1 = new System.Windows.Forms.ToolBar();
             this.tlbBtnEdit = new System.Windows.Forms.ToolBarButton();
@@ -40,12 +40,12 @@
             this.tlbBtnClose = new System.Windows.Forms.ToolBarButton();
             this.imageList1 = new System.Windows.Forms.ImageList(this.components);
             this.txtReplace = new System.Windows.Forms.TextBox();
-            this.lblCurrentProjectRootFolder = new System.Windows.Forms.Label();
+            this.lblCurrentProjectFolder = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
             this.grpStatus = new System.Windows.Forms.GroupBox();
             this.label4 = new System.Windows.Forms.Label();
-            this.lblProjectRootFolderNotFound = new System.Windows.Forms.Label();
+            this.lblProjectFolderNotFound = new System.Windows.Forms.Label();
             this.label3 = new System.Windows.Forms.Label();
             this.lblFolderPaths = new System.Windows.Forms.Label();
             this.btnAnalyze = new System.Windows.Forms.Button();
@@ -141,13 +141,13 @@
             // 
             // lblCurrentProjectRootFolder
             // 
-            this.lblCurrentProjectRootFolder.AutoSize = true;
-            this.lblCurrentProjectRootFolder.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblCurrentProjectRootFolder.Location = new System.Drawing.Point(12, 161);
-            this.lblCurrentProjectRootFolder.Name = "lblCurrentProjectRootFolder";
-            this.lblCurrentProjectRootFolder.Size = new System.Drawing.Size(196, 16);
-            this.lblCurrentProjectRootFolder.TabIndex = 0;
-            this.lblCurrentProjectRootFolder.Text = "Current Project Root Folder";
+            this.lblCurrentProjectFolder.AutoSize = true;
+            this.lblCurrentProjectFolder.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblCurrentProjectFolder.Location = new System.Drawing.Point(12, 161);
+            this.lblCurrentProjectFolder.Name = "lblCurrentProjectFolder";
+            this.lblCurrentProjectFolder.Size = new System.Drawing.Size(196, 16);
+            this.lblCurrentProjectFolder.TabIndex = 0;
+            this.lblCurrentProjectFolder.Text = "Current Project Folder";
             // 
             // label1
             // 
@@ -169,12 +169,12 @@
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(310, 16);
             this.label2.TabIndex = 8;
-            this.label2.Text = "WITH CURRENT PROJECT ROOT FOLDER";
+            this.label2.Text = "WITH CURRENT PROJECT FOLDER";
             // 
             // grpStatus
             // 
             this.grpStatus.Controls.Add(this.label4);
-            this.grpStatus.Controls.Add(this.lblProjectRootFolderNotFound);
+            this.grpStatus.Controls.Add(this.lblProjectFolderNotFound);
             this.grpStatus.Controls.Add(this.label3);
             this.grpStatus.Controls.Add(this.lblFolderPaths);
             this.grpStatus.Location = new System.Drawing.Point(561, 192);
@@ -191,18 +191,18 @@
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(151, 13);
             this.label4.TabIndex = 14;
-            this.label4.Text = "Project Root Folder Not Found";
+            this.label4.Text = "Project Folder Not Found";
             // 
             // lblProjectRootFolderNotFound
             // 
-            this.lblProjectRootFolderNotFound.BackColor = System.Drawing.Color.Beige;
-            this.lblProjectRootFolderNotFound.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblProjectRootFolderNotFound.Location = new System.Drawing.Point(19, 127);
-            this.lblProjectRootFolderNotFound.Name = "lblProjectRootFolderNotFound";
-            this.lblProjectRootFolderNotFound.Size = new System.Drawing.Size(142, 29);
-            this.lblProjectRootFolderNotFound.TabIndex = 13;
-            this.lblProjectRootFolderNotFound.Text = "0";
-            this.lblProjectRootFolderNotFound.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.lblProjectFolderNotFound.BackColor = System.Drawing.Color.Beige;
+            this.lblProjectFolderNotFound.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblProjectFolderNotFound.Location = new System.Drawing.Point(19, 127);
+            this.lblProjectFolderNotFound.Name = "lblProjectFolderNotFound";
+            this.lblProjectFolderNotFound.Size = new System.Drawing.Size(142, 29);
+            this.lblProjectFolderNotFound.TabIndex = 13;
+            this.lblProjectFolderNotFound.Text = "0";
+            this.lblProjectFolderNotFound.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
             // label3
             // 
@@ -235,21 +235,21 @@
             this.btnAnalyze.UseVisualStyleBackColor = true;
             this.btnAnalyze.Click += new System.EventHandler(this.btnAnalyze_Click);
             // 
-            // frmScanAndSynchronizeProjectRootFolderTool
+            // frmScanAndSynchronizeProjectFolderTool
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
             this.ClientSize = new System.Drawing.Size(784, 419);
             this.Controls.Add(this.btnAnalyze);
             this.Controls.Add(this.grpStatus);
             this.Controls.Add(this.label2);
-            this.Controls.Add(this.lblCurrentProjectRootFolder);
+            this.Controls.Add(this.lblCurrentProjectFolder);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.txtReplace);
             this.Controls.Add(this.toolBar1);
             this.Controls.Add(this.lvDatasources);
-            this.Name = "frmScanAndSynchronizeProjectRootFolderTool";
-            this.Text = "Scan and Synchronize Project Root Folder Tool";
-            this.Resize += new System.EventHandler(this.frmScanAndSynchronizeProjectRootFolderTool_Resize);
+            this.Name = "frmScanAndSynchronizeProjectFolderTool";
+            this.Text = "Scan and Synchronize Project Folder Tool";
+            this.Resize += new System.EventHandler(this.frmScanAndSynchronizeProjectFolderTool_Resize);
             this.grpStatus.ResumeLayout(false);
             this.grpStatus.PerformLayout();
             this.ResumeLayout(false);
@@ -268,7 +268,7 @@
         private System.Windows.Forms.ToolBarButton tlbBtnClose;
         private System.Windows.Forms.ImageList imageList1;
         private System.Windows.Forms.TextBox txtReplace;
-        private System.Windows.Forms.Label lblCurrentProjectRootFolder;
+        private System.Windows.Forms.Label lblCurrentProjectFolder;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.ToolBarButton tlbBtnSync;
@@ -276,7 +276,7 @@
         private System.Windows.Forms.ToolBarButton tlbBtnRefresh;
         private System.Windows.Forms.GroupBox grpStatus;
         private System.Windows.Forms.Label label4;
-        private System.Windows.Forms.Label lblProjectRootFolderNotFound;
+        private System.Windows.Forms.Label lblProjectFolderNotFound;
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.Label lblFolderPaths;
         private System.Windows.Forms.Button btnAnalyze;

@@ -53,7 +53,7 @@ namespace FIA_Biosum_Manager
             m_oEnv = new env();
             m_strDebugFile = frmMain.g_oEnv.strTempDir + "\\biosum_delete_packages_debug" +
                              String.Format("{0:yyyyMMddhhmm}", DateTime.Now) + ".txt";
-            m_strProjDir = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim();
+            m_strProjDir = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim();
         }
 
         private void rdoFilterByFile_Click(object sender, System.EventArgs e)

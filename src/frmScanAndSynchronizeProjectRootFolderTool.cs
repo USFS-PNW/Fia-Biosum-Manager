@@ -6,10 +6,11 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
+using SQLite.ADO;
 
 namespace FIA_Biosum_Manager
 {
-    public partial class frmScanAndSynchronizeProjectRootFolderTool : Form
+    public partial class frmScanAndSynchronizeProjectFolderTool : Form
     {
         const int COLUMN_NULL = 0;
         const int COLUMN_DATASOURCE = 1;
@@ -20,31 +21,29 @@ namespace FIA_Biosum_Manager
         const int COLUMN_SYNCD = 6;
 
         private string m_strRandomPathAndFile = "";
-        private ODBCMgr m_odbcMgr  = new ODBCMgr();
 
         bool m_bSyncd = false;
 
-        public frmScanAndSynchronizeProjectRootFolderTool()
+        public frmScanAndSynchronizeProjectFolderTool()
         {
             InitializeComponent();
-            this.lblCurrentProjectRootFolder.Text = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim();
-            CreateTableLinks();
+            this.lblCurrentProjectFolder.Text = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim();
             loadvalues();
             
         }
+        
         public void loadvalues()
         {
             m_bSyncd = false;
-            ado_data_access oAdo = new ado_data_access();
-           
-            int x=0;
+            DataMgr p_dataMgr = new DataMgr();
+
+            int x = 0;
             int intPathNF = 0;
             int intRootNF = 0;
-           
+
 
             this.lvDatasources.Clear();
 
-            ado_data_access p_ado = new ado_data_access();
             this.lvDatasources.Columns.Add(" ", 2, HorizontalAlignment.Left);
             this.lvDatasources.Columns.Add("DataSource", 100, HorizontalAlignment.Left);
             this.lvDatasources.Columns.Add("Scenario", 100, HorizontalAlignment.Left);
@@ -53,152 +52,126 @@ namespace FIA_Biosum_Manager
             this.lvDatasources.Columns.Add("PathFound", 100, HorizontalAlignment.Left);
             this.lvDatasources.Columns.Add("Synchronized", 100, HorizontalAlignment.Left);
 
-            oAdo.OpenConnection(oAdo.getMDBConnString(m_strRandomPathAndFile,"",""));
+            m_strRandomPathAndFile = frmMain.g_oUtils.getRandomFile(frmMain.g_oEnv.strTempDir, "db");
 
+            p_dataMgr.CreateDbFile(m_strRandomPathAndFile);
+            //
+            //PROJECT DATA SOURCES
+            //
+            string strProjectDbPath = this.lblCurrentProjectFolder.Text.Trim() + "\\db\\" + frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectFile;
+            string strOptimizerDbPath = this.lblCurrentProjectFolder.Text.Trim() + "\\" + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableDbFile;
+            string strProcessorDbPath = this.lblCurrentProjectFolder.Text.Trim() + "\\processor\\" + Tables.ProcessorScenarioRuleDefinitions.DefaultDbFile;
+            bool bOptimizerExists = false;
+            bool bProcessorExists = false;
 
-
-            oAdo.m_strSQL =
-            "SELECT 'Project' AS DataSource, 'NA' AS Scenario,table_type AS TableType,path FROM project_datasource ";
-
-            if (oAdo.TableExist(oAdo.m_OleDbConnection, "optimizer_scenario"))
-                oAdo.m_strSQL = oAdo.m_strSQL +
-                    "UNION " +
-                    "SELECT 'TreatmentOptimizer' AS DataSource, Scenario_Id AS Scenario,'NA' AS TableType,path FROM optimizer_scenario ";
-            if (oAdo.TableExist(oAdo.m_OleDbConnection, "optimizer_scenario_datasource"))
-                oAdo.m_strSQL = oAdo.m_strSQL +
-                    "UNION " +
-                    "SELECT 'TreatmentOptimizer' AS DataSource, Scenario_Id AS Scenario,table_type AS TableType, path FROM optimizer_scenario_datasource ";
-            if (oAdo.TableExist(oAdo.m_OleDbConnection, "processor_scenario"))
-                oAdo.m_strSQL = oAdo.m_strSQL +
-                    "UNION " +
-                    "SELECT 'Processor' AS DataSource, Scenario_Id AS Scenario,'NA' AS TableType,path FROM processor_scenario ";
-            if (oAdo.TableExist(oAdo.m_OleDbConnection, "processor_scenario_datasource"))
-                oAdo.m_strSQL = oAdo.m_strSQL +
-                    "UNION " +
-                    "SELECT 'Processor' AS DataSource, Scenario_Id AS Scenario,table_type AS TableType, path FROM processor_scenario_datasource ";
-
-            oAdo.SqlQueryReader(oAdo.m_OleDbConnection, oAdo.m_strSQL);
-
-            if (oAdo.m_OleDbDataReader.HasRows)
+            string strConn = p_dataMgr.GetConnectionString(m_strRandomPathAndFile);
+            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strConn))
             {
-                while (oAdo.m_OleDbDataReader.Read())
+                conn.Open();
+
+                p_dataMgr.m_strSQL = "ATTACH DATABASE '" + strProjectDbPath + "' AS project";
+                p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+
+                if (System.IO.File.Exists(strOptimizerDbPath))
                 {
-                    // Don't add appData data sources to the grid
-                    if (oAdo.m_OleDbDataReader["Path"].ToString().IndexOf("@@appdata@@") == -1) 
-                    {
-                        System.Windows.Forms.ListViewItem entryListItem =
-                                this.lvDatasources.Items.Add(" ");
-                        entryListItem.UseItemStyleForSubItems = false;
-                        this.lvDatasources.Items[x].SubItems.Add(oAdo.m_OleDbDataReader["DataSource"].ToString());
-                        this.lvDatasources.Items[x].SubItems.Add(oAdo.m_OleDbDataReader["Scenario"].ToString());
-                        this.lvDatasources.Items[x].SubItems.Add(oAdo.m_OleDbDataReader["TableType"].ToString());
-                        this.lvDatasources.Items[x].SubItems.Add(oAdo.m_OleDbDataReader["Path"].ToString());
-                        if (System.IO.Directory.Exists(oAdo.m_OleDbDataReader["Path"].ToString().Trim()))
-                        {
-                            ListViewItem.ListViewSubItem FileStatusSubItem =
-                                   entryListItem.SubItems.Add("Yes");
-                            FileStatusSubItem.ForeColor = System.Drawing.Color.White;
-                            FileStatusSubItem.BackColor = System.Drawing.Color.Green;
-                        }
-                        else
-                        {
-                            ListViewItem.ListViewSubItem FileStatusSubItem =
-                                    entryListItem.SubItems.Add("No");
-                            FileStatusSubItem.ForeColor = System.Drawing.Color.White;
-                            FileStatusSubItem.BackColor = System.Drawing.Color.Red;
-                            intPathNF++;
-                        }
-                        if (oAdo.m_OleDbDataReader["Path"].ToString().ToUpper().Contains(lblCurrentProjectRootFolder.Text.Trim().ToUpper()))
-                        {
-                            ListViewItem.ListViewSubItem SyncStatusSubItem =
-                                  entryListItem.SubItems.Add("Yes");
-                            SyncStatusSubItem.ForeColor = System.Drawing.Color.White;
-                            SyncStatusSubItem.BackColor = System.Drawing.Color.Green;
-                        }
-                        else
-                        {
-                            ListViewItem.ListViewSubItem SyncStatusSubItem =
-                                  entryListItem.SubItems.Add("No");
-                            SyncStatusSubItem.ForeColor = System.Drawing.Color.White;
-                            SyncStatusSubItem.BackColor = System.Drawing.Color.Red;
-                            intRootNF++;
-                        }
-                        x++;
-                    }
+                    bOptimizerExists = true;
+                    p_dataMgr.m_strSQL = "ATTACH DATABASE '" + strOptimizerDbPath + "' AS optimizer";
+                    p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
                 }
-                lblFolderPaths.Text = intPathNF.ToString().Trim();
-                lblProjectRootFolderNotFound.Text = intRootNF.ToString().Trim();
-                oAdo.m_OleDbDataReader.Close();
+                
+                if (System.IO.File.Exists(strProcessorDbPath))
+                {
+                    bProcessorExists = true;
+                    p_dataMgr.m_strSQL = "ATTACH DATABASE '" + strProcessorDbPath + "' AS processor";
+                    p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+                }
+                
+                p_dataMgr.m_strSQL = "SELECT 'Project' AS DataSource, 'NA' AS Scenario, table_type AS TableType, path FROM project.datasource";
+
+                if (bOptimizerExists)
+                {
+                    p_dataMgr.m_strSQL = p_dataMgr.m_strSQL + " UNION SELECT 'TreatmentOptimizer' AS DataSource, Scenario_Id AS Scenario, " +
+                        "'NA' AS TableType, path FROM optimizer.scenario";
+                }
+
+                if (bOptimizerExists)
+                {
+                    p_dataMgr.m_strSQL = p_dataMgr.m_strSQL + " UNION SELECT 'TreatmentOptimizer' AS DataSource, Scenario_Id AS Scenario, " +
+                        "table_type AS TableType, path FROM optimizer.scenario_datasource";
+                }
+
+                if (bProcessorExists)
+                {
+                    p_dataMgr.m_strSQL = p_dataMgr.m_strSQL + " UNION SELECT 'Processor' AS DataSource, Scenario_Id AS Scenario, " +
+                        "'NA' AS TableType, path FROM processor.scenario";
+                }
+
+                if (bProcessorExists)
+                {
+                    p_dataMgr.m_strSQL = p_dataMgr.m_strSQL + " UNION SELECT 'Processor' AS DataSource, Scenario_Id AS Scenario, " +
+                        "table_type AS TableType, path FROM processor.scenario_datasource";
+                }
+
+                p_dataMgr.SqlQueryReader(conn, p_dataMgr.m_strSQL);
+
+                if (p_dataMgr.m_DataReader.HasRows)
+                {
+                    while (p_dataMgr.m_DataReader.Read())
+                    {
+                        // Don't add appData data sources to the grid
+                        if (p_dataMgr.m_DataReader["Path"].ToString().IndexOf("@@appdata@@") == -1)
+                        {
+                            System.Windows.Forms.ListViewItem entryListItem =
+                                this.lvDatasources.Items.Add(" ");
+                            entryListItem.UseItemStyleForSubItems = false;
+                            this.lvDatasources.Items[x].SubItems.Add(p_dataMgr.m_DataReader["DataSource"].ToString());
+                            this.lvDatasources.Items[x].SubItems.Add(p_dataMgr.m_DataReader["Scenario"].ToString());
+                            this.lvDatasources.Items[x].SubItems.Add(p_dataMgr.m_DataReader["TableType"].ToString());
+                            this.lvDatasources.Items[x].SubItems.Add(p_dataMgr.m_DataReader["Path"].ToString());
+                            if (System.IO.Directory.Exists(p_dataMgr.m_DataReader["Path"].ToString().Trim()))
+                            {
+                                ListViewItem.ListViewSubItem FileStatusSubItem =
+                                       entryListItem.SubItems.Add("Yes");
+                                FileStatusSubItem.ForeColor = System.Drawing.Color.White;
+                                FileStatusSubItem.BackColor = System.Drawing.Color.Green;
+                            }
+                            else
+                            {
+                                ListViewItem.ListViewSubItem FileStatusSubItem =
+                                        entryListItem.SubItems.Add("No");
+                                FileStatusSubItem.ForeColor = System.Drawing.Color.White;
+                                FileStatusSubItem.BackColor = System.Drawing.Color.Red;
+                                intPathNF++;
+                            }
+                            if (p_dataMgr.m_DataReader["Path"].ToString().ToUpper().Contains(lblCurrentProjectFolder.Text.Trim().ToUpper()))
+                            {
+                                ListViewItem.ListViewSubItem SyncStatusSubItem =
+                                      entryListItem.SubItems.Add("Yes");
+                                SyncStatusSubItem.ForeColor = System.Drawing.Color.White;
+                                SyncStatusSubItem.BackColor = System.Drawing.Color.Green;
+                            }
+                            else
+                            {
+                                ListViewItem.ListViewSubItem SyncStatusSubItem =
+                                      entryListItem.SubItems.Add("No");
+                                SyncStatusSubItem.ForeColor = System.Drawing.Color.White;
+                                SyncStatusSubItem.BackColor = System.Drawing.Color.Red;
+                                intRootNF++;
+                            }
+                            x++;
+                        }
+                    }
+                    lblFolderPaths.Text = intPathNF.ToString().Trim();
+                    lblProjectFolderNotFound.Text = intRootNF.ToString().Trim();
+                    p_dataMgr.m_DataReader.Close();
+                }
+                
             }
             if (intRootNF > 0) btnAnalyze.Enabled = true; else btnAnalyze.Enabled = false;
-            oAdo.m_OleDbConnection.Close();
-            oAdo = null;
-
-
+            p_dataMgr = null;
         }
-        private void CreateTableLinks()
-        {
-            m_strRandomPathAndFile = frmMain.g_oUtils.getRandomFile(frmMain.g_oEnv.strTempDir, "accdb");
-
-            dao_data_access oDao = new dao_data_access();
-
-            oDao.CreateMDB(m_strRandomPathAndFile);
-            //
-            //PROJECT DATA SOURCE
-            //
-            string strFullPath = 
-                this.lblCurrentProjectRootFolder.Text.Trim() + "\\db\\" + frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectFile;
-
-
-            oDao.CreateTableLink(
-                m_strRandomPathAndFile, "project_datasource", strFullPath, "datasource");
-            //
-            //CORE ANALYSIS DATA SOURCE
-            //
-            strFullPath =
-                this.lblCurrentProjectRootFolder.Text.Trim() + "\\" +
-                Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableSqliteDbFile;
-
-             if (System.IO.File.Exists(strFullPath))
-             {
-                // Create ODBC entry for the  file scenario_optimizer_rule_definitions.db
-                if (m_odbcMgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.OptimizerRuleDefinitionsDsnName))
-                {
-                    m_odbcMgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.OptimizerRuleDefinitionsDsnName);
-                }
-                m_odbcMgr.CreateUserSQLiteDSN(ODBCMgr.DSN_KEYS.OptimizerRuleDefinitionsDsnName, strFullPath);
-
-                oDao.CreateSQLiteTableLink(m_strRandomPathAndFile, "scenario", "optimizer_scenario",
-                    ODBCMgr.DSN_KEYS.OptimizerRuleDefinitionsDsnName, strFullPath, true);
-                oDao.CreateSQLiteTableLink(m_strRandomPathAndFile, "scenario_datasource", "optimizer_scenario_datasource",
-                    ODBCMgr.DSN_KEYS.OptimizerRuleDefinitionsDsnName, strFullPath, true);
-             }
-             //
-            //PROCESSOR SCENARIO DATA SOURCE
-            //
-            strFullPath = this.lblCurrentProjectRootFolder.Text.Trim() + 
-                "\\processor\\" + Tables.ProcessorScenarioRuleDefinitions.DefaultSqliteDbFile;
-            if (System.IO.File.Exists(strFullPath))
-            {
-                // Create ODBC entry for the  file processor_optimizer_rule_definitions.db
-                if (m_odbcMgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.ProcessorRuleDefinitionsDsnName))
-                {
-                    m_odbcMgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.ProcessorRuleDefinitionsDsnName);
-                }
-                m_odbcMgr.CreateUserSQLiteDSN(ODBCMgr.DSN_KEYS.ProcessorRuleDefinitionsDsnName, strFullPath);
-
-                oDao.CreateSQLiteTableLink(m_strRandomPathAndFile, "scenario", "processor_scenario",
-                    ODBCMgr.DSN_KEYS.ProcessorRuleDefinitionsDsnName, strFullPath, true);
-                oDao.CreateSQLiteTableLink(m_strRandomPathAndFile, "scenario_datasource", "processor_scenario_datasource",
-                    ODBCMgr.DSN_KEYS.ProcessorRuleDefinitionsDsnName, strFullPath, true);
-            }
-
-            oDao.m_DaoWorkspace.Close();
-            oDao = null;
-
-        }
-
-        private void frmScanAndSynchronizeProjectRootFolderTool_Resize(object sender, EventArgs e)
+       
+        private void frmScanAndSynchronizeProjectFolderTool_Resize(object sender, EventArgs e)
         {
             ResizeForm();
         }
@@ -238,19 +211,19 @@ namespace FIA_Biosum_Manager
                     break;
             }
         }
+        
         private void Save()
         {
             string strPath = "";
             string strDatasource = "";
             string strTableType = "";
             string strScenario = "";
-            ado_data_access oAdo = new ado_data_access();
+            
+            DataMgr p_dataMgr = new DataMgr();
 
-            oAdo.OpenConnection(oAdo.getMDBConnString(m_strRandomPathAndFile, "", ""));
-
-            // Create primary keys so update command will work on SQLite tables
-            oAdo.AddPrimaryKey(oAdo.m_OleDbConnection, "processor_scenario_datasource", "scenario_datasource_pk", "scenario_id, table_type");
-            oAdo.AddPrimaryKey(oAdo.m_OleDbConnection, "optimizer_scenario_datasource", "scenario_datasource_pk", "scenario_id, table_type");
+            string strProjectDbPath = this.lblCurrentProjectFolder.Text.Trim() + "\\db\\" + frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectFile;
+            string strOptimizerDbPath = this.lblCurrentProjectFolder.Text.Trim() + "\\" + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableDbFile;
+            string strProcessorDbPath = this.lblCurrentProjectFolder.Text.Trim() + "\\processor\\" + Tables.ProcessorScenarioRuleDefinitions.DefaultDbFile;
 
             for (int x = 0; x <= lvDatasources.Items.Count - 1; x++)
             {
@@ -258,33 +231,53 @@ namespace FIA_Biosum_Manager
                 strTableType = lvDatasources.Items[x].SubItems[COLUMN_TABLETYPE].Text.Trim();
                 strPath = lvDatasources.Items[x].SubItems[COLUMN_PATH].Text.Trim();
                 strScenario = lvDatasources.Items[x].SubItems[COLUMN_SCENARIO].Text.Trim();
-                oAdo.m_strSQL = "";
+                p_dataMgr.m_strSQL = "";
+
                 if (strDatasource == "Project")
                 {
-                    oAdo.m_strSQL = "UPDATE project_datasource SET path = '" + strPath + "' WHERE TRIM(Table_Type) = '" + strTableType + "'";
+                    using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(p_dataMgr.GetConnectionString(strProjectDbPath)))
+                    {
+                        conn.Open();
+
+                        p_dataMgr.m_strSQL = "UPDATE datasource SET path = '" + strPath + "' WHERE TRIM(table_type) = '" + strTableType + "'";
+                        p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+                    }
                 }
-                else if (strDatasource == "TreatmentOptimizer" && strTableType == "NA")
+                if (strDatasource == "TreatmentOptimizer")
                 {
-                    oAdo.m_strSQL = "UPDATE optimizer_scenario SET path = '" + strPath + "' WHERE TRIM(scenario_id) = '" + strScenario + "'";
+                    using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(p_dataMgr.GetConnectionString(strOptimizerDbPath)))
+                    {
+                        conn.Open();
+
+                        if (strTableType == "NA")
+                        {
+                            p_dataMgr.m_strSQL = "UPDATE scenario SET path = '" + strPath + "' WHERE TRIM(scenario_id) = '" + strScenario + "'";
+                        }
+                        else
+                        {
+                            p_dataMgr.m_strSQL = "UPDATE scenario_datasource SET path = '" + strPath + "' WHERE TRIM(scenario_id) = '" + strScenario + "' AND TRIM(table_type) = '" + strTableType + "'";
+                        }
+                        p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+                    }
                 }
-                else if (strDatasource == "TreatmentOptimizer")
+                if (strDatasource == "Processor")
                 {
-                    oAdo.m_strSQL = "UPDATE optimizer_scenario_datasource SET path = '" + strPath + "' WHERE TRIM(scenario_id) = '" + strScenario + "' AND TRIM(Table_Type) = '" + strTableType + "'";
-                }
-                else if (strDatasource == "Processor" && strTableType=="NA")
-                {
-                    oAdo.m_strSQL = "UPDATE processor_scenario SET path = '" + strPath + "' WHERE TRIM(scenario_id) = '" + strScenario + "'";
-                }
-                else if (strDatasource == "Processor")
-                {
-                    oAdo.m_strSQL = "UPDATE processor_scenario_datasource SET path = '" + strPath + "' WHERE TRIM(scenario_id) = '" + strScenario + "' AND TRIM(Table_Type) = '" + strTableType + "'";
-                }
-                if (oAdo.m_strSQL.Trim().Length > 0)
-                {
-                    oAdo.SqlNonQuery(oAdo.m_OleDbConnection, oAdo.m_strSQL);
+                    using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(p_dataMgr.GetConnectionString(strProcessorDbPath)))
+                    {
+                        conn.Open();
+
+                        if (strTableType == "NA")
+                        {
+                            p_dataMgr.m_strSQL = "UPDATE scenario SET path = '" + strPath + "' WHERE TRIM(scenario_id) = '" + strScenario + "'";
+                        }
+                        else
+                        {
+                            p_dataMgr.m_strSQL = "UPDATE scenario_datasource SET path = '" + strPath + "' WHERE TRIM(scenario_id) = '" + strScenario + "' AND TRIM(table_type) = '" + strTableType + "'";
+                        }
+                        p_dataMgr.SqlNonQuery(conn, p_dataMgr.m_strSQL);
+                    }
                 }
             }
-            oAdo.CloseConnection(oAdo.m_OleDbConnection);
             MessageBox.Show("Done", "FIA Biosum");
             m_bSyncd = false;
         }
@@ -312,7 +305,7 @@ namespace FIA_Biosum_Manager
                         string strRemainder =
                             lvDatasources.Items[x].SubItems[COLUMN_PATH].Text.Trim().Substring(strReplace.Trim().Length + 1, lvDatasources.Items[x].SubItems[COLUMN_PATH].Text.Trim().Length - strReplace.Trim().Length - 1);
 
-                        string strNewString = lblCurrentProjectRootFolder.Text.Trim() + "\\" + strRemainder;
+                        string strNewString = lblCurrentProjectFolder.Text.Trim() + "\\" + strRemainder;
                         lvDatasources.Items[x].SubItems[COLUMN_PATH].Text = strNewString;
 
                     }
@@ -328,7 +321,7 @@ namespace FIA_Biosum_Manager
                         intPathNF++;
 
                     }
-                    if (lvDatasources.Items[x].SubItems[COLUMN_PATH].Text.Trim().ToUpper().Contains(lblCurrentProjectRootFolder.Text.Trim().ToUpper()))
+                    if (lvDatasources.Items[x].SubItems[COLUMN_PATH].Text.Trim().ToUpper().Contains(lblCurrentProjectFolder.Text.Trim().ToUpper()))
                     {
                         lvDatasources.Items[x].SubItems[COLUMN_SYNCD].Text = "Yes";
                         lvDatasources.Items[x].SubItems[COLUMN_SYNCD].BackColor = Color.Green;
@@ -343,7 +336,7 @@ namespace FIA_Biosum_Manager
                 }
             }
             lblFolderPaths.Text = intPathNF.ToString().Trim();
-            lblProjectRootFolderNotFound.Text = intRootNF.ToString().Trim();
+            lblProjectFolderNotFound.Text = intRootNF.ToString().Trim();
             if (intRootNF > 0) btnAnalyze.Enabled = true; else btnAnalyze.Enabled = false;
 
         }
@@ -362,15 +355,7 @@ namespace FIA_Biosum_Manager
                     string strProjectRootFolder = "";
                     string strDatasource = lvDatasources.Items[x].SubItems[COLUMN_DATASOURCE].Text.Trim();
                     string strPath = lvDatasources.Items[x].SubItems[COLUMN_PATH].Text.Trim().ToUpper();
-                    if (strDatasource == "Project")
-                    {
-                        intIndex = strPath.IndexOf(@"\DB", 0);
-                        if (intIndex > 0)
-                        {
-                            strProjectRootFolder = strPath.Substring(0, intIndex + 1);
-                        }
-                    }
-                    else if (strDatasource == "TreatmentOptimizer")
+                    if (strDatasource == "TreatmentOptimizer")
                     {
                         // THIS CONDITION WILL BE MET BY THE 'NA' ROWS THAT ARE LISTED FOR EACH SCENARIO GENERATED FROM THE CORE scenario_core_rule_definitions.mdb\scenario table
                         intIndex = strPath.IndexOf(@"\OPTIMIZER\", 0);
@@ -388,6 +373,17 @@ namespace FIA_Biosum_Manager
                             strProjectRootFolder = strPath.Substring(0, intIndex + 1);
                         }
                     }
+                    intIndex = strPath.IndexOf(@"\DB", 0);
+                    if (intIndex > 0)
+                    {
+                        strProjectRootFolder = strPath.Substring(0, intIndex + 1);
+                    }
+                    intIndex = -1;
+                    intIndex = strPath.IndexOf(@"\GIS", 0);
+                    if (intIndex > 0)
+                    {
+                        strProjectRootFolder = strPath.Substring(0, intIndex + 1);
+                    }
                     if (strProjectRootFolder.Trim().Length > 0)
                     {
                         if ((int)oProjectRootFolders.Where(p => p == strProjectRootFolder).Count() == 0)
@@ -399,7 +395,7 @@ namespace FIA_Biosum_Manager
             {
                 FIA_Biosum_Manager.frmDialog oDlg = new frmDialog();
                 oDlg.Text = "FIA Biosum: Scan and Analyze";
-                oDlg.uc_select_list_item1.lblTitle.Text = "Suggested Out-of-Sync Project Root Folder(s)";
+                oDlg.uc_select_list_item1.lblTitle.Text = "Suggested Out-of-Sync Project Folder(s)";
                 oDlg.uc_select_list_item1.listBox1.Sorted = false;
                 oDlg.uc_select_list_item1.lblMsg.Hide();
 

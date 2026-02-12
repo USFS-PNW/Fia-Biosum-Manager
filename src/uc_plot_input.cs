@@ -196,7 +196,6 @@ namespace FIA_Biosum_Manager
         private ComboBox cmbFiadbPlotGeomTable;
         private Label label16;
     
-        public FIA_Biosum_Manager.ado_data_access MSAccess { get; set; }
 
         public frmDialog ReferenceFormDialog { set; get; } = null;
 
@@ -1319,12 +1318,12 @@ namespace FIA_Biosum_Manager
 
         private void InitializeDatasource()
 		{
-			string strProjDir=frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim();
+			string strProjDir=frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim();
 			
 			m_oDatasource = new Datasource();
 			m_oDatasource.LoadTableColumnNamesAndDataTypes=false;
 			m_oDatasource.LoadTableRecordCount=false;
-			m_oDatasource.m_strDataSourceMDBFile = strProjDir.Trim() + "\\db\\project.mdb";
+			m_oDatasource.m_strDataSourceDBFile = strProjDir.Trim() + "\\db\\project.db";
 			m_oDatasource.m_strDataSourceTableName = "datasource";
 			m_oDatasource.m_strScenarioId="";
 			m_oDatasource.populate_datasource_array();
@@ -1767,7 +1766,7 @@ namespace FIA_Biosum_Manager
 
                     if (!SQLite.TableExist(conn, this.m_strBiosumPopStratumAdjustmentFactorsTable))
                     {
-                        frmMain.g_oTables.m_oFIAPlot.CreateSQLiteBiosumPopStratumAdjustmentFactorsTable(SQLite, conn,
+                        frmMain.g_oTables.m_oFIAPlot.CreateBiosumPopStratumAdjustmentFactorsTable(SQLite, conn,
                                 frmMain.g_oTables.m_oFIAPlot.DefaultBiosumPopStratumAdjustmentFactorsTableName);
                     }
                 }
@@ -1973,7 +1972,7 @@ namespace FIA_Biosum_Manager
                             frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
                         SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
 
-                        string strBiosumRefDb = frmMain.g_oEnv.strAppDir + "\\db\\" + Tables.Reference.DefaultBiosumReferenceSqliteFile;
+                        string strBiosumRefDb = frmMain.g_oEnv.strAppDir + "\\db\\" + Tables.Reference.DefaultBiosumReferenceFile;
                         SQLite.m_strSQL = "ATTACH DATABASE '" + strBiosumRefDb + "' AS REF";
                         if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                             frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n");
@@ -2639,7 +2638,6 @@ namespace FIA_Biosum_Manager
 	    /// <summary>
         /// Return the record count of the table if it exists 
         /// </summary>
-        /// <param name="p_ado"></param>
         /// <param name="p_conn"></param>
         /// <param name="table"></param>
         /// <returns></returns>
@@ -2673,7 +2671,7 @@ namespace FIA_Biosum_Manager
         }
 
 	    /// <summary>
-	    /// Delete records from strTableNames in the database p_ado is currently connected to using the strDeleteFilter.
+	    /// Delete records from strTableNames in the database p_dataMgr is currently connected to using the strDeleteFilter.
 	    /// </summary>
 	    /// <param name="strTableName">An array of table names to delete</param>
 	    /// <param name="strDeleteFilter">A WHERE clause for the delete query</param>
@@ -2928,7 +2926,7 @@ namespace FIA_Biosum_Manager
             }
             else
             {
-                frmMain.g_oTables.m_oFvs.CreateSQLiteInputFCSBiosumVolumesTable(SQLite, p_conn, strFcsBiosumVolumesInputTable);
+                frmMain.g_oTables.m_oFvs.CreateInputFCSBiosumVolumesTable(SQLite, p_conn, strFcsBiosumVolumesInputTable);
             }
 
             var treeToFcsBiosumVolumesInputTable = new List<Tuple<string, string>>
@@ -3042,7 +3040,7 @@ namespace FIA_Biosum_Manager
             }
             else
             {
-                frmMain.g_oTables.m_oFvs.CreateSqliteInputFCSBiosumVolumesWorkTable(SQLite, p_conn, strWorkTable);
+                frmMain.g_oTables.m_oFvs.CreateInputFCSBiosumVolumesWorkTable(SQLite, p_conn, strWorkTable);
             }
             
             string strInputFields = SQLite.getFieldNames(p_conn, "SELECT * FROM " + strFcsBiosumVolumesInputTable);
@@ -3972,7 +3970,7 @@ namespace FIA_Biosum_Manager
             String strFiaDL = "FIADB." + m_strDwmDuffLitterTable;
             String strFiaTS = "FIADB." + m_strDwmTransectSegmentTable;
 
-            string strMasterAuxDb = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\db\\master_aux.db";
+            string strMasterAuxDb = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() + "\\db\\master_aux.db";
 
             //If any of the FIADB source DWM tables do not exist,
             //show message, uncheck the DWM checkbox, return early
@@ -5344,7 +5342,7 @@ namespace FIA_Biosum_Manager
                             " WHERE biosum_status_cd=9");
                     }
 
-                    string strMasterAuxConn = SQLite.GetConnectionString(frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\db\\master_aux.db");
+                    string strMasterAuxConn = SQLite.GetConnectionString(frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() + "\\db\\master_aux.db");
                     using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strMasterAuxConn))
                     {
                         conn.Open();
@@ -6152,7 +6150,7 @@ namespace FIA_Biosum_Manager
 
         private IDictionary<string, List<string>> QueryStateEvalids()
         {
-            m_strMasterDbFile = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" +
+            m_strMasterDbFile = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() + "\\" +
                 frmMain.g_oTables.m_oFIAPlot.DefaultPopTableDbFile;
             IDictionary<string, List<String>> dictStateEvalid = new Dictionary<string, List<String>>(); //Creates new dictionary
             string strConnection = SQLite.GetConnectionString(m_strMasterDbFile);
@@ -6209,7 +6207,7 @@ namespace FIA_Biosum_Manager
                 }
                 else
                 {
-                    frmMain.g_oTables.m_oFIAPlot.CreateSqlitePopEstnUnitTable(SQLite, conn, this.m_strPopEstUnitTable);
+                    frmMain.g_oTables.m_oFIAPlot.CreatePopEstnUnitTable(SQLite, conn, this.m_strPopEstUnitTable);
                 }
                 //pop eval table
                 if (SQLite.TableExist(conn, this.m_strPopEvalTable))
@@ -6218,7 +6216,7 @@ namespace FIA_Biosum_Manager
                 }
                 else
                 {
-                    frmMain.g_oTables.m_oFIAPlot.CreateSqlitePopEvalTable(SQLite, conn, this.m_strPopEvalTable);
+                    frmMain.g_oTables.m_oFIAPlot.CreatePopEvalTable(SQLite, conn, this.m_strPopEvalTable);
                 }
                 //pop plot stratum assignment table
                 if (SQLite.TableExist(conn, this.m_strPpsaTable))
@@ -6227,7 +6225,7 @@ namespace FIA_Biosum_Manager
                 }
                 else
                 {
-                    frmMain.g_oTables.m_oFIAPlot.CreateSqlitePopPlotStratumAssgnTable(SQLite, conn, this.m_strPpsaTable);
+                    frmMain.g_oTables.m_oFIAPlot.CreatePopPlotStratumAssgnTable(SQLite, conn, this.m_strPpsaTable);
                 }
                 //pop stratum table
                 if (SQLite.TableExist(conn, this.m_strPopStratumTable))
@@ -6236,7 +6234,7 @@ namespace FIA_Biosum_Manager
                 }
                 else
                 {
-                    frmMain.g_oTables.m_oFIAPlot.CreateSqlitePopStratumTable(SQLite, conn, this.m_strPopStratumTable);
+                    frmMain.g_oTables.m_oFIAPlot.CreatePopStratumTable(SQLite, conn, this.m_strPopStratumTable);
                 }
             }
         }
@@ -6315,7 +6313,7 @@ namespace FIA_Biosum_Manager
 
         private void SaveLoadConfigurationTxt(System.Data.SQLite.SQLiteConnection p_conn)
         {
-            string strConfigTxtFile = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\db\\biosum_plot_input_configuration.txt";
+            string strConfigTxtFile = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() + "\\db\\biosum_plot_input_configuration.txt";
             StringBuilder stringBuilder = new StringBuilder();
             stringBuilder.AppendLine("========================================================");
             stringBuilder.AppendLine("Plot data loaded: " + DateTime.Now.ToString());

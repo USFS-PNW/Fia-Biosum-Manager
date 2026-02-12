@@ -20,9 +20,6 @@ namespace FIA_Biosum_Manager
 		private System.Windows.Forms.Button btnSelect;
 		private System.Windows.Forms.Button btnDelete;
 		private System.Windows.Forms.Button btnRecall;
-		//private System.Data.DataSet m_ds;
-		//private System.Data.OleDb.OleDbConnection m_conn;
-		//private System.Data.OleDb.OleDbDataAdapter m_da;
         public int m_intDisplayColumn;
 		public int m_intSelectColumn;
 		public int m_intFullHt=464;
@@ -347,119 +344,102 @@ namespace FIA_Biosum_Manager
 
 			((frmDialog)this.ParentForm).Close();
 		}
+
 		public void DeleteRecords()
-		{
-			int row=0;
-			int col=0;
-			bool lprompt=false;
-			DialogResult result=DialogResult.None;
-			ado_data_access p_ado;
-			
+        {
+			int row = 0;
+			int col = 0;
+			bool lprompt = false;
+			DialogResult result = DialogResult.None;
+			SQLite.ADO.DataMgr p_dataMgr = new SQLite.ADO.DataMgr();
 
-			p_ado = new ado_data_access();
 			//check to see if there are any records to delete
-			for (row=0; row <= this.listView1.Items.Count-1;row++)
-			{
+			for (row = 0; row <= this.listView1.Items.Count - 1; row++)
+            {
 				if (this.listView1.Items[row].Text == "*")
-				{
-					if (lprompt == false) 
+                {
+					if (lprompt == false)
 					{
-						result = MessageBox.Show("Permenently delete those items marked for deletion? Y/N","SQL Expressions",MessageBoxButtons.YesNo,MessageBoxIcon.Question);
-						
-					}
-					if (result==DialogResult.Yes || lprompt==true) 
-					{
-						if (lprompt == false)
-						{
-							
-							p_ado.OpenConnection(this.m_strCurrentConnection);	
-							if (p_ado.m_intError != 0)
-							{
+						result = MessageBox.Show("Permenently delete those items marked for deletion? Y/N", "SQL Expressions", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
 
-								p_ado = null;
-								return;
-							}
-							lprompt=true;
+					}
+					if (result == DialogResult.Yes || lprompt == true)
+                    {
+						p_dataMgr.OpenConnection(this.m_strCurrentConnection);
+						if (p_dataMgr.m_intError != 0)
+						{
+
+							p_dataMgr = null;
+							return;
 						}
-                        System.Text.StringBuilder sb = new System.Text.StringBuilder();
-						
-					    string strSQL = "DELETE * FROM " + this.m_strTable + 
+						lprompt = true;
+					}
+					System.Text.StringBuilder sb = new System.Text.StringBuilder();
+					string strSQL = "DELETE * FROM " + this.m_strTable +
 							  " WHERE ";
 
-						sb.Append(strSQL);
-						for (col = 1; col <= this.listView1.Columns.Count-1;col++)
+					sb.Append(strSQL);
+					for (col = 1; col <= this.listView1.Columns.Count - 1; col++)
+					{
+						if (this.m_strFieldTypeAString_YN[col - 1] == "Y")
 						{
-							if (this.m_strFieldTypeAString_YN[col-1] == "Y")
+
+							if (this.listView1.Items[row].SubItems[col].Text.Trim().Length == 0)
 							{
-								
-								if (this.listView1.Items[row].SubItems[col].Text.Trim().Length == 0)
-								{
-                                   strSQL = "(" + this.listView1.Columns[col].Text.Trim() + " IS NULL OR LEN(TRIM(" + this.listView1.Columns[col].Text.Trim() + ")) = 0)" ;
-								   //if (strSQL.IndexOf("'",0) > 0) strSQL=p_ado.FixString(strSQL);
-								   sb.Append(strSQL);
-								}
-								else 
-								{
-								   strSQL = "TRIM(UCASE(" + this.listView1.Columns[col].Text.Trim() + "))=";
-                                   sb.Append(strSQL);
-								   sb.Append("'");
-									if (this.listView1.Items[row].SubItems[col].Text.IndexOf("'",0) > 0)
-									{
-										strSQL=p_ado.FixString(this.listView1.Items[row].SubItems[col].Text,"'","''");
-										sb.Append(strSQL);
-									}
-									else
-									{
-										strSQL= this.listView1.Items[row].SubItems[col].Text.Trim().ToUpper();
-										sb.Append(strSQL);
-									}
-									sb.Append("'");
-								   
-								}
-							}
-							else 
-							{
-								if (this.listView1.Items[row].SubItems[col].Text.Trim().Length == 0)
-								{
-									strSQL = this.listView1.Columns[col].Text.Trim() + " IS NULL";
-									sb.Append(strSQL);
-								}
-								else 
-								{
-									strSQL = this.listView1.Columns[col].Text.Trim() + "=";
-									sb.Append(strSQL);
-									strSQL = this.listView1.Items[row].SubItems[col].Text.Trim();
-									sb.Append(strSQL);
-								}
-							}
-							if (col < this.listView1.Columns.Count-1)
-							{
-								strSQL = " AND ";
+								strSQL = "(" + this.listView1.Columns[col].Text.Trim() + " IS NULL OR LENGTH(TRIM(" + this.listView1.Columns[col].Text.Trim() + ")) = 0)";
 								sb.Append(strSQL);
 							}
-							else 
+							else
 							{
-								strSQL = ";";
+								strSQL = "TRIM(UPPER(" + this.listView1.Columns[col].Text.Trim() + ")) = ";
+								sb.Append(strSQL);
+								sb.Append("'");
+								if (this.listView1.Items[row].SubItems[col].Text.IndexOf("'", 0) > 0)
+								{
+									strSQL = p_dataMgr.FixString(this.listView1.Items[row].SubItems[col].Text, "'", "''");
+									sb.Append(strSQL);
+								}
+								else
+								{
+									strSQL = this.listView1.Items[row].SubItems[col].Text.Trim().ToUpper();
+									sb.Append(strSQL);
+								}
+								sb.Append("'");
+
+							}
+						}
+						else
+						{
+							if (this.listView1.Items[row].SubItems[col].Text.Trim().Length == 0)
+							{
+								strSQL = this.listView1.Columns[col].Text.Trim() + " IS NULL";
+								sb.Append(strSQL);
+							}
+							else
+							{
+								strSQL = this.listView1.Columns[col].Text.Trim() + " = ";
+								sb.Append(strSQL);
+								strSQL = this.listView1.Items[row].SubItems[col].Text.Trim();
 								sb.Append(strSQL);
 							}
 						}
-						
-						if (lprompt == true)
-						    p_ado.SqlNonQuery(p_ado.m_OleDbConnection,sb.ToString());
-						sb=null;
-
+						if (col < this.listView1.Columns.Count - 1)
+						{
+							strSQL = " AND ";
+							sb.Append(strSQL);
+						}
 					}
+					if (lprompt == true)
+						p_dataMgr.SqlNonQuery(p_dataMgr.m_Connection, sb.ToString());
+					sb = null;
 				}
-			}
-			if (lprompt==true)
-			{
-				p_ado.m_OleDbConnection.Close();
-				p_ado.m_OleDbConnection = null;
-				
-			}
-			p_ado = null;
-			
 
+			}
+			if (lprompt == true)
+			{
+				p_dataMgr.m_Connection.Close();
+			}
+			p_dataMgr = null;
 		}
 
 		private void btnSelect_Click(object sender, System.EventArgs e)

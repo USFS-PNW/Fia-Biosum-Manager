@@ -15,11 +15,7 @@ namespace FIA_Biosum_Manager
 	{
 		private System.Windows.Forms.GroupBox groupBox1;
 		private System.ComponentModel.IContainer components;
-		public System.Data.OleDb.OleDbDataAdapter m_OleDbDataAdapter;
 		public System.Data.DataSet m_DataSet;
-		public System.Data.OleDb.OleDbConnection m_OleDbConnectionMaster;
-		public System.Data.OleDb.OleDbConnection m_OleDbConnectionScenario;
-		public System.Data.OleDb.OleDbCommand m_OleDbCommand;
 		public System.Data.DataRelation m_DataRelation;
 		public System.Data.DataTable m_DataTable;
 		public System.Data.DataRow m_DataRow;
@@ -186,41 +182,6 @@ namespace FIA_Biosum_Manager
 			/// return the table names found in the either m_strPreVarArray or m_strPostVarArray variables
 			/// </summary>
 			/// <param name="p_oVarArray">m_strPreVarArray or m_strPostVarArray values</param>
-			/// <returns></returns>
-			public string[] TableNames(string[] p_oVarArray)
-			{
-				string strTable="";
-				string strTableList=",";
-				string[] strTableArray=null;
-				for (int x=0;x<=p_oVarArray.Length-1;x++)
-				{
-					strTable=this.TableName(p_oVarArray[x]);
-					if (strTable.Trim().Length > 0)
-					{
-						if (strTableList.Trim().ToUpper().IndexOf("," + strTable.ToUpper().Trim().ToUpper() + ",",0) != 0)
-						{
-							strTableList = strTableList + strTable.Trim() + ",";
-						}
-
-					}
-				}
-			
-				if (strTableList.Trim().Length > 1)
-				{
-					strTableList = strTableList.Substring(1,strTableList.Length - 2);
-					strTableArray = frmMain.g_oUtils.ConvertListToArray(strTableList,",");
-					
-				}
-				else 
-				{
-					strTableList="";
-				}
-				return strTableArray;
-			}
-			/// <summary>
-			/// expecting a value in the format of tablename.columnname
-			/// </summary>
-			/// <param name="p_strValue"></param>
 			/// <returns></returns>
 			public string TableName(string p_strValue)
 			{
@@ -1730,8 +1691,8 @@ namespace FIA_Biosum_Manager
 			DataMgr oDataMgr = new DataMgr();
 			string strScenarioId = this.ReferenceOptimizerScenarioForm.uc_scenario1.txtScenarioId.Text.Trim();
 			string strScenarioDB =
-				frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" +
-				Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableSqliteDbFile;
+				frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() + "\\" +
+				Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableDbFile;
 			using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(strScenarioDB)))
             {
 				conn.Open();
@@ -2048,60 +2009,7 @@ namespace FIA_Biosum_Manager
 
 		}
 
-		private void btnFFEExpressionBuilderTest_Click(object sender, System.EventArgs e)
-		{
-			string strSQL="";
-			//int intArrayCount;
-			//int x=0;
-			string strConn="";
-			//string strCommand="";
-			//string str="";
-
-			ado_data_access p_ado = new ado_data_access();
-
-			string strScenarioId = this.ReferenceOptimizerScenarioForm.uc_scenario1.txtScenarioId.Text.Trim().ToLower();
-            
-			//scenario mdb connection
-			string strOptimizerResultsAccdb = 
-				((frmMain)this.ParentForm.ParentForm).frmProject.uc_project1.m_strProjectDirectory +
-                "\\optimizer\\" + strScenarioId + "\\" + Tables.OptimizerScenarioResults.DefaultScenarioResultsDbFile;
-
-			this.m_OleDbConnectionScenario = new System.Data.OleDb.OleDbConnection();
-			strConn=p_ado.getMDBConnString(strOptimizerResultsAccdb,"admin","");
-			p_ado.OpenConnection(strConn, ref this.m_OleDbConnectionScenario);	
-			if (p_ado.m_intError != 0)
-			{
-				p_ado = null;
-				return;
-			}
-			strSQL = "SELECT * FROM effective WHERE " +
-				this.txtExpression.Text + ";";
-			p_ado.SqlQueryReader(this.m_OleDbConnectionScenario, strSQL);
-
-				  
-			if (p_ado.m_intError == 0)
-			{
-				
-
-				MessageBox.Show("Valid Syntax");
-				
-				p_ado.m_OleDbDataReader.Close();
-				p_ado.m_OleDbDataReader = null;
-				p_ado.m_OleDbCommand = null;
-				
-			}
-			p_ado = null;
-			this.m_OleDbConnectionScenario.Close();
-
-		}
-
 		
-
-		
-
-		
-
-
 		public int val_overall_effective_expression()
 		{
 			//int x=0;
@@ -2842,7 +2750,7 @@ namespace FIA_Biosum_Manager
 				}
 
 				string strEffectiveTableName = strPrefix + "_effective";
-				frmMain.g_oTables.m_oOptimizerScenarioResults.CreateSqliteEffectiveTable(oDataMgr, conn,
+				frmMain.g_oTables.m_oOptimizerScenarioResults.CreateEffectiveTable(oDataMgr, conn,
 					strEffectiveTableName, strColumnFilterName);
 
 				strSQL = "SELECT * FROM " + strEffectiveTableName + " WHERE " +
@@ -3644,12 +3552,12 @@ namespace FIA_Biosum_Manager
 			this.m_intError = 0;
 			this.m_strError = "Audit Results \r\n";
 			this.m_strError = m_strError + "-------------\r\n\r\n";
-			string fvsDb = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSOutPrePostDbFile;
+			string fvsDb = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() + Tables.FVS.DefaultFVSOutPrePostDbFile;
 			using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(fvsDb)))
             {
 				conn.Open();
 
-				string weightedDb = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + Tables.OptimizerScenarioResults.DefaultCalculatedPrePostFVSVariableTableSqliteDbFile;
+				string weightedDb = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() + "\\" + Tables.OptimizerScenarioResults.DefaultCalculatedPrePostFVSVariableTableDbFile;
 				if (!oDataMgr.DatabaseAttached(conn, weightedDb))
 				{
 					oDataMgr.m_strSQL = "ATTACH DATABASE '" + weightedDb + "' AS weighted";
@@ -3862,7 +3770,7 @@ namespace FIA_Biosum_Manager
 			string strScenarioId =  ((frmOptimizerScenario)this.ParentForm).uc_scenario1.txtScenarioId.Text.Trim().ToLower();
 			string strScenarioDB = 
 				((frmMain)this.ParentForm.ParentForm).frmProject.uc_project1.m_strProjectDirectory + "\\" +
-                    Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableSqliteDbFile;
+                    Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableDbFile;
 
 			frmDialog frmPrevExp = new frmDialog();
 				

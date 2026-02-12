@@ -104,7 +104,7 @@ namespace FIA_Biosum_Manager
 			this.DisplayGroupSet(1);
 
             this.m_oQueries = new Queries();
-            m_oQueries.LoadDatasourcesNew(true);
+            m_oQueries.LoadDatasources(true);
              spc_common_name_collection1 = new spc_common_name_collection();
             this.m_oEnv = new env();
 		}
@@ -780,7 +780,7 @@ namespace FIA_Biosum_Manager
                     SQLite.SqlNonQuery(conn, "DROP TABLE fvsouttreetemp2");
                 }
                 // Attach FVSOUT_TREE_LIST.db
-                string strFvsOutTreeListDb = $@"{frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim()}{Tables.FVS.DefaultFVSTreeListDbFile}";
+                string strFvsOutTreeListDb = $@"{frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim()}{Tables.FVS.DefaultFVSTreeListDbFile}";
                 SQLite.SqlNonQuery(conn, $@"attach '{strFvsOutTreeListDb}' as tree_list");
 
                 //append the multiple fvsout tree tables into a single fvsout tree table
@@ -1347,8 +1347,8 @@ namespace FIA_Biosum_Manager
                         //
                         //scenario mdb connection                        
                         SQLite.ADO.DataMgr oDataMgr = new SQLite.ADO.DataMgr();
-                            string strScenarioDB = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
-                                "\\processor\\" + Tables.ProcessorScenarioRuleDefinitions.DefaultSqliteDbFile;
+                            string strScenarioDB = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() +
+                                "\\processor\\" + Tables.ProcessorScenarioRuleDefinitions.DefaultDbFile;
                             oDataMgr.OpenConnection(oDataMgr.GetConnectionString(strScenarioDB));
                             if (oDataMgr.m_intError == 0)
                             {

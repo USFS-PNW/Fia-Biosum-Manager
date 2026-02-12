@@ -20,9 +20,7 @@ namespace FIA_Biosum_Manager
         private System.Windows.Forms.Label label2;
 		private System.Windows.Forms.TextBox txtHaulCost;
 
-        public System.Data.OleDb.OleDbConnection m_OleDbConnectionScenario;
 		public FIA_Biosum_Manager.frmOptimizerScenario m_frmScenario;
-		private FIA_Biosum_Manager.frmGridView m_frmHarvestCosts;
 		public string[] m_strColumnsToEdit;
 		public int m_intColumnsToEditCount=0;
 		private System.Windows.Forms.Label label3;
@@ -358,8 +356,8 @@ namespace FIA_Biosum_Manager
 			DataMgr oDataMgr = new DataMgr();
 			string strScenarioId = this.ReferenceOptimizerScenarioForm.uc_scenario1.txtScenarioId.Text.Trim();
 			string strScenarioDB =
-				frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" +
-				Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableSqliteDbFile;
+				frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() + "\\" +
+				Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableDbFile;
 
 			using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(strScenarioDB)))
 			{

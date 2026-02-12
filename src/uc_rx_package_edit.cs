@@ -463,7 +463,7 @@ namespace FIA_Biosum_Manager
 		{
 
 			this.m_oQueries.m_oFvs.LoadDatasource=true;
-			this.m_oQueries.LoadDatasourcesNew(true);
+			this.m_oQueries.LoadDatasources(true);
 			//
 			//populate category list box
 			//

@@ -14,9 +14,6 @@ namespace FIA_Biosum_Manager
 
 		public FIA_Biosum_Manager.uc_select_list_item uc_select_list_item1;
 		public FIA_Biosum_Manager.uc_project uc_project1;
-		public FIA_Biosum_Manager.uc_project_document_links uc_project_document_links1;
-		public FIA_Biosum_Manager.uc_contact_list uc_contact_list1;
-		public FIA_Biosum_Manager.uc_project_document_links_edit uc_project_document_links_edit1;
 		 public FIA_Biosum_Manager.uc_scenario uc_scenario1;
 		public FIA_Biosum_Manager.frmDialog m_frmDialogCallingForm;
 		public FIA_Biosum_Manager.frmOptimizerScenario m_frmScenarioCallingForm;
@@ -36,7 +33,6 @@ namespace FIA_Biosum_Manager
 		public FIA_Biosum_Manager.uc_plot_input uc_plot_input1;
 		public FIA_Biosum_Manager.uc_delete_conditions uc_delete_conditions;
 		public FIA_Biosum_Manager.uc_delete_packages uc_delete_packages;
-		public FIA_Biosum_Manager.uc_project_notes uc_project_notes1;
 		public FIA_Biosum_Manager.uc_processor_scenario_tree_diam_groups_list uc_processor_scenario_tree_diam_groups_list1;
 		public FIA_Biosum_Manager.uc_processor_scenario_tree_diam_groups_edit uc_processor_scenario_tree_diam_groups_edit1;
 		public FIA_Biosum_Manager.uc_processor_scenario_tree_spc_groups uc_processor_scenario_tree_spc_groups1;
@@ -47,8 +43,6 @@ namespace FIA_Biosum_Manager
         public FIA_Biosum_Manager.uc_fvs_output uc_fvs_output1;
 		public FIA_Biosum_Manager.uc_processor_tree_spc uc_processor_tree_spc1;
 		public FIA_Biosum_Manager.uc_processor_tree_spc_edit uc_processor_tree_spc_edit1;
-		public FIA_Biosum_Manager.uc_gis_psite uc_gis_psite1;
-		public FIA_Biosum_Manager.uc_contact_edit uc_contact_edit1;
         public FIA_Biosum_Manager.uc_db uc_db_1;
         //public FIA_Biosum_Manager.uc_scenario_harvest_cost_column_list uc_scenario_harvest_cost_column_list1;
         public FIA_Biosum_Manager.uc_scenario_harvest_cost_column_edit uc_scenario_harvest_cost_column_edit1;
@@ -269,7 +263,6 @@ namespace FIA_Biosum_Manager
                 if (this.ProcessorTreeSpcUserControl != null) this.ParentControl.Enabled = true;
                 if (this.uc_rx_package_list1 != null) this.ParentControl.Enabled=true;
                 if (this.uc_rx_list1 != null) this.ParentControl.Enabled = true;
-                if (this.uc_gis_psite1 != null) this.ParentControl.Enabled = true;
                 if (this.uc_plot_input1 != null) this.ParentControl.Enabled = true;
                 if (this.uc_delete_conditions != null) this.ParentControl.Enabled = true;
                 if (this.uc_delete_packages != null) this.ParentControl.Enabled = true;
@@ -300,44 +293,20 @@ namespace FIA_Biosum_Manager
             
             this.uc_project1 = new uc_project();
             
-            this.uc_project_document_links1 = new uc_project_document_links();
-            
-            this.uc_project_document_links_edit1 = new uc_project_document_links_edit();
-            
             this.uc_previous_expressions1 = new uc_previous_expressions();
-            
-            this.uc_project_notes1 = new uc_project_notes();
-            
-            this.uc_contact_list1 = new uc_contact_list();
             
             this.Controls.Add(this.uc_select_list_item1);
             
             this.Controls.Add(this.uc_project1);
-                        
-            this.Controls.Add(this.uc_project_document_links1);
-            
-            this.Controls.Add(this.uc_project_document_links_edit1);
             
             this.Controls.Add(this.uc_previous_expressions1);
             
-            this.Controls.Add(this.uc_project_notes1);
-            
-            this.Controls.Add(this.uc_contact_list1);
-            
 
             this.uc_select_list_item1.Visible=false;
-			this.uc_project_document_links1.Visible=false;
-			this.uc_project_document_links_edit1.Visible=false;
 			this.uc_project1.Visible=false;
 			this.uc_previous_expressions1.Visible=false;
-			this.uc_project_notes1.Visible=false;
-			this.uc_contact_list1.Visible=false;
-			this.uc_project_document_links1.Dock = System.Windows.Forms.DockStyle.Fill;
-			this.uc_project_document_links_edit1.Dock = System.Windows.Forms.DockStyle.Fill;
 			this.uc_previous_expressions1.Dock = System.Windows.Forms.DockStyle.Fill;
 			this.uc_select_list_item1.Dock = System.Windows.Forms.DockStyle.Fill;
-			this.uc_project_notes1.Dock = System.Windows.Forms.DockStyle.Fill;
-			this.uc_contact_list1.Dock = System.Windows.Forms.DockStyle.Fill;
 		}
 
 		private void frmDialog_Resize(object sender, System.EventArgs e)
@@ -656,17 +625,6 @@ namespace FIA_Biosum_Manager
 				return this.uc_processor_tree_spc_edit1;
 			}
 		}
-		public FIA_Biosum_Manager.uc_gis_psite ProcessingSiteUserControl
-		{
-			set
-			{
-				this.uc_gis_psite1 = value;
-			}
-			get
-			{
-				return this.uc_gis_psite1;
-			}
-		}
 		
 		public FIA_Biosum_Manager.uc_processor_scenario_tree_spc_groups TreeSpcGroupsUserControl
 		{
@@ -677,17 +635,6 @@ namespace FIA_Biosum_Manager
 			get
 			{
 				return this.uc_processor_scenario_tree_spc_groups1;
-			}
-		}
-		public FIA_Biosum_Manager.uc_contact_edit ContactsEditUserControl
-		{
-			set
-			{
-				this.uc_contact_edit1 = value;
-			}
-			get
-			{
-				return this.uc_contact_edit1;
 			}
 		}
         public FIA_Biosum_Manager.uc_db DbSQLiteUserControl

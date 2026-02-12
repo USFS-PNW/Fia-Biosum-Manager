@@ -38,8 +38,8 @@ namespace FIA_Biosum_Manager
         private bool m_bLinkFvsComputeTables = false;
         private IList<string> m_lstAdditionalCpaColumns = null;
         private string m_strTempSqliteDbFile = null;
-        string m_strScenarioDb = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
-            "\\processor\\" + Tables.ProcessorScenarioRuleDefinitions.DefaultSqliteDbFile;
+        string m_strScenarioDb = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() +
+            "\\processor\\" + Tables.ProcessorScenarioRuleDefinitions.DefaultDbFile;
         public string m_strProcessorResultsPathAndFile;
 
         private SQLite.ADO.DataMgr m_oDataMgr = new SQLite.ADO.DataMgr();
@@ -249,7 +249,7 @@ namespace FIA_Biosum_Manager
                 frmMain.g_oUtils.WriteText(strDebugFile, "*****START*****" + System.DateTime.Now.ToString() + "\r\n");
 
             // INITIALIZE OPCOST REF PATH WHEN WE LOAD THE SCENARIO 
-            m_strOPCOSTRefPath = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + 
+            m_strOPCOSTRefPath = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() + 
                 "\\" + Tables.Reference.DefaultOpCostReferenceDbFile;
             
             cmbFilter.Items.Clear();
@@ -325,7 +325,7 @@ namespace FIA_Biosum_Manager
             //
             //SCENARIO RESULTS DB
             //
-            m_strProcessorResultsPathAndFile = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
+            m_strProcessorResultsPathAndFile = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() +
                 "\\processor\\" + ScenarioId + "\\" + Tables.ProcessorScenarioRun.DefaultSqliteResultsDbFile;
 
             //
@@ -352,7 +352,7 @@ namespace FIA_Biosum_Manager
                 frmMain.g_oUtils.WriteText(strDebugFile, "END: LoadAllRxItemsFromTableIntoRxCollection - " + System.DateTime.Now.ToString() + "\r\n");
 
             // Check PRE_FVS_COMPUTE table
-            string strFvsPrePostDb = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSOutPrePostDbFile;
+            string strFvsPrePostDb = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() + Tables.FVS.DefaultFVSOutPrePostDbFile;
             IList<string> lstComponents = new List<string>();
             using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(m_oDataMgr.GetConnectionString(strFvsPrePostDb)))
             {
@@ -480,7 +480,7 @@ namespace FIA_Biosum_Manager
 
             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                 frmMain.g_oUtils.WriteText(strDebugFile, "START: Populate List " + System.DateTime.Now.ToString() + "\r\n");
-            string strFvsTreeListDb = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSTreeListDbFile;
+            string strFvsTreeListDb = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() + Tables.FVS.DefaultFVSTreeListDbFile;
             string strFvsTreeListConn = m_oDataMgr.GetConnectionString(strFvsTreeListDb) + ";datetimeformat=CurrentCulture";
             using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strFvsTreeListConn))
             {
@@ -491,7 +491,7 @@ namespace FIA_Biosum_Manager
                 string strVariant = "";
 
                 // link to PRE_FVS_COMPUTE table
-                string strComputeDbPath = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSOutPrePostDbFile;
+                string strComputeDbPath = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() + Tables.FVS.DefaultFVSOutPrePostDbFile;
                 if (m_bLinkFvsComputeTables && System.IO.File.Exists(strComputeDbPath))
                 {
                     m_oDataMgr.SqlNonQuery(conn, $@"ATTACH DATABASE '{strComputeDbPath}' AS FVSPREPOST");
@@ -1005,7 +1005,7 @@ namespace FIA_Biosum_Manager
                 conn.Open();
                 if (m_oDataMgr.TableExist(conn, "temp_year"))
                     m_oDataMgr.SqlNonQuery(conn, m_oDataMgr.m_strSQL);
-                string strFvsTreeListDb = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSTreeListDbFile;
+                string strFvsTreeListDb = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() + Tables.FVS.DefaultFVSTreeListDbFile;
                 m_oDataMgr.m_strSQL = $@"ATTACH DATABASE '{strFvsTreeListDb}' AS FVSOUT";
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                     frmMain.g_oUtils.WriteText(m_strDebugFile, m_oDataMgr.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
@@ -1159,7 +1159,7 @@ namespace FIA_Biosum_Manager
             using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(m_oDataMgr.GetConnectionString(strSqliteDb)))
             {
                 conn.Open();
-                frmMain.g_oTables.m_oProcessor.CreateSqliteHarvestCostsTable(m_oDataMgr, conn, p_strHarvestCostTableName);
+                frmMain.g_oTables.m_oProcessor.CreateHarvestCostsTable(m_oDataMgr, conn, p_strHarvestCostTableName);
                 if (!bInactiveVarRxPackage)
                 {
                     m_oDataMgr.m_strSQL = Queries.ProcessorScenarioRun.AppendToOPCOSTHarvestCostsTable(
@@ -1186,13 +1186,13 @@ namespace FIA_Biosum_Manager
             using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(m_oDataMgr.GetConnectionString(p_strTempDb)))
             {
                 conn.Open();
-                frmMain.g_oTables.m_oProcessorScenarioRun.CreateSqliteTotalAdditionalHarvestCostsTable(
+                frmMain.g_oTables.m_oProcessorScenarioRun.CreateTotalAdditionalHarvestCostsTable(
                     m_oDataMgr, conn, "HarvestCostsTotalAdditionalWorkTable");
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "Created HarvestCostsTotalAdditionalWorkTable \r\n");
 
-                string strScenarioParametersDb = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
-                    "\\processor\\" + Tables.ProcessorScenarioRuleDefinitions.DefaultSqliteDbFile;
+                string strScenarioParametersDb = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() +
+                    "\\processor\\" + Tables.ProcessorScenarioRuleDefinitions.DefaultDbFile;
                 m_oDataMgr.m_strSQL = "attach database '" + strScenarioParametersDb + "' as params";
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                     frmMain.g_oUtils.WriteText(m_strDebugFile, m_oDataMgr.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
@@ -1397,7 +1397,7 @@ namespace FIA_Biosum_Manager
                         frmMain.g_oUtils.WriteText(m_strDebugFile, $@"Dropped {p_strAddCostsWorktable} {Environment.NewLine}");
                 }
                 //create additional cpa work table to itemize additional costs
-                frmMain.g_oTables.m_oProcessorScenarioRun.CreateSqliteAdditionalKcpCpaTable(
+                frmMain.g_oTables.m_oProcessorScenarioRun.CreateAdditionalKcpCpaTable(
                     m_oDataMgr, conn, p_strAddCostsWorktable, true);
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                     frmMain.g_oUtils.WriteText(m_strDebugFile, $@"Created {p_strAddCostsWorktable} {Environment.NewLine}");
@@ -1499,7 +1499,7 @@ namespace FIA_Biosum_Manager
                         using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(m_oDataMgr.GetConnectionString(p_strTempDb)))
                         {
                             conn.Open();
-                            string strComputeDbPath = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSOutPrePostDbFile;
+                            string strComputeDbPath = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() + Tables.FVS.DefaultFVSOutPrePostDbFile;
                             // Attach pre-post database
                             m_oDataMgr.m_strSQL = $@"ATTACH DATABASE '{strComputeDbPath}' AS FVS";
                             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
@@ -1659,8 +1659,8 @@ namespace FIA_Biosum_Manager
                                         using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(m_oDataMgr.GetConnectionString(p_strTempDb)))
                                         {
                                             conn.Open();
-                                            string strScenarioParametersDb = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
-                                                "\\processor\\" + Tables.ProcessorScenarioRuleDefinitions.DefaultSqliteDbFile;
+                                            string strScenarioParametersDb = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() +
+                                                "\\processor\\" + Tables.ProcessorScenarioRuleDefinitions.DefaultDbFile;
                                             m_oDataMgr.m_strSQL = "attach database '" + strScenarioParametersDb + "' as params";
                                             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                                                 frmMain.g_oUtils.WriteText(m_strDebugFile, m_oDataMgr.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
@@ -1796,7 +1796,7 @@ namespace FIA_Biosum_Manager
                     if (m_lstAdditionalCpaColumns.Contains(aColumn))
                     {
                         // Any rows in PRE_FVS_COMPUTE FOR THIS CPA COLUMN FOR THIS VARIANT/PACKAGE ?
-                        string strComputeDbPath = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSOutPrePostDbFile;
+                        string strComputeDbPath = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() + Tables.FVS.DefaultFVSOutPrePostDbFile;
                         using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(m_oDataMgr.GetConnectionString(strComputeDbPath)))
                         {
                             conn.Open();
@@ -1910,7 +1910,7 @@ namespace FIA_Biosum_Manager
             using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(m_oDataMgr.GetConnectionString(p_strTempDb)))
             {
                 conn.Open();
-                string strScenarioResultsDB = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
+                string strScenarioResultsDB = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() +
                     "\\processor\\" + ScenarioId + "\\" + Tables.ProcessorScenarioRun.DefaultSqliteResultsDbFile;
                 m_oDataMgr.m_strSQL = "attach database '" + strScenarioResultsDB + "' as results";
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
@@ -2035,7 +2035,7 @@ namespace FIA_Biosum_Manager
                 frmMain.g_oUtils.WriteText(m_strDebugFile, "//\r\n");
             }
 
-            string strScenarioResultsDb = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
+            string strScenarioResultsDb = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() +
                 "\\processor\\" + ScenarioId + "\\" + Tables.ProcessorScenarioRun.DefaultScenarioResultsTableDbFile;
 
             // TREE VOL VAL table
@@ -2294,7 +2294,7 @@ namespace FIA_Biosum_Manager
                             m_strTempSqliteDbFile, 2000000000, "2GB");
                         uc_filesize_monitor1.Information = "Work table containing table links";
                         uc_filesize_monitor2.BeginMonitoringFile(
-                             frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
+                             frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() +
                             "\\processor\\" + ScenarioId + "\\" + Tables.ProcessorScenarioRun.DefaultSqliteResultsDbFile
                             , 2000000000, "2GB");
                         uc_filesize_monitor2.Information = "Scenario results DB file containing Harvest Costs and Tree Volume and Value tables";
@@ -2691,7 +2691,7 @@ namespace FIA_Biosum_Manager
 		    string strDateFormat = "yyyy-MM-dd_HH-mm";
 			string strFileDate = System.DateTime.Now.ToString(strDateFormat);
             string strParameterFileName = "params_" + this._strScenarioId + "_" + strFileDate + ".txt";
-            string strParameterFilePath = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
+            string strParameterFilePath = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() +
                 "\\processor\\" + ScenarioId + "\\" + strParameterFileName;
             string strProperties = oProcessorScenarioTools.ScenarioProperties(_frmProcessorScenario.m_oProcessorScenarioItem);
             System.IO.File.WriteAllText(strParameterFilePath, strProperties);

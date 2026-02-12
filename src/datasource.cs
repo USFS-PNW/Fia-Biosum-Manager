@@ -39,7 +39,7 @@ namespace FIA_Biosum_Manager
         /// </summary>
 		public string[,] m_strDataSource;
 		public string m_strScenarioId;
-		public string m_strDataSourceMDBFile;
+		public string m_strDataSourceDBFile;
 		public string m_strDataSourceTableName;
 		public int m_intNumberOfTables;
 		bool _bLoadFieldNamesAndDatatypes=false;
@@ -85,7 +85,7 @@ namespace FIA_Biosum_Manager
 	    ///<param name="strProjDir">Project Root Directory</param>
 		public Datasource(string strProjDir)
 		{
-			this.m_strDataSourceMDBFile = strProjDir + "\\db\\project.mdb";
+			this.m_strDataSourceDBFile = strProjDir + "\\db\\project.db";
 			this.m_strDataSourceTableName = "datasource";
 			this.m_strScenarioId="";
 			this.populate_datasource_array();
@@ -102,7 +102,7 @@ namespace FIA_Biosum_Manager
 		///OPTIONAL: table columns and datatypes will also load into the array
 		///          if the variable LoadColumnNamesAndDataTypes is set to true
  	    ///</summary>
-		public void populate_datasource_array()
+		public void populate_datasource_array_access()
 		{
             macrosubst oMacroSub = new macrosubst();
             oMacroSub.ReferenceGeneralMacroSubstitutionVariableCollection = frmMain.g_oGeneralMacroSubstitutionVariable_Collection;
@@ -118,7 +118,7 @@ namespace FIA_Biosum_Manager
 
 
             System.Data.OleDb.OleDbConnection oConn = new System.Data.OleDb.OleDbConnection();
-			strConn = p_ado.getMDBConnString(this.m_strDataSourceMDBFile,"admin","");
+			strConn = p_ado.getMDBConnString(this.m_strDataSourceDBFile,"admin","");
 			oConn.ConnectionString = strConn;
 			this.m_intError = 0;
 			this.m_strError = "";
@@ -339,7 +339,7 @@ namespace FIA_Biosum_Manager
         ///          if the variable LoadColumnNamesAndDataTypes is set to true
         ///</summary>
 
-		public void populate_datasource_array_sqlite()
+		public void populate_datasource_array()
         {
 			macrosubst oMacroSub = new macrosubst();
 			oMacroSub.ReferenceGeneralMacroSubstitutionVariableCollection = frmMain.g_oGeneralMacroSubstitutionVariable_Collection;
@@ -355,7 +355,7 @@ namespace FIA_Biosum_Manager
 			this.m_intError = 0;
 			this.m_strError = "";
 
-			strConn = dataMgr.GetConnectionString(this.m_strDataSourceMDBFile);
+			strConn = dataMgr.GetConnectionString(this.m_strDataSourceDBFile);
 			using (System.Data.SQLite.SQLiteConnection sqlConn = new System.Data.SQLite.SQLiteConnection(strConn))
 			{
 				sqlConn.Open();
@@ -865,7 +865,7 @@ namespace FIA_Biosum_Manager
         public void UpdateDataSourcePath(string strTableType, string strPath, string strFile, string strTableName)
         {
             ado_data_access oAdo = new ado_data_access();
-            string strConn = oAdo.getMDBConnString(this.m_strDataSourceMDBFile, "", "");
+            string strConn = oAdo.getMDBConnString(this.m_strDataSourceDBFile, "", "");
             if (this.m_strScenarioId.Trim().Length > 0)
             {
                 oAdo.m_strSQL = "UPDATE " + this.m_strDataSourceTableName + " SET path = '" + strPath + "', " +

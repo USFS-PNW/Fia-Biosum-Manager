@@ -18,16 +18,11 @@ namespace FIA_Biosum_Manager
 		private System.Windows.Forms.ImageList imgSize;
 		private System.Windows.Forms.ListView listView1;
 		private System.ComponentModel.IContainer components;
-		private string m_strTravelTimeTable;
-		private string m_strPSiteTable;
-		private string m_strTempDBFile;
-		private env m_oEnv;
 		public int m_intError=0;
 		public string m_strError="";
 		private System.Windows.Forms.Button btnSelectAll;
 		private System.Windows.Forms.Button btnUnselectAll;
 		private System.Windows.Forms.ToolTip toolTip1;
-		private System.Windows.Forms.ComboBox m_Combo;
 		private System.Windows.Forms.GroupBox groupBox1;
 		public System.Windows.Forms.Label lblTitle;
 		private FIA_Biosum_Manager.frmOptimizerScenario _frmScenario=null;
@@ -254,8 +249,8 @@ namespace FIA_Biosum_Manager
 			DataMgr oDataMgr = new DataMgr();
 			strScenarioId = this.ReferenceOptimizerScenarioForm.uc_scenario1.txtScenarioId.Text.Trim();
 			string strScenarioDB =
-				frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" +
-				Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableSqliteDbFile;
+				frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() + "\\" +
+				Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableDbFile;
 
 			using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(strScenarioDB)))
 			{
@@ -375,10 +370,8 @@ namespace FIA_Biosum_Manager
 			this.imgSize = new System.Windows.Forms.ImageList(this.components);
 			this.groupBox1 = new System.Windows.Forms.GroupBox();
 			this.lblTitle = new System.Windows.Forms.Label();
-			//this.btnScenarioPSiteUpdate = new System.Windows.Forms.Button();
 			this.btnUnselectAll = new System.Windows.Forms.Button();
 			this.btnSelectAll = new System.Windows.Forms.Button();
-			//this.btnScenarioPSiteDefault = new System.Windows.Forms.Button();
 			this.listView1 = new System.Windows.Forms.ListView();
 			this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
 			this.groupBox1.SuspendLayout();
@@ -398,10 +391,8 @@ namespace FIA_Biosum_Manager
 			this.groupBox1.BackColor = System.Drawing.SystemColors.Control;
 			this.groupBox1.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("groupBox1.BackgroundImage")));
 			this.groupBox1.Controls.Add(this.lblTitle);
-			//this.groupBox1.Controls.Add(this.btnScenarioPSiteUpdate);
 			this.groupBox1.Controls.Add(this.btnUnselectAll);
 			this.groupBox1.Controls.Add(this.btnSelectAll);
-			//this.groupBox1.Controls.Add(this.btnScenarioPSiteDefault);
 			this.groupBox1.Controls.Add(this.listView1);
 			this.groupBox1.Dock = ((System.Windows.Forms.DockStyle)(resources.GetObject("groupBox1.Dock")));
 			this.groupBox1.Enabled = ((bool)(resources.GetObject("groupBox1.Enabled")));
@@ -441,34 +432,6 @@ namespace FIA_Biosum_Manager
 			this.lblTitle.TextAlign = ((System.Drawing.ContentAlignment)(resources.GetObject("lblTitle.TextAlign")));
 			this.toolTip1.SetToolTip(this.lblTitle, resources.GetString("lblTitle.ToolTip"));
 			this.lblTitle.Visible = ((bool)(resources.GetObject("lblTitle.Visible")));
-			// 
-			// btnScenarioPSiteUpdate
-			// 
-			//this.btnScenarioPSiteUpdate.AccessibleDescription = resources.GetString("btnScenarioPSiteUpdate.AccessibleDescription");
-			//this.btnScenarioPSiteUpdate.AccessibleName = resources.GetString("btnScenarioPSiteUpdate.AccessibleName");
-			//this.btnScenarioPSiteUpdate.Anchor = ((System.Windows.Forms.AnchorStyles)(resources.GetObject("btnScenarioPSiteUpdate.Anchor")));
-			//this.btnScenarioPSiteUpdate.BackColor = System.Drawing.SystemColors.Control;
-			//this.btnScenarioPSiteUpdate.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("btnScenarioPSiteUpdate.BackgroundImage")));
-			//this.btnScenarioPSiteUpdate.Dock = ((System.Windows.Forms.DockStyle)(resources.GetObject("btnScenarioPSiteUpdate.Dock")));
-			//this.btnScenarioPSiteUpdate.Enabled = ((bool)(resources.GetObject("btnScenarioPSiteUpdate.Enabled")));
-			//this.btnScenarioPSiteUpdate.FlatStyle = ((System.Windows.Forms.FlatStyle)(resources.GetObject("btnScenarioPSiteUpdate.FlatStyle")));
-			//this.btnScenarioPSiteUpdate.Font = ((System.Drawing.Font)(resources.GetObject("btnScenarioPSiteUpdate.Font")));
-			//this.btnScenarioPSiteUpdate.ForeColor = System.Drawing.Color.Black;
-			//this.btnScenarioPSiteUpdate.Image = ((System.Drawing.Image)(resources.GetObject("btnScenarioPSiteUpdate.Image")));
-			//this.btnScenarioPSiteUpdate.ImageAlign = ((System.Drawing.ContentAlignment)(resources.GetObject("btnScenarioPSiteUpdate.ImageAlign")));
-			//this.btnScenarioPSiteUpdate.ImageIndex = ((int)(resources.GetObject("btnScenarioPSiteUpdate.ImageIndex")));
-			//this.btnScenarioPSiteUpdate.ImeMode = ((System.Windows.Forms.ImeMode)(resources.GetObject("btnScenarioPSiteUpdate.ImeMode")));
-			//this.btnScenarioPSiteUpdate.Location = ((System.Drawing.Point)(resources.GetObject("btnScenarioPSiteUpdate.Location")));
-			//this.btnScenarioPSiteUpdate.Name = "btnScenarioPSiteUpdate";
-			//this.btnScenarioPSiteUpdate.RightToLeft = ((System.Windows.Forms.RightToLeft)(resources.GetObject("btnScenarioPSiteUpdate.RightToLeft")));
-			//this.btnScenarioPSiteUpdate.Size = ((System.Drawing.Size)(resources.GetObject("btnScenarioPSiteUpdate.Size")));
-			//this.btnScenarioPSiteUpdate.TabIndex = ((int)(resources.GetObject("btnScenarioPSiteUpdate.TabIndex")));
-			//this.btnScenarioPSiteUpdate.Tag = "";
-			//this.btnScenarioPSiteUpdate.Text = resources.GetString("btnScenarioPSiteUpdate.Text");
-			//this.btnScenarioPSiteUpdate.TextAlign = ((System.Drawing.ContentAlignment)(resources.GetObject("btnScenarioPSiteUpdate.TextAlign")));
-			//this.toolTip1.SetToolTip(this.btnScenarioPSiteUpdate, resources.GetString("btnScenarioPSiteUpdate.ToolTip"));
-			//this.btnScenarioPSiteUpdate.Visible = ((bool)(resources.GetObject("btnScenarioPSiteUpdate.Visible")));
-			//this.btnScenarioPSiteUpdate.Click += new System.EventHandler(this.btnScenarioPSiteUpdate_Click);
 			// 
 			// btnUnselectAll
 			// 
@@ -523,34 +486,6 @@ namespace FIA_Biosum_Manager
 			this.toolTip1.SetToolTip(this.btnSelectAll, resources.GetString("btnSelectAll.ToolTip"));
 			this.btnSelectAll.Visible = ((bool)(resources.GetObject("btnSelectAll.Visible")));
 			this.btnSelectAll.Click += new System.EventHandler(this.btnSelectAll_Click);
-			// 
-			// btnScenarioPSiteDefault
-			// 
-			////this.btnScenarioPSiteDefault.AccessibleDescription = resources.GetString("btnScenarioPSiteDefault.AccessibleDescription");
-			////this.btnScenarioPSiteDefault.AccessibleName = resources.GetString("btnScenarioPSiteDefault.AccessibleName");
-			////this.btnScenarioPSiteDefault.Anchor = ((System.Windows.Forms.AnchorStyles)(resources.GetObject("btnScenarioPSiteDefault.Anchor")));
-			////this.btnScenarioPSiteDefault.BackColor = System.Drawing.SystemColors.Control;
-			////this.btnScenarioPSiteDefault.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("btnScenarioPSiteDefault.BackgroundImage")));
-			////this.btnScenarioPSiteDefault.Dock = ((System.Windows.Forms.DockStyle)(resources.GetObject("btnScenarioPSiteDefault.Dock")));
-			////this.btnScenarioPSiteDefault.Enabled = ((bool)(resources.GetObject("btnScenarioPSiteDefault.Enabled")));
-			////this.btnScenarioPSiteDefault.FlatStyle = ((System.Windows.Forms.FlatStyle)(resources.GetObject("btnScenarioPSiteDefault.FlatStyle")));
-			////this.btnScenarioPSiteDefault.Font = ((System.Drawing.Font)(resources.GetObject("btnScenarioPSiteDefault.Font")));
-			////this.btnScenarioPSiteDefault.ForeColor = System.Drawing.Color.Black;
-			////this.btnScenarioPSiteDefault.Image = ((System.Drawing.Image)(resources.GetObject("btnScenarioPSiteDefault.Image")));
-			////this.btnScenarioPSiteDefault.ImageAlign = ((System.Drawing.ContentAlignment)(resources.GetObject("btnScenarioPSiteDefault.ImageAlign")));
-			////this.btnScenarioPSiteDefault.ImageIndex = ((int)(resources.GetObject("btnScenarioPSiteDefault.ImageIndex")));
-			////this.btnScenarioPSiteDefault.ImeMode = ((System.Windows.Forms.ImeMode)(resources.GetObject("btnScenarioPSiteDefault.ImeMode")));
-			////this.btnScenarioPSiteDefault.Location = ((System.Drawing.Point)(resources.GetObject("btnScenarioPSiteDefault.Location")));
-			////this.btnScenarioPSiteDefault.Name = "btnScenarioPSiteDefault";
-			////this.btnScenarioPSiteDefault.RightToLeft = ((System.Windows.Forms.RightToLeft)(resources.GetObject("btnScenarioPSiteDefault.RightToLeft")));
-			////this.btnScenarioPSiteDefault.Size = ((System.Drawing.Size)(resources.GetObject("btnScenarioPSiteDefault.Size")));
-			////this.btnScenarioPSiteDefault.TabIndex = ((int)(resources.GetObject("btnScenarioPSiteDefault.TabIndex")));
-			////this.btnScenarioPSiteDefault.Tag = "";
-			////this.btnScenarioPSiteDefault.Text = resources.GetString("btnScenarioPSiteDefault.Text");
-			////this.btnScenarioPSiteDefault.TextAlign = ((System.Drawing.ContentAlignment)(resources.GetObject("btnScenarioPSiteDefault.TextAlign")));
-			////this.toolTip1.SetToolTip(this.btnScenarioPSiteDefault, resources.GetString("btnScenarioPSiteDefault.ToolTip"));
-			////this.btnScenarioPSiteDefault.Visible = ((bool)(resources.GetObject("btnScenarioPSiteDefault.Visible")));
-			////this.btnScenarioPSiteDefault.Click += new System.EventHandler(this.btnScenarioPSiteDefault_Click);
 			// 
 			// listView1
 			// 
@@ -725,11 +660,6 @@ namespace FIA_Biosum_Manager
 		private void groupBox1_Resize(object sender, System.EventArgs e)
 		{
 			lstPSites.Width = this.ClientSize.Width - (lstPSites.Left * 2);
-			//this.btnScenarioPSiteDefault.Top = this.ClientSize.Height - (int)(this.btnScenarioPSiteDefault.Height * 1.5);
-			//this.btnScenarioPSiteUpdate.Top = this.btnScenarioPSiteDefault.Top;
-			//this.btnSelectAll.Top = this.btnScenarioPSiteDefault.Top;
-			//this.btnUnselectAll.Top = this.btnScenarioPSiteDefault.Top;
-			//lstPSites.Height = this.ClientSize.Height - lstPSites.Top - (int)(this.btnScenarioPSiteDefault.Height * 1.5) - 3;
 		}
 	
 		public FIA_Biosum_Manager.frmOptimizerScenario ReferenceOptimizerScenarioForm

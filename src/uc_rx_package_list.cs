@@ -117,7 +117,7 @@ namespace FIA_Biosum_Manager
 
 			this.m_oQueries = new Queries();
 			m_oQueries.m_oFvs.LoadDatasource=true;
-			m_oQueries.LoadDatasourcesNew(true);
+			m_oQueries.LoadDatasources(true);
 			this.m_oLvAlternateColors.InitializeRowCollection(); 
      
 			this.lstRx.Clear();
@@ -148,15 +148,10 @@ namespace FIA_Biosum_Manager
 				lstRx.Items.Add("");
 				lstRx.Items[x].UseItemStyleForSubItems=false;
 				lstRx.Items[x].SubItems.Add(m_oRxPackageItem_Collection.Item(x).RxPackageId);
-				//lstRx.Items[x].SubItems.Add(Convert.ToString(m_oRxPackageItem_Collection.Item(x).RxCycleLength));
 				lstRx.Items[x].SubItems.Add(m_oRxPackageItem_Collection.Item(x).SimulationYear1Rx);
-				//lstRx.Items[x].SubItems.Add(m_oRxPackageItem_Collection.Item(x).SimulationYear1Fvs);
 				lstRx.Items[x].SubItems.Add(m_oRxPackageItem_Collection.Item(x).SimulationYear2Rx);
-				//lstRx.Items[x].SubItems.Add(m_oRxPackageItem_Collection.Item(x).SimulationYear2Fvs);
 				lstRx.Items[x].SubItems.Add(m_oRxPackageItem_Collection.Item(x).SimulationYear3Rx);
-				//lstRx.Items[x].SubItems.Add(m_oRxPackageItem_Collection.Item(x).SimulationYear3Fvs);
 				lstRx.Items[x].SubItems.Add(m_oRxPackageItem_Collection.Item(x).SimulationYear4Rx);
-				//lstRx.Items[x].SubItems.Add(m_oRxPackageItem_Collection.Item(x).SimulationYear4Fvs);
 				lstRx.Items[x].SubItems.Add(m_oRxPackageItem_Collection.Item(x).Description);
 				m_oLvAlternateColors.AddRow();
 				m_oLvAlternateColors.AddColumns(x,lstRx.Columns.Count);
@@ -403,12 +398,6 @@ namespace FIA_Biosum_Manager
             frmRxPackageItem1.MinimizeMainForm = true;
             frmRxPackageItem1.Show();
 		    
-			//System.Windows.Forms.DialogResult result = frmRxPackageItem1.ShowDialog();
-			//if (result==System.Windows.Forms.DialogResult.OK)
-			//{
-			//	AddItem(oRxPackageItem);
-			//}
-			
 
 		}
 		public void AddItem(RxPackageItem p_oRxPackageItem)
@@ -418,15 +407,10 @@ namespace FIA_Biosum_Manager
 			lstRx.Items[lstRx.Items.Count-1].UseItemStyleForSubItems=false;
 			
 			lstRx.Items[lstRx.Items.Count-1].SubItems.Add(p_oRxPackageItem.RxPackageId);
-			//lstRx.Items[lstRx.Items.Count-1].SubItems.Add(Convert.ToString(p_oRxPackageItem.RxCycleLength));
 			lstRx.Items[lstRx.Items.Count-1].SubItems.Add(p_oRxPackageItem.SimulationYear1Rx);
-			//lstRx.Items[lstRx.Items.Count-1].SubItems.Add(p_oRxPackageItem.SimulationYear1Fvs);
 			lstRx.Items[lstRx.Items.Count-1].SubItems.Add(p_oRxPackageItem.SimulationYear2Rx);
-			//lstRx.Items[lstRx.Items.Count-1].SubItems.Add(p_oRxPackageItem.SimulationYear2Fvs);
 			lstRx.Items[lstRx.Items.Count-1].SubItems.Add(p_oRxPackageItem.SimulationYear3Rx);
-			//lstRx.Items[lstRx.Items.Count-1].SubItems.Add(p_oRxPackageItem.SimulationYear3Fvs);
 			lstRx.Items[lstRx.Items.Count-1].SubItems.Add(p_oRxPackageItem.SimulationYear4Rx);
-			//lstRx.Items[lstRx.Items.Count-1].SubItems.Add(p_oRxPackageItem.SimulationYear4Fvs);
 			lstRx.Items[lstRx.Items.Count-1].SubItems.Add(p_oRxPackageItem.Description);
 						
 			this.m_oLvAlternateColors.AddRow();
@@ -484,10 +468,6 @@ namespace FIA_Biosum_Manager
 				this.m_oRxPackageItem_Collection.Item(x).Delete=true;
 				this.m_oRxPackageItem_Collection.Item(x).Index=-1;
 			}
-			//for (int x = m_oRxPackageItem_Collection.Count-1; x >=0 ;x--)
-			//{
-		//		this.m_oRxPackageItem_Collection.Remove(x);
-		//	}
 		}
 
 		private void btnEdit_Click(object sender, System.EventArgs e)
@@ -525,12 +505,8 @@ namespace FIA_Biosum_Manager
 					break;
 					
 				}
-				//strRxList = strRxList + this.m_oRxPackageItem_Collection.Item(x).RxId + ",";
 			}
-			//if (strRxList.Trim().Length > 0) strRxList = strRxList.Substring(0,strRxList.Length - 1);
 			
-			//frmRxItem1.ReferenceUserControlRxList=this;
-			//frmRxItem1.UsedRxList=strRxList;
 			frmRxPackageItem1.ReferenceRxItemCollection = this.m_oRxItem_Collection;
 			frmRxPackageItem1.m_strAction="edit";
 			frmRxPackageItem1.loadvalues();
@@ -766,15 +742,6 @@ namespace FIA_Biosum_Manager
             uc_textbox1.TextValue = oRxTools.PackageProperties(this.m_oRxPackageItem_Collection, oRxColl);
             frmTemp.Show();
 
-            //FIA_Biosum_Manager.project_properties_html_report oRpt = new project_properties_html_report();
-            //oRpt.ProcessTreatments=false;
-            //oRpt.ProcessPackages=true;
-            //oRpt.RxCollection = oRxColl;
-            //oRpt.RxPackageCollection = this.m_oRxPackageItem_Collection;
-            //oRpt.ReportHeader = "FIA Biosum Treatment Packages";
-            //oRpt.WindowTitle = "FIA Biosum Treatment Package Properties";
-            //oRpt.ProjectName = frmMain.g_oFrmMain.frmProject.uc_project1.txtProjectId.Text;
-            //oRpt.CreateReport();
 
 			frmMain.g_sbpInfo.Text = "Ready";
 
@@ -921,13 +888,6 @@ namespace FIA_Biosum_Manager
 			set {_bDelete=value;}
 		}
 			
-		//private string _strFvsCmd="";
-		//[CategoryAttribute("Estimation Engine And Excel"), BrowsableAttribute(false), DescriptionAttribute("FVS Command")]
-		//public string FVSCommand
-		//{
-		//	get {return _strFVSCmd;}
-		//	set {_strFVSCmd=value;}
-		//}
 		public void CopyProperties(FIA_Biosum_Manager.RxPackageItem p_RxPackageItemSource,FIA_Biosum_Manager.RxPackageItem  p_RxPackageItemDestination)
 		{
 			p_RxPackageItemDestination.Description="";

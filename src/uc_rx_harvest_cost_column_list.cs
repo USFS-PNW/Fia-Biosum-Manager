@@ -62,7 +62,7 @@ namespace FIA_Biosum_Manager
 			m_oQueries.m_oFvs.LoadDatasource=true;
 			m_oQueries.m_oReference.LoadDatasource=true;
             m_oQueries.m_oProcessor.LoadDatasource = true;
-			m_oQueries.LoadDatasourcesNew(true);			
+			m_oQueries.LoadDatasources(true);			
 			this.lvRxHarvestCostColumns.Clear();
 			
 			this.m_oLvAlternateRowColors.InitializeRowCollection();
@@ -284,7 +284,7 @@ namespace FIA_Biosum_Manager
 
             DataMgr oDataMgr = new DataMgr();
             System.Collections.Generic.List<string> lstProcessorColumns = null;
-            string strProcessorDefinitionsDb = $@"{frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim()}\processor\{Tables.ProcessorScenarioRuleDefinitions.DefaultSqliteDbFile}";
+            string strProcessorDefinitionsDb = $@"{frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim()}\processor\{Tables.ProcessorScenarioRuleDefinitions.DefaultDbFile}";
             using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(strProcessorDefinitionsDb)))
             {
                 conn.Open();

@@ -66,12 +66,12 @@ namespace FIA_Biosum_Manager
 
         private void InitializeDatasource()
         {
-            m_strProjDir = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim();
+            m_strProjDir = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim();
 
             m_oDatasource = new Datasource();
             m_oDatasource.LoadTableColumnNamesAndDataTypes = false;
             m_oDatasource.LoadTableRecordCount = false;
-            m_oDatasource.m_strDataSourceMDBFile = m_strProjDir + "\\db\\project.mdb";
+            m_oDatasource.m_strDataSourceDBFile = m_strProjDir + "\\db\\project.db";
             m_oDatasource.m_strDataSourceTableName = "datasource";
             m_oDatasource.m_strScenarioId = "";
             m_oDatasource.populate_datasource_array();

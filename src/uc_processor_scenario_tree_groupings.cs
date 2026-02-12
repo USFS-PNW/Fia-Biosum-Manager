@@ -289,8 +289,8 @@ namespace FIA_Biosum_Manager
         public void saveTreeGroupings_FromProperties()
         {
             SQLite.ADO.DataMgr oDataMgr = new SQLite.ADO.DataMgr();
-            string strDbFile = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
-                "\\processor\\" + Tables.ProcessorScenarioRuleDefinitions.DefaultSqliteDbFile;
+            string strDbFile = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() +
+                "\\processor\\" + Tables.ProcessorScenarioRuleDefinitions.DefaultDbFile;
             using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(strDbFile)))
             {
                 conn.Open();

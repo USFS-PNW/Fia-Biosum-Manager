@@ -30,9 +30,6 @@ namespace FIA_Biosum_Manager
 		private System.Windows.Forms.MenuItem mnuFileRecentProjects4;
 		private System.Windows.Forms.MenuItem mnuView;
 		private System.Windows.Forms.MenuItem mnuViewProject;
-		private System.Windows.Forms.MenuItem mnuViewNotes;
-		private System.Windows.Forms.MenuItem mnuViewLinks;
-		private System.Windows.Forms.MenuItem mnuViewContacts;
 		private System.Windows.Forms.MenuItem mnuHelp;
 		private System.Windows.Forms.MenuItem mnuHelpBiosummatic;
 		private System.Windows.Forms.MenuItem mnuHelpTechnicalSupport;
@@ -43,9 +40,6 @@ namespace FIA_Biosum_Manager
 		private System.Windows.Forms.ImageList imgList1;
 		private System.Windows.Forms.ToolBarButton btnOpen;
 		private System.Windows.Forms.ToolBarButton btnProject;
-		private System.Windows.Forms.ToolBarButton btnNotes;
-		private System.Windows.Forms.ToolBarButton btnLinks;
-		private System.Windows.Forms.ToolBarButton btnContacts;
 		private System.Windows.Forms.OpenFileDialog openFileDialog1;
 
 		public FIA_Biosum_Manager.frmDialog frmProject;
@@ -207,7 +201,7 @@ namespace FIA_Biosum_Manager
         //splasher
         //
         public System.Threading.Thread standByAnimationThread;
-        private MenuItem mnuToolsProjectRootFolder;
+        private MenuItem mnuToolsProjectFolder;
         public StandByAnimation.StandByAnimation standByAnimation;
         private MenuItem mnuReleaseNotes;
         private MenuItem mnuToolsPath;
@@ -290,17 +284,13 @@ namespace FIA_Biosum_Manager
             
 
             this.btnSave.Enabled=false;
-			this.btnContacts.Enabled=false;
 			this.btnOptimizer.Enabled = false;
 			this.btnDB.Enabled=false;
 			
 			this.btnFVS.Enabled=false;
 			this.btnProcessor.Enabled=false;
 			this.panel1.Enabled=false;
-			this.btnContacts.Enabled=false;
-			this.btnNotes.Enabled=false;
 			this.btnProject.Enabled=false;
-			this.btnLinks.Enabled = false;
 			this.mnuView.Enabled=false;
 			
 			this.mnuFileSaveProject.Enabled=false;
@@ -474,13 +464,10 @@ namespace FIA_Biosum_Manager
             this.mnuFileExit = new System.Windows.Forms.MenuItem();
             this.mnuView = new System.Windows.Forms.MenuItem();
             this.mnuViewProject = new System.Windows.Forms.MenuItem();
-            this.mnuViewNotes = new System.Windows.Forms.MenuItem();
-            this.mnuViewLinks = new System.Windows.Forms.MenuItem();
-            this.mnuViewContacts = new System.Windows.Forms.MenuItem();
             this.mnuSettings = new System.Windows.Forms.MenuItem();
             this.mnuTools = new System.Windows.Forms.MenuItem();
             this.mnuToolsFCS = new System.Windows.Forms.MenuItem();
-            this.mnuToolsProjectRootFolder = new System.Windows.Forms.MenuItem();
+            this.mnuToolsProjectFolder = new System.Windows.Forms.MenuItem();
             this.mnuToolsPath = new System.Windows.Forms.MenuItem();
             this.mnuHelp = new System.Windows.Forms.MenuItem();
             this.mnuHelpBiosummatic = new System.Windows.Forms.MenuItem();
@@ -493,9 +480,6 @@ namespace FIA_Biosum_Manager
             this.btnOpen = new System.Windows.Forms.ToolBarButton();
             this.btnSave = new System.Windows.Forms.ToolBarButton();
             this.btnProject = new System.Windows.Forms.ToolBarButton();
-            this.btnNotes = new System.Windows.Forms.ToolBarButton();
-            this.btnLinks = new System.Windows.Forms.ToolBarButton();
-            this.btnContacts = new System.Windows.Forms.ToolBarButton();
             this.ctxMenu1 = new System.Windows.Forms.ContextMenu();
             this.imgList1 = new System.Windows.Forms.ImageList(this.components);
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
@@ -616,10 +600,7 @@ namespace FIA_Biosum_Manager
             // 
             this.mnuView.Index = 1;
             this.mnuView.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] {
-            this.mnuViewProject,
-            this.mnuViewNotes,
-            this.mnuViewLinks,
-            this.mnuViewContacts});
+            this.mnuViewProject});
             this.mnuView.Text = "&View";
             // 
             // mnuViewProject
@@ -627,24 +608,6 @@ namespace FIA_Biosum_Manager
             this.mnuViewProject.Index = 0;
             this.mnuViewProject.Text = "Project Properties";
             this.mnuViewProject.Click += new System.EventHandler(this.mnuViewProject_Click);
-            // 
-            // mnuViewNotes
-            // 
-            this.mnuViewNotes.Index = 1;
-            this.mnuViewNotes.Text = "Project Notes";
-            this.mnuViewNotes.Click += new System.EventHandler(this.mnuViewNotes_Click);
-            // 
-            // mnuViewLinks
-            // 
-            this.mnuViewLinks.Index = 2;
-            this.mnuViewLinks.Text = "Project Links";
-            this.mnuViewLinks.Click += new System.EventHandler(this.mnuViewLinks_Click);
-            // 
-            // mnuViewContacts
-            // 
-            this.mnuViewContacts.Index = 3;
-            this.mnuViewContacts.Text = "Project Contacts";
-            this.mnuViewContacts.Click += new System.EventHandler(this.mnuViewContacts_Click);
             // 
             // mnuSettings
             // 
@@ -657,7 +620,7 @@ namespace FIA_Biosum_Manager
             this.mnuTools.Index = 3;
             this.mnuTools.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] {
             this.mnuToolsFCS,
-            this.mnuToolsProjectRootFolder,
+            this.mnuToolsProjectFolder,
             this.mnuToolsPath});
             this.mnuTools.Text = "Tools";
             // 
@@ -667,12 +630,12 @@ namespace FIA_Biosum_Manager
             this.mnuToolsFCS.Text = "Tree Volume and Biomass Calculator Troubleshooter Tool";
             this.mnuToolsFCS.Click += new System.EventHandler(this.mnuToolsFCS_Click);
             // 
-            // mnuToolsProjectRootFolder
+            // mnuToolsProjectFolder
             // 
-            this.mnuToolsProjectRootFolder.Enabled = false;
-            this.mnuToolsProjectRootFolder.Index = 1;
-            this.mnuToolsProjectRootFolder.Text = "Scan and Synchronize Project Root Folder Tool";
-            this.mnuToolsProjectRootFolder.Click += new System.EventHandler(this.mnuToolsProjectRootFolder_Click);
+            this.mnuToolsProjectFolder.Enabled = false;
+            this.mnuToolsProjectFolder.Index = 1;
+            this.mnuToolsProjectFolder.Text = "Scan and Synchronize Project Folder Tool";
+            this.mnuToolsProjectFolder.Click += new System.EventHandler(this.mnuToolsProjectFolder_Click);
             // 
             // mnuToolsPath
             // 
@@ -731,10 +694,7 @@ namespace FIA_Biosum_Manager
             this.tlbMain.Buttons.AddRange(new System.Windows.Forms.ToolBarButton[] {
             this.btnOpen,
             this.btnSave,
-            this.btnProject,
-            this.btnNotes,
-            this.btnLinks,
-            this.btnContacts});
+            this.btnProject});
             this.tlbMain.ButtonSize = new System.Drawing.Size(52, 38);
             this.tlbMain.ContextMenu = this.ctxMenu1;
             this.tlbMain.DropDownArrows = true;
@@ -765,24 +725,6 @@ namespace FIA_Biosum_Manager
             this.btnProject.ImageIndex = 2;
             this.btnProject.Name = "btnProject";
             this.btnProject.Text = "Project";
-            // 
-            // btnNotes
-            // 
-            this.btnNotes.ImageIndex = 3;
-            this.btnNotes.Name = "btnNotes";
-            this.btnNotes.Text = "Notes";
-            // 
-            // btnLinks
-            // 
-            this.btnLinks.ImageIndex = 4;
-            this.btnLinks.Name = "btnLinks";
-            this.btnLinks.Text = "Links";
-            // 
-            // btnContacts
-            // 
-            this.btnContacts.ImageIndex = 5;
-            this.btnContacts.Name = "btnContacts";
-            this.btnContacts.Text = "Contacts";
             // 
             // ctxMenu1
             // 
@@ -1371,10 +1313,10 @@ namespace FIA_Biosum_Manager
                     oFrmScenario.Text = "Treatment Optimizer: Optimization Scenario (" + oFrmOptimizerScenario.uc_scenario_open1.txtScenarioId.Text.Trim() + ")";
                     oFrmScenario.m_bScenarioOpen = true;
                     oFrmScenario.HelpChapter = "EDIT_SCENARIO";
-                    oFrmScenario.uc_datasource1.strDataSourceMDBFile = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableSqliteDbFile;
+                    oFrmScenario.uc_datasource1.strDataSourceMDBFile = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() + "\\" + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableDbFile;
                     oFrmScenario.uc_datasource1.strDataSourceTable = "scenario_datasource";
                     oFrmScenario.uc_datasource1.strScenarioId = oFrmOptimizerScenario.uc_scenario_open1.txtScenarioId.Text.Trim();
-                    oFrmScenario.uc_datasource1.strProjectDirectory = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim();
+                    oFrmScenario.uc_datasource1.strProjectDirectory = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim();
                     oFrmScenario.uc_datasource1.LoadValues();
                     if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
                         frmMain.g_oUtils.WriteText(frmProject.uc_project1.m_strDebugFile, "OpenOptimizerScenario: Loaded datasource values\r\n");
@@ -1410,10 +1352,10 @@ namespace FIA_Biosum_Manager
                     oFrmScenario.Text = "Treatment Optimizer: Optimization Scenario (" + oFrmOptimizerScenario.uc_scenario1.txtScenarioId.Text.Trim() + ")";
                     oFrmScenario.m_bScenarioOpen = true;
                     oFrmScenario.HelpChapter = "EDIT_SCENARIO";
-                    oFrmScenario.uc_datasource1.strDataSourceMDBFile = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableSqliteDbFile;
+                    oFrmScenario.uc_datasource1.strDataSourceMDBFile = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() + "\\" + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableDbFile;
                     oFrmScenario.uc_datasource1.strDataSourceTable = "scenario_datasource";
                     oFrmScenario.uc_datasource1.strScenarioId = oFrmOptimizerScenario.uc_scenario1.txtScenarioId.Text.Trim();
-                    oFrmScenario.uc_datasource1.strProjectDirectory = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim();
+                    oFrmScenario.uc_datasource1.strProjectDirectory = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim();
                     oFrmScenario.uc_datasource1.LoadValues();
                     if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
                         frmMain.g_oUtils.WriteText(frmProject.uc_project1.m_strDebugFile, "OpenOptimizerScenario: Loaded datasource values\r\n");
@@ -1459,10 +1401,10 @@ namespace FIA_Biosum_Manager
 					oFrmScenario.m_bScenarioOpen = true;
 
                     
-					oFrmScenario.uc_datasource1.strDataSourceMDBFile =  frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\processor\\db\\scenario_processor_rule_definitions.mdb";
+					oFrmScenario.uc_datasource1.strDataSourceMDBFile =  frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() + "\\processor\\db\\scenario_processor_rule_definitions.mdb";
 					oFrmScenario.uc_datasource1.strDataSourceTable = "scenario_datasource";
 					oFrmScenario.uc_datasource1.strScenarioId = oFrmProcessorScenario.uc_scenario_open1.txtScenarioId.Text.Trim();
-					oFrmScenario.uc_datasource1.strProjectDirectory = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim();
+					oFrmScenario.uc_datasource1.strProjectDirectory = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim();
                     oFrmScenario.uc_datasource1.LoadValues();
                     oFrmScenario.uc_scenario1.strScenarioDescription = oFrmProcessorScenario.uc_scenario_open1.strScenarioDescription;
 					oFrmScenario.uc_scenario1.strScenarioId = oFrmProcessorScenario.uc_scenario_open1.strScenarioId;
@@ -1493,10 +1435,10 @@ namespace FIA_Biosum_Manager
 					frmProcessorScenario oFrmScenario = new frmProcessorScenario(this);
 					oFrmScenario.Text = "Processor: Scenario (" + oFrmProcessorScenario.uc_scenario1.txtScenarioId.Text.Trim() + ")";
 					oFrmScenario.m_bScenarioOpen = true;
-					oFrmScenario.uc_datasource1.strDataSourceMDBFile =  frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\processor\\db\\scenario_processor_rule_definitions.mdb";
+					oFrmScenario.uc_datasource1.strDataSourceMDBFile =  frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() + "\\processor\\db\\scenario_processor_rule_definitions.mdb";
 					oFrmScenario.uc_datasource1.strDataSourceTable = "scenario_datasource";
 					oFrmScenario.uc_datasource1.strScenarioId = oFrmProcessorScenario.uc_scenario1.txtScenarioId.Text.Trim();
-					oFrmScenario.uc_datasource1.strProjectDirectory = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim();
+					oFrmScenario.uc_datasource1.strProjectDirectory = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim();
                     oFrmScenario.uc_datasource1.LoadValues();
 					oFrmScenario.uc_scenario1.strScenarioDescription = oFrmProcessorScenario.uc_scenario1.strScenarioDescription;
 					oFrmScenario.uc_scenario1.strScenarioId = oFrmProcessorScenario.uc_scenario1.strScenarioId;
@@ -1584,7 +1526,7 @@ namespace FIA_Biosum_Manager
                     string strProjDir = getProjectDirectory();
                     strFullPath = new System.Text.StringBuilder(strProjDir);
                     strFullPath.Append("\\");
-                    strFullPath.Append(Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableSqliteDbFile);
+                    strFullPath.Append(Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableDbFile);
                     SQLite.ADO.DataMgr oDataMgr = new SQLite.ADO.DataMgr();
                     string strConn = oDataMgr.GetConnectionString(strFullPath.ToString());
                     long lngCount = oDataMgr.getRecordCount(strConn, "select count(*) from scenario", "scenario");
@@ -1688,9 +1630,6 @@ namespace FIA_Biosum_Manager
 
 
                         break;
-                    case "WOOD PROCESSING SITES":
-                        StartPSiteDialog(this);
-                        break;
 
                     case "PROJECT DATA SOURCES":
                         //check to see if the form has already been loaded
@@ -1703,11 +1642,11 @@ namespace FIA_Biosum_Manager
                             this.m_frmDataSource.BackColor = System.Drawing.SystemColors.Control;
                             this.m_frmDataSource.Text = "Database: Project Data Sources";
                             this.m_frmDataSource.MdiParent = this;
-                            FIA_Biosum_Manager.uc_datasource p_uc = new uc_datasource(this.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\db\\project.mdb");
+                            FIA_Biosum_Manager.uc_datasource p_uc = new uc_datasource(this.frmProject.uc_project1.m_strProjectDirectory.Trim() + "\\db\\project.db");
                             this.m_frmDataSource.Controls.Add(p_uc);
                             p_uc.Dock = System.Windows.Forms.DockStyle.Fill;
 
-                            p_uc.strProjectDirectory = this.frmProject.uc_project1.txtRootDirectory.Text.Trim();
+                            p_uc.strProjectDirectory = this.frmProject.uc_project1.m_strProjectDirectory.Trim();
 
 
 
@@ -1744,7 +1683,7 @@ namespace FIA_Biosum_Manager
                             }
 
 
-                            p_uc.populate_listview_grid();
+                            p_uc.LoadValues();
                             p_uc.Dock = System.Windows.Forms.DockStyle.Fill;
                             this.m_frmDataSource.Left = 0;
                             this.m_frmDataSource.Top = 0;
@@ -1762,11 +1701,6 @@ namespace FIA_Biosum_Manager
                             this.m_frmDataSource.Focus();
 
                         }
-                        break;
-
-                    case "GENERATE TRAVEL TIMES":
-                        FIA_Biosum_Travel_Times_Generator.generate_travel_times p_trvltm = new FIA_Biosum_Travel_Times_Generator.generate_travel_times(this);
-                        p_trvltm.create_travel_times();
                         break;
 
                 }
@@ -1969,7 +1903,7 @@ namespace FIA_Biosum_Manager
                 this.m_frmDbSQLite.Text = "Database: Manage Tables";
                 this.m_frmDbSQLite.MdiParent = this;
 
-                FIA_Biosum_Manager.uc_db p_uc = new uc_db(this.frmProject.uc_project1.txtRootDirectory.Text.Trim());
+                FIA_Biosum_Manager.uc_db p_uc = new uc_db(this.frmProject.uc_project1.m_strProjectDirectory.Trim());
                 if (p_uc.m_intError < 0)
                 {
                     this.m_frmDbSQLite.Dispose();
@@ -2029,84 +1963,7 @@ namespace FIA_Biosum_Manager
             }
 
         }
-        public void StartPSiteDialog(Control p_oParentControl)
-        {
-            //check to see if the form has already been loaded
-            if (this.IsChildWindowVisible("Database: Wood Processing Sites") == false)
-            {
-                frmMain.g_sbpInfo.Text = "Loading Wood Processing Sites...Stand By";
-                this.m_frmPSite = new frmDialog(this);
-                this.m_frmPSite.MaximizeBox = true;
-                this.m_frmPSite.BackColor = System.Drawing.SystemColors.Control;
-                this.m_frmPSite.Text = "Database: Wood Processing Sites";
-                FIA_Biosum_Manager.uc_gis_psite p_uc = new uc_gis_psite(this.frmProject.uc_project1.txtRootDirectory.Text.Trim());
-                if (p_uc.m_intError < 0)
-                {
-                    this.m_frmPSite.Dispose();
-                    return;
-                }
-                this.m_frmPSite.Controls.Add(p_uc);
-                this.m_frmPSite.ProcessingSiteUserControl = p_uc;
-                this.m_frmPSite.Height = 0;
-                this.m_frmPSite.Width = 0;
-                if (p_uc.Top + p_uc.Height > this.m_frmPSite.ClientSize.Height + 2)
-                {
-                    for (int x = 1; ; x++)
-                    {
-                        this.m_frmPSite.Height = x;
-                        if (p_uc.Top +
-                            p_uc.Height <
-                            this.m_frmPSite.ClientSize.Height)
-                        {
-                            break;
-                        }
-                    }
-
-                }
-                if (p_uc.Left + p_uc.Width > this.m_frmPSite.ClientSize.Width + 2)
-                {
-                    for (int x = 1; ; x++)
-                    {
-                        this.m_frmPSite.Width = x;
-                        if (p_uc.Left +
-                            p_uc.Width <
-                            this.m_frmPSite.ClientSize.Width)
-                        {
-                            break;
-                        }
-                    }
-
-                }
-                p_uc.Dock = System.Windows.Forms.DockStyle.Fill;
-                p_uc.loadvalues();
-
-
-                this.m_frmPSite.Left = 0;
-                this.m_frmPSite.Top = 0;
-                this.m_frmPSite.FormBorderStyle = System.Windows.Forms.FormBorderStyle.Sizable;
-                this.m_frmPSite.DisposeOfFormWhenClosing = true;
-                this.m_frmPSite.MinimizeMainForm = true;
-                this.m_frmPSite.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-                frmMain.g_sbpInfo.Text = "Ready";
-                p_oParentControl.Enabled = false;
-                m_frmPSite.ParentControl = p_oParentControl;
-                this.m_frmPSite.Show();
-
-            }
-            else
-            {
-                if (this.m_frmPSite.WindowState == System.Windows.Forms.FormWindowState.Minimized)
-                    this.m_frmPSite.WindowState = System.Windows.Forms.FormWindowState.Normal;
-
-                this.m_frmPSite.Focus();
-
-            }
-
-						
-
-
-
-        }
+        
         public void StartBiosumProcessorDialog()
         {
             System.Text.StringBuilder strFullPath;
@@ -2116,7 +1973,7 @@ namespace FIA_Biosum_Manager
             string strScenarioDir = strProjDir.Trim() + "\\processor";
             strFullPath = new System.Text.StringBuilder(strScenarioDir);
             strFullPath.Append("\\");
-            string strDbFullPath = strFullPath.ToString() + Tables.ProcessorScenarioRuleDefinitions.DefaultSqliteDbFile;
+            string strDbFullPath = strFullPath.ToString() + Tables.ProcessorScenarioRuleDefinitions.DefaultDbFile;
             strFullPath.Append(Tables.ProcessorScenarioRuleDefinitions.DefaultAdditionalHarvestCostsDbFile);
             if (System.IO.File.Exists(strDbFullPath))
             {
@@ -2153,7 +2010,7 @@ namespace FIA_Biosum_Manager
                 this.m_frmFvsOutput.MaximizeBox = true;
                 this.m_frmFvsOutput.BackColor = System.Drawing.SystemColors.Control;
                 this.m_frmFvsOutput.Text = "FVS: Process FVS Output";
-                FIA_Biosum_Manager.uc_fvs_output p_uc = new uc_fvs_output(this.frmProject.uc_project1.txtRootDirectory.Text.Trim());
+                FIA_Biosum_Manager.uc_fvs_output p_uc = new uc_fvs_output(this.frmProject.uc_project1.m_strProjectDirectory.Trim());
                 if (p_uc.m_intError < 0)
                 {
                     this.m_frmFvsOutput.Dispose();
@@ -2239,7 +2096,7 @@ namespace FIA_Biosum_Manager
                 this.m_frmFvsInput.Controls.Add(p_uc);
                 this.m_frmFvsInput.FVSInputUserControl = p_uc;
 
-                p_uc.strProjectDirectory = this.frmProject.uc_project1.txtRootDirectory.Text.Trim();
+                p_uc.strProjectDirectory = this.frmProject.uc_project1.m_strProjectDirectory.Trim();
                 p_uc.strProjectId = this.frmProject.uc_project1.txtProjectId.Text.Trim();
 
 
@@ -2322,18 +2179,11 @@ namespace FIA_Biosum_Manager
                 case "Links":
 					this.mnuViewLinks_Click(sender,e);
 					break;
-                case "Contacts":
-					this.mnuViewContacts_Click(sender,e);
-                    break;
 			}
 		}
 
 		private void mnuViewProject_Click(object sender, System.EventArgs e)
 		{
-			
-			this.frmProject.uc_project_document_links1.Visible=false;
-			this.frmProject.uc_project_notes1.Visible=false;
-			this.frmProject.uc_contact_list1.Visible=false;
 			this.frmProject.uc_project1.Visible=true;
 			this.frmProject.uc_project1.m_strAction="VIEW";
 			this.frmProject.uc_project1.lblTitle.Text = "Project Properties";
@@ -2383,9 +2233,8 @@ namespace FIA_Biosum_Manager
 				this.frmProject.uc_project1.txtProjectId.Text = this.frmProject.uc_project1.m_strNewProjectId;
 				this.frmProject.uc_project1.txtName.Text = this.frmProject.uc_project1.m_strNewName;
 				this.frmProject.uc_project1.txtDate.Text = this.frmProject.uc_project1.m_strNewDate;
-				this.frmProject.uc_project1.txtCompany.Text = this.frmProject.uc_project1.m_strNewCompany;
+				this.frmProject.uc_project1.txtOrganization.Text = this.frmProject.uc_project1.m_strNewOrganization;
 				this.frmProject.uc_project1.txtDescription.Text = this.frmProject.uc_project1.m_strNewDescription ;
-				this.frmProject.uc_project1.txtShared.Text = this.frmProject.uc_project1.m_strNewShared;
 				this.frmProject.uc_project1.txtRootDirectory.Text = this.frmProject.uc_project1.m_strNewRootDirectory;
 				this.frmProject.uc_project1.m_strProjectId = this.frmProject.uc_project1.m_strNewProjectId;
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
@@ -2394,18 +2243,23 @@ namespace FIA_Biosum_Manager
                     frmMain.g_oUtils.WriteText(frmProject.uc_project1.m_strDebugFile, "**Project Properties**\r\n");
                     frmMain.g_oUtils.WriteText(frmProject.uc_project1.m_strDebugFile, "Project ID:                 " + frmProject.uc_project1.txtProjectId.Text.Trim() + "\r\n");
                     frmMain.g_oUtils.WriteText(frmProject.uc_project1.m_strDebugFile, "Project Name:               " + frmProject.uc_project1.txtName.Text.Trim() + "\r\n");
-                    frmMain.g_oUtils.WriteText(frmProject.uc_project1.m_strDebugFile, "Project Root Directory:     " + frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\r\n");
+                    frmMain.g_oUtils.WriteText(frmProject.uc_project1.m_strDebugFile, "Project Directory:          " + frmProject.uc_project1.m_strProjectDirectory.Trim() + "\r\n");
                     frmMain.g_oUtils.WriteText(frmProject.uc_project1.m_strDebugFile, "Project File:               " + frmProject.uc_project1.m_strProjectFile + "\r\n");
                     frmMain.g_oUtils.WriteText(frmProject.uc_project1.m_strDebugFile, "Project Date:               " + frmProject.uc_project1.txtDate.Text.Trim() + "\r\n");
                     frmMain.g_oUtils.WriteText(frmProject.uc_project1.m_strDebugFile, "Current Date/Time:          " + DateTime.Now.ToString() + "\r\n");
-                    frmMain.g_oUtils.WriteText(frmProject.uc_project1.m_strDebugFile, "Company:                    " + frmProject.uc_project1.txtCompany.Text.Trim() + "\r\n");
-                    frmMain.g_oUtils.WriteText(frmProject.uc_project1.m_strDebugFile, "Shared:                     " + frmProject.uc_project1.txtShared.Text.Trim() + "\r\n");
+                    frmMain.g_oUtils.WriteText(frmProject.uc_project1.m_strDebugFile, "Organization:                    " + frmProject.uc_project1.txtOrganization.Text.Trim() + "\r\n");
                     frmMain.g_oUtils.WriteText(frmProject.uc_project1.m_strDebugFile, "Description:                " + frmProject.uc_project1.txtDescription.Text.Trim() + "\r\n");
                 }
 
-
-				this.frmProject.uc_project1.SetProjectPathEnvironmentVariables();
-				if (frmProject.uc_project1.m_strAction != "NEW")
+                if (this.frmProject.uc_project1.m_strProjectFile.EndsWith(".mdb") || this.frmProject.uc_project1.m_strProjectFile.EndsWith(".mde") || this.frmProject.uc_project1.m_strProjectFile.EndsWith(".accdb"))
+                {
+                    this.frmProject.uc_project1.SetProjectPathEnvironmentVariables();
+                }
+                else
+                {
+                    this.frmProject.uc_project1.SetProjectPathEnvironmentVariablesSqlite();
+                }
+                if (frmProject.uc_project1.m_strAction != "NEW")
 				{
 					oVersCtl.ReferenceProjectDirectory=this.frmProject.uc_project1.m_strProjectDirectory;
                     // Warn if application version < project version
@@ -2443,28 +2297,14 @@ namespace FIA_Biosum_Manager
               
 
 				btnDB.ForeColor = Color.Red;
-				this.btnContacts.Enabled=true;
 				this.btnOptimizer.Enabled = true;
 				this.btnDB.Enabled=false;
 				this.btnFVS.Enabled=true;
 				this.btnProcessor.Enabled=true;
 				this.m_pnlCurrent.Enabled=true;
-				this.btnContacts.Enabled=true;
-				this.btnNotes.Enabled=true;
 				this.btnProject.Enabled=true;
 				this.btnSave.Enabled=true;
-                this.mnuToolsProjectRootFolder.Enabled = true;
-				if (this.frmProject.uc_project1.txtPersonal.Text.Trim().Length == 0 &&
-					this.frmProject.uc_project1.txtShared.Text.Trim().Length == 0)
-				{
-					this.btnLinks.Enabled = false;
-					this.btnNotes.Enabled=false;
-				}
-				else 
-				{
-					this.btnLinks.Enabled=true;
-					this.btnNotes.Enabled=true;
-				}
+                this.mnuToolsProjectFolder.Enabled = true;
 				this.mnuView.Enabled=true;
 				
 				this.mnuFileSaveProject.Enabled=true;
@@ -2477,16 +2317,15 @@ namespace FIA_Biosum_Manager
 			{
 				frmMain frmTemp = new frmMain();
                 frmTemp.frmProject.uc_project1.m_strDebugFile = frmMain.g_oEnv.strTempDir + @"\FIA_Biosum_DebugLog_" + this.frmProject.uc_project1.m_strNewProjectId.Trim() + "_" + String.Format("{0:yyyyMMdd}", DateTime.Now) + ".txt";
-				frmTemp.frmProject.uc_project1.m_strProjectDirectory = strNewProjectDirectory; 
+                frmTemp.frmProject.uc_project1.m_strProjectDirectory = strNewProjectDirectory; 
 				frmTemp.frmProject.uc_project1.m_strProjectFile = strNewProjectFile; 
 				frmTemp.frmProject.uc_project1.lblTitle.Text = "Project Properties";
 				frmTemp.Text = "FIA Biosum Manager (" + this.frmProject.uc_project1.m_strNewProjectId + ")";
 				frmTemp.frmProject.uc_project1.txtProjectId.Text = this.frmProject.uc_project1.m_strNewProjectId;
 				frmTemp.frmProject.uc_project1.txtName.Text = this.frmProject.uc_project1.m_strNewName;
 				frmTemp.frmProject.uc_project1.txtDate.Text = this.frmProject.uc_project1.m_strNewDate;
-				frmTemp.frmProject.uc_project1.txtCompany.Text = this.frmProject.uc_project1.m_strNewCompany;
+				frmTemp.frmProject.uc_project1.txtOrganization.Text = this.frmProject.uc_project1.m_strNewOrganization;
 				frmTemp.frmProject.uc_project1.txtDescription.Text = this.frmProject.uc_project1.m_strNewDescription ;
-				frmTemp.frmProject.uc_project1.txtShared.Text = this.frmProject.uc_project1.m_strNewShared;
 				frmTemp.frmProject.uc_project1.txtRootDirectory.Text = this.frmProject.uc_project1.m_strNewRootDirectory;
 				frmTemp.frmProject.uc_project1.m_strProjectId = this.frmProject.uc_project1.m_strNewProjectId;
 
@@ -2496,45 +2335,38 @@ namespace FIA_Biosum_Manager
                     frmMain.g_oUtils.WriteText(frmTemp.frmProject.uc_project1.m_strDebugFile, "**Project Properties**\r\n");
                     frmMain.g_oUtils.WriteText(frmTemp.frmProject.uc_project1.m_strDebugFile, "Project ID:                 " + frmProject.uc_project1.txtProjectId.Text.Trim() + "\r\n");
                     frmMain.g_oUtils.WriteText(frmTemp.frmProject.uc_project1.m_strDebugFile, "Project Name:               " + frmProject.uc_project1.txtName.Text.Trim() + "\r\n");
-                    frmMain.g_oUtils.WriteText(frmTemp.frmProject.uc_project1.m_strDebugFile, "Project Root Directory:     " + frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\r\n");
+                    frmMain.g_oUtils.WriteText(frmTemp.frmProject.uc_project1.m_strDebugFile, "Project Directory:          " + frmProject.uc_project1.m_strProjectDirectory.Trim() + "\r\n");
                     frmMain.g_oUtils.WriteText(frmTemp.frmProject.uc_project1.m_strDebugFile, "Project File:               " + frmProject.uc_project1.m_strProjectFile + "\r\n");
                     frmMain.g_oUtils.WriteText(frmTemp.frmProject.uc_project1.m_strDebugFile, "Project Date:               " + frmProject.uc_project1.txtDate.Text.Trim() + "\r\n");
                     frmMain.g_oUtils.WriteText(frmTemp.frmProject.uc_project1.m_strDebugFile, "Current Date/Time           " + DateTime.Now.ToString() + "\r\n") ;
-                    frmMain.g_oUtils.WriteText(frmTemp.frmProject.uc_project1.m_strDebugFile, "Company:                    " + frmProject.uc_project1.txtCompany.Text.Trim() + "\r\n");
-                    frmMain.g_oUtils.WriteText(frmTemp.frmProject.uc_project1.m_strDebugFile, "Shared:                     " + frmProject.uc_project1.txtShared.Text.Trim() + "\r\n");
+                    frmMain.g_oUtils.WriteText(frmTemp.frmProject.uc_project1.m_strDebugFile, "Organization:                    " + frmProject.uc_project1.txtOrganization.Text.Trim() + "\r\n");
                     frmMain.g_oUtils.WriteText(frmTemp.frmProject.uc_project1.m_strDebugFile, "Description:                " + frmProject.uc_project1.txtDescription.Text.Trim() + "\r\n");
                 }
 
-				frmTemp.frmProject.uc_project1.SetProjectPathEnvironmentVariables();
-				if (frmTemp.frmProject.uc_project1.m_strAction != "NEW")
+                if (this.frmProject.uc_project1.m_strProjectFile.EndsWith(".mdb") || this.frmProject.uc_project1.m_strProjectFile.EndsWith(".mde") || this.frmProject.uc_project1.m_strProjectFile.EndsWith(".accdb"))
+                {
+                    this.frmProject.uc_project1.SetProjectPathEnvironmentVariables();
+                }
+                else
+                {
+                    this.frmProject.uc_project1.SetProjectPathEnvironmentVariablesSqlite();
+                }
+                if (frmTemp.frmProject.uc_project1.m_strAction != "NEW")
 				{
 					oVersCtl.ReferenceProjectDirectory=frmTemp.frmProject.uc_project1.m_strProjectDirectory;
 					oVersCtl.PerformVersionCheck();
 				}
               
 				btnDB.ForeColor = Color.Red;
-				frmTemp.btnContacts.Enabled=true;
 				frmTemp.btnOptimizer.Enabled = true;
 				frmTemp.btnDB.Enabled=false;
 			
 				frmTemp.btnFVS.Enabled=true;
 				frmTemp.btnProcessor.Enabled=true;
 				frmTemp.m_pnlCurrent.Enabled=true;
-				frmTemp.btnContacts.Enabled=true;
-				frmTemp.btnNotes.Enabled=true;
 				frmTemp.btnProject.Enabled=true;
 				frmTemp.btnSave.Enabled=true;
-                mnuToolsProjectRootFolder.Enabled = true;
-
-				if (frmTemp.frmProject.uc_project1.txtPersonal.Text.Trim().Length == 0 &&
-					frmTemp.frmProject.uc_project1.txtShared.Text.Trim().Length == 0)
-				{
-					frmTemp.btnLinks.Enabled = false;
-				}
-				else 
-				{
-					frmTemp.btnLinks.Enabled=true;
-				}
+                mnuToolsProjectFolder.Enabled = true;
 				
 				frmTemp.mnuView.Enabled=true;
 				
@@ -2548,9 +2380,8 @@ namespace FIA_Biosum_Manager
 		    this.frmProject.uc_project1.m_strNewProjectId="";
             this.frmProject.uc_project1.m_strNewName="";
 		    this.frmProject.uc_project1.m_strNewDate="";
-		    this.frmProject.uc_project1.m_strNewCompany="";
+		    this.frmProject.uc_project1.m_strNewOrganization="";
 		    this.frmProject.uc_project1.m_strNewDescription="";
-            this.frmProject.uc_project1.m_strNewShared="";
 		    this.frmProject.uc_project1.m_strNewRootDirectory="";
 			this.frmProject.uc_project1.m_strNewProjectVersion="";
 			frmMain.g_sbpInfo.Text = "Ready";
@@ -2797,12 +2628,8 @@ namespace FIA_Biosum_Manager
 		{
 			int intAvailHt=0;;
 			int intAvailWd=0;
-			this.frmProject.uc_project_notes1.Visible=false;
 			this.frmProject.uc_project1.Visible=false;
             this.frmProject.uc_scenario1.Visible=false;
-			this.frmProject.uc_contact_list1.Visible=false;
-			this.frmProject.uc_project_document_links1.loadvalues(this.frmProject.uc_project1.txtShared.Text,this.frmProject.uc_project1.txtPersonal.Text,false);
-			this.frmProject.uc_project_document_links1.Visible=true;
 			this.frmProject.Visible = true;
 			if (this.frmProject.WindowState==System.Windows.Forms.FormWindowState.Minimized)
 			{
@@ -2848,14 +2675,14 @@ namespace FIA_Biosum_Manager
 				}
 			}
 
-            if (this.frmProject.uc_project1.txtRootDirectory.Text.Trim().Length > 0)
+            if (this.frmProject.uc_project1.m_strProjectDirectory.Trim().Length > 0)
             {
                                 
                 //delete any temporary FRCS files
-                if (System.IO.Directory.Exists(frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\FRCS"))
+                if (System.IO.Directory.Exists(frmProject.uc_project1.m_strProjectDirectory.Trim() + "\\FRCS"))
                 {
                     strFiles = new string[100];
-                    strFiles = System.IO.Directory.GetFiles(frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\FRCS", "fia_biosum_*.xls");
+                    strFiles = System.IO.Directory.GetFiles(frmProject.uc_project1.m_strProjectDirectory.Trim() + "\\FRCS", "fia_biosum_*.xls");
                     for (int x = 0; x <= strFiles.GetUpperBound(0); x++)
                     {
                         if (strFiles[x].Trim().Length > 0)
@@ -3021,32 +2848,6 @@ namespace FIA_Biosum_Manager
                             }
                             temp.uc_project1.SaveProjectProperties();
                         }
-                        if (temp.uc_project_notes1.btnSave.Enabled == true)
-                        {
-                            if (bPromptMsg == false && p_bPrompt)
-                            {
-                                result = MessageBox.Show("Save Changes to " + child.Text.Trim() + " Y/N", "FIA Biosum", System.Windows.Forms.MessageBoxButtons.YesNo, System.Windows.Forms.MessageBoxIcon.Question);
-                                if (result == System.Windows.Forms.DialogResult.No)
-                                {
-                                    break;
-                                }
-                                else bPromptMsg = true;
-                            }
-                            temp.uc_project_notes1.savevalues();
-                        }
-                        if (temp.uc_contact_list1.btnSave.Enabled == true)
-                        {
-                            if (bPromptMsg == false && p_bPrompt)
-                            {
-                                result = MessageBox.Show("Save Changes to " + child.Text.Trim() + " Y/N", "FIA Biosum", System.Windows.Forms.MessageBoxButtons.YesNo, System.Windows.Forms.MessageBoxIcon.Question);
-                                if (result == System.Windows.Forms.DialogResult.No)
-                                {
-                                    break;
-                                }
-                                else bPromptMsg = true;
-                            }
-                            temp.uc_contact_list1.savevalues();
-                        }
                         temp = null;
                     }
                     }
@@ -3202,14 +3003,6 @@ namespace FIA_Biosum_Manager
 			this.m_btnDbPlotData.Location = this.btnMain1.Location;
 			this.m_btnDbPlotData.Text = "Plot Data";
 
-			//processing sites
-            // Hide button in v5.11.0. No longer needed
-			//this.m_btnDbPSite = new btnMainForm(this);
-			//this.m_pnlDb.Controls.Add(this.m_btnDbPSite);
-			//this.m_btnDbPSite.Size = this.btnMain1.Size;
-			//this.m_btnDbPSite.Left = this.m_btnDbPlotData.Left;
-			//this.m_btnDbPSite.Top = this.m_btnDbPlotData.Top + this.m_btnDbPlotData.Height + 5;
-			//this.m_btnDbPSite.Text = "Wood Processing Sites";
 
 			//project data sources
 			this.m_btnDbDataSource = new btnMainForm(this);
@@ -3226,15 +3019,6 @@ namespace FIA_Biosum_Manager
             this.m_btnSQLiteTableMgmt.Left = this.m_btnDbPlotData.Left;
             this.m_btnSQLiteTableMgmt.Top = this.m_btnDbDataSource.Top + this.m_btnDbDataSource.Height + 5;
             this.m_btnSQLiteTableMgmt.Text = "Manage Tables";
-			//generate travel times
-			this.m_btnDbRandomTravelTimes = new btnMainForm(this);
-			this.m_pnlDb.Controls.Add(this.m_btnDbRandomTravelTimes);
-			this.m_btnDbRandomTravelTimes.Size = this.btnMain1.Size;
-			this.m_btnDbRandomTravelTimes.Left  = this.m_btnDbPlotData.Left;
-			this.m_btnDbRandomTravelTimes.Top = this.m_btnSQLiteTableMgmt.Top + this.m_btnSQLiteTableMgmt.Height + 5;
-			this.m_btnDbRandomTravelTimes.Text = "Generate Random Travel Times";
-			this.m_btnDbRandomTravelTimes.Enabled=true;
-			this.m_btnDbRandomTravelTimes.Visible=false;
 
 			//FRCS PANEL
 			this.m_pnlFrcs = new Panel();
@@ -3455,10 +3239,6 @@ namespace FIA_Biosum_Manager
 			
 			this.frmProject.uc_project1.Visible=false;
 			this.frmProject.uc_scenario1.Visible=false;
-			this.frmProject.uc_project_document_links1.Visible=false;
-			this.frmProject.uc_contact_list1.Visible=false;
-            this.frmProject.uc_project_notes1.loadnotes();				
-			this.frmProject.uc_project_notes1.Visible=true;
 			this.frmProject.Visible = true;
 			if (this.frmProject.WindowState==System.Windows.Forms.FormWindowState.Minimized)
 			{
@@ -3564,32 +3344,6 @@ namespace FIA_Biosum_Manager
 					
 			}
 
-		}
-
-		private void mnuViewContacts_Click(object sender, System.EventArgs e)
-		{
-			
-			this.frmProject.uc_project_notes1.Visible=false;
-			this.frmProject.uc_project1.Visible=false;
-			this.frmProject.uc_project_document_links1.Visible=false;
-			this.frmProject.uc_contact_list1.loadvalues(this.frmProject.uc_project1.txtRootDirectory.Text.Trim());
-			this.frmProject.uc_contact_list1.Visible=true;
-			this.frmProject.Visible = true;
-			if (this.frmProject.WindowState==System.Windows.Forms.FormWindowState.Minimized)
-			{
-				this.frmProject.WindowState = System.Windows.Forms.FormWindowState.Normal;
-			}
-			else
-			{
-				
-			}
-
-			this.frmProject.Focus();
-			this.frmProject.uc_contact_list1.m_oResizeForm.ControlToResize = frmProject;
-			
-			this.frmProject.uc_contact_list1.m_oResizeForm.ResizeControl();
-
-			
 		}
 
 		private void grpboxLeft_Resize(object sender, System.EventArgs e)
@@ -3738,7 +3492,7 @@ namespace FIA_Biosum_Manager
             
         }
 
-        private void mnuToolsProjectRootFolder_Click(object sender, EventArgs e)
+        private void mnuToolsProjectFolder_Click(object sender, EventArgs e)
         {
             this.ActivateStandByAnimation(
                this.WindowState,
@@ -3746,7 +3500,7 @@ namespace FIA_Biosum_Manager
                this.Height,
                this.Width,
                this.Top);
-            frmScanAndSynchronizeProjectRootFolderTool oForm = new frmScanAndSynchronizeProjectRootFolderTool();
+            frmScanAndSynchronizeProjectFolderTool oForm = new frmScanAndSynchronizeProjectFolderTool();
             oForm.MdiParent = this;
             this.DeactivateStandByAnimation();
             oForm.Show();
@@ -3763,11 +3517,11 @@ namespace FIA_Biosum_Manager
         private void CheckForBiosumRefData()
         {
             string strDestFile = frmMain.g_oEnv.strApplicationDataDirectory.Trim() +
-                frmMain.g_strBiosumDataDir + "\\" + Tables.Reference.DefaultBiosumReferenceSqliteFile;
+                frmMain.g_strBiosumDataDir + "\\" + Tables.Reference.DefaultBiosumReferenceFile;
             try
             {
                 bool bCopyDatabase = true;
-                string strSourceFile = frmMain.g_oEnv.strAppDir + "\\db\\" + Tables.Reference.DefaultBiosumReferenceSqliteFile;
+                string strSourceFile = frmMain.g_oEnv.strAppDir + "\\db\\" + Tables.Reference.DefaultBiosumReferenceFile;
                 if (System.IO.File.Exists(strDestFile) == true)
                 {
                     // Check to see if the version is correct
@@ -3857,7 +3611,7 @@ namespace FIA_Biosum_Manager
             string[] arrRequiredFiles = {Tables.VolumeAndBiomass.FiaTreeVBCJar, Tables.VolumeAndBiomass.DefaultTvbcWorkDatabase,
                                          Tables.VolumeAndBiomass.TvbcTreeCalcBat};
             string strTargetPath = "";
-            try
+        try
             {
                 for (int i = 0; i < arrRequiredFiles.Length; i++)
                 {

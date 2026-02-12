@@ -222,6 +222,7 @@ namespace FIA_Biosum_Manager
             static public string MasterDsnName { get { return "MASTER"; } }
             static public string BiosumRefDsnName { get { return "BIOSUM_REF"; } }
             static public string TemporaryDsnName { get { return "TEMP"; } }
+            static public string ProjectDsnName { get { return "PROJECT"; } }
         }
 
     }

@@ -271,7 +271,7 @@ namespace FIA_Biosum_Manager
 			//intscenario = getScenarioCount() + 1;
             string strScenario = getNextScenarioId();
             this.txtScenarioId.Text = strScenario;
-			this.txtScenarioPath.Text = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + ScenarioType + "\\" + this.txtScenarioId.Text;
+			this.txtScenarioPath.Text = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() + "\\" + ScenarioType + "\\" + this.txtScenarioId.Text;
 			this.txtScenarioId.Focus();
 			this.txtDescription.Enabled=true;
 			this.txtDescription.Text = "";
@@ -282,16 +282,7 @@ namespace FIA_Biosum_Manager
             string strProjDir = frmMain.g_oFrmMain.getProjectDirectory();
             string strScenarioDir = strProjDir + "\\" + ScenarioType + "\\db";
             System.Collections.Generic.IList<string> lstExistingScenarios = new System.Collections.Generic.List<string>();
-            //if (ReferenceProcessorScenarioForm != null &&
-            //    ReferenceProcessorScenarioForm.m_bUsingSqlite == true)
-            //{
-                lstExistingScenarios = QueryScenarioNamesSqlite(strScenarioDir);
-            //}
-            //else
-            //{
-            //    lstExistingScenarios = QueryScenarioNames(strScenarioDir);
-            //}
-            
+            lstExistingScenarios = QueryScenarioNames(strScenarioDir);
 
             int i = 1;
             string strTestName;
@@ -309,33 +300,6 @@ namespace FIA_Biosum_Manager
         }
 
         private System.Collections.Generic.IList<string> QueryScenarioNames(string strScenarioDir)
-        {
-            ado_data_access oAdo = new ado_data_access();
-            string strFile = "scenario_" + ScenarioType + "_rule_definitions.mdb";
-            string strFullPath = strScenarioDir + "\\" + strFile;
-            string strConn = oAdo.getMDBConnString(strFullPath, "", "");
-            System.Collections.Generic.IList<string> lstExistingScenarios = new System.Collections.Generic.List<string>();
-            using (var conn = new System.Data.OleDb.OleDbConnection(strConn))
-            {
-                conn.Open();
-                string strSQL = "SELECT scenario_id from " + Tables.Scenario.DefaultScenarioTableName;
-                oAdo.SqlQueryReader(conn, strSQL);
-                if (oAdo.m_OleDbDataReader.HasRows)
-                {
-                    // Load all of the existing scenarios into a list we can query
-                    while (oAdo.m_OleDbDataReader.Read())
-                    {
-                        string strScenario = Convert.ToString(oAdo.m_OleDbDataReader["scenario_id"]).Trim();
-                        if (!String.IsNullOrEmpty(strScenario))
-                        {
-                            lstExistingScenarios.Add(strScenario);
-                        }
-                    }
-                }
-            }
-            return lstExistingScenarios;
-        }
-        private System.Collections.Generic.IList<string> QueryScenarioNamesSqlite(string strScenarioDir)
         {
             SQLite.ADO.DataMgr dataMgr = new SQLite.ADO.DataMgr();
             string strFile = "scenario_" + ScenarioType + "_rule_definitions.db";
@@ -466,11 +430,11 @@ namespace FIA_Biosum_Manager
                         using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strScenarioResultsConn))
                         {
                             conn.Open();
-                            frmMain.g_oTables.m_oProcessor.CreateSqliteHarvestCostsTable(dataMgr,
+                            frmMain.g_oTables.m_oProcessor.CreateHarvestCostsTable(dataMgr,
                                 conn, Tables.ProcessorScenarioRun.DefaultHarvestCostsTableName);
-                            frmMain.g_oTables.m_oProcessor.CreateSqliteTreeVolValSpeciesDiamGroupsTable(dataMgr,
+                            frmMain.g_oTables.m_oProcessor.CreateTreeVolValSpeciesDiamGroupsTable(dataMgr,
                                 conn, Tables.ProcessorScenarioRun.DefaultTreeVolValSpeciesDiamGroupsTableName, true);
-                            frmMain.g_oTables.m_oProcessorScenarioRun.CreateSqliteAdditionalKcpCpaTable(dataMgr,
+                            frmMain.g_oTables.m_oProcessorScenarioRun.CreateAdditionalKcpCpaTable(dataMgr,
                                 conn, Tables.ProcessorScenarioRun.DefaultAddKcpCpaTableName, false);
                         }
                     }
@@ -485,126 +449,123 @@ namespace FIA_Biosum_Manager
             //
             //copy the project data source values to the scenario data source
             //
-            string strScenarioDBDir = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + ScenarioType + "\\db";
+            string strScenarioDBDir = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() + "\\" + ScenarioType + "\\db";
             string strScenarioFile = "scenario_" + ScenarioType + "_rule_definitions.db";
             StringBuilder strScenarioFullPath = new StringBuilder(strScenarioDBDir);
             strScenarioFullPath.Append("\\");
             strScenarioFullPath.Append(strScenarioFile);
             string strScenarioConn = dataMgr.GetConnectionString(strScenarioFullPath.ToString());
 
-            ado_data_access oAdo = new ado_data_access();
-            string strProjDBDir = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\db";
-			string strProjFile = "project.mdb";
-			StringBuilder strProjFullPath = new StringBuilder(strProjDBDir);
-			strProjFullPath.Append("\\");
-			strProjFullPath.Append(strProjFile);
-			string strProjConn=oAdo.getMDBConnString(strProjFullPath.ToString(),"admin","");
+            string strProjDBDir = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() + "\\db";
+            string strProjFile = "project.db";
+            StringBuilder strProjFullPath = new StringBuilder(strProjDBDir);
+            strProjFullPath.Append("\\");
+            strProjFullPath.Append(strProjFile);
             using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strScenarioConn))
             {
                 conn.Open();
-                using (var p_OleDbProjConn = new System.Data.OleDb.OleDbConnection(strProjConn))
+
+                if (this.txtDescription.Text.Trim().Length > 0)
+                    strDesc = dataMgr.FixString(this.txtDescription.Text.Trim(), "'", "''");
+                dataMgr.m_strSQL = "INSERT INTO scenario (scenario_id,description,Path,File) VALUES " + "('" + this.txtScenarioId.Text.Trim() + "'," +
+                    "'" + strDesc + "'," +
+                    "'" + this.txtScenarioPath.Text.Trim() + "','scenario_" + ScenarioType + "_rule_definitions.db');";
+                dataMgr.SqlNonQuery(conn, dataMgr.m_strSQL);
+
+                dataMgr.m_strSQL = "ATTACH DATABASE '" + strProjFullPath.ToString() + "' AS proj";
+                dataMgr.SqlNonQuery(conn, dataMgr.m_strSQL);
+
+                dataMgr.SqlQueryReader(conn, "SELECT * FROM proj.datasource");
+                if (dataMgr.m_intError == 0)
                 {
-                    p_OleDbProjConn.Open();
-                    if (oAdo.m_intError == 0)
+                    try
                     {
-                        if (this.txtDescription.Text.Trim().Length > 0)
-                            strDesc = dataMgr.FixString(this.txtDescription.Text.Trim(), "'", "''");
-                        strSQL = "INSERT INTO scenario (scenario_id,description,Path,File) VALUES " + "('" + this.txtScenarioId.Text.Trim() + "'," +
-                            "'" + strDesc + "'," +
-                            "'" + this.txtScenarioPath.Text.Trim() + "','scenario_" + ScenarioType + "_rule_definitions.db');";
-                        dataMgr.SqlNonQuery(conn, strSQL);
-
-                        oAdo.SqlQueryReader(p_OleDbProjConn, "select * from datasource");
-                        if (oAdo.m_intError == 0)
+                        while (dataMgr.m_DataReader.Read())
                         {
-                            try
+                            bOptimizer = false;
+                            switch (dataMgr.m_DataReader["table_type"].ToString().Trim().ToUpper())
                             {
-                                while (oAdo.m_OleDbDataReader.Read())
-                                {
-                                    bOptimizer = false;
-                                    switch (oAdo.m_OleDbDataReader["table_type"].ToString().Trim().ToUpper())
-                                    {
-                                        case "PLOT":
-                                            bOptimizer = true;
-                                            break;
-                                        case "CONDITION":
-                                            bOptimizer = true;
-                                            break;
-                                        case "ADDITIONAL HARVEST COSTS":
-                                            bOptimizer = true;
-                                            break;
-                                        case "TREATMENT PRESCRIPTIONS":
-                                            bOptimizer = true;
-                                            break;
-                                        case "TRAVEL TIMES":
-                                            bOptimizer = true;
-                                            break;
-                                        case "PROCESSING SITES":
-                                            if (ScenarioType == "optimizer") bOptimizer = true;
-                                            break;
-                                        case "TREE":
-                                            if (ScenarioType == "processor") bOptimizer = true;
-                                            break;
-                                        case "HARVEST METHODS":
-                                            bOptimizer = true;
-                                            break;
-                                        case "TREATMENT PACKAGES":
-                                            bOptimizer = true;
-                                            break;
-                                        case "TREE SPECIES":
-                                            if (ScenarioType == "processor") bOptimizer = true;
-                                            break;
-                                        case "TREATMENT PRESCRIPTIONS HARVEST COST COLUMNS":
-                                            bOptimizer = true;
-                                            break;
-                                        case "FIA TREE SPECIES REFERENCE":
-                                            if (ScenarioType == "processor") bOptimizer = true;
-                                            break;
+                                case "PLOT":
+                                    bOptimizer = true;
+                                    break;
+                                case "CONDITION":
+                                    bOptimizer = true;
+                                    break;
+                                case "ADDITIONAL HARVEST COSTS":
+                                    bOptimizer = true;
+                                    break;
+                                case "TREATMENT PRESCRIPTIONS":
+                                    bOptimizer = true;
+                                    break;
+                                case "TRAVEL TIMES":
+                                    bOptimizer = true;
+                                    break;
+                                case "PROCESSING SITES":
+                                    if (ScenarioType == "optimizer") bOptimizer = true;
+                                    break;
+                                case "TREE":
+                                    if (ScenarioType == "processor") bOptimizer = true;
+                                    break;
+                                case "HARVEST METHODS":
+                                    bOptimizer = true;
+                                    break;
+                                case "TREATMENT PACKAGES":
+                                    bOptimizer = true;
+                                    break;
+                                case "TREE SPECIES":
+                                    if (ScenarioType == "processor") bOptimizer = true;
+                                    break;
+                                case "TREATMENT PRESCRIPTIONS HARVEST COST COLUMNS":
+                                    bOptimizer = true;
+                                    break;
+                                case "FIA TREE SPECIES REFERENCE":
+                                    if (ScenarioType == "processor") bOptimizer = true;
+                                    break;
 
-                                        default:
-                                            break;
-                                    }
-                                    if (bOptimizer == true)
-                                    {
-                                        strSQL = "INSERT INTO scenario_datasource (scenario_id,table_type,Path,file,table_name) VALUES " + "('" + this.txtScenarioId.Text.Trim() + "'," +
-                                            "'" + oAdo.m_OleDbDataReader["table_type"].ToString().Trim() + "'," +
-                                            "'" + oAdo.m_OleDbDataReader["path"].ToString().Trim() + "'," +
-                                            "'" + oAdo.m_OleDbDataReader["file"].ToString().Trim() + "'," +
-                                            "'" + oAdo.m_OleDbDataReader["table_name"].ToString().Trim() + "');";
-                                        dataMgr.SqlNonQuery(conn, strSQL);
-                                    }
-                                }
+                                default:
+                                    break;
                             }
-                            catch (Exception caught)
+                            if (bOptimizer == true)
                             {
-                                m_intError = -1;
-                                m_strError = caught.Message;
-                                MessageBox.Show(strError);
+                                dataMgr.m_strSQL = "INSERT INTO scenario_datasource (scenario_id,table_type,Path,file,table_name) VALUES " + "('" + this.txtScenarioId.Text.Trim() + "'," +
+                                    "'" + dataMgr.m_DataReader["table_type"].ToString().Trim() + "'," +
+                                    "'" + dataMgr.m_DataReader["path"].ToString().Trim() + "'," +
+                                    "'" + dataMgr.m_DataReader["file"].ToString().Trim() + "'," +
+                                    "'" + dataMgr.m_DataReader["table_name"].ToString().Trim() + "');";
+                                dataMgr.SqlNonQuery(conn, dataMgr.m_strSQL);
                             }
-                            oAdo.m_OleDbDataReader.Close();
                         }
                     }
+                    catch (Exception caught)
+                    {
+                        m_intError = -1;
+                        m_strError = caught.Message;
+                        MessageBox.Show(strError);
+                    }
+                    dataMgr.m_DataReader.Close();
+
                 }
+
                 if (ScenarioType.Trim().ToUpper() == "OPTIMIZER")
                 {
                     string strTemp = dataMgr.FixString("SELECT @@PlotTable@@.* FROM @@PlotTable@@ ", "'", "''");
-                    strSQL = "INSERT INTO scenario_plot_filter (scenario_id,sql_command,current_yn) VALUES " + "('" + this.txtScenarioId.Text.Trim() + "'," +
+                    dataMgr.m_strSQL = "INSERT INTO scenario_plot_filter (scenario_id,sql_command,current_yn) VALUES " + "('" + this.txtScenarioId.Text.Trim() + "'," +
                         "'" + strTemp + "'," +
                             "'Y');";
-                    dataMgr.SqlNonQuery(conn, strSQL);
+                    dataMgr.SqlNonQuery(conn, dataMgr.m_strSQL);
 
                     strTemp = dataMgr.FixString("SELECT @@CondTable@@.* FROM @@CondTable@@", "'", "''");
-                    strSQL = "INSERT INTO scenario_cond_filter (scenario_id,sql_command,current_yn) VALUES " + "('" + this.txtScenarioId.Text.Trim() + "'," +
+                    dataMgr.m_strSQL = "INSERT INTO scenario_cond_filter (scenario_id,sql_command,current_yn) VALUES " + "('" + this.txtScenarioId.Text.Trim() + "'," +
                         "'" + strTemp + "'," +
                         "'Y');";
-                    dataMgr.SqlNonQuery(conn, strSQL);
+                    dataMgr.SqlNonQuery(conn, dataMgr.m_strSQL);
                 }
             }
 		}
         public void UpdateDescription()
 		{
 			string strDesc="";
-            string strScenarioDBDir = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + ScenarioType + "\\db";
+            string strScenarioDBDir = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() + "\\" + ScenarioType + "\\db";
             SQLite.ADO.DataMgr oDataMgr = new SQLite.ADO.DataMgr();
             string strScenarioFile = "scenario_" + ScenarioType + "_rule_definitions.db";
             StringBuilder strScenarioFullPath = new StringBuilder(strScenarioDBDir);
@@ -694,7 +655,7 @@ namespace FIA_Biosum_Manager
                     return false;
             }
 
-            string strScenarioDir = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + ScenarioType + "\\db";
+            string strScenarioDir = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() + "\\" + ScenarioType + "\\db";
             string strFile = "scenario_" + ScenarioType + "_rule_definitions.db";
             string strFolderToDelete = "";
             strFullPath = new StringBuilder(strScenarioDir);
@@ -956,102 +917,7 @@ namespace FIA_Biosum_Manager
 			
 			}
 		}
-        public void migrate_access_data_optimizer()
-        {
-            SQLite.ADO.DataMgr dataMgr = new SQLite.ADO.DataMgr();
-            string scenarioAccessFile = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory + "\\" +
-                Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableDbFile;
-
-            // Create SQLite copy of scenario_optimizer_rule_definitions database
-            string scenarioSqliteFile = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory + "\\" +
-                Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableSqliteDbFile;
-           frmMain.g_oFrmMain.frmProject.uc_project1.CreateOptimizerScenarioRuleDefinitionSqliteDbAndTables(scenarioSqliteFile);
-
-
-            ODBCMgr odbcmgr = new ODBCMgr();
-            // Check to see if the input SQLite DSN exists and if so, delete so we can add
-            if (odbcmgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.OptimizerRuleDefinitionsDsnName))
-            {
-                odbcmgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.OptimizerRuleDefinitionsDsnName);
-            }
-            odbcmgr.CreateUserSQLiteDSN(ODBCMgr.DSN_KEYS.OptimizerRuleDefinitionsDsnName, scenarioSqliteFile);
-
-            dao_data_access dao = new dao_data_access();
-            ado_data_access ado = new ado_data_access();
-            // Set new temporary database
-            string strTempAccdb = m_oUtils.getRandomFile(this.m_oEnv.strTempDir, "accdb");
-            dao.CreateMDB(strTempAccdb);
-
-            // Create table links for transferring data
-            string[] sourceTables = {Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioCostsTableName,
-            Tables.Scenario.DefaultScenarioDatasourceTableName,
-            Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioHarvestCostColumnsTableName,
-            Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioLandOwnerGroupsTableName,
-            Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioPlotFilterTableName,
-            Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioPSitesTableName,
-            Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioLastTieBreakRankTableName,
-            Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableName,
-            Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioFvsVariablesTableName,
-            Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioFvsVariablesOverallEffectiveTableName,
-            Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioFvsVariablesOptimizationTableName,
-            Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioFvsVariablesTieBreakerTableName,
-            Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioCondFilterMiscTableName,
-            Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioCondFilterTableName,
-            Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioProcessorScenarioSelectTableName};
-            string[] targetTables = new string[15];
-            foreach (string sourceTableName in sourceTables)
-            {
-                targetTables[Array.IndexOf(sourceTables, sourceTableName)] = sourceTableName + "_1";
-            }
-            // Link to all tables in source database
-            dao.CreateTableLinks(strTempAccdb, scenarioAccessFile);
-            foreach (string targetTableName in targetTables)
-            {
-                dao.CreateSQLiteTableLink(strTempAccdb, sourceTables[Array.IndexOf(targetTables, targetTableName)], targetTableName,
-                    ODBCMgr.DSN_KEYS.OptimizerRuleDefinitionsDsnName, scenarioSqliteFile);
-            }
-
-            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(dataMgr.GetConnectionString(scenarioSqliteFile)))
-            {
-                conn.Open();
-                // Delete any existing data from SQLite tables
-                foreach(string sourceTableName in sourceTables)
-                {
-                    dataMgr.m_strSQL = "DELETE FROM " + sourceTableName;
-                    dataMgr.SqlNonQuery(conn, dataMgr.m_strSQL);
-                }
-                conn.Close();
-            }
-
-            string strCopyConn = ado.getMDBConnString(strTempAccdb, "", "");
-            using (var copyConn = new System.Data.OleDb.OleDbConnection(strCopyConn))
-            {
-                copyConn.Open();
-
-                foreach (string targetTableName in targetTables)
-                {
-                    string sourceTableName = sourceTables[Array.IndexOf(targetTables, targetTableName)];
-                    ado.m_strSQL = "INSERT INTO " + targetTableName +
-                        " SELECT * FROM " + sourceTableName;
-                    ado.SqlNonQuery(copyConn, ado.m_strSQL);
-                }
-                copyConn.Close();
-            }
-
-            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(dataMgr.GetConnectionString(scenarioSqliteFile)))
-            {
-                conn.Open();
-                dataMgr.m_strSQL = "UPDATE scenario SET file = 'optimizer_scenario_rule_definitions.db'";
-                dataMgr.SqlNonQuery(conn, dataMgr.m_strSQL);
-                conn.Close();
-            }
-
-            if (odbcmgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.OptimizerRuleDefinitionsDsnName))
-            {
-                odbcmgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.OptimizerRuleDefinitionsDsnName);
-            }
-
-        }
+       
         public FIA_Biosum_Manager.frmProcessorScenario ReferenceProcessorScenarioForm
 		{
 			get {return _frmProcessorScenario;}

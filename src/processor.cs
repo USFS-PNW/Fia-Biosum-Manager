@@ -36,8 +36,8 @@ namespace FIA_Biosum_Manager
             SQLite.OpenConnection(SQLite.GetConnectionString(m_strSqliteConnection));
             // Attach to rule definitions database; Seems to be connection-specific
             string strScenarioDB =
-                frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
-                "\\processor\\" + Tables.ProcessorScenarioRuleDefinitions.DefaultSqliteDbFile;
+                frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() +
+                "\\processor\\" + Tables.ProcessorScenarioRuleDefinitions.DefaultDbFile;
             string strSql = "ATTACH DATABASE '" + strScenarioDB + "' AS definitions";
             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                 frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + strSql + "\r\n");
@@ -81,7 +81,7 @@ namespace FIA_Biosum_Manager
             {
                 conn.Open();
                 // Attach FVS_CutTree table
-                string strSQL = $@"ATTACH '{frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim()}\{Tables.FVS.DefaultFVSTreeListDbFile}' AS CUTLIST";
+                string strSQL = $@"ATTACH '{frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim()}\{Tables.FVS.DefaultFVSTreeListDbFile}' AS CUTLIST";
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + strSQL + "\r\n");
                 SQLite.SqlQueryReader(conn, strSQL);
@@ -331,7 +331,7 @@ namespace FIA_Biosum_Manager
             using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(SQLite.GetConnectionString(p_strTreeDbPath)))
             {
                 conn.Open();
-                string strFvsCutTreeDb = $@"{ frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() }\{ Tables.FVS.DefaultFVSTreeListDbFile}";
+                string strFvsCutTreeDb = $@"{ frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() }\{ Tables.FVS.DefaultFVSTreeListDbFile}";
                 string strSQL = $@"ATTACH '{strFvsCutTreeDb}' AS CUT_TREE";
                 SQLite.SqlNonQuery(conn, strSQL);
                 strSQL = "SELECT DISTINCT t.fvs_tree_id, t.biosum_cond_id, t.spcd " +
@@ -606,7 +606,7 @@ namespace FIA_Biosum_Manager
                 using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(SQLite.GetConnectionString(m_strSqliteConnection)))
                 {
                     conn.Open();
-                    frmMain.g_oTables.m_oProcessor.CreateNewSQLiteOpcostInputTable(SQLite, conn, m_strOpcostTableName);
+                    frmMain.g_oTables.m_oProcessor.CreateOpcostInputTable(SQLite, conn, m_strOpcostTableName);
                 }
 
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
@@ -946,7 +946,7 @@ namespace FIA_Biosum_Manager
                     SQLite.SqlNonQuery(conn, "DROP TABLE " + m_strTvvTableName);
 
                 // create tree vol val work table (TreeVolValLowSlope); Re-use the sql from tree vol val but don't create the indexes
-                SQLite.SqlNonQuery(conn, Tables.Processor.CreateSqliteTreeVolValSpeciesDiamGroupsTableSQL(m_strTvvTableName, false));
+                SQLite.SqlNonQuery(conn, Tables.Processor.CreateTreeVolValSpeciesDiamGroupsTableSQL(m_strTvvTableName, false));
                 
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "createTreeVolValWorkTable: Read trees into tree vol val - " + System.DateTime.Now.ToString() + "\r\n");
@@ -2797,7 +2797,7 @@ namespace FIA_Biosum_Manager
         {
             System.Collections.Generic.IDictionary<String, double> dictPreBasalArea =
                 new System.Collections.Generic.Dictionary<String, double>();
-            string strConn = SQLite.GetConnectionString($@"{frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim()}\{Tables.FVS.DefaultFVSOutPrePostDbFile}");
+            string strConn = SQLite.GetConnectionString($@"{frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim()}\{Tables.FVS.DefaultFVSOutPrePostDbFile}");
             using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strConn))
             {
                 conn.Open();

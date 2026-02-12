@@ -864,7 +864,7 @@ namespace FIA_Biosum_Manager
             this.txtDataDir.Text = this.m_strProjDir + "\\fvs\\data";
             this.m_oQueries.m_oFvs.LoadDatasource = true;
             this.m_oQueries.m_oFIAPlot.LoadDatasource = true;
-            this.m_oQueries.LoadDatasourcesNew(true);
+            this.m_oQueries.LoadDatasources(true);
         }
 
         private void btnClose_Click(object sender, System.EventArgs e)

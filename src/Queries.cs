@@ -44,7 +44,7 @@ namespace FIA_Biosum_Manager
 			get {return _strScenarioType;}
 			set {_strScenarioType=value;}
 		}
-        public void LoadDatasourcesNew(bool p_bLimited)
+        public void LoadDatasources(bool p_bLimited)
         {
             if (p_bLimited)
             {
@@ -59,7 +59,7 @@ namespace FIA_Biosum_Manager
             if (this.m_oReference.LoadDatasource) this.m_oReference.LoadDatasources();
             if (this.m_oTravelTime.LoadDatasource) this.m_oTravelTime.LoadDatasources(null, null);
         }
-        public void LoadDatasourcesNew(bool p_bLimited, string p_strScenarioType, string p_strScenarioId)
+        public void LoadDatasources(bool p_bLimited, string p_strScenarioType, string p_strScenarioId)
         {
             Scenario = true;
             ScenarioType = p_strScenarioType;
@@ -85,12 +85,12 @@ namespace FIA_Biosum_Manager
         }
         protected void LoadLimitedDatasources()
 		{
-			string strProjDir=frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim();
+			string strProjDir=frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim();
 			
 			m_oDataSource = new Datasource();
 			m_oDataSource.LoadTableColumnNamesAndDataTypes=false;
 			m_oDataSource.LoadTableRecordCount=false;
-			m_oDataSource.m_strDataSourceMDBFile = strProjDir.Trim() + "\\db\\project.mdb";
+			m_oDataSource.m_strDataSourceDBFile = strProjDir.Trim() + "\\db\\project.db";
 			m_oDataSource.m_strDataSourceTableName = "datasource";
 			m_oDataSource.m_strScenarioId="";
 			m_oDataSource.populate_datasource_array();
@@ -99,15 +99,15 @@ namespace FIA_Biosum_Manager
 		}
 		protected void LoadLimitedDatasources(string p_strScenarioType, string p_strScenarioId)
 		{
-			string strProjDir=frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim();
+			string strProjDir=frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim();
 			
 			m_oDataSource = new Datasource();
 			m_oDataSource.LoadTableColumnNamesAndDataTypes=false;
 			m_oDataSource.m_strScenarioId=p_strScenarioId.Trim();
 			m_oDataSource.LoadTableRecordCount=false;
             m_oDataSource.m_strDataSourceTableName = "scenario_datasource";
-            m_oDataSource.m_strDataSourceMDBFile = strProjDir.Trim() + "\\" + p_strScenarioType + "\\db\\scenario_" + p_strScenarioType + "_rule_definitions.db";
-            m_oDataSource.populate_datasource_array_sqlite();
+            m_oDataSource.m_strDataSourceDBFile = strProjDir.Trim() + "\\" + p_strScenarioType + "\\db\\scenario_" + p_strScenarioType + "_rule_definitions.db";
+            m_oDataSource.populate_datasource_array();
         }
 		static public string GetInsertSQL(string p_strFields, string p_strValues,string p_strTable)
 		{
@@ -226,7 +226,6 @@ namespace FIA_Biosum_Manager
                     " WHERE fvs_variant IS NOT NULL AND " +
                     "LENGTH(TRIM(fvs_variant)) > 0";
             }
-
             /// <summary>
             ///  Assign a sequence number to each record of the FVS output table and group by standid,year
             /// </summary>
@@ -234,57 +233,7 @@ namespace FIA_Biosum_Manager
             /// <param name="p_strFVSOutputTable"></param>
             /// <param name="p_bAllColumns"></param>
             /// <returns></returns>
-            static public string FVSOutputTable_PrePostGenericSQL(string p_strIntoTable, string p_strFVSOutputTable, bool p_bAllColumns)
-            {
-                string strSQL = "";
-                if (p_bAllColumns)
-                {
-                    strSQL = "SELECT d.SeqNum,a.* " +
-                              "FROM " + p_strFVSOutputTable + " a," +
-                                 "(SELECT  SUM(IIF(b.year >= c.year,1,0)) AS SeqNum," +
-                                          "b.standid, b.year " +
-                                  "FROM " + p_strFVSOutputTable + " b," +
-                                        "(SELECT standid,year " +
-                                         "FROM " + p_strFVSOutputTable + ") c " +
-                                 "WHERE b.standid=c.standid " +
-                                 "GROUP BY b.standid,b.year) d " +
-                              "WHERE a.standid=d.standid AND a.year=d.year";
-                }
-                else
-                {
-                    if (p_strIntoTable.Trim().Length > 0)
-                    {
-                        strSQL = "SELECT  SUM(IIF(a.year >= b.year,1,0)) AS SeqNum," +
-                                          "a.standid, a.year " +
-                                 "INTO " + p_strIntoTable + " " + 
-                                 "FROM " + p_strFVSOutputTable + " a," +
-                                      "(SELECT standid,year " +
-                                       "FROM " + p_strFVSOutputTable + ") b " +
-                                 "WHERE a.standid=b.standid " +
-                                 "GROUP BY a.standid,a.year";
-                    }
-                    else
-                    {
-                        strSQL = "SELECT  SUM(IIF(a.year >= b.year,1,0)) AS SeqNum," +
-                                          "a.standid, a.year " +
-                                 "FROM " + p_strFVSOutputTable + " a," +
-                                      "(SELECT standid,year " +
-                                       "FROM " + p_strFVSOutputTable + ") b " +
-                                 "WHERE a.standid=b.standid " +
-                                 "GROUP BY a.standid,a.year";
-                    }
-                }
-                return strSQL;
-               
-            }
-            /// <summary>
-            ///  Assign a sequence number to each record of the FVS output table and group by standid,year
-            /// </summary>
-            /// <param name="p_strIntoTable"></param>
-            /// <param name="p_strFVSOutputTable"></param>
-            /// <param name="p_bAllColumns"></param>
-            /// <returns></returns>
-            static public string FVSOutputTable_PrePostGenericSQLite(string p_strIntoTable, string p_strFVSOutputTable, bool p_bAllColumns,
+            static public string FVSOutputTable_PrePostGenericSQL(string p_strIntoTable, string p_strFVSOutputTable, bool p_bAllColumns,
                 string p_strRunTitle, IList<string> lstAddedColumns)
             {
                 string strSQL = "";
@@ -560,57 +509,6 @@ namespace FIA_Biosum_Manager
             static public string FVSOutputTable_AuditPrePostGenericSQL(string p_strIntoTable, string p_strFVSOutputTable, bool p_bAllColumns)
             {
                 string strSQL = "";
-               
-                    if (p_strIntoTable.Trim().Length > 0)
-                    {
-                        strSQL = "SELECT d.SeqNum,a.standid,a.year," + 
-                                       "'N' AS CYCLE1_PRE_YN,'N' AS CYCLE1_POST_YN," + 
-                                       "'N' AS CYCLE2_PRE_YN,'N' AS CYCLE2_POST_YN," + 
-                                       "'N' AS CYCLE3_PRE_YN,'N' AS CYCLE3_POST_YN," +
-                                       "'N' AS CYCLE4_PRE_YN,'N' AS CYCLE4_POST_YN " + 
-                                 "INTO " + p_strIntoTable + " " + 
-                                 "FROM " + p_strFVSOutputTable + " a," +
-                                     "(SELECT  SUM(IIF(b.year >= c.year,1,0)) AS SeqNum," +
-                                              "b.standid, b.year " +
-                                      "FROM " + p_strFVSOutputTable + " b," +
-                                            "(SELECT standid,year " +
-                                             "FROM " + p_strFVSOutputTable + ") c " +
-                                     "WHERE b.standid=c.standid " +
-                                     "GROUP BY b.standid,b.year) d " +
-                                  "WHERE a.standid=d.standid AND a.year=d.year";
-                    }
-                    else
-                    {
-                        strSQL = "SELECT d.SeqNum,a.standid,a.year," +
-                                       "'N' AS CYCLE1_PRE_YN,'N' AS CYCLE1_POST_YN," +
-                                       "'N' AS CYCLE2_PRE_YN,'N' AS CYCLE2_POST_YN," +
-                                       "'N' AS CYCLE3_PRE_YN,'N' AS CYCLE3_POST_YN," +
-                                       "'N' AS CYCLE4_PRE_YN,'N' AS CYCLE4_POST_YN " + 
-                                 "FROM " + p_strFVSOutputTable + " a," +
-                                    "(SELECT  SUM(IIF(b.year >= c.year,1,0)) AS SeqNum," +
-                                             "b.standid, b.year " +
-                                     "FROM " + p_strFVSOutputTable + " b," +
-                                           "(SELECT standid,year " +
-                                            "FROM " + p_strFVSOutputTable + ") c " +
-                                    "WHERE b.standid=c.standid " +
-                                    "GROUP BY b.standid,b.year) d " +
-                                 "WHERE a.standid=d.standid AND a.year=d.year " + 
-                                 "ORDER BY a.standid,d.SeqNum";
-                    }
-               
-                    return strSQL;
-
-            }
-            /// <summary>
-            /// SQL for creating the sequence number configuration table from the FVS Output table.
-            /// </summary>
-            /// <param name="p_strIntoTable">FVSTableName_PREPOST_SEQNUM_MATRIX</param>
-            /// <param name="p_strFVSOutputTable"></param>
-            /// <param name="p_bAllColumns"></param>
-            /// <returns></returns>
-            static public string SqliteFVSOutputTable_AuditPrePostGenericSQL(string p_strIntoTable, string p_strFVSOutputTable, bool p_bAllColumns)
-            {
-                string strSQL = "";
 
                 if (p_strIntoTable.Trim().Length > 0)
                 {
@@ -651,60 +549,7 @@ namespace FIA_Biosum_Manager
             /// <param name="p_oItem"></param>
             /// <param name="p_strUpdateTable">FVSTableName_PREPOST_SEQNUM_MATRIX</param>
             /// <returns></returns>
-            static public string FVSOutputTable_AuditUpdatePrePostGenericSQL(FVSPrePostSeqNumItem p_oItem,string p_strUpdateTable)
-            {
-                string strSQL="";
-                 if (p_oItem.RxCycle1PreSeqNum.Trim().Length > 0 && p_oItem.RxCycle1PreSeqNum.Trim().ToUpper() != "NOT USED")
-                {
-                    strSQL = strSQL + "CYCLE1_PRE_YN=IIF(SeqNum=" + p_oItem.RxCycle1PreSeqNum + ",'Y','N'),";
-
-                }
-                 if (p_oItem.RxCycle2PreSeqNum.Trim().Length > 0 && p_oItem.RxCycle2PreSeqNum.Trim().ToUpper() != "NOT USED")
-                {
-                    strSQL = strSQL + "CYCLE2_PRE_YN=IIF(SeqNum=" + p_oItem.RxCycle2PreSeqNum + ",'Y','N'),";
-                }
-
-                 if (p_oItem.RxCycle3PreSeqNum.Trim().Length > 0 && p_oItem.RxCycle3PreSeqNum.Trim().ToUpper() != "NOT USED")
-                {
-                    strSQL = strSQL + "CYCLE3_PRE_YN=IIF(SeqNum=" + p_oItem.RxCycle3PreSeqNum + ",'Y','N'),";
-                }
-                 if (p_oItem.RxCycle4PreSeqNum.Trim().Length > 0 && p_oItem.RxCycle4PreSeqNum.Trim().ToUpper() != "NOT USED")
-                {
-                    strSQL = strSQL + "CYCLE4_PRE_YN=IIF(SeqNum=" + p_oItem.RxCycle4PreSeqNum + ",'Y','N'),";
-                }
-                 if (p_oItem.RxCycle1PostSeqNum.Trim().Length > 0 && p_oItem.RxCycle1PostSeqNum.Trim().ToUpper() != "NOT USED")
-                {
-                    strSQL = strSQL + "CYCLE1_POST_YN=IIF(SeqNum=" + p_oItem.RxCycle1PostSeqNum + ",'Y','N'),";
-
-                }
-                 if (p_oItem.RxCycle2PostSeqNum.Trim().Length > 0 && p_oItem.RxCycle2PostSeqNum.Trim().ToUpper() != "NOT USED")
-                {
-                    strSQL = strSQL + "CYCLE2_POST_YN=IIF(SeqNum=" + p_oItem.RxCycle2PostSeqNum + ",'Y','N'),";
-                }
-
-                 if (p_oItem.RxCycle3PostSeqNum.Trim().Length > 0 && p_oItem.RxCycle3PostSeqNum.Trim().ToUpper() != "NOT USED")
-                {
-                    strSQL = strSQL + "CYCLE3_POST_YN=IIF(SeqNum=" + p_oItem.RxCycle3PostSeqNum + ",'Y','N'),";
-                }
-                 if (p_oItem.RxCycle4PostSeqNum.Trim().Length > 0 && p_oItem.RxCycle4PostSeqNum.Trim().ToUpper() != "NOT USED")
-                {
-                    strSQL = strSQL + "CYCLE4_POST_YN=IIF(SeqNum=" + p_oItem.RxCycle4PostSeqNum + ",'Y','N'),";
-                }
-                if (strSQL.Trim().Length > 0)
-                {
-                    strSQL = strSQL.Substring(0, strSQL.Length - 1);
-                    strSQL = "UPDATE " + p_strUpdateTable + " " +
-                                      "SET " + strSQL;
-                }
-                return strSQL;
-            }
-            /// <summary>
-            /// Update SQL for assigning the sequence number to the PRE or POST cycle.
-            /// </summary>
-            /// <param name="p_oItem"></param>
-            /// <param name="p_strUpdateTable">FVSTableName_PREPOST_SEQNUM_MATRIX</param>
-            /// <returns></returns>
-            static public string SqliteFVSOutputTable_AuditUpdatePrePostGenericSQL(FVSPrePostSeqNumItem p_oItem, 
+            static public string FVSOutputTable_AuditUpdatePrePostGenericSQL(FVSPrePostSeqNumItem p_oItem, 
                 string p_strUpdateTable, string p_strFvsVariant, string p_strRxPackage)
             {
                 string strSQL = "";
@@ -752,115 +597,6 @@ namespace FIA_Biosum_Manager
                 }
                 return strSQL;
             }
-            /// <summary>
-            /// Update SQL for assigning the sequence number to the PRE or POST cycle.
-            /// </summary>
-            /// <param name="p_oItem"></param>
-            /// <param name="p_strUpdateTable">FVSTableName_PREPOST_SEQNUM_MATRIX</param>
-            /// <returns></returns>
-            static public string FVSOutputTable_AuditUpdatePrePostStrClassSQL(FVSPrePostSeqNumItem p_oItem, string p_strUpdateTable)
-            {
-                string strSQL = "";
-                if (p_oItem.RxCycle1PreSeqNum.Trim().Length > 0 && p_oItem.RxCycle1PreSeqNum.Trim().ToUpper() != "NOT USED")
-                {
-                    if (p_oItem.RxCycle1PreStrClassBeforeTreeRemovalYN == "N")
-                    {
-                        strSQL = strSQL + "CYCLE1_PRE_YN=IIF(SeqNum=" + p_oItem.RxCycle1PreSeqNum + " AND removal_code=1 ,'Y','N'),";
-                    }
-                    else
-                    {
-                        strSQL = strSQL + "CYCLE1_PRE_YN=IIF(SeqNum=" + p_oItem.RxCycle1PreSeqNum + " AND removal_code=0 ,'Y','N'),";
-                    }
-
-                }
-                if (p_oItem.RxCycle2PreSeqNum.Trim().Length > 0 && p_oItem.RxCycle2PreSeqNum.Trim().ToUpper() != "NOT USED")
-                {
-                    if (p_oItem.RxCycle2PreStrClassBeforeTreeRemovalYN == "N")
-                    {
-                        strSQL = strSQL + "CYCLE2_PRE_YN=IIF(SeqNum=" + p_oItem.RxCycle2PreSeqNum + " AND removal_code=1 ,'Y','N'),";
-                    }
-                    else
-                    {
-                        strSQL = strSQL + "CYCLE2_PRE_YN=IIF(SeqNum=" + p_oItem.RxCycle2PreSeqNum + " AND removal_code=0 ,'Y','N'),";
-                    }
-                }
-
-                if (p_oItem.RxCycle3PreSeqNum.Trim().Length > 0 && p_oItem.RxCycle3PreSeqNum.Trim().ToUpper() != "NOT USED")
-                {
-                    if (p_oItem.RxCycle3PreStrClassBeforeTreeRemovalYN == "N")
-                    {
-                        strSQL = strSQL + "CYCLE3_PRE_YN=IIF(SeqNum=" + p_oItem.RxCycle3PreSeqNum + " AND removal_code=1 ,'Y','N'),";
-                    }
-                    else
-                    {
-                        strSQL = strSQL + "CYCLE3_PRE_YN=IIF(SeqNum=" + p_oItem.RxCycle3PreSeqNum + " AND removal_code=0 ,'Y','N'),";
-                    }
-                }
-                if (p_oItem.RxCycle4PreSeqNum.Trim().Length > 0 && p_oItem.RxCycle4PreSeqNum.Trim().ToUpper() != "NOT USED")
-                {
-                    if (p_oItem.RxCycle4PreStrClassBeforeTreeRemovalYN == "N")
-                    {
-                        strSQL = strSQL + "CYCLE4_PRE_YN=IIF(SeqNum=" + p_oItem.RxCycle4PreSeqNum + " AND removal_code=1 ,'Y','N'),";
-                    }
-                    else
-                    {
-                        strSQL = strSQL + "CYCLE4_PRE_YN=IIF(SeqNum=" + p_oItem.RxCycle4PreSeqNum + " AND removal_code=0 ,'Y','N'),";
-                    }
-                }
-                if (p_oItem.RxCycle1PostSeqNum.Trim().Length > 0 && p_oItem.RxCycle1PostSeqNum.Trim().ToUpper() != "NOT USED")
-                {
-                    if (p_oItem.RxCycle1PostStrClassBeforeTreeRemovalYN == "N")
-                    {
-                        strSQL = strSQL + "CYCLE1_POST_YN=IIF(SeqNum=" + p_oItem.RxCycle1PostSeqNum + " AND removal_code=1 ,'Y','N'),";
-                    }
-                    else
-                    {
-                        strSQL = strSQL + "CYCLE1_POST_YN=IIF(SeqNum=" + p_oItem.RxCycle1PostSeqNum + " AND removal_code=0 ,'Y','N'),";
-                    }
-
-                }
-                if (p_oItem.RxCycle2PostSeqNum.Trim().Length > 0 && p_oItem.RxCycle2PostSeqNum.Trim().ToUpper() != "NOT USED")
-                {
-                    if (p_oItem.RxCycle2PostStrClassBeforeTreeRemovalYN == "N")
-                    {
-                        strSQL = strSQL + "CYCLE2_POST_YN=IIF(SeqNum=" + p_oItem.RxCycle2PostSeqNum + " AND removal_code=1 ,'Y','N'),";
-                    }
-                    else
-                    {
-                        strSQL = strSQL + "CYCLE2_POST_YN=IIF(SeqNum=" + p_oItem.RxCycle2PostSeqNum + " AND removal_code=0 ,'Y','N'),";
-                    }
-                }
-
-                if (p_oItem.RxCycle3PostSeqNum.Trim().Length > 0 && p_oItem.RxCycle3PostSeqNum.Trim().ToUpper() != "NOT USED")
-                {
-                    if (p_oItem.RxCycle3PostStrClassBeforeTreeRemovalYN == "N")
-                    {
-                        strSQL = strSQL + "CYCLE3_POST_YN=IIF(SeqNum=" + p_oItem.RxCycle3PostSeqNum + " AND removal_code=1 ,'Y','N'),";
-                    }
-                    else
-                    {
-                        strSQL = strSQL + "CYCLE3_POST_YN=IIF(SeqNum=" + p_oItem.RxCycle3PostSeqNum + " AND removal_code=0 ,'Y','N'),";
-                    }
-                }
-                if (p_oItem.RxCycle4PostSeqNum.Trim().Length > 0 && p_oItem.RxCycle4PostSeqNum.Trim().ToUpper() != "NOT USED")
-                {
-                    if (p_oItem.RxCycle4PostStrClassBeforeTreeRemovalYN == "N")
-                    {
-                        strSQL = strSQL + "CYCLE4_POST_YN=IIF(SeqNum=" + p_oItem.RxCycle4PostSeqNum + " AND removal_code=1 ,'Y','N'),";
-                    }
-                    else
-                    {
-                        strSQL = strSQL + "CYCLE4_POST_YN=IIF(SeqNum=" + p_oItem.RxCycle4PostSeqNum + " AND removal_code=0 ,'Y','N'),";
-                    }
-                }
-                if (strSQL.Trim().Length > 0)
-                {
-                    strSQL = strSQL.Substring(0, strSQL.Length - 1);
-                    strSQL = "UPDATE " + p_strUpdateTable + " " +
-                                      "SET " + strSQL;
-                }
-                return strSQL;
-            }
 
             /// <summary>
             /// Update SQL for assigning the sequence number to the PRE or POST cycle.
@@ -868,7 +604,7 @@ namespace FIA_Biosum_Manager
             /// <param name="p_oItem"></param>
             /// <param name="p_strUpdateTable">FVSTableName_PREPOST_SEQNUM_MATRIX</param>
             /// <returns></returns>
-            static public string SqliteFVSOutputTable_AuditUpdatePrePostStrClassSQL(FVSPrePostSeqNumItem p_oItem, string p_strUpdateTable,
+            static public string FVSOutputTable_AuditUpdatePrePostStrClassSQL(FVSPrePostSeqNumItem p_oItem, string p_strUpdateTable,
                 string p_strVariant, string p_strRxPackage)
             {
                 string strSQL = "";
@@ -980,57 +716,7 @@ namespace FIA_Biosum_Manager
             /// <param name="p_strFVSOutputTable"></param>
             /// <param name="p_bAllColumns"></param>
             /// <returns></returns>
-            static public string FVSOutputTable_AuditPrePostStrClassSQL(string p_strIntoTable, string p_strFVSOutputTable, bool p_bAllColumns)
-            {
-                string strSQL = "";
-
-                if (p_strIntoTable.Trim().Length > 0)
-                {
-                    strSQL = "SELECT d.SeqNum,a.standid,a.year,a.removal_code," +
-                                   "'N' AS CYCLE1_PRE_YN,'N' AS CYCLE1_POST_YN," +
-                                   "'N' AS CYCLE2_PRE_YN,'N' AS CYCLE2_POST_YN," +
-                                   "'N' AS CYCLE3_PRE_YN,'N' AS CYCLE3_POST_YN," +
-                                   "'N' AS CYCLE4_PRE_YN,'N' AS CYCLE4_POST_YN " +
-                             "INTO " + p_strIntoTable + " " +
-                             "FROM " + p_strFVSOutputTable + " a," +
-                                 "(SELECT  SUM(IIF(b.year >= c.year,1,0)) AS SeqNum," +
-                                          "b.standid, b.year,b.removal_code " +
-                                  "FROM " + p_strFVSOutputTable + " b," +
-                                        "(SELECT standid,year,removal_code " +
-                                         "FROM " + p_strFVSOutputTable + ") c " +
-                                 "WHERE b.standid=c.standid AND b.removal_code=c.removal_code " +
-                                 "GROUP BY b.standid,b.year,b.removal_code) d " +
-                              "WHERE a.standid=d.standid AND a.year=d.year AND a.removal_code=d.removal_code";
-                }
-                else
-                {
-                    strSQL = "SELECT d.SeqNum,a.standid,a.year,a.removal_code," +
-                                   "'N' AS CYCLE1_PRE_YN,'N' AS CYCLE1_POST_YN," +
-                                   "'N' AS CYCLE2_PRE_YN,'N' AS CYCLE2_POST_YN," +
-                                   "'N' AS CYCLE3_PRE_YN,'N' AS CYCLE3_POST_YN," +
-                                   "'N' AS CYCLE4_PRE_YN,'N' AS CYCLE4_POST_YN " +
-                             "FROM " + p_strFVSOutputTable + " a," +
-                                 "(SELECT  SUM(IIF(b.year >= c.year,1,0)) AS SeqNum," +
-                                          "b.standid, b.year,b.removal_code " +
-                                  "FROM " + p_strFVSOutputTable + " b," +
-                                        "(SELECT standid,year,removal_code " +
-                                         "FROM " + p_strFVSOutputTable + ") c " +
-                                 "WHERE b.standid=c.standid AND b.removal_code=c.removal_code " +
-                                 "GROUP BY b.standid,b.year,b.removal_code) d " +
-                             "WHERE a.standid=d.standid AND a.year=d.year AND a.removal_code=d.removal_code";
-                }
-
-                return strSQL;
-
-            }
-            /// <summary>
-            /// SQL for creating the sequence number configuration table from the FVS Output table FVS_STRCLASS.
-            /// </summary>
-            /// <param name="p_strIntoTable">FVSTableName_PREPOST_SEQNUM_MATRIX</param>
-            /// <param name="p_strFVSOutputTable"></param>
-            /// <param name="p_bAllColumns"></param>
-            /// <returns></returns>
-            static public string SqliteFVSOutputTable_AuditPrePostStrClassSQL(string p_strIntoTable, string p_strFVSOutputTable, 
+            static public string FVSOutputTable_AuditPrePostStrClassSQL(string p_strIntoTable, string p_strFVSOutputTable, 
                 bool p_bAllColumns)
             {
                 string strSQL = "";
@@ -1084,82 +770,8 @@ namespace FIA_Biosum_Manager
             /// <param name="p_strFVSOutputTable"></param>
             /// <param name="p_bAllColumns"></param>
             /// <returns></returns>
-            static public string[] FVSOutputTable_AuditPrePostFvsStrClassUsingFVSSummarySQL(string p_strIntoTable, string p_strFVSSummaryTable, bool p_bAllColumns)
-            {
-                string[] strSQL = new string[2];
 
-                if (p_strIntoTable.Trim().Length > 0)
-                {
-                 strSQL[0] = "SELECT d.SeqNum,a.standid,a.year,0 AS removal_code," +
-                                   "'N' AS CYCLE1_PRE_YN,'N' AS CYCLE1_POST_YN," +
-                                   "'N' AS CYCLE2_PRE_YN,'N' AS CYCLE2_POST_YN," +
-                                   "'N' AS CYCLE3_PRE_YN,'N' AS CYCLE3_POST_YN," +
-                                   "'N' AS CYCLE4_PRE_YN,'N' AS CYCLE4_POST_YN " +
-                             "INTO " + p_strIntoTable + " " +
-                             "FROM " + p_strFVSSummaryTable + " a," +
-                                 "(SELECT  SUM(IIF(b.year >= c.year,1,0)) AS SeqNum," +
-                                          "b.standid, b.year " +
-                                  "FROM " + p_strFVSSummaryTable + " b," +
-                                        "(SELECT standid,year " +
-                                         "FROM " + p_strFVSSummaryTable + ") c " +
-                                 "WHERE b.standid=c.standid " +
-                                 "GROUP BY b.standid,b.year) d " +
-                              "WHERE a.standid=d.standid AND a.year=d.year";
-
-                 strSQL[1] = "INSERT INTO " + p_strIntoTable + " " +
-                             "SELECT d.SeqNum,a.standid,a.year,1 AS removal_code," +
-                                   "'N' AS CYCLE1_PRE_YN,'N' AS CYCLE1_POST_YN," +
-                                   "'N' AS CYCLE2_PRE_YN,'N' AS CYCLE2_POST_YN," +
-                                   "'N' AS CYCLE3_PRE_YN,'N' AS CYCLE3_POST_YN," +
-                                   "'N' AS CYCLE4_PRE_YN,'N' AS CYCLE4_POST_YN " +
-                             "FROM " + p_strFVSSummaryTable + " a," +
-                                 "(SELECT  SUM(IIF(b.year >= c.year,1,0)) AS SeqNum," +
-                                          "b.standid, b.year " +
-                                  "FROM " + p_strFVSSummaryTable + " b," +
-                                        "(SELECT standid,year " +
-                                         "FROM " + p_strFVSSummaryTable + ") c " +
-                                 "WHERE b.standid=c.standid " +
-                                 "GROUP BY b.standid,b.year) d " +
-                             "WHERE a.standid=d.standid AND a.year=d.year";
-                }
-                else
-                {
-                    strSQL[0] = "SELECT d.SeqNum,a.standid,a.year,0 AS removal_code," +
-                                   "'N' AS CYCLE1_PRE_YN,'N' AS CYCLE1_POST_YN," +
-                                   "'N' AS CYCLE2_PRE_YN,'N' AS CYCLE2_POST_YN," +
-                                   "'N' AS CYCLE3_PRE_YN,'N' AS CYCLE3_POST_YN," +
-                                   "'N' AS CYCLE4_PRE_YN,'N' AS CYCLE4_POST_YN " +
-                             "FROM " + p_strFVSSummaryTable + " a," +
-                                 "(SELECT  SUM(IIF(b.year >= c.year,1,0)) AS SeqNum," +
-                                          "b.standid, b.year " +
-                                  "FROM " + p_strFVSSummaryTable + " b," +
-                                        "(SELECT standid,year " +
-                                         "FROM " + p_strFVSSummaryTable + ") c " +
-                                 "WHERE b.standid=c.standid " +
-                                 "GROUP BY b.standid,b.year) d " +
-                             "WHERE a.standid=d.standid AND a.year=d.year";
-
-                    strSQL[1] = "SELECT d.SeqNum,a.standid,a.year,1 AS removal_code," +
-                                   "'N' AS CYCLE1_PRE_YN,'N' AS CYCLE1_POST_YN," +
-                                   "'N' AS CYCLE2_PRE_YN,'N' AS CYCLE2_POST_YN," +
-                                   "'N' AS CYCLE3_PRE_YN,'N' AS CYCLE3_POST_YN," +
-                                   "'N' AS CYCLE4_PRE_YN,'N' AS CYCLE4_POST_YN " +
-                             "FROM " + p_strFVSSummaryTable + " a," +
-                                 "(SELECT  SUM(IIF(b.year >= c.year,1,0)) AS SeqNum," +
-                                          "b.standid, b.year " +
-                                  "FROM " + p_strFVSSummaryTable + " b," +
-                                        "(SELECT standid,year " +
-                                         "FROM " + p_strFVSSummaryTable + ") c " +
-                                 "WHERE b.standid=c.standid " +
-                                 "GROUP BY b.standid,b.year) d " +
-                             "WHERE a.standid=d.standid AND a.year=d.year";
-                }
-
-                return strSQL;
-
-            }
-
-            static public string[] SqliteFVSOutputTable_AuditPrePostFvsStrClassUsingFVSSummarySQL(string p_strIntoTable, string p_strFVSSummaryTable, 
+            static public string[] FVSOutputTable_AuditPrePostFvsStrClassUsingFVSSummarySQL(string p_strIntoTable, string p_strFVSSummaryTable, 
                 bool p_bAllColumns, string p_strRunTitle)
             {
                 string[] strSQL = new string[2];
@@ -1245,132 +857,9 @@ namespace FIA_Biosum_Manager
             /// <param name="p_oFVSPrePostSeqNumItem"></param>
             /// <param name="p_strIntoTable"></param>
             /// <param name="p_strSourceTable">FVSTableName_PREPOST_SEQNUM_MATRIX</param>
-            /// <returns></returns>
-            static public string FVSOutputTable_AuditSelectIntoPrePostSeqNumCount(FVSPrePostSeqNumItem p_oFVSPrePostSeqNumItem,string p_strIntoTable,string p_strSourceTable)
-            {
-                string strSQL = "";
-                int x;
-                int z = 0;
-               
-                string strAlpha = "cdefghij";
-                int intAlias = 0;
-                string strSelectColumns = "a.standid,b.totalrows,";
-                
-                //cycle 1 seqnum
-                if (p_oFVSPrePostSeqNumItem.RxCycle1PreSeqNum.Trim().Length > 0 && p_oFVSPrePostSeqNumItem.RxCycle1PreSeqNum.Trim().ToUpper() != "NOT USED")
-                {
-                    strSQL = strSQL + " (SELECT " +
-                                         "SUM(IIF(SeqNum=" + p_oFVSPrePostSeqNumItem.RxCycle1PreSeqNum + ",1,0)) AS pre_cycle1rows," +
-                                         "STANDID " +
-                                       "FROM " + p_strSourceTable + " " +
-                                       "GROUP BY STANDID) " + strAlpha.Substring(intAlias, 1) + ",";
-                    strSelectColumns = strSelectColumns + strAlpha.Substring(intAlias, 1) + ".pre_cycle1rows,";
-                    intAlias++;
-                }
-                if (p_oFVSPrePostSeqNumItem.RxCycle1PostSeqNum.Trim().Length > 0 && p_oFVSPrePostSeqNumItem.RxCycle1PostSeqNum.Trim().ToUpper() != "NOT USED")
-                {
-                    strSQL = strSQL + " (SELECT " +
-                                         "SUM(IIF(SeqNum=" + p_oFVSPrePostSeqNumItem.RxCycle1PostSeqNum + ",1,0)) AS post_cycle1rows," +
-                                         "STANDID " +
-                                       "FROM " + p_strSourceTable + " " +
-                                       "GROUP BY STANDID) " + strAlpha.Substring(intAlias, 1) + ",";
-                    strSelectColumns = strSelectColumns + strAlpha.Substring(intAlias, 1) + ".post_cycle1rows,";
-                    intAlias++;
-                }
-                //cycle 2 seqnum
-                if (p_oFVSPrePostSeqNumItem.RxCycle2PreSeqNum.Trim().Length > 0 && p_oFVSPrePostSeqNumItem.RxCycle2PreSeqNum.Trim().ToUpper() != "NOT USED")
-                {
-                    strSQL = strSQL + " (SELECT " +
-                                         "SUM(IIF(SeqNum=" + p_oFVSPrePostSeqNumItem.RxCycle2PreSeqNum + ",1,0)) AS pre_cycle2rows," +
-                                         "STANDID " +
-                                       "FROM " + p_strSourceTable + " " +
-                                       "GROUP BY STANDID) " + strAlpha.Substring(intAlias, 1) + ",";
-                    strSelectColumns = strSelectColumns + strAlpha.Substring(intAlias, 1) + ".pre_cycle2rows,";
-                    intAlias++;
-                }
-                if (p_oFVSPrePostSeqNumItem.RxCycle2PostSeqNum.Trim().Length > 0 && p_oFVSPrePostSeqNumItem.RxCycle2PostSeqNum.Trim().ToUpper() != "NOT USED")
-                {
-                    strSQL = strSQL + " (SELECT " +
-                                         "SUM(IIF(SeqNum=" + p_oFVSPrePostSeqNumItem.RxCycle2PostSeqNum + ",1,0)) AS post_cycle2rows," +
-                                         "STANDID " +
-                                       "FROM " + p_strSourceTable + " " +
-                                       "GROUP BY STANDID) " + strAlpha.Substring(intAlias, 1) + ",";
-                    strSelectColumns = strSelectColumns + strAlpha.Substring(intAlias, 1) + ".post_cycle2rows,";
-                    intAlias++;
-                }
-                //cycle 3 seqnum
-                if (p_oFVSPrePostSeqNumItem.RxCycle3PreSeqNum.Trim().Length > 0 && p_oFVSPrePostSeqNumItem.RxCycle3PreSeqNum.Trim().ToUpper() != "NOT USED")
-                {
-                    strSQL = strSQL + " (SELECT " +
-                                         "SUM(IIF(SeqNum=" + p_oFVSPrePostSeqNumItem.RxCycle3PreSeqNum + ",1,0)) AS pre_cycle3rows," +
-                                         "STANDID " +
-                                       "FROM " + p_strSourceTable + " " +
-                                       "GROUP BY STANDID) " + strAlpha.Substring(intAlias, 1) + ",";
-                    strSelectColumns = strSelectColumns + strAlpha.Substring(intAlias, 1) + ".pre_cycle3rows,";
-                    intAlias++;
-                }
-                if (p_oFVSPrePostSeqNumItem.RxCycle3PostSeqNum.Trim().Length > 0 && p_oFVSPrePostSeqNumItem.RxCycle3PostSeqNum.Trim().ToUpper() != "NOT USED")
-                {
-                    strSQL = strSQL + " (SELECT " +
-                                         "SUM(IIF(SeqNum=" + p_oFVSPrePostSeqNumItem.RxCycle3PostSeqNum + ",1,0)) AS post_cycle3rows," +
-                                         "STANDID " +
-                                       "FROM " + p_strSourceTable + " " +
-                                       "GROUP BY STANDID) " + strAlpha.Substring(intAlias, 1) + ",";
-                    strSelectColumns = strSelectColumns + strAlpha.Substring(intAlias, 1) + ".post_cycle3rows,";
-                    intAlias++;
-                }
-                //cycle 4 seqnum
-                if (p_oFVSPrePostSeqNumItem.RxCycle4PreSeqNum.Trim().Length > 0 && p_oFVSPrePostSeqNumItem.RxCycle4PreSeqNum.Trim().ToUpper() != "NOT USED")
-                {
-                    strSQL = strSQL + " (SELECT " +
-                                         "SUM(IIF(SeqNum=" + p_oFVSPrePostSeqNumItem.RxCycle4PreSeqNum + ",1,0)) AS pre_cycle4rows," +
-                                         "STANDID " +
-                                       "FROM " + p_strSourceTable + " " +
-                                       "GROUP BY STANDID) " + strAlpha.Substring(intAlias, 1) + ",";
-                    strSelectColumns = strSelectColumns + strAlpha.Substring(intAlias, 1) + ".pre_cycle4rows,";
-                    intAlias++;
-                }
-                if (p_oFVSPrePostSeqNumItem.RxCycle4PostSeqNum.Trim().Length > 0 && p_oFVSPrePostSeqNumItem.RxCycle4PostSeqNum.Trim().ToUpper() != "NOT USED")
-                {
-                    strSQL = strSQL + " (SELECT " +
-                                         "SUM(IIF(SeqNum=" + p_oFVSPrePostSeqNumItem.RxCycle4PostSeqNum + ",1,0)) AS post_cycle4rows," +
-                                         "STANDID " +
-                                       "FROM " + p_strSourceTable + " " +
-                                       "GROUP BY STANDID) " + strAlpha.Substring(intAlias, 1) + ",";
-                    strSelectColumns = strSelectColumns + strAlpha.Substring(intAlias, 1) + ".post_cycle4rows,";
-                    intAlias++;
-                }
-                strSQL = strSQL.Substring(0, strSQL.Length - 1);
-                strSelectColumns = strSelectColumns.Substring(0, strSelectColumns.Length - 1);
-
-                strSQL = "SELECT DISTINCT " + strSelectColumns + " " +
-                                 "INTO " + p_strIntoTable + " " +
-                                 "FROM " + p_strSourceTable + " a," +
-                                    "(SELECT COUNT(*) AS totalrows," +
-                                            "STANDID " +
-                                     "FROM " + p_strSourceTable + " " +
-                                 "GROUP BY standid) b," +
-                                 strSQL + " " +
-                                 "WHERE a.standid=b.standid AND ";
-
-                for (x = 0; x <= intAlias - 1; x++)
-                {
-                    strSQL = strSQL + "a.standid=" + strAlpha.Substring(x, 1) + ".standid AND ";
-                }
-
-                strSQL = strSQL.Substring(0, strSQL.Length - 5);
-                return strSQL;
-            }
-
-            /// <summary>
-            /// Audit to identify assigned sequence numbers that cannot be found in the Sequence Number Matrix table (FVSTableName_PREPOST_SEQNUM_MATRIX)
-            /// </summary>
-            /// <param name="p_oFVSPrePostSeqNumItem"></param>
-            /// <param name="p_strIntoTable"></param>
-            /// <param name="p_strSourceTable">FVSTableName_PREPOST_SEQNUM_MATRIX</param>
             /// <param name="p_strRunTitle">FVSOUT_PN_P001-001-001-001-001</param>
             /// <returns></returns>
-            static public string SqliteFVSOutputTable_AuditSelectIntoPrePostSeqNumCountSqlite(FVSPrePostSeqNumItem p_oFVSPrePostSeqNumItem, string p_strIntoTable, 
+            static public string FVSOutputTable_AuditSelectIntoPrePostSeqNumCount(FVSPrePostSeqNumItem p_oFVSPrePostSeqNumItem, string p_strIntoTable, 
                 string p_strSourceTable, string p_strRunTitle)
             {
                 string strSQL = "";
@@ -2155,299 +1644,6 @@ namespace FIA_Biosum_Manager
                     CASE WHEN BIOSUM_COND_ID IS NULL OR LENGTH(TRIM(BIOSUM_COND_ID)) = 0 THEN '' WHEN LENGTH(TRIM(BIOSUM_COND_ID)) >= 24 THEN SUBSTR(BIOSUM_COND_ID,1,24) ELSE BIOSUM_COND_ID END
                     AS BIOSUM_PLOT_ID,BIOSUM_COND_ID FROM {p_strFvsTreeTableName}";
 
-      //          sqlArray[11] =
-      //              "INSERT INTO  " + p_strPostAuditSummaryTable + " " +
-      //              "SELECT * FROM " +
-      //              "(SELECT DISTINCT " +
-      //                  "'001' AS idx," +
-      //                  "'" + p_strRxPackage + "' AS RXPACKAGE," +
-      //                  "'" + p_strFvsVariant + "' AS FVS_VARIANT," +
-      //                  "'BIOSUM_COND_ID' AS COLUMN_NAME," +
-      //                  "biosum_cond_id_no_value_count.NOVALUE_COUNT AS NOVALUE_ERROR," +
-      //                  "biosum_cond_id_not_found_in_cond_table_count.NOT_FOUND_IN_COND_TABLE_COUNT AS NF_IN_COND_TABLE_ERROR," +
-      //                  "biosum_cond_id_not_found_in_plot_table_count.NOT_FOUND_IN_PLOT_TABLE_COUNT AS NF_IN_PLOT_TABLE_ERROR," +
-      //                  "'NA'  AS VALUE_ERROR," +
-      //                  "'NA' AS NF_IN_RX_TABLE_ERROR," +
-      //                  "'NA' AS NF_RXPACKAGE_RXCYCLE_RX_ERROR," +
-      //                  "'NA' AS NF_IN_RXPACKAGE_TABLE_ERROR," +
-      //                  "'NA' AS NF_IN_TREE_TABLE_ERROR," +
-      //                  "'NA' AS TREE_SPECIES_CHANGE_WARNING " +
-      //               "FROM fvs_tree_unique_biosum_plot_id_work_table fvs," +
-      //                  "(SELECT CSTR(COUNT(*)) AS NOVALUE_COUNT FROM fvs_tree_unique_biosum_plot_id_work_table " +
-      //                   "WHERE BIOSUM_COND_ID IS NULL OR LEN(TRIM(BIOSUM_COND_ID))=0) biosum_cond_id_no_value_count," +
-      //                  "(SELECT CSTR(COUNT(*)) AS NOT_FOUND_IN_COND_TABLE_COUNT FROM fvs_tree_unique_biosum_plot_id_work_table a " +
-      //                   "WHERE a.BIOSUM_COND_ID IS NOT NULL AND " +
-      //                         "LEN(TRIM(a.BIOSUM_COND_ID)) >  0 AND " +
-      //                         "NOT EXISTS (SELECT b.BIOSUM_COND_ID FROM cond_biosum_cond_id_work_table b " +
-      //                                     "WHERE a.BIOSUM_COND_ID = b.BIOSUM_COND_ID)) biosum_cond_id_not_found_in_cond_table_count," +
-      //                  "(SELECT CSTR(COUNT(*)) AS NOT_FOUND_IN_PLOT_TABLE_COUNT FROM fvs_tree_unique_biosum_plot_id_work_table a " +
-      //                   "WHERE a.BIOSUM_COND_ID IS NOT NULL AND LEN(TRIM(a.BIOSUM_COND_ID)) >  0 AND " +
-      //                         "NOT EXISTS (SELECT b.BIOSUM_PLOT_ID FROM plot_biosum_plot_id_work_table b " +
-      //                                     "WHERE b.BIOSUM_PLOT_ID = a.BIOSUM_PLOT_ID)) biosum_cond_id_not_found_in_plot_table_count " +
-      //          "UNION " +
-      //          "SELECT DISTINCT " +
-      //             "'002' AS idx," +
-      //              "'" + p_strRxPackage + "' AS RXPACKAGE," +
-      //              "'" + p_strFvsVariant + "' AS FVS_VARIANT," +
-      //             "'RXCYCLE' AS COLUMN_NAME," +
-      //             "rxcycle_no_value_count.NOVALUE_COUNT AS NOVALUE_ERROR," +
-      //             "'NA' AS NF_IN_COND_TABLE_ERROR," +
-      //             "'NA' AS NF_IN_PLOT_TABLE_ERROR," +
-      //             "rxcycle_value_notvalid_count.value_notvalid_count AS VALUE_ERROR," +
-      //             "'NA' AS NF_IN_RX_TABLE_ERROR," +
-      //             "'NA' AS NF_RXPACKAGE_RXCYCLE_RX_ERROR," +
-      //             "'NA' AS NF_IN_RXPACKAGE_TABLE_ERROR," +
-      //             "'NA' AS NF_IN_TREE_TABLE_ERROR," +
-      //             "'NA' AS TREE_SPECIES_CHANGE_WARNING " +
-      //          "FROM " + p_strFvsTreeTableName + " fvs," +
-      //             "(SELECT CSTR(COUNT(*)) AS NOVALUE_COUNT FROM " + p_strFvsTreeTableName + " " +
-      //              "WHERE RXCYCLE IS NULL OR LEN(TRIM(RXCYCLE))=0) rxcycle_no_value_count," +
-      //             "(SELECT CSTR(COUNT(*)) AS VALUE_NOTVALID_COUNT FROM " + p_strFvsTreeTableName + " a " +
-      //              "WHERE a.RXCYCLE IS NULL OR a.RXCYCLE NOT IN ('1','2','3','4')) rxcycle_value_notvalid_count " +
-      //               "UNION " +
-      //               "SELECT DISTINCT " +
-      //                  "'003' AS idx," +
-						//"'" + p_strRxPackage + "' AS RXPACKAGE," +
-      //                  "'" + p_strFvsVariant + "' AS FVS_VARIANT," +
-      //                  "'RXPACKAGE' AS COLUMN_NAME," +
-      //                  "rxpackage_no_value_count.NOVALUE_COUNT AS NOVALUE_ERROR," +
-      //                  "'NA' AS NF_IN_COND_TABLE_ERROR," +
-      //                  "'NA' AS NF_IN_PLOT_TABLE_ERROR," +
-      //                  "'NA' AS  VALUE_ERROR," +
-      //                  "'NA' AS NF_IN_RX_TABLE_ERROR," +
-      //                  "'NA' AS NF_RXPACKAGE_RXCYCLE_RX_ERROR," +
-      //                  "notfound_in_rxpackage_table.NF_IN_RXPACKAGE_TABLE_ERROR," +
-      //                  "'NA' AS NF_IN_TREE_TABLE_ERROR," +
-      //                  "'NA' AS TREE_SPECIES_CHANGE_WARNING " +
-      //               "FROM " + p_strFvsTreeTableName + " fvs," +
-      //                  "(SELECT CSTR(COUNT(*)) AS NOVALUE_COUNT FROM " + p_strFvsTreeTableName + " " +
-      //                   "WHERE RXPACKAGE IS NULL OR LEN(TRIM(RXPACKAGE))=0) rxpackage_no_value_count," +
-      //                  "(SELECT CSTR(COUNT(*)) AS NF_IN_RXPACKAGE_TABLE_ERROR FROM " + p_strFvsTreeTableName + " fvs " +
-      //                   "WHERE fvs.RXPACKAGE IS NOT NULL AND LEN(TRIM(fvs.RXPACKAGE)) > 0 AND " +
-      //                         "NOT EXISTS (SELECT rxp.rxpackage FROM " + p_strRxPackageTable + " rxp " +
-      //                                     "WHERE fvs.rxpackage = rxp.rxpackage)) notfound_in_rxpackage_table " +
-      //               "UNION " +
-      //               "SELECT DISTINCT " +
-      //                  "'004' AS idx," +
-      //                  "'" + p_strRxPackage + "' AS RXPACKAGE," +
-      //                  "'" + p_strFvsVariant + "' AS FVS_VARIANT," +
-      //                  "'RX' AS COLUMN_NAME," +
-      //                  "rx_no_value_count.NOVALUE_COUNT AS NOVALUE_ERROR," +
-      //                  "'NA' AS NF_IN_COND_TABLE_ERROR," +
-      //                  "'NA' AS NF_IN_PLOT_TABLE_ERROR," +
-      //                  "'NA'  AS VALUE_ERROR," +
-      //                  "rx_not_found_in_rx_table_count.NOT_FOUND_IN_RX_TABLE_COUNT  AS NF_IN_RX_TABLE_ERROR," +
-      //                  "not_found_rxpackage_rxcycle_rx_combo_count.NF_RXPACKAGE_RXCYCLE_RX_ERROR," +
-      //                  "'NA' AS NF_IN_RXPACKAGE_TABLE_ERROR," +
-      //                  "'NA' AS NF_IN_TREE_TABLE_ERROR," +
-      //                  "'NA' AS TREE_SPECIES_CHANGE_WARNING " +
-      //               "FROM " + p_strFvsTreeTableName + " fvs," +
-      //                  "(SELECT CSTR(COUNT(*)) AS NOVALUE_COUNT FROM " + p_strFvsTreeTableName + " " +
-      //                   "WHERE RX IS NULL OR LEN(TRIM(RX))=0) rx_no_value_count," +
-      //                  "(SELECT CSTR(COUNT(*)) AS NOT_FOUND_IN_RX_TABLE_COUNT FROM " + p_strFvsTreeTableName + " a " +
-      //                   "WHERE a.RX IS NOT NULL AND LEN(TRIM(a.RX)) >  0 AND " +
-      //                         "NOT EXISTS (SELECT b.RX FROM " + p_strRxTable + " b " +
-      //                                     "WHERE a.RX = b.RX)) rx_not_found_in_rx_table_count," +
-      //                  "(SELECT CSTR(COUNT(*)) AS NF_RXPACKAGE_RXCYCLE_RX_ERROR FROM " + p_strFvsTreeTableName + " fvs " +
-      //                   "WHERE fvs.RX IS NOT NULL AND LEN(TRIM(fvs.RX)) >  0 AND " +
-      //                         "NOT EXISTS (SELECT rxp.RX FROM rxpackage_work_table rxp " +
-      //                                     "WHERE trim(fvs.rxpackage) = trim(rxp.rxpackage) AND " +
-      //                                           "TRIM(fvs.rxcycle)=TRIM(rxp.rxcycle) AND " +
-      //                                           "TRIM(fvs.rx)=TRIM(rxp.rx))) not_found_rxpackage_rxcycle_rx_combo_count " +
-      //          "UNION " +
-      //          "SELECT DISTINCT " +
-      //             "'005' AS idx," +
-      //              "'" + p_strRxPackage + "' AS RXPACKAGE," +
-      //              "'" + p_strFvsVariant + "' AS FVS_VARIANT," +
-      //             "'RXYEAR' AS COLUMN_NAME," +
-      //             "rxyear_no_value_count.NOVALUE_COUNT AS NOVALUE_ERROR," +
-      //             "'NA' AS NF_IN_COND_TABLE_ERROR," +
-      //             "'NA' AS NF_IN_PLOT_TABLE_ERROR," +
-      //             "'NA' AS  VALUE_ERROR," +
-      //             "'NA' AS NF_IN_RX_TABLE_ERROR," +
-      //             "'NA' AS NF_RXPACKAGE_RXCYCLE_RX_ERROR," +
-      //             "'NA' AS NF_IN_RXPACKAGE_TABLE_ERROR," +
-      //             "'NA' AS NF_IN_TREE_TABLE_ERROR," +
-      //             "'NA' AS TREE_SPECIES_CHANGE_WARNING " +
-      //          "FROM " + p_strFvsTreeTableName + " fvs," +
-      //             "(SELECT CSTR(COUNT(*)) AS NOVALUE_COUNT FROM " + p_strFvsTreeTableName + " " +
-      //              "WHERE RXYEAR IS NULL OR LEN(TRIM(RXYEAR))=0) rxyear_no_value_count " +
-      //               "UNION " +
-      //               "SELECT DISTINCT " +
-      //                  "'006' AS idx," +
-      //                  "'" + p_strRxPackage + "' AS RXPACKAGE," +
-      //                  "'" + p_strFvsVariant + "' AS FVS_VARIANT," +
-      //                  "'TPA' AS COLUMN_NAME," +
-      //                  "tpa_no_value_count.NOVALUE_COUNT AS NOVALUE_ERROR," +
-      //                  "'NA' AS NF_IN_COND_TABLE_ERROR," +
-      //                  "'NA' AS NF_IN_PLOT_TABLE_ERROR," +
-      //                  "'NA' AS  VALUE_ERROR," +
-      //                  "'NA' AS NF_IN_RX_TABLE_ERROR," +
-      //                  "'NA' AS NF_RXPACKAGE_RXCYCLE_RX_ERROR," +
-      //                  "'NA' AS NF_IN_RXPACKAGE_TABLE_ERROR," +
-      //                  "'NA' AS NF_IN_TREE_TABLE_ERROR," +
-      //                  "'NA' AS TREE_SPECIES_CHANGE_WARNING " +
-      //               "FROM " + p_strFvsTreeTableName + " fvs," +
-      //                  "(SELECT CSTR(COUNT(*)) AS NOVALUE_COUNT FROM " + p_strFvsTreeTableName + " " +
-      //                   "WHERE TPA IS NULL) tpa_no_value_count " +
-      //               "UNION " +
-      //               "SELECT DISTINCT " +
-      //                  "'007' AS idx," +
-      //                   "'" + p_strRxPackage + "' AS RXPACKAGE," +
-      //                  "'" + p_strFvsVariant + "' AS FVS_VARIANT," +
-      //                  "'VOLCFNET' AS COLUMN_NAME," +
-      //                  "volcfnet_no_value_count.NOVALUE_COUNT AS NOVALUE_ERROR," +
-      //                  "'NA' AS NF_IN_COND_TABLE_ERROR," +
-      //                  "'NA' AS NF_IN_PLOT_TABLE_ERROR," +
-      //                  "'NA' AS  VALUE_ERROR," +
-      //                  "'NA' AS NF_IN_RX_TABLE_ERROR," +
-      //                  "'NA' AS NF_RXPACKAGE_RXCYCLE_RX_ERROR," +
-      //                  "'NA' AS NF_IN_RXPACKAGE_TABLE_ERROR," +
-      //                  "'NA' AS NF_IN_TREE_TABLE_ERROR," +
-      //                  "'NA' AS TREE_SPECIES_CHANGE_WARNING " +
-      //               "FROM " + p_strFvsTreeTableName + " fvs," +
-      //                  "(SELECT CSTR(COUNT(*)) AS NOVALUE_COUNT FROM " + p_strFvsTreeTableName + " " +
-      //                   "WHERE VOLCFNET IS NULL) volcfnet_no_value_count " +
-      //          "UNION " +
-      //          "SELECT DISTINCT " +
-      //             "'008' AS idx," +
-      //              "'" + p_strRxPackage + "' AS RXPACKAGE," +
-      //             "'" + p_strFvsVariant + "' AS FVS_VARIANT," +
-      //             "'VOLTSGRS' AS COLUMN_NAME," +
-      //             "voltsgrs_no_value_count.NOVALUE_COUNT AS NOVALUE_ERROR," +
-      //             "'NA' AS NF_IN_COND_TABLE_ERROR," +
-      //             "'NA' AS NF_IN_PLOT_TABLE_ERROR," +
-      //             "'NA' AS  VALUE_ERROR," +
-      //             "'NA' AS NF_IN_RX_TABLE_ERROR," +
-      //             "'NA' AS NF_RXPACKAGE_RXCYCLE_RX_ERROR," +
-      //             "'NA' AS NF_IN_RXPACKAGE_TABLE_ERROR," +
-      //             "'NA' AS NF_IN_TREE_TABLE_ERROR," +
-      //             "'NA' AS TREE_SPECIES_CHANGE_WARNING " +
-      //          "FROM " + p_strFvsTreeTableName + " fvs," +
-      //             "(SELECT CSTR(COUNT(*)) AS NOVALUE_COUNT FROM " + p_strFvsTreeTableName + " " +
-      //              "WHERE VOLTSGRS IS NULL) voltsgrs_no_value_count " +
-      //          "UNION " +
-      //          "SELECT DISTINCT " +
-      //             "'009' AS idx," +
-				  // "'" + p_strRxPackage + "' AS RXPACKAGE," +
-      //            "'" + p_strFvsVariant + "' AS FVS_VARIANT," +
-      //             "'VOLCFGRS' AS COLUMN_NAME," +
-      //             "volcfgrs_no_value_count.NOVALUE_COUNT AS NOVALUE_ERROR," +
-      //             "'NA' AS NF_IN_COND_TABLE_ERROR," +
-      //             "'NA' AS NF_IN_PLOT_TABLE_ERROR," +
-      //             "'NA' AS  VALUE_ERROR," +
-      //             "'NA' AS NF_IN_RX_TABLE_ERROR," +
-      //             "'NA' AS NF_RXPACKAGE_RXCYCLE_RX_ERROR," +
-      //             "'NA' AS NF_IN_RXPACKAGE_TABLE_ERROR," +
-      //             "'NA' AS NF_IN_TREE_TABLE_ERROR," +
-      //             "'NA' AS TREE_SPECIES_CHANGE_WARNING " +
-      //          "FROM " + p_strFvsTreeTableName + " fvs," +
-      //              "(SELECT CSTR(COUNT(*)) AS NOVALUE_COUNT FROM " + p_strFvsTreeTableName + " " +
-      //               "WHERE DBH IS NOT NULL AND DBH >= 5 AND VOLCFGRS IS NULL) volcfgrs_no_value_count " +
-      //          "UNION " +
-      //          "SELECT DISTINCT " +
-      //             "'010' AS idx," +
-      //             "'" + p_strRxPackage + "' AS RXPACKAGE," +
-      //             "'" + p_strFvsVariant + "' AS FVS_VARIANT," +
-      //             "'DRYBIOT' AS COLUMN_NAME," +
-      //             "drybiot_no_value_count.NOVALUE_COUNT AS NOVALUE_ERROR," +
-      //             "'NA' AS NF_IN_COND_TABLE_ERROR," +
-      //             "'NA' AS NF_IN_PLOT_TABLE_ERROR," +
-      //             "'NA' AS  VALUE_ERROR," +
-      //             "'NA' AS NF_IN_RX_TABLE_ERROR," +
-      //             "'NA' AS NF_RXPACKAGE_RXCYCLE_RX_ERROR," +
-      //             "'NA' AS NF_IN_RXPACKAGE_TABLE_ERROR," +
-      //             "'NA' AS NF_IN_TREE_TABLE_ERROR," +
-      //             "'NA' AS TREE_SPECIES_CHANGE_WARNING " +
-      //          "FROM " + p_strFvsTreeTableName + " fvs," +
-      //             "(SELECT CSTR(COUNT(*)) AS NOVALUE_COUNT FROM " + p_strFvsTreeTableName + " " +
-      //              "WHERE DRYBIOT IS NULL) drybiot_no_value_count " +
-      //          "UNION " +
-      //          "SELECT DISTINCT " +
-      //             "'011' AS idx," +
-      //             "'" + p_strRxPackage + "' AS RXPACKAGE," +
-      //             "'" + p_strFvsVariant + "' AS FVS_VARIANT," +
-      //             "'DRYBIOM' AS COLUMN_NAME," +
-      //             "drybiom_no_value_count.NOVALUE_COUNT AS NOVALUE_ERROR," +
-      //             "'NA' AS NF_IN_COND_TABLE_ERROR," +
-      //             "'NA' AS NF_IN_PLOT_TABLE_ERROR," +
-      //             "'NA' AS  VALUE_ERROR," +
-      //             "'NA' AS NF_IN_RX_TABLE_ERROR," +
-      //             "'NA' AS NF_RXPACKAGE_RXCYCLE_RX_ERROR," +
-      //             "'NA' AS NF_IN_RXPACKAGE_TABLE_ERROR," +
-      //             "'NA' AS NF_IN_TREE_TABLE_ERROR," +
-      //             "'NA' AS TREE_SPECIES_CHANGE_WARNING " +
-      //          "FROM " + p_strFvsTreeTableName + " fvs," +
-      //             "(SELECT CSTR(COUNT(*)) AS NOVALUE_COUNT FROM " + p_strFvsTreeTableName + " " +
-      //              "WHERE DBH IS NOT NULL AND DBH >= 5 AND DRYBIOM IS NULL) drybiom_no_value_count " +
-      //          "UNION " +
-      //          "SELECT DISTINCT " +
-      //             "'012' AS idx," +
-      //             "'" + p_strRxPackage + "' AS RXPACKAGE," +
-      //             "'" + p_strFvsVariant + "' AS FVS_VARIANT," +
-      //             "'FVS_TREE_ID' AS COLUMN_NAME," +
-      //             "fvs_tree_id_no_value_count.NOVALUE_COUNT AS NOVALUE_ERROR," +
-      //             "'NA' AS NF_IN_COND_TABLE_ERROR," +
-      //             "'NA' AS NF_IN_PLOT_TABLE_ERROR," +
-      //             "'NA' AS  VALUE_ERROR," +
-      //             "'NA' AS NF_IN_RX_TABLE_ERROR," +
-      //             "'NA' AS NF_RXPACKAGE_RXCYCLE_RX_ERROR," +
-      //             "'NA' AS NF_IN_RXPACKAGE_TABLE_ERROR," +
-      //             "fvs_tree_id_not_found_in_tree_table_count.NOT_FOUND_IN_TREE_TABLE_COUNT AS NF_IN_TREE_TABLE_ERROR," +
-      //             "'NA' AS TREE_SPECIES_CHANGE_WARNING " +
-      //          "FROM " + p_strFvsTreeTableName + " fvs," +
-      //             "(SELECT CSTR(COUNT(*)) AS NOVALUE_COUNT FROM " + p_strFvsTreeTableName + " " +
-      //              "WHERE FVS_TREE_ID IS NULL OR LEN(TRIM(FVS_TREE_ID))=0) fvs_tree_id_no_value_count," +
-      //             "(SELECT CSTR(COUNT(*)) AS NOT_FOUND_IN_TREE_TABLE_COUNT FROM " + p_strFvsTreeTableName + " a " +
-      //              "WHERE a.FvsCreatedTree_YN='N' AND  " +
-      //                    "a.FVS_TREE_ID IS NOT NULL AND " +
-      //                    "LEN(TRIM(a.FVS_TREE_ID)) >  0 AND " +
-      //                    "NOT EXISTS (SELECT b.FVS_TREE_ID FROM tree_fvs_tree_id_work_table b " +
-      //                        "WHERE a.fvs_tree_id = b.fvs_tree_id and a.biosum_cond_id = b.biosum_cond_id)) fvs_tree_id_not_found_in_tree_table_count " +
-      //          "UNION " +
-      //          "SELECT DISTINCT " +
-      //             "'013' AS idx," +
-      //              "'" + p_strRxPackage + "' AS RXPACKAGE," +
-      //             "'" + p_strFvsVariant + "' AS FVS_VARIANT," +
-      //             "'FVSCREATEDTREE_YN' AS COLUMN_NAME," +
-      //             "fvscreatedtree_no_value_count.NOVALUE_COUNT AS NOVALUE_ERROR," +
-      //             "'NA' AS NF_IN_COND_TABLE_ERROR," +
-      //             "'NA' AS NF_IN_PLOT_TABLE_ERROR," +
-      //             "'NA' AS  VALUE_ERROR," +
-      //             "'NA' AS NF_IN_RX_TABLE_ERROR," +
-      //             "'NA' AS NF_RXPACKAGE_RXCYCLE_RX_ERROR," +
-      //             "'NA' AS NF_IN_RXPACKAGE_TABLE_ERROR," +
-      //             "'NA' AS NF_IN_TREE_TABLE_ERROR," +
-      //             "'NA' AS TREE_SPECIES_CHANGE_WARNING " +
-      //          "FROM " + p_strFvsTreeTableName + " fvs," +
-      //             "(SELECT CSTR(COUNT(*)) AS NOVALUE_COUNT FROM " + p_strFvsTreeTableName + " " +
-      //              "WHERE FvsCreatedTree_YN IS NULL OR LEN(TRIM(FvsCreatedTree_YN))=0) fvscreatedtree_no_value_count " +
-      //          "UNION " +
-      //          "SELECT DISTINCT " +
-      //             "'014' AS idx," +
-      //             "'" + p_strRxPackage + "' AS RXPACKAGE," +
-      //             "'" + p_strFvsVariant + "' AS FVS_VARIANT," +
-      //             "'FVS_SPECIES' AS COLUMN_NAME," +
-      //             "fvs_species_no_value_count.NOVALUE_COUNT AS NOVALUE_ERROR," +
-      //             "'NA' AS NF_IN_COND_TABLE_ERROR," +
-      //             "'NA' AS NF_IN_PLOT_TABLE_ERROR," +
-      //             "'NA' AS  VALUE_ERROR," +
-      //             "'NA' AS NF_IN_RX_TABLE_ERROR," +
-      //             "'NA' AS NF_RXPACKAGE_RXCYCLE_RX_ERROR," +
-      //             "'NA' AS NF_IN_RXPACKAGE_TABLE_ERROR," +
-      //             "'NA' AS NF_IN_TREE_TABLE_ERROR," +
-      //            "fvs_species_change_count.TREE_SPECIES_CHANGE_WARNING " +
-      //          "FROM " + p_strFvsTreeTableName + " fvs," +
-      //             "(SELECT CSTR(COUNT(*)) AS NOVALUE_COUNT FROM " + p_strFvsTreeTableName + " " +
-      //              "WHERE FVS_SPECIES IS NULL OR LEN(TRIM(FVS_SPECIES))=0) fvs_species_no_value_count," +
-      //             "(SELECT CSTR(COUNT(*)) AS TREE_SPECIES_CHANGE_WARNING " +
-      //              "FROM " + p_strFvsTreeTableName + " a " +
-      //              "INNER JOIN tree_fvs_tree_id_work_table b " +
-      //              "ON a.fvs_tree_id = b.fvs_tree_id and a.biosum_cond_id = b.biosum_cond_id " +
-      //              "WHERE a.FvsCreatedTree_YN='N' AND " +
-      //                    "a.FVS_TREE_ID IS NOT NULL AND " +
-      //                    "LEN(TRIM(a.FVS_TREE_ID)) >  0 AND " +
-      //                    "VAL(a.FVS_SPECIES) <> b.SPCD) fvs_species_change_count)";
                 sqlArray[11] = "INSERT INTO  " + p_strPostAuditSummaryTable + " " +
                     "SELECT * FROM " +
                     "(SELECT DISTINCT " +
@@ -3011,109 +2207,7 @@ namespace FIA_Biosum_Manager
                 sqlArray[2] = $@"UPDATE {strTable} SET RUNTITLE = (SELECT RUNTITLE FROM FVS_CASES WHERE CASEID = {strTable}.CASEID)";
                 return sqlArray;
             }
-            /*
-            /// <summary>
-            /// SQL for post-processing audit of the BIOSUMCALC\FVS_TREE tables. List foreign key columns whose values are not found in the foreign tables.
-            /// </summary>
-            /// <param name="p_strInsertTable"></param>
-            /// <param name="p_strPostAuditSummaryTable"></param>
-            /// <param name="p_strFvsTreeTableName"></param>
-            /// <param name="p_strFVSTreeFileName"></param>
-            /// <returns></returns>
-            public static string[] FVSOutputTable_AuditPostSummaryDetailFVS_VALUE_ERROR(
-                string p_strInsertTable,
-                string p_strPostAuditSummaryTable,
-                string p_strFvsTreeTableName,
-                string p_strFVSTreeFileName,
-                string p_strCondTable,
-                string p_strPlotTable,
-                string p_strTreeTable,
-                string p_strRxTable,
-                string p_strRxPackageTable,
-                string p_strRxPackageWorkTable)
-            {
-
-                string[] sqlArray = new string[2];
-
-                sqlArray[0] = "DELETE FROM " + p_strInsertTable + " WHERE TRIM(UCASE(FVS_TREE_FILE)) = '" + p_strFVSTreeFileName.ToUpper().Trim() + "'";
-
-                sqlArray[1] = "INSERT INTO  " + p_strInsertTable + " " +
-                                    "SELECT * FROM " +
-                                    "(SELECT DISTINCT " +
-                                       "'" + p_strFVSTreeFileName + "' AS FVS_TREE_FILE," +
-                                        "'BIOSUM_COND_ID' AS COLUMN_NAME," +
-                                        "a.BIOSUM_COND_ID AS NOTFOUND_VALUE," +
-                                        "'NOT FOUND IN COND TABLE' AS ERROR_DESC," +
-                                        "a.* FROM " + p_strFvsTreeTableName + " a," +
-                                            "(SELECT * FROM fvs_tree_biosum_plot_id_work_table a " +
-                                             "WHERE a.BIOSUM_COND_ID IS NOT NULL AND LEN(TRIM(a.BIOSUM_COND_ID)) >  0 AND " +
-                                                   "NOT EXISTS (SELECT b.BIOSUM_COND_ID FROM cond_biosum_cond_id_work_table  b " +
-                                                               "WHERE a.BIOSUM_COND_ID = b.BIOSUM_COND_ID)) biosum_cond_id_not_found " +
-                                     "WHERE a.ID = biosum_cond_id_not_found.ID " +
-                                     "UNION " +
-                                     "SELECT DISTINCT " +
-                                       "'" + p_strFVSTreeFileName + "' AS FVS_TREE_FILE," +
-                                       "'BIOSUM_PLOT_ID' AS COLUMN_NAME," +
-                                       "biosum_cond_id_not_found_in_plot_table.BIOSUM_PLOT_ID AS NOTFOUND_VALUE," +
-                                       "'NOT FOUND IN PLOT TABLE' AS ERROR_DESC," +
-                                       "a.* FROM " + p_strFvsTreeTableName + " a," +
-                                            "(SELECT * FROM fvs_tree_biosum_plot_id_work_table a " +
-                                             "WHERE a.BIOSUM_COND_ID IS NOT NULL AND " +
-                                                   "LEN(TRIM(a.BIOSUM_COND_ID)) >  0 AND " +
-                                                   "NOT EXISTS (SELECT b.BIOSUM_PLOT_ID FROM plot_biosum_plot_id_work_table  b " +
-                                                               "WHERE a.BIOSUM_PLOT_ID = b.BIOSUM_PLOT_ID)) biosum_cond_id_not_found_in_plot_table " +
-                                     "WHERE a.ID = biosum_cond_id_not_found_in_plot_table.ID " +
-                                     "UNION " +
-                                     "SELECT DISTINCT " +
-                                       "'" + p_strFVSTreeFileName + "' AS FVS_TREE_FILE," +
-                                       "'FVS_TREE_ID' AS COLUMN_NAME," +
-                                       "a.FVS_TREE_ID AS NOTFOUND_VALUE," +
-                                       "'NOT FOUND IN TREE TABLE' AS ERROR_DESC," +
-                                       "a.* FROM " + p_strFvsTreeTableName + " a," +
-                                        "(SELECT * FROM " + p_strFvsTreeTableName + " a " +
-                                         "WHERE a.FvsCreatedTree_YN='N' AND " +
-                                               "a.FVS_TREE_ID IS NOT NULL AND LEN(TRIM(a.FVS_TREE_ID)) >  0 AND " +
-                                               "NOT EXISTS (SELECT b.FVS_TREE_ID FROM tree_fvs_tree_id_work_table b " +
-                                                           "WHERE a.fvs_tree_id = b.fvs_tree_id and a.biosum_cond_id = b.biosum_cond_id)) fvs_tree_id_not_found_in_tree_table " +
-                                     "WHERE a.ID = fvs_tree_id_not_found_in_tree_table.ID " +
-                                     "UNION " +
-                                     "SELECT DISTINCT " +
-                                        "'" + p_strFVSTreeFileName + "' AS FVS_TREE_FILE," +
-                                        "'RX' AS COLUMN_NAME," +
-                                        "a.RX AS NOTFOUND_VALUE," +
-                                        "'NOT FOUND IN RX TABLE' AS ERROR_DESC," +
-                                        "a.* FROM " + p_strFvsTreeTableName + " a " +
-                                     "WHERE a.RX NOT IN (SELECT b.RX FROM " + p_strRxTable + " b) " +
-                                     "UNION " +
-                                     "SELECT DISTINCT " +
-                                       "'" + p_strFVSTreeFileName + "' AS FVS_TREE_FILE," +
-                                       "'RXPACKAGE' AS COLUMN_NAME," +
-                                       "a.RXPACKAGE AS NOTFOUND_VALUE," +
-                                       "'NOT FOUND IN RXPACKAGE TABLE' AS ERROR_DESC," +
-                                       "a.* FROM " + p_strFvsTreeTableName + " a " +
-                                     "WHERE a.RXPACKAGE NOT IN (SELECT b.RXPACKAGE FROM " + p_strRxPackageTable + " b) " +
-                                     "UNION " +
-                                     "SELECT DISTINCT " +
-                                        "'" + p_strFVSTreeFileName + "' AS FVS_TREE_FILE," +
-                                        "'RXPACKAGE + RXCYCLE + RX' AS COLUMN_NAME," +
-                                        "'RXPACKAGE=' + a.RXPACKAGE + ' RXCYCLE=' + a.RXCYCLE + ' RX=' + a.RX  AS NOTFOUND_VALUE," +
-                                        "'COMBINATION OF RXPACKAGE, RXCYCLE, AND RX NOT FOUND' AS ERROR_DESC," +
-                                        "a.* FROM " + p_strFvsTreeTableName + " a," +
-                                            "(SELECT * FROM " + p_strFvsTreeTableName + " a " +
-                                             "WHERE a.RX IS NOT NULL AND LEN(TRIM(a.RX)) >  0 AND " +
-                                                   "a.RXPACKAGE IS NOT NULL AND LEN(TRIM(a.RXPACKAGE)) >  0 AND  " +
-                                                   "a.RXCYCLE IS NOT NULL AND LEN(TRIM(a.RXCYCLE)) >  0 AND " +
-                                                   "NOT EXISTS (SELECT rxp.RX FROM " + p_strRxPackageWorkTable + " rxp " +
-                                                               "WHERE TRIM(a.rxpackage) = TRIM(rxp.rxpackage) AND " +
-                                                                     "TRIM(a.rxcycle)=TRIM(rxp.rxcycle) AND  " +
-                                                                     "TRIM(a.rx)=TRIM(rxp.rx))) not_found_rxpackage_rxcycle_rx_combo " +
-                                     "WHERE a.ID = not_found_rxpackage_rxcycle_rx_combo.ID)";
-
-                return sqlArray;
-
-            }
-            */
-
+            
             public class FVSInput
             {
 		        FVSInput()
@@ -3132,28 +2226,6 @@ namespace FIA_Biosum_Manager
 		                return "CREATE TABLE Ref_DWM_Fuelbed_Type_Codes (dwm_fuelbed_typcd CHAR(3), fuel_model INTEGER)";
 		            }
 
-		            public static string BulkImportStandDataFromBioSumMaster(string strVariant, string strDestTable,
-		                string strCondTableName, string strPlotTableName)
-		            {
-		                string strInsertIntoStandInit =
-		                    "INSERT INTO " + strDestTable +
-		                    " (Stand_ID, Variant, Inv_Year, Latitude, Longitude, Location, PV_Code, " +
-		                    "Age, Aspect, Slope, ElevFt, Basal_Area_Factor, Inv_Plot_Size, Brk_DBH, " +
-		                    "Num_Plots, NonStk_Plots, Sam_Wt, Stk_Pcnt, DG_Trans, DG_Measure, " +
-		                    "HTG_Trans, HTG_Measure, Mort_Measure, Forest_Type, State, County) ";
-		                string strBioSumWorkTableSelectStmt =
-		                    "SELECT c.biosum_cond_id, p.fvs_variant, p.measyear, p.lat, p.lon, " +
-		                    "p.fvsloccode, c.habtypcd1, c.stdage, c.aspect, c.slope, p.elev, 0, 1, 999, 1, 0, 1,  " +
-                            "iif(c.cond_status_cd is null, 0, c.cond_status_cd), 1, 10, 1, 5, 5, c.fortypcd, p.statecd, p.countycd ";
-		                string strFromTableExpr =
-		                    String.Format(
-		                        "FROM {0} c INNER JOIN {1} p ON c.biosum_plot_id = p.biosum_plot_id ",
-		                        strCondTableName, strPlotTableName);
-		                string strFilters = "WHERE c.cond_status_cd = 1 AND ucase(trim(p.fvs_variant)) = \'" +
-		                                    strVariant.Trim().ToUpper() + "\'";
-		                return strInsertIntoStandInit + strBioSumWorkTableSelectStmt + strFromTableExpr +
-		                       strFilters;
-		            }
                     public static string UpdateFuelModel(string strDestTable, string strCondTable)
                     {
                         return "UPDATE " + strDestTable + " AS fvs " +
@@ -3487,29 +2559,6 @@ namespace FIA_Biosum_Manager
                     }
 
 
-                    public static string TranslateWorkTableToStandInitTable(string strSourceTable, string strDestTable)
-		            {
-		                string strInsertIntoStandInit =
-		                    "INSERT INTO " + strDestTable;
-		                string strBioSumWorkTableSelectStmt =
-		                    " SELECT Stand_ID, Variant, Inv_Year, " +
-		                    "Latitude, Longitude, Region, Forest, District, Compartment, " +
-		                    "Location, Ecoregion, PV_Code, PV_Ref_Code, Age, Aspect, Slope, " +
-		                    "Elevation, ElevFt, Basal_Area_Factor, Inv_Plot_Size, Brk_DBH, " +
-		                    "Num_Plots, NonStk_Plots, Sam_Wt, Stk_Pcnt, DG_Trans, DG_Measure, " +
-		                    "HTG_Trans, HTG_Measure, Mort_Measure, Max_BA, Max_SDI, " +
-		                    "Site_Species, Site_Index, Model_Type, Physio_Region, Forest_Type, " +
-		                    "State, County, Fuel_Model,[Fuel_0_25_H], [Fuel_25_1_H], [Fuel_1_3_H], " +
-		                    "[Fuel_3_6_H], [Fuel_6_12_H], [Fuel_12_20_H], Fuel_20_35_H, Fuel_35_50_H, " +
-		                    "Fuel_gt_50_H, Fuel_0_25_S, Fuel_25_1_S, Fuel_1_3_S, Fuel_3_6_S, " +
-		                    "Fuel_6_12_S, Fuel_12_20_S, Fuel_20_35_S, Fuel_35_50_S, Fuel_gt_50_S, " +
-		                    "Fuel_Litter, Fuel_Duff, SmallMediumTotalLength, " +
-		                    "LargeTotalLength, CWDTotalLength, DuffPitCount, LitterPitCount, " +
-		                    "Photo_Ref, Photo_code ";
-		                string strFromTableExpr = "FROM " + strSourceTable + ";";
-		                return strInsertIntoStandInit + strBioSumWorkTableSelectStmt + strFromTableExpr;
-		            }
-
                     public static string InsertSiteIndexSpeciesRow(string strStandID, string strSiteSpecies,
                         string strSiteIndex, string strBaseAge)
                     {
@@ -3519,11 +2568,6 @@ namespace FIA_Biosum_Manager
                             "WHERE STAND_ID={0} AND Site_Index IS NULL",
                             strStandID, strSiteSpecies, strSiteIndex, strBaseAge);
                     }
-
-		            public static string DeleteFvsStandInitWorkTable()
-		            {
-		                return "DROP TABLE FVS_StandInit_WorkTable;";
-		            }
 
 
 		            public static string[] DeleteDwmWorkTables()
@@ -3539,16 +2583,6 @@ namespace FIA_Biosum_Manager
 		                return strSQL;
 		            }
 
-                    public static string PopulateStandInitOld(string strSourceStandTableAlias, string strCondTable, string strVariant)
-                    {
-                        string strSQL = "INSERT INTO " + Tables.FIA2FVS.DefaultFvsInputStandTableName +
-                             " SELECT " + strSourceStandTableAlias + ".*" +
-                             " FROM " + strSourceStandTableAlias +
-                             " INNER JOIN " + strCondTable + " ON TRIM(" + strCondTable + ".cn) = TRIM(" + strSourceStandTableAlias + ".STAND_CN)" +
-                             " WHERE " + strSourceStandTableAlias + ".VARIANT = '" + strVariant + "'" +
-                             " AND " + strCondTable + ".cond_status_cd = 1";
-                        return strSQL;
-                    }
 
                     public static string PopulateStandInit(string strSourceStandTable, string strFields, string strCondTable, string strVariant)
                     {
@@ -3560,15 +2594,6 @@ namespace FIA_Biosum_Manager
                         return strSQL;
                     }
 
-                    public static string UpdateFromCondOld(string strCondTable, string strVariant)
-                    {
-                        string strSQL = "UPDATE " + Tables.FIA2FVS.DefaultFvsInputStandTableName +
-                         " INNER JOIN " + strCondTable + " ON TRIM(" + strCondTable + ".cn) = TRIM(" + Tables.FIA2FVS.DefaultFvsInputStandTableName + ".STAND_CN)" +
-                         " SET STAND_ID = trim(biosum_cond_id)," +
-                         " SAM_WT = ACRES" +
-                         " WHERE " + Tables.FIA2FVS.DefaultFvsInputStandTableName + ".VARIANT = '" + strVariant + "'";
-                        return strSQL;
-                    }
 
                     public static string UpdateFromCond(string strCondTable, string strVariant)
                     {
@@ -3598,65 +2623,6 @@ namespace FIA_Biosum_Manager
                          " SET FUEL_MODEL = null";
                     }
 
-                    public static string CopyDwmColumns(string strVariant)
-                    {
-                        string strSQL = "UPDATE " + Tables.FIA2FVS.DefaultFvsInputStandTableName +
-                         " INNER JOIN FVS_StandInit ON TRIM(FVS_StandInit.STAND_ID) = " + Tables.FIA2FVS.DefaultFvsInputStandTableName + ".STAND_ID" +
-                         " SET " + Tables.FIA2FVS.DefaultFvsInputStandTableName + ".FUEL_0_25_H = FVS_StandInit.FUEL_0_25_H, " +
-                         Tables.FIA2FVS.DefaultFvsInputStandTableName + ".FUEL_25_1_H = FVS_StandInit.FUEL_25_1_H, " +
-                         Tables.FIA2FVS.DefaultFvsInputStandTableName + ".FUEL_1_3_H = FVS_StandInit.FUEL_1_3_H, " +
-                         Tables.FIA2FVS.DefaultFvsInputStandTableName + ".FUEL_3_6_H = FVS_StandInit.FUEL_3_6_H, " +
-                         Tables.FIA2FVS.DefaultFvsInputStandTableName + ".FUEL_6_12_H = FVS_StandInit.FUEL_6_12_H, " +
-                         Tables.FIA2FVS.DefaultFvsInputStandTableName + ".FUEL_12_20_H = FVS_StandInit.FUEL_12_20_H, " +
-                         Tables.FIA2FVS.DefaultFvsInputStandTableName + ".FUEL_20_35_H = FVS_StandInit.FUEL_20_35_H," +
-                         Tables.FIA2FVS.DefaultFvsInputStandTableName + ".FUEL_35_50_H = FVS_StandInit.FUEL_35_50_H," +
-                         Tables.FIA2FVS.DefaultFvsInputStandTableName + ".FUEL_GT_50_H = FVS_StandInit.FUEL_GT_50_H," +
-                         Tables.FIA2FVS.DefaultFvsInputStandTableName + ".FUEL_0_25_S = FVS_StandInit.FUEL_0_25_S," +
-                         Tables.FIA2FVS.DefaultFvsInputStandTableName + ".FUEL_25_1_S = FVS_StandInit.FUEL_25_1_S," +
-                         Tables.FIA2FVS.DefaultFvsInputStandTableName + ".FUEL_1_3_S = FVS_StandInit.FUEL_1_3_S," +
-                         Tables.FIA2FVS.DefaultFvsInputStandTableName + ".FUEL_3_6_S = FVS_StandInit.FUEL_3_6_S," +
-                         Tables.FIA2FVS.DefaultFvsInputStandTableName + ".FUEL_6_12_S = FVS_StandInit.FUEL_6_12_S," +
-                         Tables.FIA2FVS.DefaultFvsInputStandTableName + ".FUEL_12_20_S = FVS_StandInit.FUEL_12_20_S," +
-                         Tables.FIA2FVS.DefaultFvsInputStandTableName + ".FUEL_20_35_S = FVS_StandInit.FUEL_20_35_S," +
-                         Tables.FIA2FVS.DefaultFvsInputStandTableName + ".FUEL_35_50_S = FVS_StandInit.FUEL_35_50_S," +
-                         Tables.FIA2FVS.DefaultFvsInputStandTableName + ".FUEL_GT_50_S = FVS_StandInit.FUEL_GT_50_S," +
-                         Tables.FIA2FVS.DefaultFvsInputStandTableName + ".FUEL_LITTER = FVS_StandInit.FUEL_LITTER," +
-                         Tables.FIA2FVS.DefaultFvsInputStandTableName + ".FUEL_DUFF = FVS_StandInit.FUEL_DUFF," +
-                         Tables.FIA2FVS.DefaultFvsInputStandTableName + ".SmallMediumTotalLength = FVS_StandInit.SmallMediumTotalLength," +
-                         Tables.FIA2FVS.DefaultFvsInputStandTableName + ".LargeTotalLength = FVS_StandInit.LargeTotalLength," +
-                         Tables.FIA2FVS.DefaultFvsInputStandTableName + ".CWDTotalLength = FVS_StandInit.CWDTotalLength," +
-                         Tables.FIA2FVS.DefaultFvsInputStandTableName + ".DuffPitCount = FVS_StandInit.DuffPitCount," +
-                         Tables.FIA2FVS.DefaultFvsInputStandTableName + ".LitterPitCount = FVS_StandInit.LitterPitCount" +
-                         " WHERE " + Tables.FIA2FVS.DefaultFvsInputStandTableName + ".VARIANT = '" + strVariant + "'";
-                        return strSQL;
-                    }
-
-                    public static string SetDwmColumnsToNull(string strVariant)
-                    {
-                        string strSQL = "UPDATE " + Tables.FIA2FVS.DefaultFvsInputStandTableName +
-                         " SET FUEL_0_25_H = NULL, " +
-                         "FUEL_25_1_H = NULL, " +
-                         "FUEL_1_3_H = NULL, " +
-                         "FUEL_3_6_H = NULL, " +
-                         "FUEL_6_12_H = NULL, " +
-                         "FUEL_12_20_H = NULL, " +
-                         "FUEL_20_35_H = NULL, " +
-                         "FUEL_35_50_H = NULL, " +
-                         "FUEL_GT_50_H = NULL, " +
-                         "FUEL_0_25_S = NULL, " +
-                         "FUEL_25_1_S = NULL, " +
-                         "FUEL_1_3_S = NULL, " +
-                         "FUEL_3_6_S = NULL, " +
-                         "FUEL_6_12_S = NULL, " +
-                         "FUEL_12_20_S = NULL, " +
-                         "FUEL_20_35_S = NULL, " +
-                         "FUEL_35_50_S = NULL, " +
-                         "FUEL_GT_50_S = NULL, " +
-                         "FUEL_LITTER = NULL, " +
-                         "FUEL_DUFF = NULL " +
-                         " WHERE " + Tables.FIA2FVS.DefaultFvsInputStandTableName + ".VARIANT = '" + strVariant + "'";
-                        return strSQL;
-                    }
                     public static string SetFuelColumnsToNull()
                     {
                         return "UPDATE " + Tables.FIA2FVS.DefaultFvsInputStandTableName +
@@ -3682,18 +2648,6 @@ namespace FIA_Biosum_Manager
                             "FUEL_DUFF = NULL ";
                     }
 
-                    public static string CopySiteIndexValues(string strVariant)
-                    {
-                        string strSQL = $@"UPDATE {Tables.FIA2FVS.DefaultFvsInputStandTableName}
-                            INNER JOIN FVS_StandInit ON TRIM(FVS_StandInit.STAND_ID) = {Tables.FIA2FVS.DefaultFvsInputStandTableName}.STAND_ID
-                            SET {Tables.FIA2FVS.DefaultFvsInputStandTableName}.Site_Index = FVS_StandInit.Site_Index,
-                            {Tables.FIA2FVS.DefaultFvsInputStandTableName}.Site_Species = FVS_StandInit.Site_Species
-                            WHERE {Tables.FIA2FVS.DefaultFvsInputStandTableName}.Site_Index IS null and
-                            FVS_StandInit.Site_Index is not null and
-                            {Tables.FIA2FVS.DefaultFvsInputStandTableName}.VARIANT = '{strVariant}'";
-                        return strSQL;
-                    }
-
                     public static string OverwriteFieldsForTPA()
                     {
                         string strSQL = "UPDATE " + Tables.FIA2FVS.DefaultFvsInputStandTableName +
@@ -3705,274 +2659,11 @@ namespace FIA_Biosum_Manager
                     }
                 }
 
-                //All the queries necessary to create the FVSIn.accdb FVS_TreeInit table using intermediate tables
+                //All the queries necessary to create the FVSIn.db FVS_TreeInit table using intermediate tables
                 public class TreeInit
                 {
                     TreeInit()
                     {
-                    }
-
-                    public static string BulkImportTreeDataFromBioSumMaster(string strVariant, string strDestTable,
-                        string strCondTableName, string strPlotTableName, string strTreeTableName)
-                    {
-                        string strInsertIntoTreeInit =
-                            "INSERT INTO " + strDestTable +
-                            " (Stand_ID, Tree_ID, Tree_Count, History, Species, " +
-                            "DBH, DG, Htcd, Ht, HtTopK, CrRatio, " +
-                            "Damage1, Severity1, Damage2, Severity2, Damage3, Severity3, " +
-                            "Prescription, Slope, Aspect, PV_Code, TreeValue, Age, cullbf, mist_cl_cd, " +
-                            "fvs_dmg_ag1, fvs_dmg_sv1, fvs_dmg_ag2, fvs_dmg_sv2, fvs_dmg_ag3, fvs_dmg_sv3, TreeCN)  ";
-                        string strBioSumWorkTableSelectStmt =
-                            "SELECT c.biosum_cond_id, VAL(t.fvs_tree_id) as Tree_ID, t.tpacurr, iif(iif(t.statuscd is null, 0, t.statuscd)=1, 1, 9) as History, t.spcd, " +
-                            "t.dia, t.inc10yr, t.htcd, iif(t.ht is null,0,t.ht), iif(t.actualht is null,0,t.actualht), t.cr, " +
-                            "0 as Damage1, 0 as Severity1, 0 as Damage2, 0 as Severity2, 0 as Damage3, 0 as Severity3, " +
-                            "0 as Prescription, c.slope, c.aspect, c.habtypcd1, 3 as TreeValue, t.bhage as Age, t.cullbf, t.mist_cl_cd, " +
-                            "fvs_dmg_ag1, fvs_dmg_sv1, fvs_dmg_ag2, fvs_dmg_sv2, fvs_dmg_ag3, fvs_dmg_sv3, t.cn ";
-                        string strFromTableExpr = "FROM " +
-                                                  strCondTableName + " c, " + strPlotTableName + " p, " +
-                                                  strTreeTableName + " t ";
-                        string strFilters =
-                            "WHERE t.biosum_cond_id=c.biosum_cond_id AND p.biosum_plot_id=c.biosum_plot_id " +
-                            "AND t.dia > 0 AND c.cond_status_cd=1 " +
-                            "AND ucase(trim(p.fvs_variant)) = \'" + strVariant.Trim().ToUpper() + "\'";
-                        string strSQL = strInsertIntoTreeInit + strBioSumWorkTableSelectStmt + strFromTableExpr +
-                                        strFilters;
-                        return strSQL;
-                    }
-
-                    public static string CreateSpcdConversionTable(string strCondTableName, string strPlotTableName,
-                        string strTreeTableName, string strTreeSpeciesTableName)
-                    {
-                        //Updating FIA Species Codes to FVS Species Codes
-                        //Build the temporary species code conversion table
-                        string strSelectIntoTempConversionTable =
-                            "SELECT DISTINCT p.FVS_VARIANT AS PLOT_FVS_VARIANT, ts.FVS_VARIANT AS TREE_SPECIES_FVS_VARIANT, t.SPCD AS FIA_SPCD, ts.FVS_INPUT_SPCD INTO SPCD_CHANGE_WORK_TABLE ";
-                        string strSpcdSources =
-                            "FROM ((" + strCondTableName + " AS c INNER JOIN " + strPlotTableName +
-                            " AS p ON c.biosum_plot_id = p.biosum_plot_id) INNER JOIN " + strTreeTableName +
-                            " AS t ON c.BIOSUM_COND_ID = t.biosum_cond_id) LEFT JOIN " + strTreeSpeciesTableName +
-                            " AS ts ON t.SPCD = ts.SPCD ";
-                        string strSpcdConversionFilters =
-                            "WHERE ts.FVS_VARIANT = p.FVS_VARIANT AND ts.FVS_INPUT_SPCD Is Not Null And ts.FVS_INPUT_SPCD <> t.SPCD;";
-                        string strSQL = strSelectIntoTempConversionTable + strSpcdSources + strSpcdConversionFilters;
-                        return strSQL;
-                    }
-
-
-                    public static string UpdateFVSSpeciesCodeColumn(string strVariant, string strFVSTreeInitWorkTable)
-                    {
-                        string strSQL = "UPDATE " + strFVSTreeInitWorkTable +
-                                        " AS fvstree INNER JOIN SPCD_CHANGE_WORK_TABLE AS spcdchange ON VAL(fvstree.SPECIES) = spcdchange.FIA_SPCD " +
-                                        "SET fvstree.SPECIES = CSTR(spcdchange.FVS_INPUT_SPCD) " +
-                                        "WHERE TRIM(spcdchange.PLOT_FVS_VARIANT)=\'" + strVariant.Trim().ToUpper() +
-                                        "\'; ";
-                        return strSQL;
-                    }
-
-                    public static string DeleteCrRatiosForDeadTrees(string strDestTable)
-                    {
-                        return "UPDATE " + strDestTable + " SET CrRatio=null WHERE History=9;";
-                    }
-
-                    public static string RoundCrRatioToSingleDigitCodes(string strDestTable)
-                    {
-                        /*This is a test to compare predispose and fvsin CrRatio when you round up*/
-                        string strSQL = "UPDATE " + strDestTable + " SET " +
-                                        "CrRatio=iif(crratio is null, null, iif(len(trim(cstr(crratio)))=0, 0, " +
-                                        "iif(0 <= crratio AND crratio <= 10, 1, " +
-                                        "iif(crratio <= 20, 2, " +
-                                        "iif(crratio <= 30, 3, " +
-                                        "iif(crratio <= 40, 4, " +
-                                        "iif(crratio <= 50, 5, " +
-                                        "iif(crratio <= 60, 6, " +
-                                        "iif(crratio <= 70, 7, " +
-                                        "iif(crratio <= 80, 8, " +
-                                        "iif(crratio <= 100, 9, null)))))))))));";
-                        return strSQL;
-                    }
-
-                    public static string DeleteHtAndHtTopKForUnknownHtcd(string strDestTable)
-                    {
-                        return "UPDATE " + strDestTable + " SET Ht=0, HtTopK=0 WHERE Htcd NOT IN (1,2,3,4);";
-                    }
-
-                    public static string SetBrokenTopFlag(string strDestTable)
-                    {
-                        return "UPDATE " + strDestTable +
-                               " SET hasBrokenTop = -1 " +
-                               "WHERE HtTopK < Ht AND 0 < HtTopK;";
-                    }
-
-
-                    public static string SetHtTopKToZeroIfGteHt(string strDestTable)
-                    {
-                        return "UPDATE " + strDestTable + " SET HtTopK=0 WHERE Ht <= HtTopK";
-                    }
-
-
-                    public static string SetInferredSeedlingDbh(string strDestTable)
-                    {
-                        return "UPDATE " + strDestTable +
-                               " SET Dbh=0.1 WHERE Tree_Count > 25 AND Dbh <= 0 AND History=1;";
-                    }
-
-                    public static string[] DamageCodes(string strDestTable)
-                    {
-                        string[] strDamageCodeUpdates = new string[15];
-
-                        //use precalculated damage codes if possible
-                        strDamageCodeUpdates[0] =
-                            "UPDATE " + strDestTable +
-                            " SET Damage1=fvs_dmg_ag1, Damage2=fvs_dmg_ag2, Damage3=fvs_dmg_ag3, Severity1=fvs_dmg_sv1, Severity2=fvs_dmg_sv2, Severity3=fvs_dmg_sv3 WHERE History=1 AND fvs_dmg_ag1 is not null;";
-
-                        //Cull board feet
-                        strDamageCodeUpdates[1] =
-                            "UPDATE " + strDestTable +
-                            " SET Damage1=25, Severity1=IIF(cullbf>=100, 99, cullbf) WHERE History=1 AND cullbf>0;";
-
-                        //FVS Mistletoe damage codes
-                        string strDamage1_Filter =
-                            "History=1 AND iif(mist_cl_cd is null,0,mist_cl_cd) <> 0 AND Damage1 = 0 AND fvs_dmg_ag1 is null;";
-                        string strDamage2_Filter =
-                            "History=1 AND iif(mist_cl_cd is null,0,mist_cl_cd) <> 0 AND Damage1 NOT IN (0, 30, 31, 32, 33, 34) AND fvs_dmg_ag1 is null;";
-                        strDamageCodeUpdates[2] =
-                            "UPDATE " + strDestTable +
-                            " SET Damage1=31, Severity1=mist_cl_cd WHERE Species=\'108\' AND " +
-                            strDamage1_Filter;
-
-                        strDamageCodeUpdates[3] =
-                            "UPDATE " + strDestTable +
-                            " SET Damage2=31, Severity2=mist_cl_cd WHERE Species=\'108\' AND " +
-                            strDamage2_Filter;
-
-                        strDamageCodeUpdates[4] =
-                            "UPDATE " + strDestTable +
-                            " SET Damage1=32, Severity1=mist_cl_cd WHERE Species=\'073\' AND " +
-                            strDamage1_Filter;
-
-                        strDamageCodeUpdates[5] =
-                            "UPDATE " + strDestTable +
-                            " SET Damage2=32, Severity2=mist_cl_cd WHERE Species=\'073\' AND " +
-                            strDamage2_Filter;
-
-                        strDamageCodeUpdates[6] =
-                            "UPDATE " + strDestTable +
-                            " SET Damage1=33, Severity1=mist_cl_cd WHERE Species=\'202\' AND " +
-                            strDamage1_Filter;
-
-                        strDamageCodeUpdates[7] =
-                            "UPDATE " + strDestTable +
-                            " SET Damage2=33, Severity2=mist_cl_cd WHERE Species=\'202\' AND " +
-                            strDamage2_Filter;
-
-                        strDamageCodeUpdates[8] =
-                            "UPDATE " + strDestTable +
-                            " SET Damage1=34, Severity1=mist_cl_cd WHERE Species=\'122\' AND " +
-                            strDamage1_Filter;
-
-                        strDamageCodeUpdates[9] =
-                            "UPDATE " + strDestTable +
-                            " SET Damage2=34, Severity2=mist_cl_cd WHERE Species=\'122\' AND " +
-                            strDamage2_Filter;
-
-                        //default mist_cl_cd damage code if fvs species don't match previous four cases
-                        strDamageCodeUpdates[10] =
-                            "UPDATE " + strDestTable +
-                            " SET Damage1=30, Severity1=mist_cl_cd WHERE Species NOT IN (\'202\',\'108\',\'122\',\'073\') AND " +
-                            strDamage1_Filter;
-
-                        strDamageCodeUpdates[11] =
-                            "UPDATE " + strDestTable +
-                            " SET Damage2=30, Severity2=mist_cl_cd WHERE Species NOT IN (\'202\',\'108\',\'122\',\'073\') AND " +
-                            strDamage2_Filter;
-
-                        //broken top 96 added to least priority(?) damage column so fill it last
-                        strDamageCodeUpdates[12] =
-                            "UPDATE " + strDestTable +
-                            " SET Damage1=96 WHERE History=1 AND hasBrokenTop AND Damage1 = 0 AND fvs_dmg_ag1 is null;";
-
-                        //0 means nothing was assigned. 96 means damage2 doesn't need to repeat damage1
-                        strDamageCodeUpdates[13] =
-                            "UPDATE " + strDestTable +
-                            " SET Damage2=96 WHERE History=1 AND hasBrokenTop AND Damage1 NOT IN (0,96) AND Damage2 = 0 AND fvs_dmg_ag1 IS Null;";
-
-                        strDamageCodeUpdates[14] =
-                            "UPDATE " + strDestTable +
-                            " SET Damage3=96 WHERE History=1 AND hasBrokenTop AND Damage1 NOT IN (0,96) AND Damage2 not in (0,96) and Damage3=0 AND fvs_dmg_ag1 IS Null;";
-                        /*END DAMAGE CODES*/
-                        return strDamageCodeUpdates;
-                    }
-
-                    public static string[] TreeValueClass(string strDestTable)
-                    {
-                        /*Value Classes: 
-                          * All trees (live and dead) initialized to 3. 
-                          * If Damage1=25, TreeValue=3 again (redundant). 
-                          * Else if Severity > 0, TreeValue=2. 
-                          * Else TreeValue=1*/
-                        string[] strTreeValueUpdates = new string[2];
-                        strTreeValueUpdates[0] = "UPDATE " + strDestTable +
-                                                 " SET TreeValue=2 WHERE History=1 AND Damage1<>25 AND Severity1>0;";
-                        strTreeValueUpdates[1] = "UPDATE " + strDestTable +
-                                                 " SET TreeValue=1 WHERE History=1 AND Damage1<>25 AND Severity1<=0;";
-                        return strTreeValueUpdates;
-                    }
-
-                    public static string PadSpeciesWithZero(string strDestTable)
-                    {
-                        //This addresses a problem with FVSOut having incorrect Species Codes being translated into "2TD"
-                        //Update the Species column to Trim and "PadLeft" with 0s by Creating a "000" and concatenating with Trim(Species) and taking the rightmost 3 digits
-                        //Example: Right("000" & "17      ", 3) => "017". Species=="17      "  because the Species column is width 8 in FVSIn.accdb
-                        return "UPDATE " + strDestTable + " SET Species = Right(String(3, \'0\') & Trim(Species), 3);";
-                    }
-
-                    public static string TranslateWorkTableToTreeInitTable(string strSourceTable, string strDestTable)
-                    {
-                        string strInsertIntoTreeInit =
-                            "INSERT INTO " + strDestTable;
-                        string strBioSumWorkTableSelectStmt =
-                            " SELECT Stand_ID, StandPlot_ID, Tree_ID, Tree_Count, History, Species, " +
-                            "DBH, DG, Ht, HTG, HtTopK, CrRatio,  " +
-                            "Damage1, Severity1, Damage2, Severity2, Damage3, Severity3, " +
-                            "TreeValue, Prescription, Age, Slope, Aspect, PV_Code, TopoCode, SitePrep ";
-                        string strFromTableExpr = "FROM " + strSourceTable + ";";
-                        return strInsertIntoTreeInit + strBioSumWorkTableSelectStmt + strFromTableExpr;
-                    }
-
-                    public static string RoundSingleDigitPercentageCrRatiosUpTo10(string strDestTable)
-                    {
-                        return "UPDATE " + strDestTable + " SET CrRatio=10 WHERE CrRatio<10;";
-                    }
-
-                    public static string RoundSingleDigitPercentageCrRatiosDownTo1(string strDestTable)
-                    {
-                        return "UPDATE " + strDestTable + " SET CrRatio=1 WHERE CrRatio<10;";
-                    }
-
-                    public static string DeleteWorkTable()
-                    {
-                        return "DROP TABLE FVS_TreeInit_WorkTable;";
-                    }
-
-                    public static string DeleteSpcdChangeWorkTable()
-                    {
-                        return "DROP TABLE SPCD_CHANGE_WORK_TABLE;";
-                    }
-
-                    public static string PopulateTreeInitOld(string strSourceTreeTableAlias, string strSourceStandTableAlias,
-                        string strCondTable, string strTreeTable, string strVariant)
-                    {
-                        string strSql = "INSERT INTO " + Tables.FIA2FVS.DefaultFvsInputTreeTableName +
-                         " SELECT " + strSourceTreeTableAlias + ".*" +
-                         " FROM " + strSourceTreeTableAlias + ", " + strTreeTable + ", " +
-                           strSourceStandTableAlias + ", " + strCondTable +
-                         " WHERE " + strCondTable + ".biosum_cond_id = " + strTreeTable + ".biosum_cond_id" +
-                         " AND TRIM(" + strTreeTable + ".cn) = " + strSourceTreeTableAlias + ".TREE_CN" +
-                         " AND TRIM(" + strCondTable + ".cn) = " + strSourceStandTableAlias + ".STAND_CN" +
-                         " AND TRIM(" + strCondTable + ".cn) = " + strSourceTreeTableAlias + ".STAND_CN" +
-                         " AND " + strCondTable + ".cond_status_cd = 1 AND " + strTreeTable + ".DIA > 0 AND " +
-                         strSourceStandTableAlias + ".VARIANT = '" + strVariant + "'";
-                        return strSql;
                     }
 
                     public static string PopulateTreeInit(string strSourceTreeTable, string strFields, string strSourceStandTable,
@@ -4199,34 +2890,6 @@ namespace FIA_Biosum_Manager
 
                 }
 
-                    //This updates the FVSIn.GroupAddFilesAndKeywords table so that they FVS keywords have the correct DSNIn value
-                    public class GroupAddFilesAndKeywords
-                {
-                    public static string UpdateAllPlots(string strFVSInFileName)
-                    {
-                        return
-                            "UPDATE FVS_GroupAddFilesAndKeywords SET FVS_GroupAddFilesAndKeywords.FVSKeywords = " +
-                            "\"Database\" + Chr(13) + Chr(10) + \"DSNIn\" + Chr(13) + Chr(10) + \"" + strFVSInFileName +
-                            "\" + Chr(13) + Chr(10) + \"StandSQL\" + Chr(13) + Chr(10) + \"SELECT *\" + Chr(13) + Chr(10) + " +
-                            "\"FROM FVS_PlotInit\" + Chr(13) + Chr(10) + \"WHERE StandPlot_ID = '%StandID%'\" + Chr(13) + Chr(10) + " +
-                            "\"EndSQL\" + Chr(13) + Chr(10) + \"TreeSQL\" + Chr(13) + Chr(10) + \"SELECT *\" + Chr(13) + Chr(10) + " +
-                            "\"FROM FVS_TreeInit\" + Chr(13) + Chr(10) + \"WHERE StandPlot_ID = '%StandID%'\" + Chr(13) + Chr(10) + " +
-                            "\"EndSQL\" + Chr(13) + Chr(10) + \"END\" WHERE (FVS_GroupAddFilesAndKeywords.Groups=\"All_Plots\");";
-                    }
-
-                    public static string UpdateAllStands(string strFVSInFileName)
-                    {
-                        return
-                            "UPDATE FVS_GroupAddFilesAndKeywords SET FVS_GroupAddFilesAndKeywords.FVSKeywords = " +
-                            "\"Database\" + Chr(13) + Chr(10) + \"DSNIn\" + Chr(13) + Chr(10) + \"" + strFVSInFileName +
-                            "\" + Chr(13) + Chr(10) + \"StandSQL\" + Chr(13) + Chr(10) + \"SELECT *\" + Chr(13) + Chr(10) + " +
-                            "\"FROM FVS_StandInit\" + Chr(13) + Chr(10) + \"WHERE Stand_ID = '%StandID%'\" + Chr(13) + Chr(10) + " +
-                            "\"EndSQL\" + Chr(13) + Chr(10) + \"TreeSQL\" + Chr(13) + Chr(10) + \"SELECT *\" + Chr(13) + Chr(10) + " +
-                            "\"FROM FVS_TreeInit\" + Chr(13) + Chr(10) + \"WHERE Stand_ID = '%StandID%'\" + Chr(13) + Chr(10) + " +
-                            "\"EndSQL\" + Chr(13) + Chr(10) + \"END\" WHERE (FVS_GroupAddFilesAndKeywords.Groups=\"All_Stands\");";
-                    }
-
-                }
             }
 
         }

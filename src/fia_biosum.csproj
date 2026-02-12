@@ -206,7 +206,6 @@
     <Compile Include="uc_optimizer_load_gis_data.Designer.cs">
       <DependentUpon>uc_optimizer_load_gis_data.cs</DependentUpon>
     </Compile>
-    <Compile Include="sqlite_optimizer_tables.cs" />
     <Compile Include="ODBCMgr.cs" />
     <Compile Include="uc_db.cs">
       <SubType>UserControl</SubType>
@@ -247,7 +246,6 @@
     <Compile Include="datasource.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="DbFileItem.cs" />
     <Compile Include="delegate.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -308,9 +306,6 @@
     <Compile Include="fvs_input.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="generate_travel_times.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="Help.cs" />
     <Compile Include="ListViewAlternateColors.cs">
       <SubType>Code</SubType>
@@ -348,12 +343,6 @@
     <Compile Include="txtNumeric.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="uc_contact_edit.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="uc_contact_list.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
     <Compile Include="uc_datasource.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -383,9 +372,6 @@
     </Compile>
     <Compile Include="uc_fvs_output_prepost_seqnum.Designer.cs">
       <DependentUpon>uc_fvs_output_prepost_seqnum.cs</DependentUpon>
-    </Compile>
-    <Compile Include="uc_gis_psite.cs">
-      <SubType>UserControl</SubType>
     </Compile>
     <Compile Include="uc_gridview.cs">
       <SubType>UserControl</SubType>
@@ -445,18 +431,6 @@
       <SubType>UserControl</SubType>
     </Compile>
     <Compile Include="uc_project.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="uc_project_document_links.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="uc_project_document_links_edit.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="uc_project_notes.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="uc_psite_list.cs">
       <SubType>UserControl</SubType>
     </Compile>
     <Compile Include="uc_rx_edit.cs">
@@ -670,12 +644,6 @@
     <EmbeddedResource Include="txtNumeric.resx">
       <DependentUpon>txtNumeric.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="uc_contact_edit.resx">
-      <DependentUpon>uc_contact_edit.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="uc_contact_list.resx">
-      <DependentUpon>uc_contact_list.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="uc_datasource.resx">
       <DependentUpon>uc_datasource.cs</DependentUpon>
     </EmbeddedResource>
@@ -699,9 +667,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="uc_fvs_output_prepost_seqnum.resx">
       <DependentUpon>uc_fvs_output_prepost_seqnum.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="uc_gis_psite.resx">
-      <DependentUpon>uc_gis_psite.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="uc_gridview.resx">
       <DependentUpon>uc_gridview.cs</DependentUpon>
@@ -747,18 +712,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="uc_project.resx">
       <DependentUpon>uc_project.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="uc_project_document_links.resx">
-      <DependentUpon>uc_project_document_links.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="uc_project_document_links_edit.resx">
-      <DependentUpon>uc_project_document_links_edit.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="uc_project_notes.resx">
-      <DependentUpon>uc_project_notes.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="uc_psite_list.resx">
-      <DependentUpon>uc_psite_list.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="uc_rx_edit.resx">
       <DependentUpon>uc_rx_edit.cs</DependentUpon>

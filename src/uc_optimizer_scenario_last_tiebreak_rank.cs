@@ -149,8 +149,8 @@ namespace FIA_Biosum_Manager
 			try
 			{
 				string strScenarioDB =
-				frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" +
-				Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableSqliteDbFile;
+				frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() + "\\" +
+				Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableDbFile;
 				using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(strScenarioDB)))
                 {
 					conn.Open();
@@ -200,7 +200,7 @@ namespace FIA_Biosum_Manager
 			 **scenario db connection
 			 ***************************************************/
 			if (oDataMgr.m_intError != 0) return;
-			string strScenarioDB = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "//" + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableSqliteDbFile;
+			string strScenarioDB = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() + "//" + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableDbFile;
 			string strConn = oDataMgr.GetConnectionString(strScenarioDB);
 			using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strConn))
             {
@@ -227,19 +227,6 @@ namespace FIA_Biosum_Manager
 				{
 					return;
 				}
-
-				//ado_data_access p_ado = new ado_data_access();
-				//this.m_OleDbRxConn = new System.Data.OleDb.OleDbConnection();
-				//p_ado.OpenConnection(this.strRxConn, ref this.m_OleDbRxConn);
-				//if (p_ado.m_intError != 0)
-				//{
-				//	this.m_OleDbConnectionScenario.Close();
-				//	this.m_OleDbConnectionScenario = null;
-				//	this.m_OleDbRxConn = null;
-				//	return;
-				//}
-				//p_ado.m_strSQL = "select * from " + this.strRxPackageTableName;
-				//p_ado.SqlQueryReader(this.m_OleDbRxConn, p_ado.m_strSQL);
 
 				oDataMgr.m_strSQL = "ATTACH DATABASE '" + strRxDBFile + "' AS rxdb";
 				oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
@@ -306,13 +293,9 @@ namespace FIA_Biosum_Manager
 								************************************************************************/
 							oDataMgr.m_strSQL = "SELECT * FROM rxdb." + this.strRxPackageTableName +
 								" where rxpackage = '" + oDataMgr.m_DataReader["rxpackage"].ToString() + "';";
-							//this.m_OleDbCommand = this.m_OleDbRxConn.CreateCommand();
 							this.m_SQLiteCommand = conn.CreateCommand();
-							//this.m_OleDbCommand.CommandText = oDataMgr.m_strSQL;
 							this.m_SQLiteCommand.CommandText = oDataMgr.m_strSQL;
-							//this.m_OleDbDataAdapter.SelectCommand = this.m_OleDbCommand;
 							this.m_SQLiteDataAdapter.SelectCommand = this.m_SQLiteCommand;
-							//this.m_OleDbDataAdapter.Fill(this.m_DataSet, this.strRxPackageTableName);
 							this.m_SQLiteDataAdapter.Fill(this.m_DataSet, "rxdb." + this.strRxPackageTableName);
 							if (this.m_DataSet.Tables["rxdb." + this.strRxPackageTableName].Rows.Count == 0)
 							{
@@ -342,11 +325,6 @@ namespace FIA_Biosum_Manager
 					**display the treatments to the user
 					***************************************************************************************/
 					this.m_DataSet = new System.Data.DataSet();
-					//this.m_OleDbDataAdapter = new System.Data.OleDb.OleDbDataAdapter();
-					//this.m_OleDbCommand = this.m_OleDbRxConn.CreateCommand();
-					//this.m_OleDbCommand.CommandText = "SELECT * FROM " + this.strRxPackageTableName;
-					//this.m_OleDbDataAdapter.SelectCommand = this.m_OleDbCommand;
-					//this.m_OleDbDataAdapter.Fill(this.m_DataSet, this.strRxPackageTableName);
 					this.m_SQLiteDataAdapter = new System.Data.SQLite.SQLiteDataAdapter();
 					this.m_SQLiteCommand = conn.CreateCommand();
 					this.m_SQLiteCommand.CommandText = "SELECT * FROM rxdb." + this.strRxPackageTableName;

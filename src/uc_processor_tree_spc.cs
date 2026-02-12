@@ -96,7 +96,7 @@ namespace FIA_Biosum_Manager
 			this.m_oQueries = new Queries();
 			m_oQueries.m_oFvs.LoadDatasource=true;
 			m_oQueries.m_oFIAPlot.LoadDatasource=true;
-			m_oQueries.LoadDatasourcesNew(true);
+			m_oQueries.LoadDatasources(true);
 
             m_oRxTools.LoadAllRxPackageItems(m_oRxPackageItem_Collection);			
 
@@ -2422,7 +2422,7 @@ namespace FIA_Biosum_Manager
 			this.lstAudit.Columns.Add("plot", 80, HorizontalAlignment.Left);
            
             SQLite.ADO.DataMgr oDataMgr = new SQLite.ADO.DataMgr();
-			string strDbConn = oDataMgr.GetConnectionString(frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
+			string strDbConn = oDataMgr.GetConnectionString(frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() +
 				Tables.FVS.DefaultFVSTreeListDbFile);
 			using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strDbConn))
 			{
@@ -2463,7 +2463,7 @@ namespace FIA_Biosum_Manager
                 this.ParentForm.Left, this.ParentForm.Height, this.ParentForm.Width, this.ParentForm.Top);
 
 			// Attach FVSOUT_TREE_LIST.db
-			oDataMgr.m_strSQL = $@"ATTACH '{frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + Tables.FVS.DefaultFVSTreeListDbFile}' as FVSOUT_TREE";
+			oDataMgr.m_strSQL = $@"ATTACH '{frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() + Tables.FVS.DefaultFVSTreeListDbFile}' as FVSOUT_TREE";
 			oDataMgr.SqlNonQuery(oDataMgr.m_Connection, oDataMgr.m_strSQL);
 
 			List<string> strSqlCommandList = Queries.Processor.AuditFvsOut_SelectIntoUnionOfFVSTreeTablesUsingListArray(

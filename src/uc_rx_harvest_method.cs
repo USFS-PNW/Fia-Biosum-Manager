@@ -30,7 +30,6 @@ namespace FIA_Biosum_Manager
 		private System.Windows.Forms.Label lblRxDesc;
 		private FIA_Biosum_Manager.frmRxItem _frmRxItem=null;
 		private Queries m_oQueries = new Queries();
-		private ado_data_access m_oAdo = new ado_data_access();
 		private RxTools m_oRxTools = new RxTools();
         private System.Collections.Generic.IDictionary<string, string> m_descrDictionary =
             new System.Collections.Generic.Dictionary<string, string>();
@@ -53,8 +52,6 @@ namespace FIA_Biosum_Manager
 		}
 		~uc_rx_harvest_method()
 		{
-			if (m_oAdo.m_OleDbConnection.State == System.Data.ConnectionState.Open)
-				m_oAdo.CloseConnection(m_oAdo.m_OleDbConnection);
 		}
 
 		/// <summary> 
@@ -279,7 +276,7 @@ namespace FIA_Biosum_Manager
 			this.txtSteepSlopeDesc.Text="";
 			m_oQueries.m_oFvs.LoadDatasource=true;
 			m_oQueries.m_oReference.LoadDatasource=true;
-			m_oQueries.LoadDatasourcesNew(true);
+			m_oQueries.LoadDatasources(true);
             string strDbFile = m_oQueries.m_oDataSource.getFullPathAndFile(Datasource.TableTypes.HarvestMethods);
             m_descrDictionary.Clear();
             m_steepDescrDictionary.Clear();

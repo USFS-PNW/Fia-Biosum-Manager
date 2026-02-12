@@ -480,8 +480,6 @@ namespace FIA_Biosum_Manager
 				case "New":
                     this.uc_rx_harvest_cost_column_list1.AddItem();
 					break;
-				case "Contacts":					
-					break;
 			}
 		}
 		private void OpenKCPFile()

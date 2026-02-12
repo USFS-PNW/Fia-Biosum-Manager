@@ -151,7 +151,7 @@ namespace FIA_Biosum_Manager
 
                 if (harvestCostTableExists)
                 {
-                    oDataMgr.m_strSQL = "ATTACH DATABASE '" + frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + Tables.FVS.DefaultRxPackageDbFile + "' AS master";
+                    oDataMgr.m_strSQL = "ATTACH DATABASE '" + frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() + "\\" + Tables.FVS.DefaultRxPackageDbFile + "' AS master";
                     oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
 
                     oDataMgr.m_strSQL = "SELECT DISTINCT p.fvs_variant, h.rxpackage, COUNT(*) AS count " +

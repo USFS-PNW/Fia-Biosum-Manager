@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Drawing;
 using System.Data;
 using System.Windows.Forms;
+using SQLite.ADO;
 
 
 namespace FIA_Biosum_Manager
@@ -275,7 +276,7 @@ namespace FIA_Biosum_Manager
 			this.m_strRecordKeyColumns = strRecordKeyColumns;
             this.m_intRecordKeyColumns = new int[strRecordKeyColumns.Length];
 
-            SQLite.ADO.DataMgr dataMgr = new SQLite.ADO.DataMgr();
+            DataMgr dataMgr = new DataMgr();
             dataMgr.OpenConnection(strConn, ref this.m_conn);
             if (dataMgr.m_intError != 0)
             {
@@ -860,7 +861,7 @@ namespace FIA_Biosum_Manager
 			string strSQLWhere = "";
 			int intCurrRow;
 			bool bFirstTime = false;
-			SQLite.ADO.DataMgr p_dataMgr = new SQLite.ADO.DataMgr();
+			DataMgr p_dataMgr = new DataMgr();
 
 			this.m_intError = 0;
 
@@ -2109,7 +2110,7 @@ namespace FIA_Biosum_Manager
             this.toolBar2.Left = (int)(this.groupBox1.Width * .50) - (int)(this.toolBar2.Width * .50);
             this.m_dg.Height = this.toolBar2.Top - this.m_dg.Top;
 
-            var p_dataMgr = new SQLite.ADO.DataMgr();
+            var p_dataMgr = new DataMgr();
             p_dataMgr.OpenConnection(strConn, ref this.m_conn);
             if (p_dataMgr.m_intError != 0)
             {

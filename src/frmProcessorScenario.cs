@@ -835,7 +835,7 @@ namespace FIA_Biosum_Manager
             // Initialize Queries object for use by child forms
             m_oQueries.m_oReference.LoadDatasource = true;
             string ScenarioId = this.uc_scenario1.txtScenarioId.Text.Trim().ToLower();
-            m_oQueries.LoadDatasourcesNew(true, "processor", ScenarioId);
+            m_oQueries.LoadDatasources(true, "processor", ScenarioId);
             
             this.m_oProcessorScenarioItem.ScenarioId = uc_scenario1.txtScenarioId.Text.Trim();
  			this.uc_processor_scenario_harvest_method1.ReferenceProcessorScenarioForm=this;
@@ -907,7 +907,7 @@ namespace FIA_Biosum_Manager
         public void ValidateCutList(string strVariant, string strRxPackage)
         {
             SQLite.ADO.DataMgr dataMgr = new SQLite.ADO.DataMgr();
-            string strFvsTreeDb = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + 
+            string strFvsTreeDb = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() + 
                 Tables.FVS.DefaultFVSTreeListDbFile;
             string dbConn = dataMgr.GetConnectionString(strFvsTreeDb);
             this.m_intError = 0;    // Reset error value
@@ -932,8 +932,8 @@ namespace FIA_Biosum_Manager
         {
             string strScenario = uc_scenario1.txtScenarioId.Text.Trim();
             this.m_oProcessorScenarioItem.ScenarioId = strScenario;
-            string strScenarioMDB = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
-                "\\processor\\" + Tables.ProcessorScenarioRuleDefinitions.DefaultSqliteDbFile;
+            string strScenarioMDB = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() +
+                "\\processor\\" + Tables.ProcessorScenarioRuleDefinitions.DefaultDbFile;
             this.m_oProcessorScenarioTools.LoadTreeDiameterGroupValues(strScenarioMDB,
                 strScenario, this.m_oProcessorScenarioItem);
             this.m_oProcessorScenarioTools.LoadTreeSpeciesGroupValues(strScenarioMDB, strScenario,
@@ -2157,8 +2157,8 @@ namespace FIA_Biosum_Manager
             FIA_Biosum_Manager.ProcessorScenarioItem_Collection p_oProcessorScenarioItem_Collection)
         {
             // Access version used a temp file with links; Trying to skip that
-            string strScenarioDB = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() +
-                "\\processor\\" + Tables.ProcessorScenarioRuleDefinitions.DefaultSqliteDbFile;
+            string strScenarioDB = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() +
+                "\\processor\\" + Tables.ProcessorScenarioRuleDefinitions.DefaultDbFile;
 
             ProcessorScenarioItem oItem = new ProcessorScenarioItem();
             this.LoadGeneral(strScenarioDB, p_strScenarioId, oItem);

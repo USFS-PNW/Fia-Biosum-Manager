@@ -214,19 +214,19 @@ namespace FIA_Biosum_Manager
             string strPrePostSeqNumLink = $@"{Tables.FVS.DefaultFVSPrePostSeqNumTable}_1";
             string strRxPackageAssignLink = $@"{Tables.FVS.DefaultFVSPrePostSeqNumRxPackageAssgnTable}_1";
 
-            oProjectDs.m_strDataSourceMDBFile = ReferenceProjectDirectory.Trim() + "\\db\\project.mdb";
+            oProjectDs.m_strDataSourceDBFile = ReferenceProjectDirectory.Trim() + "\\db\\project.mdb";
             oProjectDs.m_strDataSourceTableName = "datasource";
             oProjectDs.m_strScenarioId = "";
             oProjectDs.LoadTableColumnNamesAndDataTypes = false;
             oProjectDs.LoadTableRecordCount = false;
-            oProjectDs.populate_datasource_array();
+            oProjectDs.populate_datasource_array_access();
             int intSeqNumDefs = oProjectDs.getValidTableNameRow(Datasource.TableTypes.SeqNumDefinitions);
             int intSeqNumRxPkgAssign = oProjectDs.getValidTableNameRow(Datasource.TableTypes.SeqNumRxPackageAssign);
             if (intSeqNumDefs > -1 && intSeqNumRxPkgAssign > -1)
             {
                 if (!System.IO.File.Exists($@"{ReferenceProjectDirectory.Trim()}\{Tables.FVS.DefaultFVSPrePostSeqNumTableDbFile}"))
                 {
-                    oDataMgr.CreateDbFile($@"{frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim()}\{Tables.FVS.DefaultFVSPrePostSeqNumTableDbFile}");
+                    oDataMgr.CreateDbFile($@"{frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim()}\{Tables.FVS.DefaultFVSPrePostSeqNumTableDbFile}");
                 }
                 string dbConn = oDataMgr.GetConnectionString($@"{ReferenceProjectDirectory.Trim()}\{Tables.FVS.DefaultFVSPrePostSeqNumTableDbFile}");
                 using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(dbConn))
@@ -234,11 +234,11 @@ namespace FIA_Biosum_Manager
                     conn.Open();
                     if (!oDataMgr.TableExist(conn, Tables.FVS.DefaultFVSPrePostSeqNumTable))
                     {
-                        frmMain.g_oTables.m_oFvs.CreateFVSOutputSQLitePrePostSeqNumTable(oDataMgr, conn, Tables.FVS.DefaultFVSPrePostSeqNumTable);
+                        frmMain.g_oTables.m_oFvs.CreateFVSOutputPrePostSeqNumTable(oDataMgr, conn, Tables.FVS.DefaultFVSPrePostSeqNumTable);
                     }
                     if (!oDataMgr.TableExist(conn, Tables.FVS.DefaultFVSPrePostSeqNumRxPackageAssgnTable))
                     {
-                        frmMain.g_oTables.m_oFvs.CreateFVSOutputPrePostSQLiteSeqNumRxPackageAssgnTable(oDataMgr, conn, Tables.FVS.DefaultFVSPrePostSeqNumRxPackageAssgnTable);
+                        frmMain.g_oTables.m_oFvs.CreateFVSOutputPrePostSeqNumRxPackageAssgnTable(oDataMgr, conn, Tables.FVS.DefaultFVSPrePostSeqNumRxPackageAssgnTable);
                     }
                 }
                 // Create ODBC entry for the new SQLite fvs_master.db file
@@ -307,7 +307,7 @@ namespace FIA_Biosum_Manager
 
             // MIGRATING SETTINGS FROM scenario_processor_rule_definitions.mdb TO scenario_processor_rule_definitions.db
             string targetDbFile = ReferenceProjectDirectory.Trim() +
-                @"\processor\" + Tables.ProcessorScenarioRuleDefinitions.DefaultSqliteDbFile;
+                @"\processor\" + Tables.ProcessorScenarioRuleDefinitions.DefaultDbFile;
             string sourceDbFile = ReferenceProjectDirectory.Trim() +
                 @"\processor\" + Tables.ProcessorScenarioRuleDefinitions.DefaultHarvestMethodDbFile;
             if (System.IO.File.Exists(targetDbFile) == false)
@@ -375,7 +375,7 @@ namespace FIA_Biosum_Manager
                     if (oAdo.m_intError == 0)
                     {
                         // Set file (database) field to new Sqlite DB
-                        string newDbFile = System.IO.Path.GetFileName(Tables.ProcessorScenarioRuleDefinitions.DefaultSqliteDbFile);
+                        string newDbFile = System.IO.Path.GetFileName(Tables.ProcessorScenarioRuleDefinitions.DefaultDbFile);
                         oAdo.m_strSQL = "UPDATE scenario_1 set file = '" +
                             newDbFile + "'";
                         oAdo.SqlNonQuery(copyConn, oAdo.m_strSQL);
@@ -418,17 +418,17 @@ namespace FIA_Biosum_Manager
                         conn.Open();
                         if (!oDataMgr.TableExist(conn, Tables.ProcessorScenarioRun.DefaultHarvestCostsTableName))
                         {
-                            frmMain.g_oTables.m_oProcessor.CreateSqliteHarvestCostsTable(oDataMgr,
+                            frmMain.g_oTables.m_oProcessor.CreateHarvestCostsTable(oDataMgr,
                                 conn, Tables.ProcessorScenarioRun.DefaultHarvestCostsTableName);
                         }
                         if (!oDataMgr.TableExist(conn, Tables.ProcessorScenarioRun.DefaultTreeVolValSpeciesDiamGroupsTableName))
                         {
-                            frmMain.g_oTables.m_oProcessor.CreateSqliteTreeVolValSpeciesDiamGroupsTable(oDataMgr,
+                            frmMain.g_oTables.m_oProcessor.CreateTreeVolValSpeciesDiamGroupsTable(oDataMgr,
                                 conn, Tables.ProcessorScenarioRun.DefaultTreeVolValSpeciesDiamGroupsTableName, true);
                         }
                         if (!oDataMgr.TableExist(conn, Tables.ProcessorScenarioRun.DefaultAddKcpCpaTableName))
                         {
-                            frmMain.g_oTables.m_oProcessorScenarioRun.CreateSqliteAdditionalKcpCpaTable(oDataMgr,
+                            frmMain.g_oTables.m_oProcessorScenarioRun.CreateAdditionalKcpCpaTable(oDataMgr,
                                 conn, Tables.ProcessorScenarioRun.DefaultAddKcpCpaTableName, false);
                         }
                     }
@@ -452,12 +452,12 @@ namespace FIA_Biosum_Manager
                 // VIA THE METHOD CALL FOR NOW
 
                 // MIGRATE CALCULATED VARIABLES
-                string strCalculatedVariablesPathAndDbFile = this.ReferenceProjectDirectory + "\\" + Tables.OptimizerDefinitions.DefaultSqliteDbFile;
+                string strCalculatedVariablesPathAndDbFile = this.ReferenceProjectDirectory + "\\" + Tables.OptimizerDefinitions.DefaultDbFile;
                 if (!System.IO.File.Exists(strCalculatedVariablesPathAndDbFile))
                 {
                     // Create SQLite copy of optimizer_definitions database
                     string variablesSourceFile = frmMain.g_oEnv.strAppDir + "\\db\\" +
-                        System.IO.Path.GetFileName(Tables.OptimizerDefinitions.DefaultSqliteDbFile);
+                        System.IO.Path.GetFileName(Tables.OptimizerDefinitions.DefaultDbFile);
                     System.IO.File.Copy(variablesSourceFile, strCalculatedVariablesPathAndDbFile);
 
                     // Check to see if the input SQLite DSN exists for optimizer_definitions and if so, delete so we can add
@@ -476,7 +476,7 @@ namespace FIA_Biosum_Manager
                     string targetFvs = Tables.OptimizerDefinitions.DefaultCalculatedFVSVariablesTableName + "_1";
                     string targetVariables = Tables.OptimizerDefinitions.DefaultCalculatedOptimizerVariablesTableName + "_1";
 
-                    string strCalculatedVariablesPathAndAccdbFile = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim() + "\\" + Tables.OptimizerDefinitions.DefaultDbFile;
+                    string strCalculatedVariablesPathAndAccdbFile = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() + "\\" + Tables.OptimizerDefinitions.DefaultDbFile;
                     // Link to all tables in source database for optimizer_definitons
                     oDao.CreateTableLinks(strTempAccdb, strCalculatedVariablesPathAndAccdbFile);
                     oDao.CreateSQLiteTableLink(strTempAccdb, Tables.OptimizerDefinitions.DefaultCalculatedEconVariablesTableName, targetEcon,
@@ -521,13 +521,13 @@ namespace FIA_Biosum_Manager
 
                     // MIGRATE SCENARIO_OPTIMIZER_RULES_DEFINITIONS DATABASE
                     string scenarioAccessFile = this.ReferenceProjectDirectory + "\\" +
-                        Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableDbFile;
+                        Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableAccessDbFile;
 
                     // Create SQLite copy of scenario_optimizer_rule_definitions database
                     string scenarioSqliteFile = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory + "\\" +
-                        Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableSqliteDbFile;
+                        Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableDbFile;
                     //@ToDo: Don't have code
-                    frmMain.g_oFrmMain.frmProject.uc_project1.CreateOptimizerScenarioRuleDefinitionSqliteDbAndTables(scenarioSqliteFile);
+                    frmMain.g_oFrmMain.frmProject.uc_project1.CreateOptimizerScenarioRuleDefinitionDbAndTables(scenarioSqliteFile);
 
                     // Check to see if the input SQLite DSN exists and if so, delete so we can add
                     if (odbcmgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.OptimizerRuleDefinitionsDsnName))
@@ -603,14 +603,14 @@ namespace FIA_Biosum_Manager
 
                 // MIGRATE GIS DATA
                 // Check if Processor parameters in SQLite
-                string strTest = $@"{frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim()}\processor\{Tables.ProcessorScenarioRuleDefinitions.DefaultSqliteDbFile}";
+                string strTest = $@"{frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim()}\processor\{Tables.ProcessorScenarioRuleDefinitions.DefaultDbFile}";
                 if (!System.IO.File.Exists(strTest))
                 {
                     System.Windows.Forms.MessageBox.Show("Processor parameters have not been migrated to SQLite. SQLite GIS data cannot be loaded!", "FIA Biosum");
                     return;
                 }
                 // Check if Optimizer parameters in SQLite
-                strTest = $@"{frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim()}\{Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableSqliteDbFile}";
+                strTest = $@"{frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim()}\{Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableDbFile}";
                 if (!System.IO.File.Exists(strTest))
                 {
                     System.Windows.Forms.MessageBox.Show("Optimizer parameters have not been migrated to SQLite. SQLite GIS data cannot be loaded!", "FIA Biosum");
@@ -634,17 +634,17 @@ namespace FIA_Biosum_Manager
                 using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strCopyConn))
                 {
                     conn.Open();
-                    frmMain.g_oTables.m_oTravelTime.CreateSqliteProcessingSiteTable(oDataMgr, conn, Tables.TravelTime.DefaultProcessingSiteTableName);
-                    frmMain.g_oTables.m_oTravelTime.CreateSqliteTravelTimeTable(oDataMgr, conn, Tables.TravelTime.DefaultTravelTimeTableName);
+                    frmMain.g_oTables.m_oTravelTime.CreateProcessingSiteTable(oDataMgr, conn, Tables.TravelTime.DefaultProcessingSiteTableName);
+                    frmMain.g_oTables.m_oTravelTime.CreateTravelTimeTable(oDataMgr, conn, Tables.TravelTime.DefaultTravelTimeTableName);
                 }
                 // Find path to existing tables
                 oProjectDs = new Datasource();
-                oProjectDs.m_strDataSourceMDBFile = this.ReferenceProjectDirectory + "\\db\\project.mdb";
+                oProjectDs.m_strDataSourceDBFile = this.ReferenceProjectDirectory + "\\db\\project.mdb";
                 oProjectDs.m_strDataSourceTableName = "datasource";
                 oProjectDs.m_strScenarioId = "";
                 oProjectDs.LoadTableColumnNamesAndDataTypes = false;
                 oProjectDs.LoadTableRecordCount = false;
-                oProjectDs.populate_datasource_array();
+                oProjectDs.populate_datasource_array_access();
 
                 // Travel times
                 int intTravelTable = oProjectDs.getTableNameRow(Datasource.TableTypes.TravelTimes);
@@ -708,7 +708,7 @@ namespace FIA_Biosum_Manager
                                 arrUpdateTableName[1] = strTableName;
                             }
                         }
-                        strConn = oDataMgr.GetConnectionString($@"{this.ReferenceProjectDirectory}\{Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableSqliteDbFile}");
+                        strConn = oDataMgr.GetConnectionString($@"{this.ReferenceProjectDirectory}\{Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableDbFile}");
                         using (System.Data.SQLite.SQLiteConnection scenarioConn = new System.Data.SQLite.SQLiteConnection(strConn))
                         {
                             scenarioConn.Open();
@@ -724,7 +724,7 @@ namespace FIA_Biosum_Manager
                                 }
                             }
                         }
-                        strConn = oDataMgr.GetConnectionString($@"{frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Trim()}\processor\{Tables.ProcessorScenarioRuleDefinitions.DefaultSqliteDbFile}");
+                        strConn = oDataMgr.GetConnectionString($@"{frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim()}\processor\{Tables.ProcessorScenarioRuleDefinitions.DefaultDbFile}");
                         using (System.Data.SQLite.SQLiteConnection scenarioConn = new System.Data.SQLite.SQLiteConnection(strConn))
                         {
                             scenarioConn.Open();
@@ -786,12 +786,12 @@ namespace FIA_Biosum_Manager
             Datasource oProjectDs = new Datasource();
 
             // Find path to existing tables
-            oProjectDs.m_strDataSourceMDBFile = this.ReferenceProjectDirectory + "\\db\\project.mdb";
+            oProjectDs.m_strDataSourceDBFile = this.ReferenceProjectDirectory + "\\db\\project.mdb";
             oProjectDs.m_strDataSourceTableName = "datasource";
             oProjectDs.m_strScenarioId = "";
             oProjectDs.LoadTableColumnNamesAndDataTypes = false;
             oProjectDs.LoadTableRecordCount = false;
-            oProjectDs.populate_datasource_array();
+            oProjectDs.populate_datasource_array_access();
 
             // gis_travel_times.processing_site
             int intPSitesTable = oProjectDs.getTableNameRow(Datasource.TableTypes.ProcessingSites);
@@ -842,7 +842,7 @@ namespace FIA_Biosum_Manager
 
                 if (!oDataMgr.TableExist(conn, frmMain.g_oTables.m_oFIAPlot.DefaultDWMCoarseWoodyDebrisName))
                 {
-                    frmMain.g_oTables.m_oFIAPlot.CreateSqliteDWMCoarseWoodyDebrisTable(oDataMgr, conn, frmMain.g_oTables.m_oFIAPlot.DefaultDWMCoarseWoodyDebrisName);
+                    frmMain.g_oTables.m_oFIAPlot.CreateDWMCoarseWoodyDebrisTable(oDataMgr, conn, frmMain.g_oTables.m_oFIAPlot.DefaultDWMCoarseWoodyDebrisName);
                 }
                 else
                 {
@@ -850,7 +850,7 @@ namespace FIA_Biosum_Manager
                 }
                 if (!oDataMgr.TableExist(conn, frmMain.g_oTables.m_oFIAPlot.DefaultDWMDuffLitterFuelName))
                 {
-                    frmMain.g_oTables.m_oFIAPlot.CreateSqliteDWMDuffLitterFuelTable(oDataMgr, conn, frmMain.g_oTables.m_oFIAPlot.DefaultDWMDuffLitterFuelName);
+                    frmMain.g_oTables.m_oFIAPlot.CreateDWMDuffLitterFuelTable(oDataMgr, conn, frmMain.g_oTables.m_oFIAPlot.DefaultDWMDuffLitterFuelName);
                 }
                 else
                 {
@@ -858,7 +858,7 @@ namespace FIA_Biosum_Manager
                 }
                 if (!oDataMgr.TableExist(conn, frmMain.g_oTables.m_oFIAPlot.DefaultDWMFineWoodyDebrisName))
                 {
-                    frmMain.g_oTables.m_oFIAPlot.CreateSqliteDWMFineWoodyDebrisTable(oDataMgr, conn, frmMain.g_oTables.m_oFIAPlot.DefaultDWMFineWoodyDebrisName);
+                    frmMain.g_oTables.m_oFIAPlot.CreateDWMFineWoodyDebrisTable(oDataMgr, conn, frmMain.g_oTables.m_oFIAPlot.DefaultDWMFineWoodyDebrisName);
                 }
                 else
                 {
@@ -866,7 +866,7 @@ namespace FIA_Biosum_Manager
                 }
                 if (!oDataMgr.TableExist(conn, frmMain.g_oTables.m_oFIAPlot.DefaultDWMTransectSegmentName))
                 {
-                    frmMain.g_oTables.m_oFIAPlot.CreateSqliteDWMTransectSegmentTable(oDataMgr, conn, frmMain.g_oTables.m_oFIAPlot.DefaultDWMTransectSegmentName);
+                    frmMain.g_oTables.m_oFIAPlot.CreateDWMTransectSegmentTable(oDataMgr, conn, frmMain.g_oTables.m_oFIAPlot.DefaultDWMTransectSegmentName);
                 }
                 else
                 {
@@ -939,7 +939,7 @@ namespace FIA_Biosum_Manager
                 conn.Open();
                 if (!oDataMgr.TableExist(conn, Tables.FVS.DefaultFVSPrePostSeqNumTable))
                 {
-                    frmMain.g_oTables.m_oFvs.CreateFVSOutputSQLitePrePostSeqNumTable(oDataMgr, conn, Tables.FVS.DefaultFVSPrePostSeqNumTable);
+                    frmMain.g_oTables.m_oFvs.CreateFVSOutputPrePostSeqNumTable(oDataMgr, conn, Tables.FVS.DefaultFVSPrePostSeqNumTable);
                 }
                 else
                 {
@@ -948,7 +948,7 @@ namespace FIA_Biosum_Manager
                 }
                 if (!oDataMgr.TableExist(conn, Tables.FVS.DefaultFVSPrePostSeqNumRxPackageAssgnTable))
                 {
-                    frmMain.g_oTables.m_oFvs.CreateFVSOutputPrePostSQLiteSeqNumRxPackageAssgnTable(oDataMgr, conn, Tables.FVS.DefaultFVSPrePostSeqNumRxPackageAssgnTable);
+                    frmMain.g_oTables.m_oFvs.CreateFVSOutputPrePostSeqNumRxPackageAssgnTable(oDataMgr, conn, Tables.FVS.DefaultFVSPrePostSeqNumRxPackageAssgnTable);
                 }
                 else
                 {
@@ -957,7 +957,7 @@ namespace FIA_Biosum_Manager
                 }
                 if (!oDataMgr.TableExist(conn, Tables.FVS.DefaultRxPackageTableName))
                 {
-                    frmMain.g_oTables.m_oFvs.CreateSQLiteRxPackageTable(oDataMgr, conn, Tables.FVS.DefaultRxPackageTableName);
+                    frmMain.g_oTables.m_oFvs.CreateRxPackageTable(oDataMgr, conn, Tables.FVS.DefaultRxPackageTableName);
                 }
                 else
                 {
@@ -966,7 +966,7 @@ namespace FIA_Biosum_Manager
                 }
                 if (!oDataMgr.TableExist(conn, Tables.FVS.DefaultRxTableName))
                 {
-                    frmMain.g_oTables.m_oFvs.CreateSQLiteRxTable(oDataMgr, conn, Tables.FVS.DefaultRxTableName);
+                    frmMain.g_oTables.m_oFvs.CreateRxTable(oDataMgr, conn, Tables.FVS.DefaultRxTableName);
                 }
                 else
                 {
@@ -975,7 +975,7 @@ namespace FIA_Biosum_Manager
                 }
                 if (!oDataMgr.TableExist(conn, Tables.FVS.DefaultRxHarvestCostColumnsTableName))
                 {
-                    frmMain.g_oTables.m_oFvs.CreateSqliteRxHarvestCostColumnTable(oDataMgr, conn, Tables.FVS.DefaultRxHarvestCostColumnsTableName);
+                    frmMain.g_oTables.m_oFvs.CreateRxHarvestCostColumnTable(oDataMgr, conn, Tables.FVS.DefaultRxHarvestCostColumnsTableName);
                 }
                 else
                 {
@@ -986,12 +986,12 @@ namespace FIA_Biosum_Manager
 
             Datasource oProjectDs = new Datasource();
             // Find path to existing tables
-            oProjectDs.m_strDataSourceMDBFile = this.ReferenceProjectDirectory + "\\db\\project.mdb";
+            oProjectDs.m_strDataSourceDBFile = this.ReferenceProjectDirectory + "\\db\\project.mdb";
             oProjectDs.m_strDataSourceTableName = "datasource";
             oProjectDs.m_strScenarioId = "";
             oProjectDs.LoadTableColumnNamesAndDataTypes = false;
             oProjectDs.LoadTableRecordCount = false;
-            oProjectDs.populate_datasource_array();
+            oProjectDs.populate_datasource_array_access();
             // FVS PRE-POST SeqNum Definitions. Assuming that all the sequence number tables will be in the same db
             int intSeqNumTable = oProjectDs.getTableNameRow(Datasource.TableTypes.SeqNumDefinitions);
             // Again, assuming that the rx tables are all in the same database
@@ -1071,34 +1071,34 @@ namespace FIA_Biosum_Manager
                 oProjectDs.UpdateDataSourcePath(Datasource.TableTypes.RxPackage, $@"{ReferenceProjectDirectory.Trim()}\db", strMasterDb, Tables.FVS.DefaultRxPackageTableName);
                 oProjectDs.UpdateDataSourcePath(Datasource.TableTypes.Rx, $@"{ ReferenceProjectDirectory.Trim()}\db", strMasterDb, Tables.FVS.DefaultRxTableName);
                 oProjectDs.UpdateDataSourcePath(Datasource.TableTypes.RxHarvestCostColumns, $@"{ ReferenceProjectDirectory.Trim()}\db", strMasterDb, Tables.FVS.DefaultRxHarvestCostColumnsTableName);
-                oProjectDs.UpdateDataSourcePath(Datasource.TableTypes.HarvestMethods, "@@appdata@@\\fiabiosum", Tables.Reference.DefaultBiosumReferenceSqliteFile, Tables.Reference.DefaultHarvestMethodsTableName);
+                oProjectDs.UpdateDataSourcePath(Datasource.TableTypes.HarvestMethods, "@@appdata@@\\fiabiosum", Tables.Reference.DefaultBiosumReferenceFile, Tables.Reference.DefaultHarvestMethodsTableName);
 
                 // Update Optimizer data sources
-                strDestFile = $@"{ReferenceProjectDirectory.Trim()}\{Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableSqliteDbFile}";
+                strDestFile = $@"{ReferenceProjectDirectory.Trim()}\{Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableDbFile}";
                 using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(strDestFile)))
                 {
                     conn.Open();
                     oDataMgr.m_strSQL = $@"UPDATE {Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioDatasourceTableName} SET file = '{strMasterDb}' 
                         where table_type in ('Treatment Prescriptions','Treatment Prescriptions Harvest Cost Columns','{Datasource.TableTypes.RxPackage}')";
                     oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
-                    oDataMgr.m_strSQL = $@"UPDATE {Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioDatasourceTableName} SET path = '@@appdata@@\fiabiosum', file = '{Tables.Reference.DefaultBiosumReferenceSqliteFile}' 
+                    oDataMgr.m_strSQL = $@"UPDATE {Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioDatasourceTableName} SET path = '@@appdata@@\fiabiosum', file = '{Tables.Reference.DefaultBiosumReferenceFile}' 
                         where table_type = '{Datasource.TableTypes.HarvestMethods}' ";
                     oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
                 }
                 // Update Processor data sources
-                strDestFile = $@"{ReferenceProjectDirectory.Trim()}\processor\{Tables.ProcessorScenarioRuleDefinitions.DefaultSqliteDbFile}";
+                strDestFile = $@"{ReferenceProjectDirectory.Trim()}\processor\{Tables.ProcessorScenarioRuleDefinitions.DefaultDbFile}";
                 using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(strDestFile)))
                 {
                     conn.Open();
                     oDataMgr.m_strSQL = $@"UPDATE {Tables.Scenario.DefaultScenarioDatasourceTableName} SET file = '{strMasterDb}' 
                         where table_type in ('Treatment Prescriptions','Treatment Prescriptions Harvest Cost Columns','{Datasource.TableTypes.RxPackage}')";
                     oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
-                    oDataMgr.m_strSQL = $@"UPDATE {Tables.Scenario.DefaultScenarioDatasourceTableName} SET path = '@@appdata@@\fiabiosum', file = '{Tables.Reference.DefaultBiosumReferenceSqliteFile}' 
+                    oDataMgr.m_strSQL = $@"UPDATE {Tables.Scenario.DefaultScenarioDatasourceTableName} SET path = '@@appdata@@\fiabiosum', file = '{Tables.Reference.DefaultBiosumReferenceFile}' 
                         where table_type = '{Datasource.TableTypes.HarvestMethods}' ";
                     oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
                 }
                 // Remove obsolete data source definitions
-                using (OleDbConnection deleteConn = new System.Data.OleDb.OleDbConnection(oAdo.getMDBConnString(oProjectDs.m_strDataSourceMDBFile, "", "")))
+                using (OleDbConnection deleteConn = new System.Data.OleDb.OleDbConnection(oAdo.getMDBConnString(oProjectDs.m_strDataSourceDBFile, "", "")))
                 {
                     deleteConn.Open();
                     oAdo.m_strSQL = $@"DELETE FROM {oProjectDs.m_strDataSourceTableName} WHERE TABLE_TYPE IN 
@@ -1208,7 +1208,7 @@ namespace FIA_Biosum_Manager
             // update optimizer calculated variables db to add null threshold table
             // and use negative column to variables table
             frmMain.g_sbpInfo.Text = "Version Update: Updated Optimizer Calculated Variables ...Stand by";
-            string strCalculatedVariablesDb = ReferenceProjectDirectory.Trim() + "\\" + Tables.OptimizerDefinitions.DefaultSqliteDbFile;
+            string strCalculatedVariablesDb = ReferenceProjectDirectory.Trim() + "\\" + Tables.OptimizerDefinitions.DefaultDbFile;
             using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(strCalculatedVariablesDb)))
             {
                 conn.Open();
@@ -1255,7 +1255,7 @@ namespace FIA_Biosum_Manager
 
                 if (!oDataMgr.TableExist(conn, frmMain.g_oTables.m_oFIAPlot.DefaultPlotTableName))
                 {
-                    frmMain.g_oTables.m_oFIAPlot.CreateSqlitePlotTable(oDataMgr, conn, frmMain.g_oTables.m_oFIAPlot.DefaultPlotTableName);
+                    frmMain.g_oTables.m_oFIAPlot.CreatePlotTable(oDataMgr, conn, frmMain.g_oTables.m_oFIAPlot.DefaultPlotTableName);
                 }
                 else
                 {
@@ -1264,7 +1264,7 @@ namespace FIA_Biosum_Manager
                 }
                 if (!oDataMgr.TableExist(conn, frmMain.g_oTables.m_oFIAPlot.DefaultConditionTableName))
                 {
-                    frmMain.g_oTables.m_oFIAPlot.CreateSqliteConditionTable(oDataMgr, conn, frmMain.g_oTables.m_oFIAPlot.DefaultConditionTableName);
+                    frmMain.g_oTables.m_oFIAPlot.CreateConditionTable(oDataMgr, conn, frmMain.g_oTables.m_oFIAPlot.DefaultConditionTableName);
                 }
                 else
                 {
@@ -1273,7 +1273,7 @@ namespace FIA_Biosum_Manager
                 }
                 if (!oDataMgr.TableExist(conn, frmMain.g_oTables.m_oFIAPlot.DefaultTreeTableName))
                 {
-                    frmMain.g_oTables.m_oFIAPlot.CreateSqliteTreeTable(oDataMgr, conn, frmMain.g_oTables.m_oFIAPlot.DefaultTreeTableName);
+                    frmMain.g_oTables.m_oFIAPlot.CreateTreeTable(oDataMgr, conn, frmMain.g_oTables.m_oFIAPlot.DefaultTreeTableName);
                 }
                 else
                 {
@@ -1282,7 +1282,7 @@ namespace FIA_Biosum_Manager
                 }
                 if (!oDataMgr.TableExist(conn, frmMain.g_oTables.m_oFIAPlot.DefaultSiteTreeTableName))
                 {
-                    frmMain.g_oTables.m_oFIAPlot.CreateSqliteSiteTreeTable(oDataMgr, conn, frmMain.g_oTables.m_oFIAPlot.DefaultSiteTreeTableName);
+                    frmMain.g_oTables.m_oFIAPlot.CreateSiteTreeTable(oDataMgr, conn, frmMain.g_oTables.m_oFIAPlot.DefaultSiteTreeTableName);
                 }
                 else
                 {
@@ -1293,12 +1293,12 @@ namespace FIA_Biosum_Manager
 
             Datasource oProjectDs = new Datasource();
             // Find path to existing tables
-            oProjectDs.m_strDataSourceMDBFile = this.ReferenceProjectDirectory + "\\db\\project.mdb";
+            oProjectDs.m_strDataSourceDBFile = this.ReferenceProjectDirectory + "\\db\\project.mdb";
             oProjectDs.m_strDataSourceTableName = "datasource";
             oProjectDs.m_strScenarioId = "";
             oProjectDs.LoadTableColumnNamesAndDataTypes = false;
             oProjectDs.LoadTableRecordCount = false;
-            oProjectDs.populate_datasource_array();
+            oProjectDs.populate_datasource_array_access();
             // plot
             int intPlotTable = oProjectDs.getTableNameRow(Datasource.TableTypes.Plot);
             // cond
@@ -1397,7 +1397,7 @@ namespace FIA_Biosum_Manager
                     frmMain.g_oTables.m_oFIAPlot.DefaultBiosumPopStratumAdjustmentFactorsTableName);
 
                 // Update processor datasources
-                strDestFile = ReferenceProjectDirectory.Trim() + "\\processor\\" + Tables.ProcessorScenarioRuleDefinitions.DefaultSqliteDbFile;
+                strDestFile = ReferenceProjectDirectory.Trim() + "\\processor\\" + Tables.ProcessorScenarioRuleDefinitions.DefaultDbFile;
                 using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(strDestFile)))
                 {
                     conn.Open();
@@ -1411,7 +1411,7 @@ namespace FIA_Biosum_Manager
                 }
 
                 // Update optimizer datasources
-                strDestFile = ReferenceProjectDirectory.Trim() + "\\" + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableSqliteDbFile;
+                strDestFile = ReferenceProjectDirectory.Trim() + "\\" + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableDbFile;
                 using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(strDestFile)))
                 {
                     conn.Open();
@@ -1425,7 +1425,7 @@ namespace FIA_Biosum_Manager
             }
 
             // Update project datasources; tree_species, fvs_tree_species, and fiadb_fvs_variant have been eliminated; fia_tree_species_ref has moved
-            string strDsConn = oAdo.getMDBConnString(oProjectDs.m_strDataSourceMDBFile, "", "");
+            string strDsConn = oAdo.getMDBConnString(oProjectDs.m_strDataSourceDBFile, "", "");
             using (OleDbConnection copyConn = new System.Data.OleDb.OleDbConnection(strDsConn))
             {
                 copyConn.Open();
@@ -1438,17 +1438,17 @@ namespace FIA_Biosum_Manager
             oProjectDs.UpdateDataSourcePath(Datasource.TableTypes.FiaTreeMacroPlotBreakpointDia, "@@appdata@@\\fiabiosum",
                 Tables.Reference.DefaultTreeMacroPlotBreakPointDiaTableDbFile, Tables.Reference.DefaultTreeMacroPlotBreakPointDiaTableName);
             oProjectDs.UpdateDataSourcePath(Datasource.TableTypes.FiaTreeSpeciesReference, "@@appdata@@\\fiabiosum",
-                Tables.Reference.DefaultBiosumReferenceSqliteFile, Tables.Reference.DefaultFIATreeSpeciesTableName);
+                Tables.Reference.DefaultBiosumReferenceFile, Tables.Reference.DefaultFIATreeSpeciesTableName);
 
             // Update processor datasource
-            strDestFile = ReferenceProjectDirectory.Trim() + "\\processor\\" + Tables.ProcessorScenarioRuleDefinitions.DefaultSqliteDbFile;
+            strDestFile = ReferenceProjectDirectory.Trim() + "\\processor\\" + Tables.ProcessorScenarioRuleDefinitions.DefaultDbFile;
             using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(strDestFile)))
             {
                 conn.Open();
                 oDataMgr.m_strSQL = "DELETE FROM " + Tables.Scenario.DefaultScenarioDatasourceTableName +
                     " WHERE table_type in ('" + Datasource.TableTypes.TreeSpecies + "','" + Datasource.TableTypes.ProcessingSites + "')";
                 oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
-                oDataMgr.m_strSQL = $@"UPDATE {Tables.Scenario.DefaultScenarioDatasourceTableName} SET FILE = '{Tables.Reference.DefaultBiosumReferenceSqliteFile}' 
+                oDataMgr.m_strSQL = $@"UPDATE {Tables.Scenario.DefaultScenarioDatasourceTableName} SET FILE = '{Tables.Reference.DefaultBiosumReferenceFile}' 
                     WHERE table_type = '{Datasource.TableTypes.FiaTreeSpeciesReference}'";
                 oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
             }
@@ -1487,7 +1487,7 @@ namespace FIA_Biosum_Manager
 
             // update calculated variables for keep, null, and zero options for negative values
             frmMain.g_sbpInfo.Text = "Version Update: Updating Optimizer Calculated Variables ...Stand by";
-            string strCalculatedVariablesDb = ReferenceProjectDirectory.Trim() + "\\" + Tables.OptimizerDefinitions.DefaultSqliteDbFile;
+            string strCalculatedVariablesDb = ReferenceProjectDirectory.Trim() + "\\" + Tables.OptimizerDefinitions.DefaultDbFile;
             using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(strCalculatedVariablesDb)))
             {
                 conn.Open();
@@ -1536,12 +1536,134 @@ namespace FIA_Biosum_Manager
                 System.IO.File.Copy(strSourceFile, strDestFile, true);
             }
 
+            // Migrate project database
+            frmMain.g_sbpInfo.Text = "Version Update: Moving project and datasource tables ...Stand by";
+            ODBCMgr oODBCMgr = new ODBCMgr();
+            utils oUtils = new utils();
+            dao_data_access oDao = new dao_data_access();
+            ado_data_access oAdo = new ado_data_access();
+            strDestFile = ReferenceProjectDirectory.Trim() + "\\db\\project.db";
+            strSourceFile = ReferenceProjectDirectory.Trim() + "\\db\\project.mdb";
+            string strRootDir = "";
+
+            if (!System.IO.File.Exists(strDestFile))
+            {
+                oDataMgr.CreateDbFile(strDestFile);
+
+                bool bProjTableMigrate = false;
+                bool bProjDSTableMigrate = false;
+
+                using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(strDestFile)))
+                {
+                    conn.Open();
+
+                    if (!oDataMgr.TableExist(conn, Tables.Project.DefaultProjectTableName))
+                    {
+                        bProjTableMigrate = true;
+                        frmMain.g_oTables.m_oProject.CreateProjectTable(oDataMgr, conn, Tables.Project.DefaultProjectTableName);
+                    }
+
+                    if (!oDataMgr.TableExist(conn, Tables.Project.DefaultProjectDatasourceTableName))
+                    {
+                        bProjDSTableMigrate = true;
+                        frmMain.g_oTables.m_oProject.CreateDatasourceTable(oDataMgr, conn, Tables.Project.DefaultProjectDatasourceTableName);
+                    }
+                }
+
+                if (bProjTableMigrate || bProjDSTableMigrate)
+                {
+                    // Create DSN if needed
+                    if (oODBCMgr.CurrentUserDSNKeyExist(ODBCMgr.DSN_KEYS.ProjectDsnName))
+                    {
+                        oODBCMgr.RemoveUserDSN(ODBCMgr.DSN_KEYS.ProjectDsnName);
+                    }
+                    oODBCMgr.CreateUserSQLiteDSN(ODBCMgr.DSN_KEYS.ProjectDsnName, strDestFile);
+
+                    // Set new temporary database
+                    string strTempAccdb = oUtils.getRandomFile(frmMain.g_oEnv.strTempDir, "accdb");
+                    oDao.CreateMDB(strTempAccdb);
+
+                    // Link tables to temporary database
+                    if (bProjTableMigrate)
+                    {
+                        oDao.CreateTableLink(strTempAccdb, Tables.Project.DefaultProjectTableName, strSourceFile, Tables.Project.DefaultProjectTableName);
+                        oDao.CreateSQLiteTableLink(strTempAccdb, Tables.Project.DefaultProjectTableName, Tables.Project.DefaultProjectTableName + "_1",
+                        ODBCMgr.DSN_KEYS.ProjectDsnName, strDestFile);
+                    }
+                    if (bProjDSTableMigrate)
+                    {
+                        oDao.CreateTableLink(strTempAccdb, Tables.Project.DefaultProjectDatasourceTableName, strSourceFile, Tables.Project.DefaultProjectDatasourceTableName);
+                        oDao.CreateSQLiteTableLink(strTempAccdb, Tables.Project.DefaultProjectDatasourceTableName, Tables.Project.DefaultProjectDatasourceTableName + "_1",
+                        ODBCMgr.DSN_KEYS.ProjectDsnName, strDestFile);
+                    }
+                    System.Threading.Thread.Sleep(4000);
+
+                    // Copy tables
+                    string strConn = oAdo.getMDBConnString(strTempAccdb, "", "");
+                    using (OleDbConnection copyConn = new OleDbConnection(strConn))
+                    {
+                        copyConn.Open();
+
+                        if (bProjTableMigrate)
+                        {
+
+                            oAdo.m_strSQL = "INSERT INTO " + Tables.Project.DefaultProjectTableName + "_1 " +
+                            "(proj_id, created_by, created_date, organization, description, notes, project_directory, application_version) " +
+                            "SELECT proj_id, created_by, created_date, company, description, notes, project_root_directory, application_version " +
+                            " FROM " + Tables.Project.DefaultProjectTableName;
+                            oAdo.SqlNonQuery(copyConn, oAdo.m_strSQL);
+
+                            oAdo.m_strSQL = 
+
+                            oAdo.m_strSQL = "DROP TABLE " + Tables.Project.DefaultProjectTableName + "_1";
+                            oAdo.SqlNonQuery(copyConn, oAdo.m_strSQL);
+                        }
+                        
+                        if (bProjDSTableMigrate)
+                        {
+                            oAdo.m_strSQL = "INSERT INTO " + Tables.Project.DefaultProjectDatasourceTableName + "_1 " +
+                            "SELECT * FROM " + Tables.Project.DefaultProjectDatasourceTableName;
+                            oAdo.SqlNonQuery(copyConn, oAdo.m_strSQL);
+
+                            oAdo.m_strSQL = "DROP TABLE " + Tables.Project.DefaultProjectDatasourceTableName + "_1";
+                            oAdo.SqlNonQuery(copyConn, oAdo.m_strSQL);
+                        }
+                    }
+
+                    if (bProjTableMigrate)
+                    {
+                        using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(strDestFile)))
+                        {
+                            conn.Open();
+
+                            string[] arrFields = oDataMgr.getFieldNamesArray(conn, "SELECT * FROM " + Tables.Project.DefaultProjectDatasourceTableName);
+                            foreach (string field in arrFields)
+                            {
+                                oDataMgr.m_strSQL = "UPDATE " + Tables.Project.DefaultProjectDatasourceTableName +
+                                    " SET " + field + " = TRIM(" + field + ")";
+                                oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+                            }
+                        }
+                    }
+                }
+
+                frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectFile = "project.db";
+                frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text;
+                int intLastSlash = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.LastIndexOf('\\');
+                if (intLastSlash > 0)
+                {
+                    strRootDir = frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text.Substring(0, intLastSlash);
+                }
+                frmMain.g_oFrmMain.frmProject.uc_project1.txtRootDirectory.Text = strRootDir;
+            }
+            
+
         }
 
             // Method to compare two versions.
             // Returns 1 if v2 is smaller, -1 
             // if v1 is smaller, 0 if equal 
-            public int VersionCompare(string v1, string v2)
+        public int VersionCompare(string v1, string v2)
         {
             // vnum stores each numeric 
             // part of version 
