@@ -145,6 +145,7 @@ namespace FIA_Biosum_Manager
                 frmMain.g_oUtils.WriteText(m_strDebugFile, "uc_project.OpenProjectTable: Instantiate ado_data_access \r\n");
 
 			ado_data_access p_ado = new ado_data_access();
+			int intLastSlash;
 			
 			string strFullPath = strRootDir + "\\DB\\" + strFile;
             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
@@ -183,7 +184,7 @@ namespace FIA_Biosum_Manager
 				    m_strNewDate=p_ado.m_OleDbDataReader["created_date"].ToString();
 		            m_strNewOrganization=p_ado.m_OleDbDataReader["company"].ToString().Trim();
 		            m_strNewDescription=p_ado.m_OleDbDataReader["description"].ToString().Trim();
-		            m_strNewRootDirectory=p_ado.m_OleDbDataReader["project_root_directory"].ToString();
+		            m_strOldProjectDirectory=p_ado.m_OleDbDataReader["project_root_directory"].ToString();
                     
 					if (bAppVerColumnExist)
 					{
@@ -217,7 +218,17 @@ namespace FIA_Biosum_Manager
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "uc_project.OpenProjectTable: !!Failed to open project file!! Error=" + m_strError + "\r\n");
 
 			}
-            p_ado = null;
+			intLastSlash = strRootDir.LastIndexOf('\\');
+			if (intLastSlash > 0)
+			{
+				m_strNewRootDirectory = strRootDir.Substring(0, intLastSlash);
+			}
+			if (m_strNewProjectId != strRootDir.Substring(intLastSlash + 1))
+			{
+				m_strNewProjectId = strRootDir.Substring(intLastSlash + 1);
+
+			}
+			p_ado = null;
 			//m_strProjectId = this.txtProjectId.Text.ToString();  
 			if (this.m_strAction=="VIEW") 
 			{
@@ -316,8 +327,6 @@ namespace FIA_Biosum_Manager
 			{
 				m_strNewRootDirectory = strProjDir.Substring(0, intLastSlash);
 			}
-			intLastSlash = -1;
-			intLastSlash = strProjDir.LastIndexOf('\\');
 			if (m_strNewProjectId != strProjDir.Substring(intLastSlash + 1))
 			{
 				m_strNewProjectId = strProjDir.Substring(intLastSlash + 1);
@@ -1562,11 +1571,11 @@ namespace FIA_Biosum_Manager
 			string strOldProjDir = "";
 			string strProjDir = "";
 
-			frmMain.g_oGeneralMacroSubstitutionVariable_Collection.Item(frmMain.OLDPROJDIR).VariableSubstitutionString = this.txtRootDirectory.Text.Trim();
+			frmMain.g_oGeneralMacroSubstitutionVariable_Collection.Item(frmMain.OLDPROJDIR).VariableSubstitutionString = this.m_strOldProjectDirectory.Trim();
 			frmMain.g_oGeneralMacroSubstitutionVariable_Collection.Item(frmMain.PROJDIR).VariableSubstitutionString = this.m_strProjectDirectory.Trim();
 
 			strProjDir = m_strProjectDirectory.Trim();
-			strOldProjDir = this.txtRootDirectory.Text.Trim();
+			strOldProjDir = this.m_strOldProjectDirectory.Trim();
 
 			if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
 				frmMain.g_oUtils.WriteText(m_strDebugFile, "uc_project.SetProjectPathEnvironmentVariables: Replace old project directory (" + strOldProjDir + ") with new project directory (" + strProjDir + ")\r\n");
@@ -1584,6 +1593,12 @@ namespace FIA_Biosum_Manager
 			if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
 				frmMain.g_oUtils.WriteText(m_strDebugFile, "uc_project.SetProjectPathEnvironmentVariables: Open Connection to Project Dbfile " + strConn + ")\r\n");
 			oAdo.OpenConnection(strConn);
+
+			strSQL = "UPDATE project SET proj_id = '" + this.txtProjectId.Text.Trim() + "'";
+			if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+				frmMain.g_oUtils.WriteText(m_strDebugFile, "uc_project.SetProjectPathEnvironmentVariables: Execute SQL \r\n" + strSQL + "\r\n");
+
+			oAdo.SqlNonQuery(oAdo.m_OleDbConnection, strSQL);
 
 			strSQL = "UPDATE project SET project_root_directory = '" + strProjDir + "' " +
 					 "WHERE proj_id = '" + this.txtProjectId.Text.Trim() + "';";
