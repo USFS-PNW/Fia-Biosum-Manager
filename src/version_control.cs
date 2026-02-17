@@ -1511,7 +1511,6 @@ namespace FIA_Biosum_Manager
         {
             DataMgr oDataMgr = new DataMgr();
             // Make sure they have the treesample.db with the treeSampleTvbc table in it
-            //@ToDo: Need to test this
             bool bCopyTreeSample = false;
             string strDestFile = frmMain.g_oEnv.strApplicationDataDirectory.Trim() + frmMain.g_strBiosumDataDir + Tables.Reference.DefaultTreeSampleDbFile;
             string strSourceFile = frmMain.g_oEnv.strAppDir + "\\db" + Tables.Reference.DefaultTreeSampleDbFile;
