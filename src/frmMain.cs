@@ -189,8 +189,7 @@ namespace FIA_Biosum_Manager
 
         public static string g_strAppVer = "5.12.1";
         public static string g_strBiosumDataDir = "\\FIABiosum";
-        public static int g_intRefDbVer = 8;
-        public static int g_intRefSqliteDbVer = 15;
+        public static int g_intRefSqliteDbVer = 17;
 
         private System.Windows.Forms.MenuItem mnuSettings;
         private MenuItem mnuTools;
