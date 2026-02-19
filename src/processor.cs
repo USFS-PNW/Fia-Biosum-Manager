@@ -711,6 +711,7 @@ namespace FIA_Biosum_Manager
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "createOpcostInput: Begin writing opcost input table - " + System.DateTime.Now.ToString() + "\r\n");
                 long lngCount = 0;
 
+                // This list triggers the warning message that pops after the rxPackage is processed
                 System.Collections.Generic.IList<string> standsWithInvalidBaFrac = new System.Collections.Generic.List<string>();
                 double maxBaFrac = 1.05;
                 using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(SQLite.GetConnectionString(m_strSqliteConnection)))
@@ -825,16 +826,22 @@ namespace FIA_Biosum_Manager
                         {
                             double dblTestBaFracCut = nextStand.TotalBaFracCutNumerator / dblBaFracCutDenominator;
                             dblTestBaFracCut = Math.Round(dblTestBaFracCut, 2, MidpointRounding.AwayFromZero);
-                            if (dblTestBaFracCut > 0 &&
-                                dblTestBaFracCut <= maxBaFrac)
-                            {
-                                nextStand.BaFracCut = dblTestBaFracCut;
-                            }
-                            else
-                            {
+                                    if (dblTestBaFracCut > 0 &&
+                                        dblTestBaFracCut <= maxBaFrac)
+                                    {
+                                        nextStand.BaFracCut = dblTestBaFracCut;
+                                    }
+                                    else if (dblTestBaFracCut == 0)
+                                    {
+                                        nextStand.BaFracCut = 0.01;
+                                        frmMain.g_oUtils.WriteText(m_strDebugFile, "BA_FRAC_CUT --> INVALID VALUE: " + dblTestBaFracCut + " from opcost stand " + nextStand.OpCostStand + "\r\n");
+                                    }
+                                    else
+                                    {
+                                        nextStand.BaFracCut = 1;
                                         standsWithInvalidBaFrac.Add(nextStand.OpCostStand);
                                         frmMain.g_oUtils.WriteText(m_strDebugFile, "BA_FRAC_CUT --> INVALID VALUE: " + dblTestBaFracCut + " from opcost stand " + nextStand.OpCostStand + "\r\n");
-                            }
+                                    }
                         }
                         else
                         {
