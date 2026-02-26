@@ -62,7 +62,7 @@ namespace FIA_Biosum_Manager
                     "created_by CHAR(30)," +
                     "created_date CHAR(22)," +
                     "organization CHAR(100)," +
-                    "description CHAR(255)," +
+                    "description CHAR(1200)," +
                     "notes CHAR(255)," +
                     "project_directory CHAR(254)," +
                     "application_version CHAR(11))";     
