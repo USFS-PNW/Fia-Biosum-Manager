@@ -838,7 +838,7 @@ namespace FIA_Biosum_Manager
                                     }
                                     else
                                     {
-                                        nextStand.BaFracCut = 1;
+                                        nextStand.BaFracCut = 1.06;
                                         standsWithInvalidBaFrac.Add(nextStand.OpCostStand);
                                         frmMain.g_oUtils.WriteText(m_strDebugFile, "BA_FRAC_CUT --> INVALID VALUE: " + dblTestBaFracCut + " from opcost stand " + nextStand.OpCostStand + "\r\n");
                                     }
