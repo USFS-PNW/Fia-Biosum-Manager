@@ -1629,7 +1629,7 @@ namespace FIA_Biosum_Manager
                         }
                     }
 
-                    if (bProjTableMigrate)
+                    if (bProjDSTableMigrate)
                     {
                         using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(strDestFile)))
                         {
