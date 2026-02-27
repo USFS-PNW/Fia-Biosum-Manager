@@ -89,10 +89,11 @@ namespace FIA_Biosum_Manager
             // 
             this.linkLabel1.Location = new System.Drawing.Point(10, 195);
             this.linkLabel1.Name = "linkLabel1";
-            this.linkLabel1.Size = new System.Drawing.Size(134, 18);
+            this.linkLabel1.Size = new System.Drawing.Size(200, 18);
             this.linkLabel1.TabIndex = 4;
             this.linkLabel1.TabStop = true;
-            this.linkLabel1.Text = "usfs@jfried.net";
+            this.linkLabel1.Text = "USFS@JFRIED.NET";
+            this.linkLabel1.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.linkLabel1_LinkClicked);
             // 
             // label3
             // 
@@ -104,7 +105,7 @@ namespace FIA_Biosum_Manager
             // 
             // btnOK
             // 
-            this.btnOK.Location = new System.Drawing.Point(480, 295);
+            this.btnOK.Location = new System.Drawing.Point(382, 245);
             this.btnOK.Name = "btnOK";
             this.btnOK.Size = new System.Drawing.Size(96, 37);
             this.btnOK.TabIndex = 9;
@@ -147,9 +148,19 @@ namespace FIA_Biosum_Manager
 			this.Close();
 		}
 
-        private void linkLabel2_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        private void linkLabel1_LinkClicked(object sender, System.Windows.Forms.LinkLabelLinkClickedEventArgs e)
         {
+            // Determine which link was clicked within the LinkLabel.
+            this.linkLabel1.Links[linkLabel1.Links.IndexOf(e.Link)].Visited = true;
 
+            // Display the appropriate link based on the value of the 
+            // LinkData property of the Link object.
+            string emailAddress = e.Link.LinkData as string;
+
+            // Use string formatting to include subject and body
+            string mailtoUri = $"mailto:{emailAddress}?subject={Uri.EscapeDataString("BioSum Tech Support")}";
+
+            System.Diagnostics.Process.Start(mailtoUri);
         }
-	}
+    }
 }
