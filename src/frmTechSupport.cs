@@ -72,7 +72,7 @@ namespace FIA_Biosum_Manager
             this.label1.Font = new System.Drawing.Font("Tahoma", 22F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label1.Location = new System.Drawing.Point(10, 43);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(240, 40);
+            this.label1.Size = new System.Drawing.Size(280, 40);
             this.label1.TabIndex = 2;
             this.label1.Text = "FIA Biosum";
             // 
@@ -93,6 +93,7 @@ namespace FIA_Biosum_Manager
             this.linkLabel1.TabIndex = 4;
             this.linkLabel1.TabStop = true;
             this.linkLabel1.Text = "USFS@JFRIED.NET";
+            this.linkLabel1.Links.Add(0,this.linkLabel1.Text.Length, this.linkLabel1.Text);
             this.linkLabel1.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.linkLabel1_LinkClicked);
             // 
             // label3
