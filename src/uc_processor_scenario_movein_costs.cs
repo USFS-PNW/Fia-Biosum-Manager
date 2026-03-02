@@ -272,11 +272,9 @@ namespace FIA_Biosum_Manager
             this.label1.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(64)))), ((int)(((byte)(0)))));
             this.label1.Location = new System.Drawing.Point(16, 37);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(856, 55);
+            this.label1.Size = new System.Drawing.Size(856, 61);
             this.label1.TabIndex = 56;
-            this.label1.Text = "Distances shorter than this will be set to this value for cost estimation in OpCo" +
-    "st. OpCost may apply a larger value for minimum yarding distance, if warranted f" +
-    "or the specified harvest system.";
+            this.label1.Text = resources.GetString("label1.Text");
             // 
             // txtYardDistThreshold
             // 

@@ -120,4 +120,7 @@
   <data name="label4.Text" xml:space="preserve">
     <value>Scaled Move-in Time will be calculated as the minimum travel time to a merchantable wood processing site times this parameter. Entering 0 provides opportunity to select a constant value for Move-in Time by entering a positive value in Move-in Adjustment.</value>
   </data>
+  <data name="label1.Text" xml:space="preserve">
+    <value>Non-null, non-negative distances shorter than this will be set to this value for cost estimation in OpCost. OpCost may apply a larger value for minimum yarding distance, if warranted for a specific harvest system.</value>
+  </data>
 </root>
