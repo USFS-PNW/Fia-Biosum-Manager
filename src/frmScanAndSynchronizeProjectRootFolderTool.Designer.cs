@@ -45,7 +45,7 @@
             this.label2 = new System.Windows.Forms.Label();
             this.grpStatus = new System.Windows.Forms.GroupBox();
             this.label4 = new System.Windows.Forms.Label();
-            this.lblProjectFolderNotFound = new System.Windows.Forms.Label();
+            this.lblFolderPathNotSynchronized = new System.Windows.Forms.Label();
             this.label3 = new System.Windows.Forms.Label();
             this.lblFolderPaths = new System.Windows.Forms.Label();
             this.btnAnalyze = new System.Windows.Forms.Button();
@@ -174,7 +174,7 @@
             // grpStatus
             // 
             this.grpStatus.Controls.Add(this.label4);
-            this.grpStatus.Controls.Add(this.lblProjectFolderNotFound);
+            this.grpStatus.Controls.Add(this.lblFolderPathNotSynchronized);
             this.grpStatus.Controls.Add(this.label3);
             this.grpStatus.Controls.Add(this.lblFolderPaths);
             this.grpStatus.Location = new System.Drawing.Point(561, 192);
@@ -191,18 +191,18 @@
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(151, 13);
             this.label4.TabIndex = 14;
-            this.label4.Text = "Project Folder Not Found";
+            this.label4.Text = "Folder Path Not Synchronized";
             // 
-            // lblProjectRootFolderNotFound
+            // lblFolderPathNotSynchronized
             // 
-            this.lblProjectFolderNotFound.BackColor = System.Drawing.Color.Beige;
-            this.lblProjectFolderNotFound.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblProjectFolderNotFound.Location = new System.Drawing.Point(19, 127);
-            this.lblProjectFolderNotFound.Name = "lblProjectFolderNotFound";
-            this.lblProjectFolderNotFound.Size = new System.Drawing.Size(142, 29);
-            this.lblProjectFolderNotFound.TabIndex = 13;
-            this.lblProjectFolderNotFound.Text = "0";
-            this.lblProjectFolderNotFound.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.lblFolderPathNotSynchronized.BackColor = System.Drawing.Color.Beige;
+            this.lblFolderPathNotSynchronized.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblFolderPathNotSynchronized.Location = new System.Drawing.Point(19, 127);
+            this.lblFolderPathNotSynchronized.Name = "lblFolderPathNotSynchronized";
+            this.lblFolderPathNotSynchronized.Size = new System.Drawing.Size(142, 29);
+            this.lblFolderPathNotSynchronized.TabIndex = 13;
+            this.lblFolderPathNotSynchronized.Text = "0";
+            this.lblFolderPathNotSynchronized.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
             // label3
             // 
@@ -276,7 +276,7 @@
         private System.Windows.Forms.ToolBarButton tlbBtnRefresh;
         private System.Windows.Forms.GroupBox grpStatus;
         private System.Windows.Forms.Label label4;
-        private System.Windows.Forms.Label lblProjectFolderNotFound;
+        private System.Windows.Forms.Label lblFolderPathNotSynchronized;
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.Label lblFolderPaths;
         private System.Windows.Forms.Button btnAnalyze;

@@ -134,6 +134,21 @@ namespace FIA_Biosum_Manager
                                        entryListItem.SubItems.Add("Yes");
                                 FileStatusSubItem.ForeColor = System.Drawing.Color.White;
                                 FileStatusSubItem.BackColor = System.Drawing.Color.Green;
+                                if (p_dataMgr.m_DataReader["Path"].ToString().ToUpper().Contains(lblCurrentProjectFolder.Text.Trim().ToUpper()))
+                                {
+                                    ListViewItem.ListViewSubItem SyncStatusSubItem =
+                                          entryListItem.SubItems.Add("Yes");
+                                    SyncStatusSubItem.ForeColor = System.Drawing.Color.White;
+                                    SyncStatusSubItem.BackColor = System.Drawing.Color.Green;
+                                }
+                                else
+                                {
+                                    ListViewItem.ListViewSubItem SyncStatusSubItem =
+                                          entryListItem.SubItems.Add("No");
+                                    SyncStatusSubItem.ForeColor = System.Drawing.Color.White;
+                                    SyncStatusSubItem.BackColor = System.Drawing.Color.Red;
+                                    intRootNF++;
+                                }
                             }
                             else
                             {
@@ -142,27 +157,18 @@ namespace FIA_Biosum_Manager
                                 FileStatusSubItem.ForeColor = System.Drawing.Color.White;
                                 FileStatusSubItem.BackColor = System.Drawing.Color.Red;
                                 intPathNF++;
-                            }
-                            if (p_dataMgr.m_DataReader["Path"].ToString().ToUpper().Contains(lblCurrentProjectFolder.Text.Trim().ToUpper()))
-                            {
                                 ListViewItem.ListViewSubItem SyncStatusSubItem =
-                                      entryListItem.SubItems.Add("Yes");
-                                SyncStatusSubItem.ForeColor = System.Drawing.Color.White;
-                                SyncStatusSubItem.BackColor = System.Drawing.Color.Green;
-                            }
-                            else
-                            {
-                                ListViewItem.ListViewSubItem SyncStatusSubItem =
-                                      entryListItem.SubItems.Add("No");
+                                          entryListItem.SubItems.Add("No");
                                 SyncStatusSubItem.ForeColor = System.Drawing.Color.White;
                                 SyncStatusSubItem.BackColor = System.Drawing.Color.Red;
                                 intRootNF++;
                             }
+                            
                             x++;
                         }
                     }
                     lblFolderPaths.Text = intPathNF.ToString().Trim();
-                    lblProjectFolderNotFound.Text = intRootNF.ToString().Trim();
+                    lblFolderPathNotSynchronized.Text = intRootNF.ToString().Trim();
                     p_dataMgr.m_DataReader.Close();
                 }
                 
@@ -333,10 +339,10 @@ namespace FIA_Biosum_Manager
                         lvDatasources.Items[x].SubItems[COLUMN_SYNCD].BackColor = Color.Red;
                         intRootNF++;
                     }
-                }
             }
+        }
             lblFolderPaths.Text = intPathNF.ToString().Trim();
-            lblProjectFolderNotFound.Text = intRootNF.ToString().Trim();
+            lblFolderPathNotSynchronized.Text = intRootNF.ToString().Trim();
             if (intRootNF > 0) btnAnalyze.Enabled = true; else btnAnalyze.Enabled = false;
 
         }

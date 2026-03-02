@@ -58,11 +58,11 @@ namespace FIA_Biosum_Manager
             public string CreateProjectTableSQL(string p_strTableName)
             {
                 return "CREATE TABLE " + p_strTableName + " (" +
-                    "proj_id CHAR(20) PRIMARY KEY," +
+                    "proj_id CHAR(100) PRIMARY KEY," +
                     "created_by CHAR(30)," +
                     "created_date CHAR(22)," +
                     "organization CHAR(100)," +
-                    "description CHAR(255)," +
+                    "description CHAR(1200)," +
                     "notes CHAR(255)," +
                     "project_directory CHAR(254)," +
                     "application_version CHAR(11))";     

@@ -478,7 +478,7 @@ namespace FIA_Biosum_Manager
             // 
             this.txtProjectId.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.txtProjectId.Location = new System.Drawing.Point(8, 16);
-            this.txtProjectId.MaxLength = 20;
+            this.txtProjectId.MaxLength = 100;
             this.txtProjectId.Name = "txtProjectId";
             this.txtProjectId.Size = new System.Drawing.Size(166, 23);
             this.txtProjectId.TabIndex = 0;
@@ -772,6 +772,14 @@ namespace FIA_Biosum_Manager
 				this.txtProjectId.Text[this.txtProjectId.Text.Length-1] == ' ' || this.txtProjectId.Text[this.txtProjectId.Text.Length - 1] == '.')
             {
 				MessageBox.Show("Project Id cannot contain leading or trailing spaces or periods");
+				this.txtProjectId.Focus();
+				return;
+            }
+
+			//project id length test
+			if (this.txtProjectId.Text.Length > 100)
+            {
+				MessageBox.Show("Project Workspace name cannot be longer than 100 characters");
 				this.txtProjectId.Focus();
 				return;
             }
@@ -1381,7 +1389,16 @@ namespace FIA_Biosum_Manager
 						this.OpenProjectTableNew(this.m_strNewProjectDirectory, this.m_strNewProjectFile);
                     }
 
-
+					if (this.m_strNewProjectId.Length > 100)
+                    {
+						System.Text.StringBuilder sb = new System.Text.StringBuilder();
+						sb.Append("WARNING: The Project Workspace of the project you are trying to open is too long! ");
+						sb.Append("The maximum length for the Project Workspace is 100 characters.");
+						System.Windows.Forms.DialogResult res =
+							System.Windows.Forms.MessageBox.Show(sb.ToString(), "FIA Biosum", System.Windows.Forms.MessageBoxButtons.OK);
+						this.m_intError = -1;
+						return;
+                    }
 				}
 			}
 			else 
@@ -1593,6 +1610,15 @@ namespace FIA_Biosum_Manager
 			if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
 				frmMain.g_oUtils.WriteText(m_strDebugFile, "uc_project.SetProjectPathEnvironmentVariables: Open Connection to Project Dbfile " + strConn + ")\r\n");
 			oAdo.OpenConnection(strConn);
+
+			if (this.txtProjectId.Text.Trim().Length > 20)
+            {
+				strSQL = "ALTER TABLE project ALTER COLUMN proj_id TEXT(100)";
+				if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+					frmMain.g_oUtils.WriteText(m_strDebugFile, "uc_project.SetProjectPathEnvironmentVariables: Execute SQL \r\n" + strSQL + "\r\n");
+
+				oAdo.SqlNonQuery(oAdo.m_OleDbConnection, strSQL);
+			}
 
 			strSQL = "UPDATE project SET proj_id = '" + this.txtProjectId.Text.Trim() + "'";
 			if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)

@@ -1079,10 +1079,10 @@ namespace FIA_Biosum_Manager
                 {
                     conn.Open();
                     oDataMgr.m_strSQL = $@"UPDATE {Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioDatasourceTableName} SET file = '{strMasterDb}' 
-                        where table_type in ('Treatment Prescriptions','Treatment Prescriptions Harvest Cost Columns','{Datasource.TableTypes.RxPackage}')";
+                        where TRIM(table_type) in ('Treatment Prescriptions','Treatment Prescriptions Harvest Cost Columns','{Datasource.TableTypes.RxPackage}')";
                     oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
                     oDataMgr.m_strSQL = $@"UPDATE {Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioDatasourceTableName} SET path = '@@appdata@@\fiabiosum', file = '{Tables.Reference.DefaultBiosumReferenceFile}' 
-                        where table_type = '{Datasource.TableTypes.HarvestMethods}' ";
+                        where TRIM(table_type) = '{Datasource.TableTypes.HarvestMethods}' ";
                     oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
                 }
                 // Update Processor data sources
@@ -1091,10 +1091,10 @@ namespace FIA_Biosum_Manager
                 {
                     conn.Open();
                     oDataMgr.m_strSQL = $@"UPDATE {Tables.Scenario.DefaultScenarioDatasourceTableName} SET file = '{strMasterDb}' 
-                        where table_type in ('Treatment Prescriptions','Treatment Prescriptions Harvest Cost Columns','{Datasource.TableTypes.RxPackage}')";
+                        where TRIM(table_type) in ('Treatment Prescriptions','Treatment Prescriptions Harvest Cost Columns','{Datasource.TableTypes.RxPackage}')";
                     oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
                     oDataMgr.m_strSQL = $@"UPDATE {Tables.Scenario.DefaultScenarioDatasourceTableName} SET path = '@@appdata@@\fiabiosum', file = '{Tables.Reference.DefaultBiosumReferenceFile}' 
-                        where table_type = '{Datasource.TableTypes.HarvestMethods}' ";
+                        where TRIM(table_type) = '{Datasource.TableTypes.HarvestMethods}' ";
                     oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
                 }
                 // Remove obsolete data source definitions
@@ -1403,7 +1403,7 @@ namespace FIA_Biosum_Manager
                     conn.Open();
 
                     oDataMgr.m_strSQL = "UPDATE " + Tables.Scenario.DefaultScenarioDatasourceTableName +
-                        " SET file = '" + strMasterDb + "' WHERE table_type IN ('" +
+                        " SET file = '" + strMasterDb + "' WHERE TRIM(table_type) IN ('" +
                         Datasource.TableTypes.Plot + "', '" +
                         Datasource.TableTypes.Condition + "', '" +
                         Datasource.TableTypes.Tree + "')";
@@ -1417,7 +1417,7 @@ namespace FIA_Biosum_Manager
                     conn.Open();
 
                     oDataMgr.m_strSQL = "UPDATE " + Tables.Scenario.DefaultScenarioDatasourceTableName +
-                        " SET file = '" + strMasterDb + "' WHERE table_type IN ('" +
+                        " SET file = '" + strMasterDb + "' WHERE TRIM(table_type) IN ('" +
                         Datasource.TableTypes.Plot + "', '" +
                         Datasource.TableTypes.Condition + "')";
                     oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
@@ -1629,7 +1629,7 @@ namespace FIA_Biosum_Manager
                         }
                     }
 
-                    if (bProjTableMigrate)
+                    if (bProjDSTableMigrate)
                     {
                         using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(strDestFile)))
                         {
