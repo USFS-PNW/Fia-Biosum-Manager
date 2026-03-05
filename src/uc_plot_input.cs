@@ -348,7 +348,7 @@ namespace FIA_Biosum_Manager
             this.groupBox1.TabIndex = 0;
             this.groupBox1.TabStop = false;
             // 
-            // grpboxMDBFiadbInput
+            // grpboxDBFiadbInput
             // 
             this.grpboxDBFiadbInput.Controls.Add(this.groupBox2);
             this.grpboxDBFiadbInput.Controls.Add(this.groupBox24);
@@ -368,7 +368,7 @@ namespace FIA_Biosum_Manager
             this.grpboxDBFiadbInput.Controls.Add(this.btnDBFiadbInputCancel);
             this.grpboxDBFiadbInput.Location = new System.Drawing.Point(19, 70);
             this.grpboxDBFiadbInput.Margin = new System.Windows.Forms.Padding(4);
-            this.grpboxDBFiadbInput.Name = "grpboxMDBFiadbInput";
+            this.grpboxDBFiadbInput.Name = "grpboxDBFiadbInput";
             this.grpboxDBFiadbInput.Padding = new System.Windows.Forms.Padding(4);
             this.grpboxDBFiadbInput.Size = new System.Drawing.Size(1344, 450);
             this.grpboxDBFiadbInput.TabIndex = 35;
@@ -417,12 +417,12 @@ namespace FIA_Biosum_Manager
             this.txtFiadbInputFile.Size = new System.Drawing.Size(719, 30);
             this.txtFiadbInputFile.TabIndex = 2;
             // 
-            // btnboxMDBFiadbInputFile
+            // btnboxDBFiadbInputFile
             // 
-            this.btnboxDBFiadbInputFile.Image = ((System.Drawing.Image)(resources.GetObject("btnboxMDBFiadbInputFile.Image")));
+            this.btnboxDBFiadbInputFile.Image = ((System.Drawing.Image)(resources.GetObject("btnboxDBFiadbInputFile.Image")));
             this.btnboxDBFiadbInputFile.Location = new System.Drawing.Point(740, 12);
             this.btnboxDBFiadbInputFile.Margin = new System.Windows.Forms.Padding(4);
-            this.btnboxDBFiadbInputFile.Name = "btnboxMDBFiadbInputFile";
+            this.btnboxDBFiadbInputFile.Name = "btnboxDBFiadbInputFile";
             this.btnboxDBFiadbInputFile.Size = new System.Drawing.Size(40, 40);
             this.btnboxDBFiadbInputFile.TabIndex = 1;
             this.btnboxDBFiadbInputFile.Click += new System.EventHandler(this.btnboxDBFiadbInputFile_Click);
@@ -587,53 +587,53 @@ namespace FIA_Biosum_Manager
             this.cmbFiadbPlotTable.Size = new System.Drawing.Size(370, 24);
             this.cmbFiadbPlotTable.TabIndex = 0;
             // 
-            // btnMDBFiadbInputFinish
+            // btnDBFiadbInputFinish
             // 
             this.btnDBFiadbInputFinish.Enabled = false;
             this.btnDBFiadbInputFinish.Location = new System.Drawing.Point(730, 408);
             this.btnDBFiadbInputFinish.Margin = new System.Windows.Forms.Padding(4);
-            this.btnDBFiadbInputFinish.Name = "btnMDBFiadbInputFinish";
+            this.btnDBFiadbInputFinish.Name = "btnDBFiadbInputFinish";
             this.btnDBFiadbInputFinish.Size = new System.Drawing.Size(90, 30);
             this.btnDBFiadbInputFinish.TabIndex = 7;
             this.btnDBFiadbInputFinish.Text = "Append";
             // 
-            // btnMDBFiadbInputHelp
+            // btnDBFiadbInputHelp
             // 
             this.btnDBFiadbInputHelp.ForeColor = System.Drawing.SystemColors.HotTrack;
             this.btnDBFiadbInputHelp.Location = new System.Drawing.Point(30, 408);
             this.btnDBFiadbInputHelp.Margin = new System.Windows.Forms.Padding(4);
-            this.btnDBFiadbInputHelp.Name = "btnMDBFiadbInputHelp";
+            this.btnDBFiadbInputHelp.Name = "btnDBFiadbInputHelp";
             this.btnDBFiadbInputHelp.Size = new System.Drawing.Size(80, 30);
             this.btnDBFiadbInputHelp.TabIndex = 3;
             this.btnDBFiadbInputHelp.Text = "Help";
             this.btnDBFiadbInputHelp.Click += new System.EventHandler(this.btnDBFiadbInputHelp_Click);
             // 
-            // btnMDBFiadbInputPrev
+            // btnDBFiadbInputPrev
             // 
             this.btnDBFiadbInputPrev.Enabled = false;
             this.btnDBFiadbInputPrev.Location = new System.Drawing.Point(530, 408);
             this.btnDBFiadbInputPrev.Margin = new System.Windows.Forms.Padding(4);
-            this.btnDBFiadbInputPrev.Name = "btnMDBFiadbInputPrev";
+            this.btnDBFiadbInputPrev.Name = "btnDBFiadbInputPrev";
             this.btnDBFiadbInputPrev.Size = new System.Drawing.Size(90, 30);
             this.btnDBFiadbInputPrev.TabIndex = 5;
             this.btnDBFiadbInputPrev.TabStop = false;
             this.btnDBFiadbInputPrev.Text = "< Previous";
             // 
-            // btnMDBFiadbInputNext
+            // btnDBFiadbInputNext
             // 
             this.btnDBFiadbInputNext.Location = new System.Drawing.Point(620, 408);
             this.btnDBFiadbInputNext.Margin = new System.Windows.Forms.Padding(4);
-            this.btnDBFiadbInputNext.Name = "btnMDBFiadbInputNext";
+            this.btnDBFiadbInputNext.Name = "btnDBFiadbInputNext";
             this.btnDBFiadbInputNext.Size = new System.Drawing.Size(90, 30);
             this.btnDBFiadbInputNext.TabIndex = 6;
             this.btnDBFiadbInputNext.Text = "Next >";
             this.btnDBFiadbInputNext.Click += new System.EventHandler(this.btnDBFiadbInputNext_Click);
             // 
-            // btnMDBFiadbInputCancel
+            // btnDBFiadbInputCancel
             // 
             this.btnDBFiadbInputCancel.Location = new System.Drawing.Point(420, 408);
             this.btnDBFiadbInputCancel.Margin = new System.Windows.Forms.Padding(4);
-            this.btnDBFiadbInputCancel.Name = "btnMDBFiadbInputCancel";
+            this.btnDBFiadbInputCancel.Name = "btnDBFiadbInputCancel";
             this.btnDBFiadbInputCancel.Size = new System.Drawing.Size(80, 30);
             this.btnDBFiadbInputCancel.TabIndex = 4;
             this.btnDBFiadbInputCancel.Text = "Cancel";
@@ -1777,7 +1777,7 @@ namespace FIA_Biosum_Manager
                 {
                     SetThermValue(m_frmTherm.progressBar1, "Value", 0);
                     this.SetLabelValue(m_frmTherm.lblMsg, "Text", "Deleting Old Data");
-                    //open the connection to the temp mdb file
+                    //open the connection to the temp db file
                     using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strConnection))
                     {
                         conn.Open();
@@ -2692,7 +2692,7 @@ namespace FIA_Biosum_Manager
         }
 
 	    /// <summary>
-	    /// After importing DWM table data from FIADB to Master.mdb, join the DWM table with the plot/cond tables to get the BSCID
+	    /// After importing DWM table data from FIADB to Master.db, join the DWM table with the plot/cond tables to get the BSCID
 	    /// </summary>
 	    /// <param name="SQLite">Reference to the temporary database used to link FIADB and Master during plot input phase</param>
 	    /// <param name="strDestTable">The DWM table to update</param>
@@ -5791,7 +5791,7 @@ namespace FIA_Biosum_Manager
                     //create pop tables in temporary db file
                     CreatePopTables();
 
-                    //get a connection string for the temp mdb file
+                    //get a connection string for the temp db file
                     string strConn = SQLite.GetConnectionString(m_strTempDbFile);
                     using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strConn))
                     {

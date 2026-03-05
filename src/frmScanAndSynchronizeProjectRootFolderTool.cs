@@ -363,7 +363,7 @@ namespace FIA_Biosum_Manager
                     string strPath = lvDatasources.Items[x].SubItems[COLUMN_PATH].Text.Trim().ToUpper();
                     if (strDatasource == "TreatmentOptimizer")
                     {
-                        // THIS CONDITION WILL BE MET BY THE 'NA' ROWS THAT ARE LISTED FOR EACH SCENARIO GENERATED FROM THE CORE scenario_core_rule_definitions.mdb\scenario table
+                        // THIS CONDITION WILL BE MET BY THE 'NA' ROWS THAT ARE LISTED FOR EACH SCENARIO GENERATED FROM THE CORE scenario_core_rule_definitions.db\scenario table
                         intIndex = strPath.IndexOf(@"\OPTIMIZER\", 0);
                         if (intIndex > 0)
                         {
@@ -372,7 +372,7 @@ namespace FIA_Biosum_Manager
                     }
                     else if (strDatasource == "Processor")
                     {
-                        // THIS CONDITION WILL BE MET BY THE 'NA' ROWS THAT ARE LISTED FOR EACH SCENARIO GENERATED FROM THE PROCESSOR scenario_core_rule_definitions.mdb\scenario table
+                        // THIS CONDITION WILL BE MET BY THE 'NA' ROWS THAT ARE LISTED FOR EACH SCENARIO GENERATED FROM THE PROCESSOR scenario_core_rule_definitions.db\scenario table
                         intIndex = strPath.IndexOf(@"\PROCESSOR\", 0);
                         if (intIndex > 0)
                         {

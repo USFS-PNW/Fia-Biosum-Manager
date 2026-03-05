@@ -217,7 +217,7 @@ namespace FIA_Biosum_Manager
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(192, 16);
             this.label2.TabIndex = 3;
-            this.label2.Text = "Available FVS Out MDB Tables";
+            this.label2.Text = "Available FVS Out DB Tables";
             this.label2.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // groupBox1
@@ -2035,7 +2035,7 @@ namespace FIA_Biosum_Manager
                                     if (m_bDebug && frmMain.g_intDebugLevel > 2)
                                         this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
 
-                                } // Closing SQLite connection in preparation to interact with Access tables                               
+                                }                              
 
                                 m_intProgressStepCurrentCount++;
                                 UpdateTherm(m_frmTherm.progressBar1,
@@ -2748,7 +2748,7 @@ namespace FIA_Biosum_Manager
                     if (m_bDebug && frmMain.g_intDebugLevel > 2)
                         this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
 
-                } // Closing SQLite connection in preparation to interact with Access tables                               
+                }                               
 
                 m_intProgressStepCurrentCount++;
                 UpdateTherm(m_frmTherm.progressBar1,
@@ -3348,7 +3348,7 @@ namespace FIA_Biosum_Manager
                 this.DisplayAuditMessage = false;
                 this.val_data();
 
-                // We'll add the table links a single audit db rather than the fvs out .mdbs as we did previously
+                // We'll add the table links a single audit db rather than the fvs out .dbs as we did previously
                 strAuditDbFile = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() + Tables.FVS.DefaultFVSAuditsDbFile;
                 strDbFile = System.IO.Path.GetFileName(Tables.FVS.DefaultFVSOutDbFile);
                 if (!System.IO.File.Exists(strAuditDbFile))
@@ -4348,7 +4348,7 @@ namespace FIA_Biosum_Manager
                             frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.lblMsg, "Text", "Processing Variant:" + strVariant.Trim() + " Package:" + strPackage.Trim());
                             frmMain.g_oDelegate.ExecuteControlMethod((System.Windows.Forms.Control)this.m_frmTherm.lblMsg, "Refresh");
 
-                            // With the SQLite rewrite, we run the queries in a temp database instead of PostAudit.accdb
+                            // With the SQLite rewrite, we run the queries in a temp database instead of PostAudit.db
                             // The permanent audit tables are in the new SQLite audits.db
                             strAuditDbFile = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() + Tables.FVS.DefaultFVSAuditsDbFile;
                             string strTempDb = frmMain.g_oUtils.getRandomFile(frmMain.g_oEnv.strTempDir, "db");
@@ -6354,8 +6354,8 @@ namespace FIA_Biosum_Manager
         }
 
         /// <summary>This method populates dictionaries storing table creation scripts and 
-        /// for the new Access MDBs, and a dictionary of column definition information for each type of table
-        /// within those Access MDBs. </summary>
+        /// for the new DBs, and a dictionary of column definition information for each type of table
+        /// within those DBs. </summary>
         /// <param name="strConnection">The connection string for the source SQLite table.</param>
         private Dictionary<string, string> populateTableQueryDictionaries(string strConnection)
         {
@@ -6751,7 +6751,7 @@ namespace FIA_Biosum_Manager
                             SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
                             if (m_bDebug && frmMain.g_intDebugLevel > 2)
                                 this.WriteText(strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
-                        } // Closing SQLite connection in preparation to interact with Access tables
+                        }
 
                         if (bRunFics == true)
                         {

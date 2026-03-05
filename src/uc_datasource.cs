@@ -19,7 +19,6 @@ namespace FIA_Biosum_Manager
 		private System.ComponentModel.IContainer components;
 		public int intError;
 		public System.Windows.Forms.Label lblTitle;
-		//private dao_data_access p_DAO;
 		public string strError;
 		public string strTable;
 		const int COLUMN_NULL = 0;
@@ -32,7 +31,7 @@ namespace FIA_Biosum_Manager
 		const int RECORDCOUNT = 7;
 
 		public string m_strRandomPathAndFile = "";
-		public int m_intNumberOfValidTables=0;  //MDB file is FOUND and table is FOUND
+		public int m_intNumberOfValidTables=0;  //DB file is FOUND and table is FOUND
 
 
 
@@ -421,7 +420,7 @@ namespace FIA_Biosum_Manager
                     catch
                     {
                         intError = -1;
-                        strError = "Failed to load data source data from " + this.strDataSourceMDBFile;
+                        strError = "Failed to load data source data from " + this.strDataSourceDBFile;
                         MessageBox.Show(strError, "FIA Biosum");
                         return;
                     }
@@ -923,7 +922,7 @@ namespace FIA_Biosum_Manager
 			}
 
 		}
-		public string strDataSourceMDBFile
+		public string strDataSourceDBFile
 		{
 			set
 			{

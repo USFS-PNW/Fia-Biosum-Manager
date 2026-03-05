@@ -32,7 +32,7 @@ namespace FIA_Biosum_Manager
 
 		const int TABLETYPE = 1;
 		const int PATH = 2;
-		const int MDBFILE = 3;
+		const int DBFILE = 3;
 		const int FILESTATUS = 4;
 		const int TABLE = 5;
 		const int TABLESTATUS = 6;
@@ -273,7 +273,7 @@ namespace FIA_Biosum_Manager
 					if (this.m_lvDataSource.Items[x].SubItems[frmSqlBuilder.TABLESTATUS].Text.Trim() == "Found")
 					{
 						strPath = oMacroSub.GeneralTranslateVariableSubstitution(m_lvDataSource.Items[x].SubItems[frmSqlBuilder.PATH].Text.Trim())
-									+ "\\" + m_lvDataSource.Items[x].SubItems[frmSqlBuilder.MDBFILE].Text.Trim();
+									+ "\\" + m_lvDataSource.Items[x].SubItems[frmSqlBuilder.DBFILE].Text.Trim();
 						strPathAndTable = strPath + m_lvDataSource.Items[x].SubItems[frmSqlBuilder.TABLE].Text.Trim();
 
 						if (str.IndexOf(strPathAndTable, 0) < 0)

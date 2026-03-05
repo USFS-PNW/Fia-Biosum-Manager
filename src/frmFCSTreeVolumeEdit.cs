@@ -1094,7 +1094,7 @@ namespace FIA_Biosum_Manager
                 oSQLite.SqlNonQuery(oSQLite.m_Connection,
                     $"DELETE FROM {Tables.VolumeAndBiomass.BiosumVolumeCalcTable}");
 
-                //Parse MSAccess fcs_biosum_volumes_input and insert into SQLite FCS_TREE.Biosum_Calc table
+                //Parse fcs_biosum_volumes_input and insert into SQLite FCS_TREE.Biosum_Calc table
                 m_oDataMgr.SqlQueryReader(conn, $"SELECT * FROM {Tables.VolumeAndBiomass.FcsBiosumVolumesInputTable}");
                 if (m_oDataMgr.m_DataReader.HasRows)
                 {
@@ -1178,7 +1178,7 @@ namespace FIA_Biosum_Manager
             frmMain.g_oDelegate.SetStatusBarPanelTextValue(frmMain.g_sbpInfo.Parent, 1,
                 "Gathering results from FCS_TREE.DB...Stand By");
 
-            //Parse SQLite output and insert into Biosum_Calc_Output access table
+            //Parse SQLite output and insert into Biosum_Calc_Output table
             using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(m_oDataMgr.GetConnectionString(m_strTempDBFile)))
             {
                 conn.Open();
@@ -1477,7 +1477,7 @@ namespace FIA_Biosum_Manager
                 System.Threading.Thread.Sleep(2000);
 
 
-            //Parse MSAccess fcs_biosum_volumes_input and insert into SQLite FCS_TREE.Biosum_Calc table
+            //Parse fcs_biosum_volumes_input and insert into SQLite FCS_TREE.Biosum_Calc table
             intTotalRecs = (int)m_oDataMgr.getRecordCount(conn,
                 $"SELECT COUNT(*) AS ROWCOUNT FROM {Tables.VolumeAndBiomass.FcsBiosumVolumesInputTable}",
                 Tables.VolumeAndBiomass.SqliteWorkTable);
@@ -1567,7 +1567,7 @@ namespace FIA_Biosum_Manager
         frmMain.g_oDelegate.SetStatusBarPanelTextValue(frmMain.g_sbpInfo.Parent, 1,
             "Wait For BioSumComps.jar Volume and Biomass Calculations To Complete...Stand By");
 
-        //Parse SQLite output and insert into Biosum_Calc_Output access table
+        //Parse SQLite output and insert into Biosum_Calc_Output table
         using (System.Data.SQLite.SQLiteConnection conn = 
                 new System.Data.SQLite.SQLiteConnection(m_oDataMgr.GetConnectionString(m_strTempDBFile)))
         {
@@ -1904,7 +1904,7 @@ namespace FIA_Biosum_Manager
             frmMain.g_oDelegate.SetStatusBarPanelTextValue(frmMain.g_sbpInfo.Parent, 1,
                 "Wait For FIA_TreeVBC.jar Volume and Biomass Calculations To Complete...Stand By");
 
-            //Parse SQLite output and insert into Biosum_Calc_Output access table
+            //Parse SQLite output and insert into Biosum_Calc_Output table
             using (System.Data.SQLite.SQLiteConnection conn =
                     new System.Data.SQLite.SQLiteConnection(m_oDataMgr.GetConnectionString(m_strTempDBFile)))
             {
@@ -2699,7 +2699,7 @@ namespace FIA_Biosum_Manager
     private void TestExternalDatabaseConnection()
     {
         frmMain.g_oDelegate.CurrentThreadProcessDone = false;
-        string strFile = frmMain.g_oUtils.getRandomFile(frmMain.g_oEnv.strTempDir, "accdb");
+        string strFile = frmMain.g_oUtils.getRandomFile(frmMain.g_oEnv.strTempDir, "db");
         string str="";
 
         bool fcsTreeDbExists = System.IO.File.Exists(frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\" + Tables.VolumeAndBiomass.DefaultSqliteWorkDatabase);

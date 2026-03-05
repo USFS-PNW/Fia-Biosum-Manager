@@ -199,12 +199,12 @@ namespace FIA_Biosum_Manager
 			this.lblNewTable.Size = new System.Drawing.Size(256, 16);
 			this.lblNewTable.TabIndex = 1;
 			// 
-			// lblNewMDBFile
+			// lblNewDBFile
 			// 
 			this.lblNewDBFile.BackColor = System.Drawing.Color.White;
 			this.lblNewDBFile.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
 			this.lblNewDBFile.Location = new System.Drawing.Point(16, 24);
-			this.lblNewDBFile.Name = "lblNewMDBFile";
+			this.lblNewDBFile.Name = "lblNewDBFile";
 			this.lblNewDBFile.Size = new System.Drawing.Size(648, 16);
 			this.lblNewDBFile.TabIndex = 0;
 			// 
@@ -266,12 +266,12 @@ namespace FIA_Biosum_Manager
 			this.btnFile.Text = "Get A SQLite Db File And Table";
 			this.btnFile.Click += new System.EventHandler(this.btnFile_Click);
 			// 
-			// lblMDBFile
+			// lblDBFile
 			// 
 			this.lblDBFile.BackColor = System.Drawing.Color.White;
 			this.lblDBFile.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
 			this.lblDBFile.Location = new System.Drawing.Point(16, 24);
-			this.lblDBFile.Name = "lblMDBFile";
+			this.lblDBFile.Name = "lblDBFile";
 			this.lblDBFile.Size = new System.Drawing.Size(648, 16);
 			this.lblDBFile.TabIndex = 0;
 			// 

@@ -33,7 +33,7 @@ namespace FIA_Biosum_Manager
 		private System.Windows.Forms.Button btnCheckAll;
 		private System.Windows.Forms.Button btnClearAll;
 		string substringDirectory;
-		private System.Windows.Forms.GroupBox grpMdb;
+		private System.Windows.Forms.GroupBox grpDb;
 		private System.Windows.Forms.Label label4;
 		private System.Windows.Forms.Label lblFileSize;
 		private System.Windows.Forms.Button btnOpen;
@@ -114,7 +114,7 @@ namespace FIA_Biosum_Manager
 								strNode = this.getSubDir(allFiles[y]);
                                 // This section is intended to exclude some database files; Do we want to do this?
                                 // If so, add additional clauses to the != statement
-								if (strNode.Trim().ToUpper() != "PROJECT.MDB")
+								if (strNode.Trim().ToUpper() != "PROJECT.DB")
 								{
 									node2 = new TreeNode(strNode);
 									node2.ImageIndex=0;
@@ -175,7 +175,7 @@ namespace FIA_Biosum_Manager
             this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(uc_db));
             this.groupBox1 = new System.Windows.Forms.GroupBox();
-            this.grpMdb = new System.Windows.Forms.GroupBox();
+            this.grpDb = new System.Windows.Forms.GroupBox();
             this.btnOpen = new System.Windows.Forms.Button();
             this.label4 = new System.Windows.Forms.Label();
             this.lblFileSize = new System.Windows.Forms.Label();
@@ -192,12 +192,12 @@ namespace FIA_Biosum_Manager
             this.treeView1 = new System.Windows.Forms.TreeView();
             this.imageList1 = new System.Windows.Forms.ImageList(this.components);
             this.groupBox1.SuspendLayout();
-            this.grpMdb.SuspendLayout();
+            this.grpDb.SuspendLayout();
             this.SuspendLayout();
             // 
             // groupBox1
             // 
-            this.groupBox1.Controls.Add(this.grpMdb);
+            this.groupBox1.Controls.Add(this.grpDb);
             this.groupBox1.Controls.Add(this.btnClearAll);
             this.groupBox1.Controls.Add(this.btnCheckAll);
             this.groupBox1.Controls.Add(this.btnBrowse);
@@ -216,16 +216,16 @@ namespace FIA_Biosum_Manager
             this.groupBox1.TabIndex = 0;
             this.groupBox1.TabStop = false;
             // 
-            // grpMdb
+            // grpDb
             // 
-            this.grpMdb.Controls.Add(this.btnOpen);
-            this.grpMdb.Controls.Add(this.label4);
-            this.grpMdb.Controls.Add(this.lblFileSize);
-            this.grpMdb.Location = new System.Drawing.Point(8, 440);
-            this.grpMdb.Name = "grpMdb";
-            this.grpMdb.Size = new System.Drawing.Size(232, 88);
-            this.grpMdb.TabIndex = 51;
-            this.grpMdb.TabStop = false;
+            this.grpDb.Controls.Add(this.btnOpen);
+            this.grpDb.Controls.Add(this.label4);
+            this.grpDb.Controls.Add(this.lblFileSize);
+            this.grpDb.Location = new System.Drawing.Point(8, 440);
+            this.grpDb.Name = "grpDb";
+            this.grpDb.Size = new System.Drawing.Size(232, 88);
+            this.grpDb.TabIndex = 51;
+            this.grpDb.TabStop = false;
             // 
             // btnOpen
             // 
@@ -368,7 +368,7 @@ namespace FIA_Biosum_Manager
             this.Size = new System.Drawing.Size(744, 608);
             this.Resize += new System.EventHandler(this.uc_db_Resize);
             this.groupBox1.ResumeLayout(false);
-            this.grpMdb.ResumeLayout(false);
+            this.grpDb.ResumeLayout(false);
             this.ResumeLayout(false);
 
 		}
@@ -437,16 +437,16 @@ namespace FIA_Biosum_Manager
 				this.btnClose.Left = this.groupBox1.Width - this.btnClose.Width - 5;
 				this.btnHelp.Top = this.btnClose.Top;
 				this.treeView1.Left = 5;
-				this.grpMdb.Top = this.btnHelp.Top - (int)(this.grpMdb.Height * 1.5);
+				this.grpDb.Top = this.btnHelp.Top - (int)(this.grpDb.Height * 1.5);
 				this.treeView1.Top = this.label1.Top + (int)(this.label1.Height * 1.5);
-				this.treeView1.Height = this.grpMdb.Top - this.treeView1.Top - 2;
+				this.treeView1.Height = this.grpDb.Top - this.treeView1.Top - 2;
 				this.lstTables.Top = this.treeView1.Top;
 				this.lstTables.Height = this.treeView1.Height;
 				this.lstFields.Top = this.treeView1.Top;
 				this.lstFields.Height = this.treeView1.Height;
-				this.btnBrowse.Top = this.grpMdb.Top;
-				this.btnCheckAll.Top = this.grpMdb.Top;
-				this.btnClearAll.Top = this.grpMdb.Top;
+				this.btnBrowse.Top = this.grpDb.Top;
+				this.btnCheckAll.Top = this.grpDb.Top;
+				this.btnClearAll.Top = this.grpDb.Top;
 
 				int intWidth = (int)(this.groupBox1.Width * .33);
 				this.treeView1.Width = intWidth;
@@ -464,7 +464,7 @@ namespace FIA_Biosum_Manager
 
 					}
 				}
-				this.grpMdb.Left = this.treeView1.Left;
+				this.grpDb.Left = this.treeView1.Left;
 				this.btnClearAll.Left = this.lstFields.Left + intWidth - (int)(intWidth * .50) - (int)(this.btnClearAll.Width * .50);
 				this.btnCheckAll.Left = this.btnClearAll.Left - this.btnClearAll.Width;
 				this.btnBrowse.Left = this.btnClearAll.Left + this.btnClearAll.Width;

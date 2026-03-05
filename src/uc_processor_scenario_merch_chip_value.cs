@@ -81,12 +81,12 @@ namespace FIA_Biosum_Manager
             //
             ScenarioId = this.ReferenceProcessorScenarioForm.uc_scenario1.txtScenarioId.Text.Trim().ToLower();
             //
-            //SCENARIO MDB
+            //SCENARIO DB
             //
-            string strScenarioMDB =
+            string strScenarioDB =
                 frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() +
                 "\\processor\\" + Tables.ProcessorScenarioRuleDefinitions.DefaultDbFile;
-            ReferenceProcessorScenarioForm.m_oProcessorScenarioTools.LoadSpeciesAndDiameterGroupDollarValues(strScenarioMDB,
+            ReferenceProcessorScenarioForm.m_oProcessorScenarioTools.LoadSpeciesAndDiameterGroupDollarValues(strScenarioDB,
                 ReferenceProcessorScenarioForm.m_oProcessorScenarioItem);
 
                 //REMOVE OLD CONTROLS FROM FORM IF THEY EXIST

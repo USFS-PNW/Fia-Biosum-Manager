@@ -28,7 +28,7 @@ namespace FIA_Biosum_Manager
 		public System.Data.DataRow m_DataRow;
 		public string strRxPackageTableName;
 		public string strRxConn;
-		public string strRxMDBFile;
+		public string strRxDBFile;
 		public string strScenarioId;
 		private FIA_Biosum_Manager.frmOptimizerScenario _frmScenario = null;
 

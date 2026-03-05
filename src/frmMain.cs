@@ -129,7 +129,7 @@ namespace FIA_Biosum_Manager
 
         public const int TABLETYPE = 0;
 		public const int PATH = 1;
-		public const int MDBFILE = 2;
+		public const int DBFILE = 2;
 		public const int FILESTATUS = 3;
 		public const int TABLE = 4;
 		public const int TABLESTATUS = 5;
@@ -187,7 +187,7 @@ namespace FIA_Biosum_Manager
         public const int PROJDIR = 0;
         public const int OLDPROJDIR = 1;
 
-        public static string g_strAppVer = "5.12.1";
+        public static string g_strAppVer = "5.13.0";
         public static string g_strBiosumDataDir = "\\FIABiosum";
         public static int g_intRefSqliteDbVer = 17;
 
@@ -1312,7 +1312,7 @@ namespace FIA_Biosum_Manager
                     oFrmScenario.Text = "Treatment Optimizer: Optimization Scenario (" + oFrmOptimizerScenario.uc_scenario_open1.txtScenarioId.Text.Trim() + ")";
                     oFrmScenario.m_bScenarioOpen = true;
                     oFrmScenario.HelpChapter = "EDIT_SCENARIO";
-                    oFrmScenario.uc_datasource1.strDataSourceMDBFile = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() + "\\" + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableDbFile;
+                    oFrmScenario.uc_datasource1.strDataSourceDBFile = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() + "\\" + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableDbFile;
                     oFrmScenario.uc_datasource1.strDataSourceTable = "scenario_datasource";
                     oFrmScenario.uc_datasource1.strScenarioId = oFrmOptimizerScenario.uc_scenario_open1.txtScenarioId.Text.Trim();
                     oFrmScenario.uc_datasource1.strProjectDirectory = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim();
@@ -1351,7 +1351,7 @@ namespace FIA_Biosum_Manager
                     oFrmScenario.Text = "Treatment Optimizer: Optimization Scenario (" + oFrmOptimizerScenario.uc_scenario1.txtScenarioId.Text.Trim() + ")";
                     oFrmScenario.m_bScenarioOpen = true;
                     oFrmScenario.HelpChapter = "EDIT_SCENARIO";
-                    oFrmScenario.uc_datasource1.strDataSourceMDBFile = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() + "\\" + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableDbFile;
+                    oFrmScenario.uc_datasource1.strDataSourceDBFile = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() + "\\" + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableDbFile;
                     oFrmScenario.uc_datasource1.strDataSourceTable = "scenario_datasource";
                     oFrmScenario.uc_datasource1.strScenarioId = oFrmOptimizerScenario.uc_scenario1.txtScenarioId.Text.Trim();
                     oFrmScenario.uc_datasource1.strProjectDirectory = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim();
@@ -1400,7 +1400,7 @@ namespace FIA_Biosum_Manager
 					oFrmScenario.m_bScenarioOpen = true;
 
                     
-					oFrmScenario.uc_datasource1.strDataSourceMDBFile =  frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() + "\\processor\\db\\scenario_processor_rule_definitions.mdb";
+					oFrmScenario.uc_datasource1.strDataSourceDBFile =  frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() + "\\processor\\db\\scenario_processor_rule_definitions.db";
 					oFrmScenario.uc_datasource1.strDataSourceTable = "scenario_datasource";
 					oFrmScenario.uc_datasource1.strScenarioId = oFrmProcessorScenario.uc_scenario_open1.txtScenarioId.Text.Trim();
 					oFrmScenario.uc_datasource1.strProjectDirectory = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim();
@@ -1415,7 +1415,7 @@ namespace FIA_Biosum_Manager
                     oFrmScenario.m_oProcessorScenarioItem.ScenarioId = oFrmScenario.uc_scenario1.strScenarioId;
                     oFrmScenario.m_oProcessorScenarioItem.DbPath = oFrmScenario.uc_scenario1.strScenarioPath;
                     oFrmScenario.m_oProcessorScenarioItem.Description = oFrmScenario.uc_scenario1.strScenarioDescription;
-                    oFrmScenario.m_oProcessorScenarioItem.DbFileName = oFrmScenario.uc_datasource1.strDataSourceMDBFile;
+                    oFrmScenario.m_oProcessorScenarioItem.DbFileName = oFrmScenario.uc_datasource1.strDataSourceDBFile;
 					oFrmScenario.Show();
                     if (p_frmProcessorScenario != null)
                     {
@@ -1434,7 +1434,7 @@ namespace FIA_Biosum_Manager
 					frmProcessorScenario oFrmScenario = new frmProcessorScenario(this);
 					oFrmScenario.Text = "Processor: Scenario (" + oFrmProcessorScenario.uc_scenario1.txtScenarioId.Text.Trim() + ")";
 					oFrmScenario.m_bScenarioOpen = true;
-					oFrmScenario.uc_datasource1.strDataSourceMDBFile =  frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() + "\\processor\\db\\scenario_processor_rule_definitions.mdb";
+					oFrmScenario.uc_datasource1.strDataSourceDBFile =  frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() + "\\processor\\db\\scenario_processor_rule_definitions.db";
 					oFrmScenario.uc_datasource1.strDataSourceTable = "scenario_datasource";
 					oFrmScenario.uc_datasource1.strScenarioId = oFrmProcessorScenario.uc_scenario1.txtScenarioId.Text.Trim();
 					oFrmScenario.uc_datasource1.strProjectDirectory = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim();
@@ -1983,12 +1983,6 @@ namespace FIA_Biosum_Manager
                     lngCount = dataMgr.getRecordCount(con, "select count(*) from scenario", "scenario");
                 }
             }
-            else
-            {
-                ado_data_access oAdo = new ado_data_access();
-                string strConn = oAdo.getMDBConnString(strFullPath.ToString(), "admin", "");
-                lngCount = oAdo.getRecordCount(strConn, "select count(*) from scenario", "scenario");
-            }
 
             if (lngCount > 0)
             {
@@ -2250,14 +2244,8 @@ namespace FIA_Biosum_Manager
                     frmMain.g_oUtils.WriteText(frmProject.uc_project1.m_strDebugFile, "Description:                " + frmProject.uc_project1.txtDescription.Text.Trim() + "\r\n");
                 }
 
-                if (this.frmProject.uc_project1.m_strProjectFile.EndsWith(".mdb") || this.frmProject.uc_project1.m_strProjectFile.EndsWith(".mde") || this.frmProject.uc_project1.m_strProjectFile.EndsWith(".accdb"))
-                {
-                    this.frmProject.uc_project1.SetProjectPathEnvironmentVariables();
-                }
-                else
-                {
-                    this.frmProject.uc_project1.SetProjectPathEnvironmentVariablesSqlite();
-                }
+                this.frmProject.uc_project1.SetProjectPathEnvironmentVariables();
+
                 if (frmProject.uc_project1.m_strAction != "NEW")
 				{
 					oVersCtl.ReferenceProjectDirectory=this.frmProject.uc_project1.m_strProjectDirectory;
@@ -2342,14 +2330,8 @@ namespace FIA_Biosum_Manager
                     frmMain.g_oUtils.WriteText(frmTemp.frmProject.uc_project1.m_strDebugFile, "Description:                " + frmProject.uc_project1.txtDescription.Text.Trim() + "\r\n");
                 }
 
-                if (this.frmProject.uc_project1.m_strProjectFile.EndsWith(".mdb") || this.frmProject.uc_project1.m_strProjectFile.EndsWith(".mde") || this.frmProject.uc_project1.m_strProjectFile.EndsWith(".accdb"))
-                {
-                    this.frmProject.uc_project1.SetProjectPathEnvironmentVariables();
-                }
-                else
-                {
-                    this.frmProject.uc_project1.SetProjectPathEnvironmentVariablesSqlite();
-                }
+                this.frmProject.uc_project1.SetProjectPathEnvironmentVariables();
+
                 if (frmTemp.frmProject.uc_project1.m_strAction != "NEW")
 				{
 					oVersCtl.ReferenceProjectDirectory=frmTemp.frmProject.uc_project1.m_strProjectDirectory;

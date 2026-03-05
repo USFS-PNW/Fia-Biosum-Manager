@@ -329,7 +329,7 @@ namespace FIA_Biosum_Manager
             bool bFound = false;
 
             //
-            //SCENARIO MDB
+            //SCENARIO DB
             //
             string strScenarioDB =
                 frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() +
@@ -653,7 +653,7 @@ namespace FIA_Biosum_Manager
             try
             {
                 //
-                //SCENARIO MDB
+                //SCENARIO DB
                 //
                 string strScenarioDB =
                     frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() +

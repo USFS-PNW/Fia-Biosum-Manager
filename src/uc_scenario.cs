@@ -410,7 +410,7 @@ namespace FIA_Biosum_Manager
 
             //
             //create the scenario path if it does not exist and
-            //copy the scenario_results.mdb to it
+            //copy the scenario_results.db to it
             //
             try
 			{
