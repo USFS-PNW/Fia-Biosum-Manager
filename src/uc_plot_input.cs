@@ -2915,243 +2915,243 @@ namespace FIA_Biosum_Manager
             //
             //drybiot,drybiom,voltsgrs processing
             //                   
-            SetLabelValue(m_frmTherm.lblMsg, "Text", "Start Volume and Biomass Calculations...Stand By");
-            frmMain.g_oDelegate.ExecuteControlMethod((System.Windows.Forms.Control)this.m_frmTherm, "Refresh");
+            //SetLabelValue(m_frmTherm.lblMsg, "Text", "Start Volume and Biomass Calculations...Stand By");
+            //frmMain.g_oDelegate.ExecuteControlMethod((System.Windows.Forms.Control)this.m_frmTherm, "Refresh");
 
-            //step 5 - delete and create work table
-            string strFcsBiosumVolumesInputTable = "TEMPDB." + Tables.VolumeAndBiomass.FcsBiosumVolumesInputTable;
-            if (SQLite.TableExist(p_conn, Tables.VolumeAndBiomass.FcsBiosumVolumesInputTable) || SQLite.AttachedTableExist(p_conn, Tables.VolumeAndBiomass.FcsBiosumVolumesInputTable))
-            {
-                SQLite.SqlNonQuery(p_conn, "DELETE FROM " + strFcsBiosumVolumesInputTable);
-            }
-            else
-            {
-                frmMain.g_oTables.m_oFvs.CreateInputFCSBiosumVolumesTable(SQLite, p_conn, strFcsBiosumVolumesInputTable);
-            }
+            ////step 5 - delete and create work table
+            //string strFcsBiosumVolumesInputTable = "TEMPDB." + Tables.VolumeAndBiomass.FcsBiosumVolumesInputTable;
+            //if (SQLite.TableExist(p_conn, Tables.VolumeAndBiomass.FcsBiosumVolumesInputTable) || SQLite.AttachedTableExist(p_conn, Tables.VolumeAndBiomass.FcsBiosumVolumesInputTable))
+            //{
+            //    SQLite.SqlNonQuery(p_conn, "DELETE FROM " + strFcsBiosumVolumesInputTable);
+            //}
+            //else
+            //{
+            //    frmMain.g_oTables.m_oFvs.CreateInputFCSBiosumVolumesTable(SQLite, p_conn, strFcsBiosumVolumesInputTable);
+            //}
 
-            var treeToFcsBiosumVolumesInputTable = new List<Tuple<string, string>>
-            {
-                Tuple.Create("ACTUALHT", "ACTUALHT"),
-                Tuple.Create("BFSND", "BFSND"),
-                Tuple.Create("BOLEHT", "BOLEHT"),
-                Tuple.Create("CENTROID_DIA", "CENTROID_DIA"),
-                Tuple.Create("CENTROID_DIA_HT_ACTUAL", "CENTROID_DIA_HT_ACTUAL"),
-                Tuple.Create("CFSND", "CFSND"),
-                Tuple.Create("CND_CN", "BIOSUM_COND_ID AS CND_CN"),
-                Tuple.Create("COUNTYCD", "COUNTYCD"),
-                Tuple.Create("CR", "CR"),
-                Tuple.Create("CULL", "CULL"),
-                Tuple.Create("CULLBF", "CULLBF"),
-                Tuple.Create("CULLCF", "CULLCF"),
-                Tuple.Create("CULLDEAD", "CULLDEAD"),
-                Tuple.Create("CULLFORM", "CULLFORM"),
-                Tuple.Create("CULLMSTOP", "CULLMSTOP"),
-                Tuple.Create("CULL_FLD", "CULL_FLD"),
-                Tuple.Create("DIA", "CASE WHEN DIA IS NOT NULL THEN ROUND(DIA, 2) ELSE DIA END"),
-                Tuple.Create("DIAHTCD", "DIAHTCD"),
-                Tuple.Create("FORMCL", "FORMCL"),
-                Tuple.Create("HT", "HT"),
-                Tuple.Create("HTDMP", "HTDMP"),
-                Tuple.Create("INVYR", "INVYR"),
-                Tuple.Create("PLOT", "CAST(SUBSTR(BIOSUM_COND_ID, 16, 6) AS INTEGER) AS PLOT"),
-                Tuple.Create("PLT_CN", "SUBSTR(BIOSUM_COND_ID, 1, LENGTH(BIOSUM_COND_ID) - 1) AS PLT_CN"),
-                Tuple.Create("ROUGHCULL", "ROUGHCULL"),
-                Tuple.Create("SAWHT", "SAWHT"),
-                Tuple.Create("SITREE", "SITREE"),
-                Tuple.Create("SPCD", "SPCD"),
-                Tuple.Create("STANDING_DEAD_CD", "STANDING_DEAD_CD"),
-                Tuple.Create("STATECD", "STATECD"),
-                Tuple.Create("STATUSCD", "STATUSCD"),
-                Tuple.Create("SUBP", "SUBP"),
-                Tuple.Create("TOTAGE", "TOTAGE"),
-                Tuple.Create("TREE", "TREE"),
-                Tuple.Create("TREECLCD", "TREECLCD"),
-                Tuple.Create("TRE_CN", "CN AS TRE_CN"),
-                Tuple.Create("UPPER_DIA", "UPPER_DIA"),
-                Tuple.Create("UPPER_DIA_HT", "UPPER_DIA_HT"),
-                Tuple.Create("VOL_LOC_GRP", "'' AS VOL_LOC_GRP"),
-                Tuple.Create("WDLDSTEM", "WDLDSTEM"),
-            };
+            //var treeToFcsBiosumVolumesInputTable = new List<Tuple<string, string>>
+            //{
+            //    Tuple.Create("ACTUALHT", "ACTUALHT"),
+            //    Tuple.Create("BFSND", "BFSND"),
+            //    Tuple.Create("BOLEHT", "BOLEHT"),
+            //    Tuple.Create("CENTROID_DIA", "CENTROID_DIA"),
+            //    Tuple.Create("CENTROID_DIA_HT_ACTUAL", "CENTROID_DIA_HT_ACTUAL"),
+            //    Tuple.Create("CFSND", "CFSND"),
+            //    Tuple.Create("CND_CN", "BIOSUM_COND_ID AS CND_CN"),
+            //    Tuple.Create("COUNTYCD", "COUNTYCD"),
+            //    Tuple.Create("CR", "CR"),
+            //    Tuple.Create("CULL", "CULL"),
+            //    Tuple.Create("CULLBF", "CULLBF"),
+            //    Tuple.Create("CULLCF", "CULLCF"),
+            //    Tuple.Create("CULLDEAD", "CULLDEAD"),
+            //    Tuple.Create("CULLFORM", "CULLFORM"),
+            //    Tuple.Create("CULLMSTOP", "CULLMSTOP"),
+            //    Tuple.Create("CULL_FLD", "CULL_FLD"),
+            //    Tuple.Create("DIA", "CASE WHEN DIA IS NOT NULL THEN ROUND(DIA, 2) ELSE DIA END"),
+            //    Tuple.Create("DIAHTCD", "DIAHTCD"),
+            //    Tuple.Create("FORMCL", "FORMCL"),
+            //    Tuple.Create("HT", "HT"),
+            //    Tuple.Create("HTDMP", "HTDMP"),
+            //    Tuple.Create("INVYR", "INVYR"),
+            //    Tuple.Create("PLOT", "CAST(SUBSTR(BIOSUM_COND_ID, 16, 6) AS INTEGER) AS PLOT"),
+            //    Tuple.Create("PLT_CN", "SUBSTR(BIOSUM_COND_ID, 1, LENGTH(BIOSUM_COND_ID) - 1) AS PLT_CN"),
+            //    Tuple.Create("ROUGHCULL", "ROUGHCULL"),
+            //    Tuple.Create("SAWHT", "SAWHT"),
+            //    Tuple.Create("SITREE", "SITREE"),
+            //    Tuple.Create("SPCD", "SPCD"),
+            //    Tuple.Create("STANDING_DEAD_CD", "STANDING_DEAD_CD"),
+            //    Tuple.Create("STATECD", "STATECD"),
+            //    Tuple.Create("STATUSCD", "STATUSCD"),
+            //    Tuple.Create("SUBP", "SUBP"),
+            //    Tuple.Create("TOTAGE", "TOTAGE"),
+            //    Tuple.Create("TREE", "TREE"),
+            //    Tuple.Create("TREECLCD", "TREECLCD"),
+            //    Tuple.Create("TRE_CN", "CN AS TRE_CN"),
+            //    Tuple.Create("UPPER_DIA", "UPPER_DIA"),
+            //    Tuple.Create("UPPER_DIA_HT", "UPPER_DIA_HT"),
+            //    Tuple.Create("VOL_LOC_GRP", "'' AS VOL_LOC_GRP"),
+            //    Tuple.Create("WDLDSTEM", "WDLDSTEM"),
+            //};
 
-            strColumns = string.Join(",", treeToFcsBiosumVolumesInputTable.Select(e => e.Item1));
-            strValues = string.Join(",", treeToFcsBiosumVolumesInputTable.Select(e => e.Item2));
+            //strColumns = string.Join(",", treeToFcsBiosumVolumesInputTable.Select(e => e.Item1));
+            //strValues = string.Join(",", treeToFcsBiosumVolumesInputTable.Select(e => e.Item2));
 
-            //insert records
-            SQLite.m_strSQL = Queries.VolumeAndBiomass.FIAPlotInput.BuildInputTableForVolumeCalculation_Step1(strFcsBiosumVolumesInputTable, m_strTreeTable, strColumns, strValues);
-            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n\r\n");
-            SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
+            ////insert records
+            //SQLite.m_strSQL = Queries.VolumeAndBiomass.FIAPlotInput.BuildInputTableForVolumeCalculation_Step1(strFcsBiosumVolumesInputTable, m_strTreeTable, strColumns, strValues);
+            //if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+            //    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n\r\n");
+            //SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
 
-            SQLite.m_strSQL = Queries.VolumeAndBiomass.FIAPlotInput.BuildInputTableForVolumeCalculation_Step2(strFcsBiosumVolumesInputTable, m_strTreeTable,m_strPlotTable,m_strCondTable);
-            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n\r\n");
-            SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
+            //SQLite.m_strSQL = Queries.VolumeAndBiomass.FIAPlotInput.BuildInputTableForVolumeCalculation_Step2(strFcsBiosumVolumesInputTable, m_strTreeTable,m_strPlotTable,m_strCondTable);
+            //if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+            //    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n\r\n");
+            //SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
 
 
-            SQLite.m_strSQL = Queries.VolumeAndBiomass.FIAPlotInput.BuildInputTableForVolumeCalculation_Step3(strFcsBiosumVolumesInputTable, m_strCondTable);
-            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n\r\n");
-            SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
+            //SQLite.m_strSQL = Queries.VolumeAndBiomass.FIAPlotInput.BuildInputTableForVolumeCalculation_Step3(strFcsBiosumVolumesInputTable, m_strCondTable);
+            //if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+            //    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n\r\n");
+            //SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
 
-            //populate treeclcd column
-            string strCullTotalWorkTable = "TEMPDB.cull_total_work_table";
-            if (SQLite.TableExist(p_conn, "cull_total_work_table") || SQLite.AttachedTableExist(p_conn, "cull_total_work_table"))
-            {
-                SQLite.m_strSQL = "DELETE FROM " + strCullTotalWorkTable;
-                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n\r\n");
-                SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
+            ////populate treeclcd column
+            //string strCullTotalWorkTable = "TEMPDB.cull_total_work_table";
+            //if (SQLite.TableExist(p_conn, "cull_total_work_table") || SQLite.AttachedTableExist(p_conn, "cull_total_work_table"))
+            //{
+            //    SQLite.m_strSQL = "DELETE FROM " + strCullTotalWorkTable;
+            //    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+            //        frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n\r\n");
+            //    SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
 
-                SQLite.m_strSQL = "INSERT INTO " + strCullTotalWorkTable +
-                    " SELECT tre_cn, CASE WHEN cull IS NOT NULL AND roughcull IS NOT NULL " +
-                    "THEN cull + roughcull ELSE CASE WHEN cull IS NOT NULL " +
-                    "THEN cull ELSE CASE WHEN roughcull IS NOT NULL " +
-                    "THEN roughcull ELSE 0 END END END AS totalcull " +
-                    "FROM " + strFcsBiosumVolumesInputTable;
-                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n\r\n");
-                SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
-            }
-            else
-            {
-                SQLite.m_strSQL = Queries.VolumeAndBiomass.FIAPlotInput.BuildInputTableForVolumeCalculation_Step4(
-                                strCullTotalWorkTable, strFcsBiosumVolumesInputTable);
-                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n\r\n");
-                SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
-            }
+            //    SQLite.m_strSQL = "INSERT INTO " + strCullTotalWorkTable +
+            //        " SELECT tre_cn, CASE WHEN cull IS NOT NULL AND roughcull IS NOT NULL " +
+            //        "THEN cull + roughcull ELSE CASE WHEN cull IS NOT NULL " +
+            //        "THEN cull ELSE CASE WHEN roughcull IS NOT NULL " +
+            //        "THEN roughcull ELSE 0 END END END AS totalcull " +
+            //        "FROM " + strFcsBiosumVolumesInputTable;
+            //    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+            //        frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n\r\n");
+            //    SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
+            //}
+            //else
+            //{
+            //    SQLite.m_strSQL = Queries.VolumeAndBiomass.FIAPlotInput.BuildInputTableForVolumeCalculation_Step4(
+            //                    strCullTotalWorkTable, strFcsBiosumVolumesInputTable);
+            //    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+            //        frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n\r\n");
+            //    SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
+            //}
 
-            SQLite.m_strSQL = Queries.VolumeAndBiomass.FIAPlotInput.PNWRS.BuildInputTableForVolumeCalculation_Step5(
-                strCullTotalWorkTable, strFcsBiosumVolumesInputTable);
-            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n\r\n");
-            SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
+            //SQLite.m_strSQL = Queries.VolumeAndBiomass.FIAPlotInput.PNWRS.BuildInputTableForVolumeCalculation_Step5(
+            //    strCullTotalWorkTable, strFcsBiosumVolumesInputTable);
+            //if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+            //    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n\r\n");
+            //SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
 
-            SQLite.m_strSQL = Queries.VolumeAndBiomass.FIAPlotInput.PNWRS.BuildInputTableForVolumeCalculation_Step6(
-                            strCullTotalWorkTable, strFcsBiosumVolumesInputTable);
-            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n\r\n");
-            SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
+            //SQLite.m_strSQL = Queries.VolumeAndBiomass.FIAPlotInput.PNWRS.BuildInputTableForVolumeCalculation_Step6(
+            //                strCullTotalWorkTable, strFcsBiosumVolumesInputTable);
+            //if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+            //    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n\r\n");
+            //SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
 
-            string strWorkTable = "TEMPDB." + Tables.VolumeAndBiomass.SqliteWorkTable;
-            if (SQLite.TableExist(p_conn, Tables.VolumeAndBiomass.SqliteWorkTable) || SQLite.AttachedTableExist(p_conn, Tables.VolumeAndBiomass.SqliteWorkTable))
-            {
-                SQLite.SqlNonQuery(p_conn, "DELETE FROM " + Tables.VolumeAndBiomass.SqliteWorkTable);
-            }
-            else
-            {
-                frmMain.g_oTables.m_oFvs.CreateInputFCSBiosumVolumesWorkTable(SQLite, p_conn, strWorkTable);
-            }
+            //string strWorkTable = "TEMPDB." + Tables.VolumeAndBiomass.SqliteWorkTable;
+            //if (SQLite.TableExist(p_conn, Tables.VolumeAndBiomass.SqliteWorkTable) || SQLite.AttachedTableExist(p_conn, Tables.VolumeAndBiomass.SqliteWorkTable))
+            //{
+            //    SQLite.SqlNonQuery(p_conn, "DELETE FROM " + Tables.VolumeAndBiomass.SqliteWorkTable);
+            //}
+            //else
+            //{
+            //    frmMain.g_oTables.m_oFvs.CreateInputFCSBiosumVolumesWorkTable(SQLite, p_conn, strWorkTable);
+            //}
             
-            string strInputFields = SQLite.getFieldNames(p_conn, "SELECT * FROM " + strFcsBiosumVolumesInputTable);
-            SQLite.m_strSQL = "INSERT INTO " + strWorkTable + " (" + strInputFields + ") " +
-                "SELECT * FROM " + strFcsBiosumVolumesInputTable;
-            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n\r\n");
-            SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
+            //string strInputFields = SQLite.getFieldNames(p_conn, "SELECT * FROM " + strFcsBiosumVolumesInputTable);
+            //SQLite.m_strSQL = "INSERT INTO " + strWorkTable + " (" + strInputFields + ") " +
+            //    "SELECT * FROM " + strFcsBiosumVolumesInputTable;
+            //if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+            //    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n\r\n");
+            //SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
 
-            if (System.IO.File.Exists(frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\" + Tables.VolumeAndBiomass.DefaultSqliteWorkDatabase) == false)
-            {
-                m_intError = -1;
-                m_strError = frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\" + Tables.VolumeAndBiomass.DefaultSqliteWorkDatabase + " not found";
-            }
-            if (m_intError == 0 && System.IO.File.Exists(frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\BioSumComps.JAR") == false)
-            {
-                m_intError = -1;
-                m_strError = frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\BioSumComps.JAR not found";
-            }
-            if (m_intError == 0 && System.IO.File.Exists(frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\fcs_tree_calc.bat") == false)
-            {
-                m_intError = -1;
-                m_strError = frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\fcs_tree_calc.bat not found";
-            }
-            if (m_intError == 0)
-            {
-                //
-                //Remove data from fcs_tree.db
-                //
-                string strFcsTreeDb = frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\" + Tables.VolumeAndBiomass.DefaultSqliteWorkDatabase;
-                SQLite.m_strSQL = "ATTACH DATABASE '" + strFcsTreeDb + "' AS FCS";
-                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n\r\n");
-                SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
+            //if (System.IO.File.Exists(frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\" + Tables.VolumeAndBiomass.DefaultSqliteWorkDatabase) == false)
+            //{
+            //    m_intError = -1;
+            //    m_strError = frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\" + Tables.VolumeAndBiomass.DefaultSqliteWorkDatabase + " not found";
+            //}
+            //if (m_intError == 0 && System.IO.File.Exists(frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\BioSumComps.JAR") == false)
+            //{
+            //    m_intError = -1;
+            //    m_strError = frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\BioSumComps.JAR not found";
+            //}
+            //if (m_intError == 0 && System.IO.File.Exists(frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\fcs_tree_calc.bat") == false)
+            //{
+            //    m_intError = -1;
+            //    m_strError = frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\fcs_tree_calc.bat not found";
+            //}
+            //if (m_intError == 0)
+            //{
+            //    //
+            //    //Remove data from fcs_tree.db
+            //    //
+            //    string strFcsTreeDb = frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\" + Tables.VolumeAndBiomass.DefaultSqliteWorkDatabase;
+            //    SQLite.m_strSQL = "ATTACH DATABASE '" + strFcsTreeDb + "' AS FCS";
+            //    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+            //        frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n\r\n");
+            //    SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
 
-                SQLite.m_strSQL = "DELETE FROM FCS." + Tables.VolumeAndBiomass.BiosumVolumeCalcTable;
-                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n\r\n");
-                SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
-                SetThermValue(m_frmTherm.progressBar1, "Value", 0);
+            //    SQLite.m_strSQL = "DELETE FROM FCS." + Tables.VolumeAndBiomass.BiosumVolumeCalcTable;
+            //    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+            //        frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n\r\n");
+            //    SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
+            //    SetThermValue(m_frmTherm.progressBar1, "Value", 0);
 
-                //
-                //Insert into fcs_tree.biosum_calc
-                //
-                SQLite.m_strSQL = "INSERT INTO FCS." + Tables.VolumeAndBiomass.BiosumVolumeCalcTable + "( " + strInputFields + ") " +
-                    " SELECT " + strInputFields + " FROM " + strWorkTable;
-                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n\r\n");
-                SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
-                SetThermValue(m_frmTherm.progressBar1, "Value", 1);
+            //    //
+            //    //Insert into fcs_tree.biosum_calc
+            //    //
+            //    SQLite.m_strSQL = "INSERT INTO FCS." + Tables.VolumeAndBiomass.BiosumVolumeCalcTable + "( " + strInputFields + ") " +
+            //        " SELECT " + strInputFields + " FROM " + strWorkTable;
+            //    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+            //        frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n\r\n");
+            //    SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
+            //    SetThermValue(m_frmTherm.progressBar1, "Value", 1);
 
-                //
-                //Run Java app to calculate volume/biomass
-                //
-                if (m_intError == 0)
-                {
-                    frmMain.g_oUtils.RunProcess(
-                        frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum", "fcs_tree_calc.bat",
-                        "BAT");
-                    if (System.IO.File.Exists(frmMain.g_oEnv.strApplicationDataDirectory +
-                                                "\\FIABiosum\\fcs_error_msg.txt"))
-                    {
-                        // Read entire text file content in one string  
-                        m_strError = System.IO.File.ReadAllText(
-                            frmMain.g_oEnv.strApplicationDataDirectory +
-                            "\\FIABiosum\\fcs_error_msg.txt");
-                        if (m_strError.IndexOf("JAVA.EXE", 0) > 0)
-                            m_strError = "Problem detected running JAVA.EXE";
-                        m_intError = -2;
-                    }
-                }
-                SetThermValue(m_frmTherm.progressBar1, "Value", 2);
+            //    //
+            //    //Run Java app to calculate volume/biomass
+            //    //
+            //    if (m_intError == 0)
+            //    {
+            //        frmMain.g_oUtils.RunProcess(
+            //            frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum", "fcs_tree_calc.bat",
+            //            "BAT");
+            //        if (System.IO.File.Exists(frmMain.g_oEnv.strApplicationDataDirectory +
+            //                                    "\\FIABiosum\\fcs_error_msg.txt"))
+            //        {
+            //            // Read entire text file content in one string  
+            //            m_strError = System.IO.File.ReadAllText(
+            //                frmMain.g_oEnv.strApplicationDataDirectory +
+            //                "\\FIABiosum\\fcs_error_msg.txt");
+            //            if (m_strError.IndexOf("JAVA.EXE", 0) > 0)
+            //                m_strError = "Problem detected running JAVA.EXE";
+            //            m_intError = -2;
+            //        }
+            //    }
+            //    SetThermValue(m_frmTherm.progressBar1, "Value", 2);
 
-                //
-                //Update with calculated values
-                //
-                if (m_intError == 0)
-                {
-                    if (SQLite.TableExist(p_conn, Tables.VolumeAndBiomass.BiosumCalcOutputTable) || SQLite.AttachedTableExist(p_conn, Tables.VolumeAndBiomass.BiosumCalcOutputTable))
-                    {
-                        SQLite.m_strSQL = "DELETE FROM " + Tables.VolumeAndBiomass.BiosumCalcOutputTable;
-                        if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                            frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n\r\n");
-                        SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
-                    }
-                    else
-                    {
-                        SQLite.m_strSQL = "CREATE TABLE TEMPDB." + Tables.VolumeAndBiomass.BiosumCalcOutputTable +
-                        " AS SELECT * FROM " + strFcsBiosumVolumesInputTable + " WHERE 1 = 2";
-                        if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                            frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n\r\n");
-                        SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
-                    }
+            //    //
+            //    //Update with calculated values
+            //    //
+            //    if (m_intError == 0)
+            //    {
+            //        if (SQLite.TableExist(p_conn, Tables.VolumeAndBiomass.BiosumCalcOutputTable) || SQLite.AttachedTableExist(p_conn, Tables.VolumeAndBiomass.BiosumCalcOutputTable))
+            //        {
+            //            SQLite.m_strSQL = "DELETE FROM " + Tables.VolumeAndBiomass.BiosumCalcOutputTable;
+            //            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+            //                frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n\r\n");
+            //            SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
+            //        }
+            //        else
+            //        {
+            //            SQLite.m_strSQL = "CREATE TABLE TEMPDB." + Tables.VolumeAndBiomass.BiosumCalcOutputTable +
+            //            " AS SELECT * FROM " + strFcsBiosumVolumesInputTable + " WHERE 1 = 2";
+            //            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+            //                frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n\r\n");
+            //            SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
+            //        }
 
-                    string strOutputFields = SQLite.getFieldNames(p_conn, "SELECT * FROM TEMPDB." + Tables.VolumeAndBiomass.BiosumCalcOutputTable);
-                    SQLite.m_strSQL = "INSERT INTO TEMPDB." + Tables.VolumeAndBiomass.BiosumCalcOutputTable + " (" + strOutputFields + ") " +
-                        "SELECT " + strOutputFields + " FROM FCS." + Tables.VolumeAndBiomass.BiosumVolumeCalcTable +
-                        " WHERE VOLTSGRS_CALC IS NOT NULL AND TRE_CN IS NOT NULL";
-                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                        frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n\r\n");
-                    SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
+            //        string strOutputFields = SQLite.getFieldNames(p_conn, "SELECT * FROM TEMPDB." + Tables.VolumeAndBiomass.BiosumCalcOutputTable);
+            //        SQLite.m_strSQL = "INSERT INTO TEMPDB." + Tables.VolumeAndBiomass.BiosumCalcOutputTable + " (" + strOutputFields + ") " +
+            //            "SELECT " + strOutputFields + " FROM FCS." + Tables.VolumeAndBiomass.BiosumVolumeCalcTable +
+            //            " WHERE VOLTSGRS_CALC IS NOT NULL AND TRE_CN IS NOT NULL";
+            //        if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+            //            frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n\r\n");
+            //        SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
 
-                    //update VOLTSGRS
-                    SQLite.m_strSQL = Queries.VolumeAndBiomass.FIAPlotInput.WriteCalculatedVolumeAndBiomassColumnsToTreeTable("TEMPDB." + Tables.VolumeAndBiomass.BiosumCalcOutputTable);
-                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                        frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n\r\n");
-                    SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
-                }
+            //        //update VOLTSGRS
+            //        SQLite.m_strSQL = Queries.VolumeAndBiomass.FIAPlotInput.WriteCalculatedVolumeAndBiomassColumnsToTreeTable("TEMPDB." + Tables.VolumeAndBiomass.BiosumCalcOutputTable);
+            //        if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+            //            frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, SQLite.m_strSQL + "\r\n\r\n");
+            //        SQLite.SqlNonQuery(p_conn, SQLite.m_strSQL);
+            //    }
 
-                SetThermValue(m_frmTherm.progressBar1, "Value", m_frmTherm.progressBar1.Maximum);
-            }
+            //    SetThermValue(m_frmTherm.progressBar1, "Value", m_frmTherm.progressBar1.Maximum);
+            //}
 
             SetLabelValue(m_frmTherm.lblMsg,"Text", "Updating Condition Table Columns...Stand By");
             frmMain.g_oDelegate.ExecuteControlMethod((System.Windows.Forms.Control)this.m_frmTherm, "Refresh");

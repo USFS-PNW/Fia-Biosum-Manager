@@ -2412,7 +2412,6 @@ namespace FIA_Biosum_Manager
                     "lat DOUBLE," +
                     "lon DOUBLE," +
                     "macro_breakpoint_dia INTEGER," +
-                    "precipitation DOUBLE," +
                     "ecosubcd CHAR(7)," +
                     "biosum_status_cd INTEGER," +
                     "cn CHAR(34)," +
@@ -2538,8 +2537,6 @@ namespace FIA_Biosum_Manager
                     "volbfnet DOUBLE," +
                     "volbfgrs DOUBLE," +
                     "voltsgrs DOUBLE," +
-                    "drybiot DOUBLE," +
-                    "drybiom DOUBLE," +
                     "bhage INTEGER," +
                     "cullbf DOUBLE," +
                     "cullcf DOUBLE," +
@@ -2568,10 +2565,8 @@ namespace FIA_Biosum_Manager
                     "bfsnd INTEGER," +
                     "standing_dead_cd INTEGER," +
                     "volcfsnd DOUBLE," +
+                    "drybio_ag DOUBLE," +
                     "drybio_bole DOUBLE," +
-                    "drybio_top DOUBLE," +
-                    "drybio_sapling DOUBLE," +
-                    "drybio_wdld_spp DOUBLE," +
                     "fvs_tree_id CHAR(10)," +
                     "cn CHAR(34)," +
                     "biosum_status_cd INTEGER)";
