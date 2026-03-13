@@ -1903,6 +1903,63 @@ namespace FIA_Biosum_Manager
                     "DateTimeCreated DATETIME)";
 
                     }
+                    public static string CreateFVSPostAuditTvbcCutlistERROR_OUTPUTtableSQL(string p_strTableName)
+                    {
+                        return "CREATE TABLE " + p_strTableName + " (" +
+                            "COLUMN_NAME CHAR(30)," +
+                            "ERROR_DESC CHAR(60)," +
+                            "id LONG," +
+                    "biosum_cond_id CHAR(25)," +
+                    "rxpackage CHAR(3)," +
+                    "rx CHAR(3)," +
+                    "rxcycle CHAR(1)," +
+                    "rxyear CHAR(4)," +
+                    "fvs_variant CHAR(2)," +
+                    "fvs_species CHAR(6)," +
+                    "tpa DOUBLE," +
+                    "dbh DOUBLE," +
+                    "ht DOUBLE," +
+                    "estht DOUBLE," +
+                    "pctcr DOUBLE," +
+                    "treeval INTEGER," +
+                    "mortpa DOUBLE," +
+                    "mdefect INTEGER," +
+                    "bapctile DOUBLE," +
+                    "htg DOUBLE," +
+                    "dg DOUBLE," +
+                    "statuscd INTEGER," +
+                    "decaycd INTEGER," +
+                    "wood_sg_adj INTEGER," +
+                    "bark_sg_adj INTEGER," +
+                    "standing_dead_cd INTEGER," +
+                    "drybio_bole double," +
+                    "volcfsnd double," +
+                    "volcfgrs DOUBLE," +
+                    "volcfnet DOUBLE," +
+                    "volcsgrs DOUBLE," +
+                    "voltsgrs DOUBLE," +
+                    "voltsgrs_bark DOUBLE," +
+                    "volcfgrs_bark DOUBLE," +
+                    "volcfsnd_bark DOUBLE," +
+                    "volcfnet_bark DOUBLE," +
+                    "volcsgrs_bark DOUBLE," +
+                    "volbsnet DOUBLE," +
+                    "drybio_stem DOUBLE," +
+                    "drybio_stem_bark DOUBLE," +
+                    "drybio_stump DOUBLE," +
+                    "drybio_stump_bark DOUBLE," +
+                    "drybio_bole_bark  DOUBLE," +
+                    "drybio_branch DOUBLE," +
+                    "drybio_foliage DOUBLE," +
+                    "drybio_ag  DOUBLE," +
+                    "drybio_bg DOUBLE," +
+                    "carbon_ag DOUBLE," +
+                    "carbon_bg DOUBLE," +
+                    "fvs_tree_id CHAR(10)," +
+                    "FvsCreatedTree_YN CHAR(1) DEFAULT 'N'," +
+                    "DateTimeCreated DATE)";
+
+                    }
                     /// <summary>
                     /// Creates the POST-FVS audit table that DETAILS items in the BIOSUM FVS_TREE table
                     /// that are not found in other tables. For example, a BIOSUM_COND_ID in the 
@@ -1955,6 +2012,68 @@ namespace FIA_Biosum_Manager
                     "fvs_tree_id CHAR(10)," +
                     "FvsCreatedTree_YN CHAR(1) DEFAULT 'N'," +
                     "DateTimeCreated DATETIME)";
+
+                    }
+
+                    /// </summary>
+                    /// <param name="p_strTableName"></param>
+                    /// <returns></returns>
+                    public static string CreateFVSPostAuditTvbcCutlistNOTFOUND_ERRORtableSQL(string p_strTableName)
+                    {
+                        return "CREATE TABLE " + p_strTableName + " (" +
+                            "COLUMN_NAME CHAR(30)," +
+                            "NOTFOUND_VALUE CHAR(50)," +
+                            "ERROR_DESC CHAR(60)," +
+                            "id LONG," +
+                    "biosum_cond_id CHAR(25)," +
+                    "rxpackage CHAR(3)," +
+                    "rx CHAR(3)," +
+                    "rxcycle CHAR(1)," +
+                    "rxyear CHAR(4)," +
+                    "fvs_variant CHAR(2)," +
+                    "fvs_species CHAR(6)," +
+                    "tpa DOUBLE," +
+                    "dbh DOUBLE," +
+                    "ht DOUBLE," +
+                    "estht DOUBLE," +
+                    "pctcr DOUBLE," +
+                    "treeval INTEGER," +
+                    "mortpa DOUBLE," +
+                    "mdefect INTEGER," +
+                    "bapctile DOUBLE," +
+                    "htg DOUBLE," +
+                    "dg DOUBLE," +
+                    "statuscd INTEGER," +
+                    "decaycd INTEGER," +
+                    "wood_sg_adj INTEGER," +
+                    "bark_sg_adj INTEGER," +
+                    "standing_dead_cd INTEGER," +
+                    "drybio_bole double," +
+                    "volcfsnd double," +
+                    "volcfgrs DOUBLE," +
+                    "volcfnet DOUBLE," +
+                    "volcsgrs DOUBLE," +
+                    "voltsgrs DOUBLE," +
+                    "voltsgrs_bark DOUBLE," +
+                    "volcfgrs_bark DOUBLE," +
+                    "volcfsnd_bark DOUBLE," +
+                    "volcfnet_bark DOUBLE," +
+                    "volcsgrs_bark DOUBLE," +
+                    "volbsnet DOUBLE," +
+                    "drybio_stem DOUBLE," +
+                    "drybio_stem_bark DOUBLE," +
+                    "drybio_stump DOUBLE," +
+                    "drybio_stump_bark DOUBLE," +
+                    "drybio_bole_bark  DOUBLE," +
+                    "drybio_branch DOUBLE," +
+                    "drybio_foliage DOUBLE," +
+                    "drybio_ag  DOUBLE," +
+                    "drybio_bg DOUBLE," +
+                    "carbon_ag DOUBLE," +
+                    "carbon_bg DOUBLE," +
+                    "fvs_tree_id CHAR(10)," +
+                    "FvsCreatedTree_YN CHAR(1) DEFAULT 'N'," +
+                    "DateTimeCreated DATE)";
 
                     }
                     /// <summary>
@@ -2023,6 +2142,58 @@ namespace FIA_Biosum_Manager
                             "FVS_TREE_DRYBIOT DOUBLE," +
                             "FIA_TREE_DRYBIOT DOUBLE," +
                             "FVS_TREE_DRYBIOM DOUBLE," +
+                            "FIA_TREE_DRYBIOM DOUBLE," +
+                            "FIA_TREE_STATUSCD BYTE," +
+                            "FIA_TREE_TREECLCD BYTE," +
+                            "FIA_TREE_CULL  DOUBLE," +
+                            "FIA_TREE_ROUGHCULL DOUBLE," +
+                            "FVSCREATEDTREE_YN CHAR(1) DEFAULT 'N')";
+
+
+                    }
+
+                    /// <summary>
+                    ///Create the audit table used to check the tree data after appending FVS CUTLIST table data to the BIOSUM FVS_TREE table.
+                    ///The purpose of the table is to contain matching FVS trees to FIA trees (by FVS_TREE_ID) to determine these items: 
+                    ///1. Check if treatment cycle 1 FVS tree column data match FIA tree column data (ERROR item);
+                    ///2. Check if the FVS tree species is different than the FIA tree species (WARNING item) 
+                    /// </summary>
+                    /// <param name="p_strTableName">Table name to create</param>
+                    /// <param name="p_strDescriptionColumnName">Name of the column that will hold the warning or error description</param>
+                    /// <returns></returns>
+                    public static string CreateFVSPostAuditTvbcCutlistFVSFIA_TREEMATCHINGtableSQL(string p_strTableName, string p_strDescriptionColumnName)
+                    {
+                        return "CREATE TABLE " + p_strTableName + " (" +
+                            "COLUMN_NAME CHAR(30)," +
+                             p_strDescriptionColumnName + " CHAR(100)," +
+                            "ID LONG," +
+                            "BIOSUM_COND_ID CHAR(25)," +
+                            "FVS_VARIANT CHAR(2)," +
+                            "RXPACKAGE CHAR(3)," +
+                            "RXCYCLE CHAR(1)," +
+                            "FVS_TREE_FVS_TREE_ID CHAR(10)," +
+                            "FIA_TREE_FVS_TREE_ID CHAR(10)," +
+                            "FVS_TREE_SPCD INTEGER," +
+                            "FIA_TREE_SPCD INTEGER," +
+                            "FVS_TREE_DIA  SINGLE," +
+                            "FIA_TREE_DIA SINGLE," +
+                            "FVS_TREE_ESTHT DOUBLE," +
+                            "FIA_TREE_ESTHT DOUBLE," +
+                            "FVS_TREE_ACTUALHT DOUBLE," +
+                            "FIA_TREE_ACTUALHT DOUBLE," +
+                            "FVS_TREE_CR DOUBLE," +
+                            "FIA_TREE_CR DOUBLE," +
+                            "FVS_TREE_VOLCSGRS DOUBLE," +
+                            "FIA_TREE_VOLCSGRS DOUBLE," +
+                            "FVS_TREE_VOLCFGRS DOUBLE," +
+                            "FIA_TREE_VOLCFGRS DOUBLE," +
+                            "FVS_TREE_VOLCFNET DOUBLE," +
+                            "FIA_TREE_VOLCFNET DOUBLE," +
+                            "FVS_TREE_VOLTSGRS DOUBLE," +
+                            "FIA_TREE_VOLTSGRS DOUBLE," +
+                            "FVS_TREE_DRYBIO_AG DOUBLE," +
+                            "FIA_TREE_DRYBIOT DOUBLE," +
+                            "FVS_TREE_DRYBIO_BOLE DOUBLE," +
                             "FIA_TREE_DRYBIOM DOUBLE," +
                             "FIA_TREE_STATUSCD BYTE," +
                             "FIA_TREE_TREECLCD BYTE," +
