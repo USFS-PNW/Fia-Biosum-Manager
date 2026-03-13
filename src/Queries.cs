@@ -1598,7 +1598,7 @@ namespace FIA_Biosum_Manager
             }
             static public string[] FVSOutputTable_AuditPostSummaryFVS(string p_strRxTable,string p_strRxPackageTable,string p_strTreeTable,
                 string p_strPlotTable,string p_strCondTable, string p_strPostAuditSummaryTable,string p_strFvsTreeTableName,
-                string p_strRxPackage, string p_strFvsVariant, string p_strRxPackageWorktable)
+                string p_strRxPackage, string p_strFvsVariant, string p_strRxPackageWorktable, bool bUsingTvbc)
             {
                 string[] sqlArray = new string[12];
                 sqlArray[0] = $@"CREATE TABLE {p_strRxPackageTable} AS SELECT DISTINCT RXPACKAGE AS RXPACKAGE FROM {p_strRxPackageWorktable}";
@@ -1627,6 +1627,13 @@ namespace FIA_Biosum_Manager
                     CASE WHEN BIOSUM_COND_ID IS NULL OR LENGTH(TRIM(BIOSUM_COND_ID)) = 0 THEN '' WHEN LENGTH(TRIM(BIOSUM_COND_ID)) >= 24 THEN SUBSTR(BIOSUM_COND_ID,1,24) ELSE BIOSUM_COND_ID END
                     AS BIOSUM_PLOT_ID,BIOSUM_COND_ID FROM {p_strFvsTreeTableName}";
 
+                string drybiot = "drybiot";
+                string drybiom = "drybiom";
+                if (bUsingTvbc)
+                {
+                    drybiot = "drybio_ag";
+                    drybiom = "drybio_bole";
+                }
                 sqlArray[11] = "INSERT INTO  " + p_strPostAuditSummaryTable + " " +
                     "SELECT * FROM " +
                     "(SELECT DISTINCT " +
@@ -1736,24 +1743,24 @@ namespace FIA_Biosum_Manager
                         "WHERE DBH IS NOT NULL AND DBH >= 5 AND VOLCFGRS IS NULL) volcfgrs_no_value_count " +
                         "UNION " +
                         "SELECT DISTINCT '010' AS idx,'" + p_strFvsVariant + "' AS FVS_VARIANT," + "'" + p_strRxPackage + "' AS RXPACKAGE," +
-                        "'DRYBIOT' AS COLUMN_NAME, drybiot_no_value_count.NOVALUE_COUNT AS NOVALUE_ERROR," +
+                        "'" + drybiot.ToUpper() + $@"' AS COLUMN_NAME, {drybiot}_no_value_count.NOVALUE_COUNT AS NOVALUE_ERROR," +
                         "'NA' AS NF_IN_COND_TABLE_ERROR, 'NA' AS NF_IN_PLOT_TABLE_ERROR," +
                         "'NA' AS VALUE_ERROR, 'NA' AS NF_IN_RX_TABLE_ERROR," +
                         "'NA' AS NF_RXPACKAGE_RXCYCLE_RX_ERROR, 'NA' AS NF_IN_RXPACKAGE_TABLE_ERROR," +
                         "'NA' AS NF_IN_TREE_TABLE_ERROR, 'NA' AS TREE_SPECIES_CHANGE_WARNING, current_timestamp " +
                         "FROM " + p_strFvsTreeTableName + " fvs," +
                         "(SELECT COUNT(*) AS NOVALUE_COUNT FROM " + p_strFvsTreeTableName + " " +
-                        "WHERE DRYBIOT IS NULL) drybiot_no_value_count " +
+                        $@"WHERE {drybiot.ToUpper()} IS NULL) {drybiot}_no_value_count " +
                         "UNION " +
                         "SELECT DISTINCT '011' AS idx,'" + p_strFvsVariant + "' AS FVS_VARIANT," + "'" + p_strRxPackage + "' AS RXPACKAGE," +
-                        "'DRYBIOM' AS COLUMN_NAME, drybiom_no_value_count.NOVALUE_COUNT AS NOVALUE_ERROR," +
+                        $@"'{drybiom.ToUpper()}' AS COLUMN_NAME, {drybiom}_no_value_count.NOVALUE_COUNT AS NOVALUE_ERROR," +
                         "'NA' AS NF_IN_COND_TABLE_ERROR, 'NA' AS NF_IN_PLOT_TABLE_ERROR," +
                         "'NA' AS  VALUE_ERROR, 'NA' AS NF_IN_RX_TABLE_ERROR," +
                         "'NA' AS NF_RXPACKAGE_RXCYCLE_RX_ERROR, 'NA' AS NF_IN_RXPACKAGE_TABLE_ERROR," +
                         "'NA' AS NF_IN_TREE_TABLE_ERROR, 'NA' AS TREE_SPECIES_CHANGE_WARNING, current_timestamp " +
                         "FROM " + p_strFvsTreeTableName + " fvs," +
                         "(SELECT COUNT(*) AS NOVALUE_COUNT FROM " + p_strFvsTreeTableName + " " +
-                        "WHERE DBH IS NOT NULL AND DBH >= 5 AND DRYBIOM IS NULL) drybiom_no_value_count " +
+                        $@"WHERE DBH IS NOT NULL AND DBH >= 5 AND {drybiom.ToUpper()} IS NULL) {drybiom}_no_value_count " +
                         "UNION " +
                         "SELECT DISTINCT '012' AS idx,'" + p_strFvsVariant + "' AS FVS_VARIANT," + "'" + p_strRxPackage + "' AS RXPACKAGE," +
                         "'FVS_TREE_ID' AS COLUMN_NAME," +
@@ -1802,11 +1809,17 @@ namespace FIA_Biosum_Manager
                 return sqlArray;
             }
 
-            public static string[] FVSOutputTable_AuditPostSummaryDetailFVS_SPCDCHANGE_WARNING(string p_strInsertTable, string p_strPostAuditSummaryTable, 
-                string p_strFvsTreeTableName,string p_strTreeTable, string p_strFvsVariant, string p_strRxPackage)
+            public static string[] FVSOutputTable_AuditPostSummaryDetailFVS_SPCDCHANGE_WARNING(string p_strInsertTable, 
+                string p_strFvsTreeTableName,string p_strTreeTable, string p_strFvsVariant, string p_strRxPackage, bool bUsingTvbc)
             {
                 string[] sqlArray = new string[1];
-
+                string drybiot = "drybiot";
+                string drybiom = "drybiom";
+                if (bUsingTvbc)
+                {
+                    drybiot = "drybio_ag";
+                    drybiom = "drybio_bole";
+                }
                 sqlArray[0] = "INSERT INTO  " + p_strInsertTable + " " +
                                    "SELECT * FROM " +
                                         "(SELECT 'FVS_SPECIES' AS COLUMN_NAME," +
@@ -1837,9 +1850,9 @@ namespace FIA_Biosum_Manager
                                                 "FIA.VOLCFNET AS FIA_TREE_VOLCFNET," +
                                                 "FVS.VOLTSGRS AS FVS_TREE_VOLTSGRS," +
                                                 "FIA.VOLTSGRS AS FIA_TREE_VOLTSGRS," +
-                                                "FVS.DRYBIOT AS FVS_TREE_DRYBIOT," +
+                                                $@"FVS.{drybiot} AS FVS_TREE_{drybiot.ToUpper()}," +
                                                 "FIA.DRYBIOT AS FIA_TREE_DRYBIOT," +
-                                                "FVS.DRYBIOM AS FVS_TREE_DRYBIOM," +
+                                                $@"FVS.{drybiom} AS FVS_TREE_{drybiom.ToUpper()}," +
                                                 "FIA.DRYBIOM AS FIA_TREE_DRYBIOM," +
                                                 "FIA.STATUSCD AS FIA_TREE_STATUSCD," +
                                                 "FIA.TREECLCD AS FIA_TREE_TREECLCD," +
@@ -1926,9 +1939,17 @@ namespace FIA_Biosum_Manager
             /// <param name="p_strFVSTreeFileName"></param>
             /// <returns></returns>
             public static string[] FVSOutputTable_AuditPostSummaryDetailFVS_NOVALUE_ERROR(string p_strInsertTable,string p_strPostAuditSummaryTable,string p_strFvsTreeTableName,
-                string p_strFvsVariant, string p_strRxPackage)
+                string p_strFvsVariant, string p_strRxPackage, bool bUsingTvbc)
             {
                 string[] sqlArray = new string[1];
+
+                string drybiot = "drybiot";
+                string drybiom = "drybiom";
+                if (bUsingTvbc)
+                {
+                    drybiot = "drybio_ag";
+                    drybiom = "drybio_bole";
+                }
 
                 sqlArray[0] =    "INSERT INTO  " + p_strInsertTable + " " +
                                     "SELECT * FROM " +
@@ -2013,21 +2034,21 @@ namespace FIA_Biosum_Manager
                                                    "a.FVS_VARIANT = '" + p_strFvsVariant + "' AND a.RXPACKAGE='" + p_strRxPackage + "' " +
                                           "UNION " +
                                           "SELECT a.COLUMN_NAME, 'NULLS NOT ALLOWED' AS ERROR_DESC,FVS_TREE.* FROM " + p_strPostAuditSummaryTable + " a," +
-                                            "(SELECT * FROM " + p_strFvsTreeTableName + " WHERE DRYBIOT IS NULL) FVS_TREE " +
+                                            "(SELECT * FROM " + p_strFvsTreeTableName + $@" WHERE {drybiot.ToUpper()} IS NULL) FVS_TREE " +
                                              "WHERE a.NOVALUE_ERROR IS NOT NULL AND " +
                                                    "LENGTH(TRIM(NOVALUE_ERROR)) > 0 AND " +
                                                    "a.NOVALUE_ERROR <> 'NA' AND " +
                                                    "CAST(a.NOVALUE_ERROR as INT) > 0 AND " +
-                                                   "TRIM(a.COLUMN_NAME) = 'DRYBIOT' AND " +
+                                                   $@"TRIM(a.COLUMN_NAME) = '{drybiot.ToUpper()}' AND " +
                                                    "a.FVS_VARIANT = '" + p_strFvsVariant + "' AND a.RXPACKAGE='" + p_strRxPackage + "' " +
                                           "UNION " +
                                           "SELECT a.COLUMN_NAME, 'NULLS NOT ALLOWED WHEN DBH >= 5 INCHES' AS ERROR_DESC,FVS_TREE.* FROM " + p_strPostAuditSummaryTable + " a," +
-                                            "(SELECT * FROM " + p_strFvsTreeTableName + " WHERE DBH IS NOT NULL AND DBH >= 5 AND DRYBIOM IS NULL) FVS_TREE " +
+                                            "(SELECT * FROM " + p_strFvsTreeTableName + $@" WHERE DBH IS NOT NULL AND DBH >= 5 AND {drybiom.ToUpper()} IS NULL) FVS_TREE " +
                                              "WHERE a.NOVALUE_ERROR IS NOT NULL AND " +
                                                    "LENGTH(TRIM(NOVALUE_ERROR)) > 0 AND " +
                                                    "a.NOVALUE_ERROR <> 'NA' AND " +
                                                    "CAST(a.NOVALUE_ERROR as INT) > 0 AND " +
-                                                   "TRIM(a.COLUMN_NAME) = 'DRYBIOM' AND " +
+                                                   $@"TRIM(a.COLUMN_NAME) = '{drybiom.ToUpper()}' AND " +
                                                    "a.FVS_VARIANT = '" + p_strFvsVariant + "' AND a.RXPACKAGE = '" + p_strRxPackage + "' " +
                                           "UNION " +
                                           "SELECT a.COLUMN_NAME,'NULLS NOT ALLOWED' AS ERROR_DESC, FVS_TREE.* FROM " + p_strPostAuditSummaryTable + " a," +

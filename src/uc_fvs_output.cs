@@ -46,7 +46,6 @@ namespace FIA_Biosum_Manager
 		private string m_strFvsTreeTable="";
 		private string m_strFVSSummaryAuditYearCountsTable="audit_fvs_summary_year_counts_table";
         private string m_strFVSSummaryAuditPrePostSeqNumTable = "fvs_summary_prepost_seqnum_matrix";
-        private string m_strFVSSummaryAuditPrePostSeqNumCountsTable = "audit_fvs_summary_prepost_seqnum_counts_table";
         private List<string> m_strFVSPreAppendAuditTables = null;
         private List<string> m_strFVSPostAppendAuditTables = null;
 		private string m_strProjDir="";
@@ -55,11 +54,11 @@ namespace FIA_Biosum_Manager
         private string m_strFvsPrePostDb = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() + Tables.FVS.DefaultFVSOutPrePostDbFile;
         private string m_dbConn = "";
         private string m_missingFvsOutDb = "This project has no valid /fvs/data/FVSOut.db. Multiple FVS Out functions will not work! Please use FVS to generate an /fvs/data/FVSOut.db file.";
+        private string m_postAuditCutTreeTable = Tables.FVS.DefaultFVSCutTreeTableName;
 
+       
         //POTFIRE BASE YEAR
         private string m_strPotFireTable = "FVS_POTFIRE_TEMP";
-        private string m_strPotFireBaseYearAccessLinkedTableName = "FVS_POTFIRE_BASEYEAR";
-        private string m_strPotFireStandardAccessLinkedTableName = "FVS_POTFIRE_STANDARD";
         private bool m_bPotFireBaseYearTableExist = true;
 
 		string m_strLogFile;
@@ -331,8 +330,8 @@ namespace FIA_Biosum_Manager
             "Step 3 - Append FVS Output Data",
             "Step 4 - Post-Processing Audit Check",
             "---Optional---",
-            "Create FVSOut_BioSum.db",
-            "Write FVS_InForest to FVSOUT_TREE_LIST.db"});
+            "Create FVSOut_BioSum.db" });
+            //"Write FVS_InForest to FVSOUT_TREE_LIST.db"});
             this.cmbStep.Location = new System.Drawing.Point(8, 337);
             this.cmbStep.Name = "cmbStep";
             this.cmbStep.Size = new System.Drawing.Size(298, 24);
@@ -4367,13 +4366,21 @@ namespace FIA_Biosum_Manager
                                 {
                                     SQLite.SqlNonQuery(conn, "DROP TABLE " + strTempCutListTable);
                                 }
-                                frmMain.g_oTables.m_oFvs.CreateFVSOutTreeTable(SQLite, conn, strTempCutListTable);
+                                if (m_postAuditCutTreeTable.Equals(Tables.FVS.DefaultFVSCutTreeTableName))
+                                {
+                                    frmMain.g_oTables.m_oFvs.CreateFVSOutTreeTable(SQLite, conn, strTempCutListTable);
+                                }
+                                else
+                                {
+                                    frmMain.g_oTables.m_oFvs.CreateFVSOutTreeTvbcTable(SQLite, conn, strTempCutListTable);
+                                }
+                                
                                 if (m_bDebug && frmMain.g_intDebugLevel > 2)
                                     this.WriteText(m_strDebugFile, "Created table " + strTempCutListTable + "\r\n");
                                 SQLite.SqlNonQuery(conn, $@"ATTACH DATABASE '{m_strFvsTreeDb}' AS TREELIST");
                                 if (m_bDebug && frmMain.g_intDebugLevel > 2)
                                     this.WriteText(m_strDebugFile, "Attached database " + m_strFvsTreeDb + "\r\n");
-                                SQLite.SqlNonQuery(conn, $@"INSERT INTO {strTempCutListTable} SELECT * FROM {Tables.FVS.DefaultFVSCutTreeTableName} 
+                                SQLite.SqlNonQuery(conn, $@"INSERT INTO {strTempCutListTable} SELECT * FROM {m_postAuditCutTreeTable} 
                                                          WHERE FVS_VARIANT ='{strVariant}' AND RXPACKAGE = '{strPackage}'");
                                 if (m_bDebug && frmMain.g_intDebugLevel > 2)
                                     this.WriteText(m_strDebugFile, "Populated table " + strTempCutListTable + "\r\n");
@@ -4395,11 +4402,56 @@ namespace FIA_Biosum_Manager
                                     SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
                                     if (m_bDebug && frmMain.g_intDebugLevel > 2)
                                         this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
-
                                 }
+
+                                if (SQLite.AttachedTableExist(conn, "audit_Post_NOVALUE_ERROR") == true)
+                                { 
+                                    // The schema of these audit tables changed with TVBC
+                                    if (m_postAuditCutTreeTable.Equals(Tables.FVS.DefaultFVSCutTreeTableName) &&
+                                        (!SQLite.ColumnExist(conn, m_postAuditCutTreeTable, "DRYBIOT")))
+                                    {
+                                        SQLite.m_strSQL = $@"DROP TABLE AUDITS.audit_Post_NOVALUE_ERROR";
+                                        if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                                            this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + SQLite.m_strSQL + "\r\n");
+                                        SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+                                        SQLite.m_strSQL = $@"DROP TABLE AUDITS.audit_Post_VALUE_ERROR";
+                                        if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                                            this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + SQLite.m_strSQL + "\r\n");
+                                        SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+                                        SQLite.m_strSQL = $@"DROP TABLE audit_Post_SPCDCHANGE_WARNING";
+                                        if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                                            this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + SQLite.m_strSQL + "\r\n");
+                                        SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+
+                                    }
+                                    else if(m_postAuditCutTreeTable.Equals(Tables.FVS.DefaultFVSCutTreeTvbcTableName) &&
+                                        (!SQLite.ColumnExist(conn, m_postAuditCutTreeTable, "DRYBIO_AG")))
+                                    {
+                                        SQLite.m_strSQL = $@"DROP TABLE AUDITS.audit_Post_NOVALUE_ERROR";
+                                        if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                                            this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + SQLite.m_strSQL + "\r\n");
+                                        SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+                                        SQLite.m_strSQL = $@"DROP TABLE AUDITS.audit_Post_VALUE_ERROR";
+                                        if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                                            this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + SQLite.m_strSQL + "\r\n");
+                                        SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+                                        SQLite.m_strSQL = $@"DROP TABLE audit_Post_SPCDCHANGE_WARNING";
+                                        if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                                            this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + SQLite.m_strSQL + "\r\n");
+                                        SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+                                    }
+                                }
+
                                 if (SQLite.AttachedTableExist(conn, "audit_Post_NOVALUE_ERROR") == false)
                                 {
-                                    SQLite.m_strSQL = Tables.FVS.Audit.Post.CreateFVSPostAuditCutlistERROR_OUTPUTtableSQL("AUDITS.audit_Post_NOVALUE_ERROR");
+                                    if (m_postAuditCutTreeTable.Equals(Tables.FVS.DefaultFVSCutTreeTableName))
+                                    {
+                                        SQLite.m_strSQL = Tables.FVS.Audit.Post.CreateFVSPostAuditCutlistERROR_OUTPUTtableSQL("AUDITS.audit_Post_NOVALUE_ERROR");
+                                    }
+                                    else
+                                    {
+                                        SQLite.m_strSQL = Tables.FVS.Audit.Post.CreateFVSPostAuditTvbcCutlistERROR_OUTPUTtableSQL("AUDITS.audit_Post_NOVALUE_ERROR");
+                                    }
                                     SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
                                 }
                                 else
@@ -4412,10 +4464,20 @@ namespace FIA_Biosum_Manager
                                     if (m_bDebug && frmMain.g_intDebugLevel > 2)
                                         this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
                                 }
+
                                 if (SQLite.AttachedTableExist(conn, "audit_Post_VALUE_ERROR") == false)
                                 {
-                                    SQLite.m_strSQL = Tables.FVS.Audit.Post.CreateFVSPostAuditCutlistERROR_OUTPUTtableSQL("AUDITS.audit_Post_VALUE_ERROR");
-                                    SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+                                    if (m_postAuditCutTreeTable.Equals(Tables.FVS.DefaultFVSCutTreeTableName))
+                                    {
+
+                                        SQLite.m_strSQL = Tables.FVS.Audit.Post.CreateFVSPostAuditCutlistERROR_OUTPUTtableSQL("AUDITS.audit_Post_VALUE_ERROR");
+                                        SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+                                    }
+                                    else
+                                    {
+                                        SQLite.m_strSQL = Tables.FVS.Audit.Post.CreateFVSPostAuditTvbcCutlistERROR_OUTPUTtableSQL("AUDITS.audit_Post_VALUE_ERROR");
+                                        SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+                                    }
                                 }
                                 else
                                 {
@@ -4429,8 +4491,16 @@ namespace FIA_Biosum_Manager
                                 }
                                 if (SQLite.AttachedTableExist(conn, "audit_Post_NOTFOUND_ERROR") == false)
                                 {
-                                    SQLite.m_strSQL = Tables.FVS.Audit.Post.CreateFVSPostAuditCutlistNOTFOUND_ERRORtableSQL("AUDITS.audit_Post_NOTFOUND_ERROR");
-                                    SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+                                    if (m_postAuditCutTreeTable.Equals(Tables.FVS.DefaultFVSCutTreeTableName))
+                                    {
+                                        SQLite.m_strSQL = Tables.FVS.Audit.Post.CreateFVSPostAuditCutlistNOTFOUND_ERRORtableSQL("AUDITS.audit_Post_NOTFOUND_ERROR");
+                                        SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+                                    }
+                                    else
+                                    {
+                                        SQLite.m_strSQL = Tables.FVS.Audit.Post.CreateFVSPostAuditTvbcCutlistNOTFOUND_ERRORtableSQL("AUDITS.audit_Post_NOTFOUND_ERROR");
+                                        SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+                                    }
                                 }
                                 else
                                 {
@@ -4444,8 +4514,16 @@ namespace FIA_Biosum_Manager
                                 }
                                 if (SQLite.AttachedTableExist(conn, "audit_Post_SPCDCHANGE_WARNING") == false)
                                 {
-                                    SQLite.m_strSQL = Tables.FVS.Audit.Post.CreateFVSPostAuditCutlistFVSFIA_TREEMATCHINGtableSQL("AUDITS.audit_Post_SPCDCHANGE_WARNING", "WARNING_DESC");
-                                    SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+                                    if (m_postAuditCutTreeTable.Equals(Tables.FVS.DefaultFVSCutTreeTableName))
+                                    {
+                                        SQLite.m_strSQL = Tables.FVS.Audit.Post.CreateFVSPostAuditCutlistFVSFIA_TREEMATCHINGtableSQL("AUDITS.audit_Post_SPCDCHANGE_WARNING", "WARNING_DESC");
+                                        SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+                                    }
+                                    else
+                                    {
+                                        SQLite.m_strSQL = Tables.FVS.Audit.Post.CreateFVSPostAuditTvbcCutlistFVSFIA_TREEMATCHINGtableSQL("AUDITS.audit_Post_SPCDCHANGE_WARNING", "WARNING_DESC");
+                                        SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+                                    }
                                 }
                                 else
                                 {
@@ -4491,6 +4569,9 @@ namespace FIA_Biosum_Manager
                                         m_intProgressStepTotalCount);
 
                             string[] sqlArray = null;
+                            bool bUsingTvbc = true;
+                            if (m_postAuditCutTreeTable.Equals(Tables.FVS.DefaultFVSCutTreeTableName))
+                                bUsingTvbc = false;
                             using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strTempConn))
                             {
                                 conn.Open();
@@ -4539,7 +4620,7 @@ namespace FIA_Biosum_Manager
                                 m_oQueries.m_oDataSource.m_strDataSource[intPlotTable, Datasource.TABLE],
                                 m_oQueries.m_oDataSource.m_strDataSource[intCondTable, Datasource.TABLE],
                                 "audit_Post_SUMMARY", strTempCutListTable,
-                                strPackage, strVariant, strRxPackageWorktable);
+                                strPackage, strVariant, strRxPackageWorktable, bUsingTvbc);
 
                                 for (y = 0; y <= sqlArray.Length - 1; y++)
                                 {
@@ -4592,7 +4673,7 @@ namespace FIA_Biosum_Manager
                                     "audit_Post_NOVALUE_ERROR",
                                     "audit_Post_SUMMARY",
                                     strTempCutListTable,
-                                    strVariant, strPackage);
+                                    strVariant, strPackage, bUsingTvbc);
 
                                 m_intProgressStepCurrentCount++;
                                 UpdateTherm(m_frmTherm.progressBar1,
@@ -4690,10 +4771,9 @@ namespace FIA_Biosum_Manager
                                 //
                                 sqlArray = Queries.FVS.FVSOutputTable_AuditPostSummaryDetailFVS_SPCDCHANGE_WARNING(
                                         "audit_Post_SPCDCHANGE_WARNING",
-                                        "audit_Post_SUMMARY",
                                         strTempCutListTable,
                                         m_oQueries.m_oDataSource.m_strDataSource[intTreeTable, Datasource.TABLE].Trim(),
-                                        strVariant, strPackage);
+                                        strVariant, strPackage,bUsingTvbc);
 
                                 m_intProgressStepCurrentCount++;
                                 UpdateTherm(m_frmTherm.progressBar1,
@@ -5889,9 +5969,16 @@ namespace FIA_Biosum_Manager
         private void RunPOSTAudit_Start()
         {
             m_dbConn = SQLite.GetConnectionString(m_strFvsTreeDb);
+            //@ToDo: Change cut tree table name here to toggle back and forth
+            m_postAuditCutTreeTable = Tables.FVS.DefaultFVSCutTreeTvbcTableName;
             using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(m_dbConn))
             {
                 conn.Open();
+                if (! SQLite.TableExist(conn, m_postAuditCutTreeTable))
+                {
+                    MessageBox.Show($@"{m_postAuditCutTreeTable} is missing from the {System.IO.Path.GetFileName(m_strFvsTreeDb)}! Please run the FVS Append process.");
+                    return;
+                }
                 for (int i = 0; i < this.lstFvsOutput.Items.Count; i++)
                 {
                     var lvItem = this.lstFvsOutput.Items[i];
@@ -5900,13 +5987,13 @@ namespace FIA_Biosum_Manager
                         string strVariant = lvItem.SubItems[COL_VARIANT].Text.Trim();
                         string strRxPackage = lvItem.SubItems[COL_PACKAGE].Text.Trim();
                         long lngTreeRecords = -1;
-                        string strSQL = $@"SELECT COUNT(*) FROM {Tables.FVS.DefaultFVSCutTreeTableName} 
+                        string strSQL = $@"SELECT COUNT(*) FROM {m_postAuditCutTreeTable} 
                                            WHERE FVS_VARIANT = '{strVariant}' and RXPACKAGE = '{strRxPackage}'";
-                        lngTreeRecords = SQLite.getRecordCount(conn, strSQL, Tables.FVS.DefaultFVSCutTreeTableName);
+                        lngTreeRecords = SQLite.getRecordCount(conn, strSQL, m_postAuditCutTreeTable);
 
                         if (lngTreeRecords < 1)
                         {
-                            DialogResult result = MessageBox.Show("!!Warning!!\r\n-----------\r\nNo trees in FVS_CUTTREE table for " + strVariant + strRxPackage + ". " +
+                            DialogResult result = MessageBox.Show("!!Warning!!\r\n-----------\r\nNo trees in " + m_postAuditCutTreeTable + " table for " + strVariant + strRxPackage + ". " +
                                 "Continue Auditing? (Y/N)",
                                 "FIA BioSum", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
                             if (result == DialogResult.No)
@@ -5924,7 +6011,7 @@ namespace FIA_Biosum_Manager
             // Check checked item count
             if (this.lstFvsOutput.CheckedItems.Count == 0)
             {
-                MessageBox.Show("No Boxes Are Checked. The FVS_CutTree table may be empty!", "FIA Biosum", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Exclamation);
+                MessageBox.Show("No Boxes Are Checked. The " + m_postAuditCutTreeTable + " table may be empty!", "FIA Biosum", MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Exclamation);
                 return;
             }
 
@@ -7592,7 +7679,7 @@ namespace FIA_Biosum_Manager
                                     System.IO.File.Copy(strTreeListDbFile, strTreeTempDbFile, true);
                                     if (m_bDebug && frmMain.g_intDebugLevel > 1)
                                         this.WriteText(m_strDebugFile, "\r\nEND:Copy production file to work file: Source File Name:" + strTreeListDbFile + " Destination File Name:" + strTreeTempDbFile + " " + System.DateTime.Now.ToString() + "\r\n");
-                                    RunAppend_UpdateFVSTreeTables(strPackage, strVariant, strRx1, strRx2, strRx3, strRx4, strTreeTempDbFile, ref intItemError, ref strItemError);
+                                    //RunAppend_UpdateFVSTreeTables(strPackage, strVariant, strRx1, strRx2, strRx3, strRx4, strTreeTempDbFile, ref intItemError, ref strItemError);
                                     RunAppend_UpdateFVSTreeTableTvbc(strPackage, strVariant, strRx1, strRx2, strRx3, strRx4, strTreeTempDbFile, ref intItemError, ref strItemError);
 
                                     //copy the work db file over the production file
