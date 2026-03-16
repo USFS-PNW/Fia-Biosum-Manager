@@ -95,9 +95,9 @@ namespace FIA_Biosum_Manager
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
                 strSQL = "SELECT z.biosum_cond_id, c.biosum_plot_id, z.rxCycle, z.rx, z.rxYear, z.dbh, z.tpa, " +
-                                "z.volCfNet, z.drybiot, z.drybiom,z.FvsCreatedTree_YN, z.fvs_tree_id, " +
+                                "z.volCfNet, z.drybio_ag, z.drybio_bole,z.FvsCreatedTree_YN, z.fvs_tree_id, " +
                                 "z.fvs_species, z.volCfGrs, c.slope, c.elev, c.gis_yard_dist_ft " +
-                                "FROM " + Tables.FVS.DefaultFVSCutTreeTableName + " z, " +
+                                "FROM " + Tables.FVS.DefaultFVSCutTreeTvbcTableName + " z, " +
                                 "(SELECT p.biosum_plot_id,p.gis_yard_dist_ft,p.elev,d.biosum_cond_id,d.slope FROM " +
                                 p_strPlotTableName + " p INNER JOIN " + p_strCondTableName + " d ON p.biosum_plot_id = d.biosum_plot_id) c " +
                                 "WHERE z.rxpackage='" + p_strRxPackage + "' AND z.fvs_variant = '" + p_strVariant + "' AND " +
@@ -144,15 +144,15 @@ namespace FIA_Biosum_Manager
                             {
                                 newTree.VolCfGrs = Convert.ToDouble(SQLite.m_DataReader["volCfGrs"]);
                             }
-                            newTree.DryBiot = Convert.ToDouble(SQLite.m_DataReader["drybiot"]);
-                            // Special processing for saplings where drybiom may be null
-                            if (SQLite.m_DataReader["drybiom"] == System.DBNull.Value && newTree.IsSapling)
+                            newTree.DryBioAg = Convert.ToDouble(SQLite.m_DataReader["drybio_ag"]);
+                            // Special processing for saplings where drybio_bole may be null
+                            if (SQLite.m_DataReader["drybio_bole"] == System.DBNull.Value && newTree.IsSapling)
                             {
-                                newTree.DryBiom = 0;
+                                newTree.DryBioBole = 0;
                             }
                             else
                             {
-                                newTree.DryBiom = Convert.ToDouble(SQLite.m_DataReader["drybiom"]);
+                                newTree.DryBioBole= Convert.ToDouble(SQLite.m_DataReader["drybio_bole"]);
                             }
                         }
                         catch (Exception)
@@ -544,12 +544,12 @@ namespace FIA_Biosum_Manager
                                 strTempCn = treeList[idxCn];
                             }
                             SQLite.m_strSQL = "INSERT INTO " + strTableName + " " +
-                            "(cn, fvs_tree_id, biosum_cond_id, biosum_plot_id, spcd, merchWtGt, nonMerchWtGt, drybiom, " +
-                            "drybiot, volCfNet, volCfGrs, odWgt, dryToGreen, tpa, dbh, species_group, " +
+                            "(cn, fvs_tree_id, biosum_cond_id, biosum_plot_id, spcd, merchWtGt, nonMerchWtGt, drybio_bole, " +
+                            "drybio_ag, volCfNet, volCfGrs, odWgt, dryToGreen, tpa, dbh, species_group, " +
                             "isSapling, isWoodland, isCull, diam_group, merch_value, opcost_type, biosum_category)" +
                             "VALUES ('" + strTempCn + "', '" + strTempTree + "', '" + nextTree.CondId + "', '" + nextTree.PlotId + "', " +
-                            nextTree.SpCd + ", " + nextTree.MerchWtGtPa + ", " + nextTree.NonMerchWtGtPa + ", " + nextTree.DryBiom + ", " +
-                            nextTree.DryBiot + ", " + nextTree.VolCfNet + ", " + nextTree.VolCfGrs + ", " + nextTree.OdWgt +
+                            nextTree.SpCd + ", " + nextTree.MerchWtGtPa + ", " + nextTree.NonMerchWtGtPa + ", " + nextTree.DryBioBole + ", " +
+                            nextTree.DryBioAg + ", " + nextTree.VolCfNet + ", " + nextTree.VolCfGrs + ", " + nextTree.OdWgt +
                             ", " + nextTree.DryToGreen + ", " + nextTree.Tpa + ", " + nextTree.Dbh + ", " + nextTree.SpeciesGroup + ", " +
                             nextTree.IsSapling + ", " + nextTree.IsWoodlandSpecies + ", " + nextTree.IsCull + ", " + nextTree.DiamGroup +
                             ", " + nextTree.MerchValue + ", '" + nextTree.TreeType + "', " + nextTree.HarvestMethod.BiosumCategory + " )";
@@ -1504,8 +1504,8 @@ namespace FIA_Biosum_Manager
             //merchVolCfPa
             if (p_tree.IsSapling)
             {
-                //convert drybiot to some kind of volume
-                p_tree.MerchVolCfPa = (p_tree.DryBiot / p_tree.OdWgt) * p_tree.Tpa * ((double)m_scenarioHarvestMethod.SaplingMerchAsPercentOfTotalVol / 100);
+                //convert drybio_ag to some kind of volume
+                p_tree.MerchVolCfPa = (p_tree.DryBioAg / p_tree.OdWgt) * p_tree.Tpa * ((double)m_scenarioHarvestMethod.SaplingMerchAsPercentOfTotalVol / 100);
             }
             else if (p_tree.IsWoodlandSpecies)
             {
@@ -1542,25 +1542,25 @@ namespace FIA_Biosum_Manager
             //nonMerchVolCfPa
             if (p_tree.IsSapling)
             {
-                p_tree.NonMerchVolCfPa = ((p_tree.DryBiot * ((100 - (double) m_scenarioHarvestMethod.SaplingMerchAsPercentOfTotalVol) / 100)) 
+                p_tree.NonMerchVolCfPa = ((p_tree.DryBioAg * ((100 - (double) m_scenarioHarvestMethod.SaplingMerchAsPercentOfTotalVol) / 100)) 
                                          * p_tree.Tpa) / p_tree.OdWgt;
             }
             else if (p_tree.IsWoodlandSpecies)
             {
-                p_tree.NonMerchVolCfPa = ((p_tree.DryBiot * ((100 - (double) m_scenarioHarvestMethod.WoodlandMerchAsPercentOfTotalVol) / 100)) 
+                p_tree.NonMerchVolCfPa = ((p_tree.DryBioAg * ((100 - (double) m_scenarioHarvestMethod.WoodlandMerchAsPercentOfTotalVol) / 100)) 
                                          * p_tree.Tpa) / p_tree.OdWgt;
             }
             else
             {
-                p_tree.NonMerchVolCfPa = ((p_tree.DryBiot - p_tree.DryBiom) * p_tree.Tpa) / p_tree.OdWgt;
+                p_tree.NonMerchVolCfPa = ((p_tree.DryBioAg - p_tree.DryBioBole) * p_tree.Tpa) / p_tree.OdWgt;
             }
 
             //nonMerchWtGtPa
             p_tree.NonMerchWtGtPa = p_tree.NonMerchVolCfPa * p_tree.OdWgt / p_tree.DryToGreen / 2000;
 
             //brushcut
-            p_tree.BrushCutVolCfPa = p_tree.DryBiot * p_tree.Tpa / p_tree.OdWgt;
-            p_tree.BrushCutWtGtPa = (p_tree.DryBiot * p_tree.Tpa / p_tree.DryToGreen) / 2000;
+            p_tree.BrushCutVolCfPa = p_tree.DryBioAg * p_tree.Tpa / p_tree.OdWgt;
+            p_tree.BrushCutWtGtPa = (p_tree.DryBioAg * p_tree.Tpa / p_tree.DryToGreen) / 2000;
         }
 
         enum OpCostTreeType
@@ -1587,8 +1587,8 @@ namespace FIA_Biosum_Manager
             double _dblTpa;
             double _dblVolCfNet;
             double _dblVolCfGrs;
-            double _dblDryBiot;
-            double _dblDryBiom;
+            double _dblDryBioAg;
+            double _dblDryBioBole;
             int _intSlope;
             string _strSpcd;
             bool _boolFvsCreatedTree;
@@ -1673,15 +1673,15 @@ namespace FIA_Biosum_Manager
                 get { return _dblVolCfGrs; }
                 set { _dblVolCfGrs = value; }
             }
-            public double DryBiot
+            public double DryBioAg
             {
-                get { return _dblDryBiot; }
-                set { _dblDryBiot = value; }
+                get { return _dblDryBioAg; }
+                set { _dblDryBioAg = value; }
             }
-            public double DryBiom
+            public double DryBioBole
             {
-                get { return _dblDryBiom; }
-                set { _dblDryBiom = value; }
+                get { return _dblDryBioBole; }
+                set { _dblDryBioBole = value; }
             }
             public int Slope
             {

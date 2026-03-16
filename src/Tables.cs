@@ -3070,8 +3070,8 @@ namespace FIA_Biosum_Manager
                        " spcd INTEGER," +
                        " merchWtGt double," +
                        " nonMerchWtGt double," +
-                       " drybiom double," +
-                       " drybiot double," +
+                       " drybio_bole double," +
+                       " drybio_ag double," +
                        " volCfNet double," +
                        " volCfGrs double," +
                        " volTsGrs double," +

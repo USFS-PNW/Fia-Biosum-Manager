@@ -1888,65 +1888,7 @@ namespace FIA_Biosum_Manager
 
                 return sqlArray;
             }
-            public static string[] FVSOutputTable_AuditPostSummaryDetailFVS_TREEMATCH_ERROR(string p_strInsertTable, string p_strPostAuditSummaryTable, string p_strFvsTreeTableName, 
-                string p_strTreeTable, string p_strFvsVariant, string p_strRxPackage)
-            {
-                string[] sqlArray = new string[2];
 
-                sqlArray[0] = "DELETE FROM " + p_strInsertTable + " WHERE RXPACKAGE = '" + p_strRxPackage + "'";
-
-                sqlArray[1] = "INSERT INTO  " + p_strInsertTable + " " +
-                                   "SELECT * FROM " +
-                                        "(SELECT 'DBH' AS COLUMN_NAME," +
-                                                "'MATCHING FVS AND FIA TREE HAS DIFFERENT DBH VALUES FOR RX CYCLE 1' AS ERROR_DESC," +
-                                                "fvs.ID," +
-                                                "fvs.BIOSUM_COND_ID," +
-                                                "fvs.RXPACKAGE," +
-                                                "fvs.RXCYCLE," +
-                                                "fvs.FVS_TREE_ID AS FVS_TREE_FVS_TREE_ID," +
-                                                "fia.FVS_TREE_ID AS FIA_TREE_FVS_TREE_ID," +
-                                                "FVS.FVS_SPECIES AS FVS_TREE_SPCD," +
-                                                "FIA.SPCD AS FIA_TREE_SPCD," +
-                                                "FVS.DBH AS FVS_TREE_DIA," +
-                                                "FIA.DIA AS FIA_TREE_DIA," +
-                                                "FVS.ESTHT AS FVS_TREE_ESTHT," +
-                                                "FIA.HT AS FIA_TREE_ESTHT," +
-                                                "FVS.HT AS FVS_TREE_ACTUALHT," +
-                                                "FIA.ACTUALHT AS FIA_TREE_ACTUALHT," +
-                                                "FVS.PCTCR AS FVS_TREE_CR," +
-                                                "FIA.CR AS FIA_TREE_CR," +
-                                                "FVS.VOLCSGRS AS FVS_TREE_VOLCSGRS," +
-                                                "FIA.VOLCSGRS AS FIA_TREE_VOLCSGRS," +
-                                                "FVS.VOLCFGRS AS FVS_TREE_VOLCFGRS," +
-                                                "FIA.VOLCFGRS AS FIA_TREE_VOLCFGRS," +
-                                                "FVS.VOLCFNET AS FVS_TREE_VOLCFNET," +
-                                                "FIA.VOLCFNET AS FIA_TREE_VOLCFNET," +
-                                                "FVS.VOLTSGRS AS FVS_TREE_VOLTSGRS," +
-                                                "FIA.VOLTSGRS AS FIA_TREE_VOLTSGRS," +
-                                                "FVS.DRYBIOT AS FVS_TREE_DRYBIOT," +
-                                                "FIA.DRYBIOT AS FIA_TREE_DRYBIOT," +
-                                                "FVS.DRYBIOM AS FVS_TREE_DRYBIOM," +
-                                                "FIA.DRYBIOM AS FIA_TREE_DRYBIOM," +
-                                                "FIA.STATUSCD AS FIA_TREE_STATUSCD," +
-                                                "FIA.TREECLCD AS FIA_TREE_TREECLCD," +
-                                                "FIA.CULL AS FIA_TREE_CULL," +
-                                                "FIA.ROUGHCULL AS FIA_TREE_ROUGHCULL," +
-                                                "FVS.FVSCREATEDTREE_YN " +
-                                         "FROM " + p_strFvsTreeTableName + " fvs " +
-                                         "INNER JOIN " + p_strTreeTable + " fia " +
-                                         "ON fvs.fvs_tree_id = fia.fvs_tree_id and fvs.biosum_cond_id = fia.biosum_cond_id " +
-                                         "WHERE fvs.FvsCreatedTree_YN='N' AND " +
-                                               "fvs.RXCYCLE IS NOT NULL AND " +
-                                               "fvs.RXPACKAGE = '" + p_strRxPackage + "' AND " +
-                                               "fvs.FVS_VARIANT = '" + p_strFvsVariant + "' AND " +
-                                               "LEN(TRIM(fvs.RXCYCLE)) > 0 AND " + 
-                                               "fvs.RXCYCLE = '1' AND " +
-                                               "fvs.FVS_TREE_ID IS NOT NULL AND " +
-                                               "LEN(TRIM(fvs.FVS_TREE_ID)) >  0 AND " +
-                                               "fvs.DBH <> fia.DIA) ";
-
-                return sqlArray;
-            }
             /// <summary>
             /// SQL for post-processing audit of the BIOSUMCALC\FVS_TREE tables. Find required columns with no values.
             /// </summary>
