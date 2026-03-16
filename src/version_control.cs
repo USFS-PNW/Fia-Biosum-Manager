@@ -128,6 +128,7 @@ namespace FIA_Biosum_Manager
                         Convert.ToInt16(m_strProjectVersionArray[APP_VERSION_MINOR1]) == 12 &&
                         Convert.ToInt16(m_strProjectVersionArray[APP_VERSION_MINOR2]) == 1))
                     {
+                        UpdateDatasources_5_13_0();
                         UpdateProjectVersionFile(strProjVersionFile);
                         bPerformCheck = false;
                     }
@@ -150,12 +151,69 @@ namespace FIA_Biosum_Manager
                 System.IO.File.Delete(p_strProjectVersionFile);
             frmMain.g_oUtils.WriteText(p_strProjectVersionFile, frmMain.g_strAppVer);            
         }
-        
 
+        public void UpdateDatasources_5_13_0()
+        {
+            // Remove precipitation column from plot table, remove drybiot, drybiom, drybio_top,
+            // drybio_sapling, drybio_wdld_spp from tree table, add drybio_ag to tree table
 
-            // Method to compare two versions.
-            // Returns 1 if v2 is smaller, -1 
-            // if v1 is smaller, 0 if equal 
+            DataMgr oDataMgr = new DataMgr();
+            frmMain.g_sbpInfo.Text = "Version Update: Updating plot and tree tables ...Stand by";
+
+            string strMasterDb = ReferenceProjectDirectory.Trim() + "\\" + frmMain.g_oTables.m_oFIAPlot.DefaultPlotTableDbFile;
+            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(strMasterDb)))
+            {
+                conn.Open();
+
+                string strTreeTable = frmMain.g_oTables.m_oFIAPlot.DefaultTreeTableName;
+                string strPlotTable = frmMain.g_oTables.m_oFIAPlot.DefaultPlotTableName;
+
+                if (oDataMgr.ColumnExist(conn, strPlotTable, "precipitation"))
+                {
+                    oDataMgr.m_strSQL = "ALTER TABLE " + strPlotTable + " DROP COLUMN precipitation";
+                    oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+                }
+
+                if (oDataMgr.ColumnExist(conn, strTreeTable, "drybiot"))
+                {
+                    oDataMgr.m_strSQL = "ALTER TABLE " + strTreeTable + " DROP COLUMN drybiot";
+                    oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+                }
+
+                if (oDataMgr.ColumnExist(conn, strTreeTable, "drybiom"))
+                {
+                    oDataMgr.m_strSQL = "ALTER TABLE " + strTreeTable + " DROP COLUMN drybiom";
+                    oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+                }
+
+                if (oDataMgr.ColumnExist(conn, strTreeTable, "drybio_top"))
+                {
+                    oDataMgr.m_strSQL = "ALTER TABLE " + strTreeTable + " DROP COLUMN drybio_top";
+                    oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+                }
+
+                if (oDataMgr.ColumnExist(conn, strTreeTable, "drybio_sapling"))
+                {
+                    oDataMgr.m_strSQL = "ALTER TABLE " + strTreeTable + " DROP COLUMN drybio_sapling";
+                    oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+                }
+
+                if (oDataMgr.ColumnExist(conn, strTreeTable, "drybio_wdld_spp"))
+                {
+                    oDataMgr.m_strSQL = "ALTER TABLE " + strTreeTable + " DROP COLUMN drybio_wdld_spp";
+                    oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+                }
+
+                if (!oDataMgr.ColumnExist(conn, strTreeTable, "drybio_ag"))
+                {
+                    oDataMgr.AddColumn(conn, strTreeTable, "drybio_ag", "DOUBLE", null);
+                }
+            }
+        }
+
+        // Method to compare two versions.
+        // Returns 1 if v2 is smaller, -1 
+        // if v1 is smaller, 0 if equal 
         public int VersionCompare(string v1, string v2)
         {
             // vnum stores each numeric 

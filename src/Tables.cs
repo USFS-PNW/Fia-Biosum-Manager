@@ -2363,7 +2363,7 @@ namespace FIA_Biosum_Manager
             public FIAPlot()
             {
             }
-            public string DefaultPlotTableSqliteDbFile { get { return @"db\master.db"; } }
+            public string DefaultPlotTableDbFile { get { return @"db\master.db"; } }
             public string DefaultPlotTableName { get { return "plot"; } }
             public string DefaultConditionTableName { get { return "cond"; } }
             public string DefaultTreeTableName { get { return "tree"; } }
