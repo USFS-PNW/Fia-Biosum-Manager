@@ -1947,13 +1947,13 @@ namespace FIA_Biosum_Manager
                                                    "TRIM(a.COLUMN_NAME) = 'RX' AND " +
                                                    "a.FVS_VARIANT = '" + p_strFvsVariant + "' AND a.RXPACKAGE='" + p_strRxPackage + "' " +
                                           "UNION " +
-                                          "SELECT a.COLUMN_NAME,'NULLS NOT ALLOWED' AS ERROR_DESC, FVS_TREE.* FROM " + p_strPostAuditSummaryTable + " a," +
-                                            "(SELECT * FROM " + p_strFvsTreeTableName + " WHERE RXYEAR IS NULL OR LENGTH(TRIM(RXYEAR))=0) FVS_TREE " +
+                                          "SELECT a.COLUMN_NAME,'NULLS NOT ALLOWED WHEN WOODLAND SPECIES' AS ERROR_DESC, FVS_TREE.* FROM " + p_strPostAuditSummaryTable + " a," +
+                                            "(SELECT * FROM " + p_strFvsTreeTableName + " WHERE VOLTSGRS IS NULL AND WOODLAND_YN = 'Y') FVS_TREE " +
                                              "WHERE a.NOVALUE_ERROR IS NOT NULL AND " +
                                                    "LENGTH(TRIM(NOVALUE_ERROR)) > 0 AND " +
                                                    "a.NOVALUE_ERROR <> 'NA' AND " +
                                                    "CAST(a.NOVALUE_ERROR as INT) > 0 AND " +
-                                                   "TRIM(a.COLUMN_NAME) = 'RXYEAR' AND " +
+                                                   "TRIM(a.COLUMN_NAME) = 'VOLTSGRS' AND " +
                                                    "a.FVS_VARIANT = '" + p_strFvsVariant + "' AND a.RXPACKAGE='" + p_strRxPackage + "' " +
                                           "UNION " +
                                           "SELECT a.COLUMN_NAME,'NULLS NOT ALLOWED' AS ERROR_DESC, FVS_TREE.* FROM " + p_strPostAuditSummaryTable + " a," +
@@ -1975,7 +1975,7 @@ namespace FIA_Biosum_Manager
                                                    "a.FVS_VARIANT = '" + p_strFvsVariant + "' AND a.RXPACKAGE='" + p_strRxPackage + "' " +
                                           "UNION " +
                                           "SELECT a.COLUMN_NAME, 'NULLS NOT ALLOWED WHEN DBH >= 5 INCHES' AS ERROR_DESC,FVS_TREE.* FROM " + p_strPostAuditSummaryTable + " a," +
-                                            "(SELECT * FROM " + p_strFvsTreeTableName + " WHERE DBH IS NOT NULL AND DBH >= 5 AND VOLCFNET IS NULL) FVS_TREE " +
+                                            "(SELECT * FROM " + p_strFvsTreeTableName + " WHERE DBH IS NOT NULL AND DBH >= 5 AND VOLCFNET IS NULL AND WOODLAND_YN = 'N') FVS_TREE " +
                                              "WHERE a.NOVALUE_ERROR IS NOT NULL AND " +
                                                    "LENGTH(TRIM(NOVALUE_ERROR)) > 0 AND " +
                                                    "a.NOVALUE_ERROR <> 'NA' AND " +
@@ -1984,7 +1984,7 @@ namespace FIA_Biosum_Manager
                                                    "a.FVS_VARIANT = '" + p_strFvsVariant + "' AND a.RXPACKAGE='" + p_strRxPackage + "' " +
                                           "UNION " +
                                           "SELECT a.COLUMN_NAME, 'NULLS NOT ALLOWED WHEN DBH >= 5 INCHES' AS ERROR_DESC,FVS_TREE.* FROM " + p_strPostAuditSummaryTable + " a," +
-                                            "(SELECT * FROM " + p_strFvsTreeTableName + " WHERE DBH IS NOT NULL AND DBH >= 5 AND VOLCFGRS IS NULL) FVS_TREE " +
+                                            "(SELECT * FROM " + p_strFvsTreeTableName + " WHERE DBH IS NOT NULL AND DBH >= 5 AND VOLCFGRS IS NULL AND WOODLAND_YN = 'N') FVS_TREE " +
                                              "WHERE a.NOVALUE_ERROR IS NOT NULL AND " +
                                                    "LENGTH(TRIM(NOVALUE_ERROR)) > 0 AND " +
                                                    "a.NOVALUE_ERROR <> 'NA' AND " +
@@ -2002,7 +2002,7 @@ namespace FIA_Biosum_Manager
                                                    "a.FVS_VARIANT = '" + p_strFvsVariant + "' AND a.RXPACKAGE='" + p_strRxPackage + "' " +
                                           "UNION " +
                                           "SELECT a.COLUMN_NAME, 'NULLS NOT ALLOWED WHEN DBH >= 5 INCHES' AS ERROR_DESC,FVS_TREE.* FROM " + p_strPostAuditSummaryTable + " a," +
-                                            "(SELECT * FROM " + p_strFvsTreeTableName + $@" WHERE DBH IS NOT NULL AND DBH >= 5 AND {drybiom.ToUpper()} IS NULL) FVS_TREE " +
+                                            "(SELECT * FROM " + p_strFvsTreeTableName + $@" WHERE DBH IS NOT NULL AND DBH >= 5 AND {drybiom.ToUpper()} IS NULL AND WOODLAND_YN = 'N') FVS_TREE " +
                                              "WHERE a.NOVALUE_ERROR IS NOT NULL AND " +
                                                    "LENGTH(TRIM(NOVALUE_ERROR)) > 0 AND " +
                                                    "a.NOVALUE_ERROR <> 'NA' AND " +
@@ -3499,6 +3499,22 @@ namespace FIA_Biosum_Manager
                               FROM cutlist_save_tree_species_work_table w 
                               WHERE {p_strTreeTable}.FVS_TREE_ID = TRIM(w.FVS_TREE_ID) AND 
                               {p_strTreeTable}.biosum_cond_id = w.biosum_cond_id) AND {p_strTreeTable}.RXPACKAGE = '{p_strRxPackage}'";
+                }
+                public static string UpdateWoodlandSpeciesYN_Step1(string p_strFvsTreeTable, string p_strFvsVariant, string p_strRxPackage)
+                {
+                    return $@"UPDATE {p_strFvsTreeTable} as f
+                                SET woodland_yn = (SELECT woodland_yn 
+                                FROM {Tables.ProcessorScenarioRun.DefaultFiaTreeSpeciesRefTableName} r WHERE CAST(f.fvs_species as integer)=r.spcd)
+                                WHERE FVS_VARIANT = '{p_strFvsVariant}' AND RXPACKAGE = '{p_strRxPackage}'";
+                }
+
+                public static string UpdateWoodlandSpeciesYN_Step2(string p_strFvsTreeTable, string p_strTreeTable, string p_strFvsVariant, 
+                    string p_strRxPackage)
+                {
+                    return $@"UPDATE {p_strFvsTreeTable} as f
+                        SET woodland_yn = (SELECT woodland_yn FROM {Tables.ProcessorScenarioRun.DefaultFiaTreeSpeciesRefTableName} r, {p_strTreeTable} t 
+                        WHERE f.fvs_tree_id = trim(t.fvs_tree_id) AND f.biosum_cond_id = t.biosum_cond_id AND t.spcd=r.spcd)
+                        WHERE FVS_VARIANT = '{p_strFvsVariant}' AND RXPACKAGE = '{p_strRxPackage}' and FvsCreatedTree_YN ='N'";
                 }
             }
         }
