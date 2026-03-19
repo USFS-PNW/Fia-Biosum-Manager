@@ -3055,6 +3055,87 @@ namespace FIA_Biosum_Manager
                             oDataMgr.SqlNonQuery(oDataMgr.m_Connection, oDataMgr.m_strSQL);
                             if (m_bDebug && frmMain.g_intDebugLevel > 2)
                                 this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
+
+                            //Set WOODLAND_YN for all trees based on FVS species code
+                            // Attach biosum_ref.db
+                            oDataMgr.m_strSQL = $@"attach '{m_oQueries.m_oDataSource.getFullPathAndFile(Datasource.TableTypes.FiaTreeSpeciesReference)}' as ref";
+                            if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                                this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + oDataMgr.m_strSQL + "\r\n");
+                            oDataMgr.SqlNonQuery(oDataMgr.m_Connection, oDataMgr.m_strSQL);
+                            if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                                this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
+                            // Attach master.db
+                            oDataMgr.m_strSQL = $@"attach '{m_oQueries.m_oDataSource.getFullPathAndFile(Datasource.TableTypes.Tree)}' as master";
+                            if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                                this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + oDataMgr.m_strSQL + "\r\n");
+                            oDataMgr.SqlNonQuery(oDataMgr.m_Connection, oDataMgr.m_strSQL);
+                            if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                                this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
+
+
+                            oDataMgr.m_strSQL = Queries.VolumeAndBiomass.FVSOut.UpdateWoodlandSpeciesYN_Step1(strFvsTreeTable, p_strVariant.Trim(), 
+                                p_strPackage.Trim());
+                            if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                                this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + oDataMgr.m_strSQL + "\r\n");
+
+                            using (System.Data.SQLite.SQLiteTransaction oTransaction = oDataMgr.m_Connection.BeginTransaction(IsolationLevel.ReadCommitted))
+                            {
+                                try
+                                {
+                                    command.Transaction = oTransaction;
+                                    command.CommandText = oDataMgr.m_strSQL;
+                                    command.ExecuteNonQuery();
+                                    oTransaction.Commit();
+                                }
+                                catch (Exception err)
+                                {
+                                    m_intError = -1;
+                                    MessageBox.Show(err.Message);
+                                    oTransaction.Rollback();
+                                }
+                            }
+                            if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                                this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
+
+                            oDataMgr.m_strSQL = Queries.VolumeAndBiomass.FVSOut.UpdateWoodlandSpeciesYN_Step2(strFvsTreeTable, m_oQueries.m_oFIAPlot.m_strTreeTable,
+                                p_strVariant.Trim(), p_strPackage.Trim());
+                            if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                                this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + oDataMgr.m_strSQL + "\r\n");
+
+                            using (System.Data.SQLite.SQLiteTransaction oTransaction = oDataMgr.m_Connection.BeginTransaction(IsolationLevel.ReadCommitted))
+                            {
+                                try
+                                {
+                                    command.Transaction = oTransaction;
+                                    command.CommandText = oDataMgr.m_strSQL;
+                                    command.ExecuteNonQuery();
+                                    oTransaction.Commit();
+                                }
+                                catch (Exception err)
+                                {
+                                    m_intError = -1;
+                                    MessageBox.Show(err.Message);
+                                    oTransaction.Rollback();
+                                }
+                            }
+                            if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                                this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
+
+                            oDataMgr.m_strSQL = "DETACH DATABASE 'REF'";
+                            if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                                this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + oDataMgr.m_strSQL + "\r\n");
+                            oDataMgr.SqlNonQuery(oDataMgr.m_Connection, oDataMgr.m_strSQL);
+                            if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                                this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
+                            oDataMgr.m_strSQL = "DETACH DATABASE 'MASTER'";
+                            if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                                this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + oDataMgr.m_strSQL + "\r\n");
+                            oDataMgr.SqlNonQuery(oDataMgr.m_Connection, oDataMgr.m_strSQL);
+                            if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                                this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
+
+
+
                             if (oDataMgr.m_Connection.State == ConnectionState.Open)
                             {
                                 oDataMgr.CloseAndDisposeConnection(oDataMgr.m_Connection, true);
@@ -6111,7 +6192,7 @@ namespace FIA_Biosum_Manager
             if ((int)SQLite.getRecordCount(conn, "SELECT COUNT(*) AS ROWCOUNT FROM " + strFvsTreeTable + " WHERE TRIM(FVS_SPECIES) IN ('298','999')", strFvsTreeTable) > 0)
             {
                 SQLite.m_strSQL = $@"CREATE TABLE cutlist_save_tree_species_work_table as SELECT BIOSUM_COND_ID, FVS_TREE_ID, FVS_SPECIES
-                                    FROM {strFvsTreeTable} WHERE TRIM(FVS_SPECIES) IN('298', '999') AND RXPACKAGE = '{strRxPackage}'";
+                                    FROM {strFvsTreeTable} WHERE TRIM(FVS_SPECIES) IN('298','999') AND RXPACKAGE = '{strRxPackage}'";
                 if (m_bDebug && frmMain.g_intDebugLevel > 2)
                     this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + SQLite.m_strSQL + "\r\n");
                 SQLite.SqlNonQuery(conn, SQLite.m_strSQL);

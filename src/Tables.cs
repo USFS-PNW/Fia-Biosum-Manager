@@ -1366,6 +1366,7 @@ namespace FIA_Biosum_Manager
                     "carbon_bg DOUBLE," +
                     "fvs_tree_id CHAR(10)," +
                     "FvsCreatedTree_YN CHAR(1) DEFAULT 'N'," +
+                    "WOODLAND_YN CHAR(1) DEFAULT 'N'," +
                     "DateTimeCreated DATE)";
             }
             public void CreateTreeListWorkTable(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
@@ -1956,6 +1957,7 @@ namespace FIA_Biosum_Manager
                     "carbon_bg DOUBLE," +
                     "fvs_tree_id CHAR(10)," +
                     "FvsCreatedTree_YN CHAR(1) DEFAULT 'N'," +
+                    "WOODLAND_YN CHAR(1) DEFAULT 'N'," +
                     "DateTimeCreated DATE)";
 
                     }
@@ -2072,6 +2074,7 @@ namespace FIA_Biosum_Manager
                     "carbon_bg DOUBLE," +
                     "fvs_tree_id CHAR(10)," +
                     "FvsCreatedTree_YN CHAR(1) DEFAULT 'N'," +
+                    "WOODLAND_YN CHAR(1) DEFAULT 'N'," +
                     "DateTimeCreated DATE)";
 
                     }
@@ -3062,8 +3065,8 @@ namespace FIA_Biosum_Manager
                        " spcd INTEGER," +
                        " merchWtGt double," +
                        " nonMerchWtGt double," +
-                       " drybiom double," +
-                       " drybiot double," +
+                       " drybio_bole double," +
+                       " drybio_ag double," +
                        " volCfNet double," +
                        " volCfGrs double," +
                        " volTsGrs double," +
