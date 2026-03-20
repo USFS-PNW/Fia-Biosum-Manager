@@ -150,7 +150,6 @@
     <Reference Include="System">
       <Name>System</Name>
     </Reference>
-    <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Data">
       <Name>System.Data</Name>
     </Reference>
@@ -172,70 +171,36 @@
     <Reference Include="System.Xml">
       <Name>System.XML</Name>
     </Reference>
-    <COMReference Include="Microsoft.Office.Interop.Access.Dao">
-      <Guid>{4AC9E1DA-5BAD-4AC7-86E3-24F4CDCECA28}</Guid>
-      <VersionMajor>12</VersionMajor>
-      <VersionMinor>0</VersionMinor>
-      <Lcid>0</Lcid>
-      <WrapperTool>primary</WrapperTool>
-      <Isolated>False</Isolated>
-      <EmbedInteropTypes>False</EmbedInteropTypes>
-      <Private>True</Private>
-    </COMReference>
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="btnMainForm.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Include="uc_tree_volume_export.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
+    <Compile Include="btnMainForm.cs" />
+    <Compile Include="uc_tree_volume_export.cs" />
     <Compile Include="uc_tree_volume_export.Designer.cs">
       <DependentUpon>uc_tree_volume_export.cs</DependentUpon>
     </Compile>
-    <Compile Include="uc_optimizer_load_gis_data.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
+    <Compile Include="uc_optimizer_load_gis_data.cs" />
     <Compile Include="uc_optimizer_load_gis_data.Designer.cs">
       <DependentUpon>uc_optimizer_load_gis_data.cs</DependentUpon>
     </Compile>
-    <Compile Include="uc_db.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="uc_delete_packages.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
+    <Compile Include="uc_db.cs" />
+    <Compile Include="uc_delete_packages.cs" />
     <Compile Include="uc_delete_packages.Designer.cs">
       <DependentUpon>uc_delete_packages.cs</DependentUpon>
     </Compile>
-    <Compile Include="uc_delete_conditions.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
+    <Compile Include="uc_delete_conditions.cs" />
     <Compile Include="uc_delete_conditions.Designer.cs">
       <DependentUpon>uc_delete_conditions.cs</DependentUpon>
     </Compile>
-    <Compile Include="uc_optimizer_scenario_calculated_variables.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="uc_optimizer_scenario_select_packages.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="uc_processor_scenario_escalators.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="uc_textboxWithButtons.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="uc_processor_scenario_tree_groupings.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="uc_processor_scenario_movein_costs.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
+    <Compile Include="uc_optimizer_scenario_calculated_variables.cs" />
+    <Compile Include="uc_optimizer_scenario_select_packages.cs" />
+    <Compile Include="uc_processor_scenario_escalators.cs" />
+    <Compile Include="uc_textboxWithButtons.cs" />
+    <Compile Include="uc_processor_scenario_tree_groupings.cs" />
+    <Compile Include="uc_processor_scenario_movein_costs.cs" />
     <Compile Include="datasource.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -245,57 +210,25 @@
     <Compile Include="env.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="frmAbout.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="frmCollectionClone.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="frmDialog.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="frmFCSTreeVolumeEdit.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="frmGridView.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="frmMain.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="frmProcessorScenario.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="frmRxItem.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="frmRxPackageItem.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="frmOptimizerScenario.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="frmScanAndSynchronizeProjectRootFolderTool.cs">
-      <SubType>Form</SubType>
-    </Compile>
+    <Compile Include="frmAbout.cs" />
+    <Compile Include="frmCollectionClone.cs" />
+    <Compile Include="frmDialog.cs" />
+    <Compile Include="frmFCSTreeVolumeEdit.cs" />
+    <Compile Include="frmGridView.cs" />
+    <Compile Include="frmMain.cs" />
+    <Compile Include="frmProcessorScenario.cs" />
+    <Compile Include="frmRxItem.cs" />
+    <Compile Include="frmRxPackageItem.cs" />
+    <Compile Include="frmOptimizerScenario.cs" />
+    <Compile Include="frmScanAndSynchronizeProjectRootFolderTool.cs" />
     <Compile Include="frmScanAndSynchronizeProjectRootFolderTool.Designer.cs">
       <DependentUpon>frmScanAndSynchronizeProjectRootFolderTool.cs</DependentUpon>
     </Compile>
-    <Compile Include="frmSettings.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="frmSqlBuilder.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="frmTechSupport.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="frmTherm.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="frmTreeView.cs">
-      <SubType>Form</SubType>
-    </Compile>
+    <Compile Include="frmSettings.cs" />
+    <Compile Include="frmSqlBuilder.cs" />
+    <Compile Include="frmTechSupport.cs" />
+    <Compile Include="frmTherm.cs" />
+    <Compile Include="frmTreeView.cs" />
     <Compile Include="fvs_input.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -306,9 +239,7 @@
     <Compile Include="ListViewColumnSorter.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="ListViewEx.cs">
-      <SubType>Component</SubType>
-    </Compile>
+    <Compile Include="ListViewEx.cs" />
     <Compile Include="macrosubst.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -330,192 +261,84 @@
     <Compile Include="Tables.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="txtDollarsAndCents.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Include="txtNumeric.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Include="uc_datasource.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="uc_datasource_edit.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="uc_filesize_monitor.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
+    <Compile Include="txtDollarsAndCents.cs" />
+    <Compile Include="txtNumeric.cs" />
+    <Compile Include="uc_datasource.cs" />
+    <Compile Include="uc_datasource_edit.cs" />
+    <Compile Include="uc_filesize_monitor.cs" />
     <Compile Include="uc_filesize_monitor.designer.cs">
       <DependentUpon>uc_filesize_monitor.cs</DependentUpon>
     </Compile>
-    <Compile Include="uc_filter_rows_numeric_datatype.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="uc_filter_rows_text_datatype.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="uc_fvs_input.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="uc_fvs_output.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="uc_fvs_output_prepost_seqnum.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
+    <Compile Include="uc_filter_rows_numeric_datatype.cs" />
+    <Compile Include="uc_filter_rows_text_datatype.cs" />
+    <Compile Include="uc_fvs_input.cs" />
+    <Compile Include="uc_fvs_output.cs" />
+    <Compile Include="uc_fvs_output_prepost_seqnum.cs" />
     <Compile Include="uc_fvs_output_prepost_seqnum.Designer.cs">
       <DependentUpon>uc_fvs_output_prepost_seqnum.cs</DependentUpon>
     </Compile>
-    <Compile Include="uc_gridview.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
+    <Compile Include="uc_gridview.cs" />
     <Compile Include="uc_gridview_collection.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="uc_plot_add_edit.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="uc_plot_edit.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="uc_plot_input.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="uc_processor_scenario_additional_harvest_cost_columns.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
+    <Compile Include="uc_plot_add_edit.cs" />
+    <Compile Include="uc_plot_edit.cs" />
+    <Compile Include="uc_plot_input.cs" />
+    <Compile Include="uc_processor_scenario_additional_harvest_cost_columns.cs" />
     <Compile Include="uc_processor_scenario_additional_harvest_cost_columns.Designer.cs">
       <DependentUpon>uc_processor_scenario_additional_harvest_cost_columns.cs</DependentUpon>
     </Compile>
-    <Compile Include="uc_processor_scenario_additional_harvest_cost_column_item.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
+    <Compile Include="uc_processor_scenario_additional_harvest_cost_column_item.cs" />
     <Compile Include="uc_processor_scenario_additional_harvest_cost_column_item.Designer.cs">
       <DependentUpon>uc_processor_scenario_additional_harvest_cost_column_item.cs</DependentUpon>
     </Compile>
-    <Compile Include="uc_processor_scenario_copy.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
+    <Compile Include="uc_processor_scenario_copy.cs" />
     <Compile Include="uc_processor_scenario_copy.Designer.cs">
       <DependentUpon>uc_processor_scenario_copy.cs</DependentUpon>
     </Compile>
-    <Compile Include="uc_processor_scenario_escalators_value.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="uc_processor_scenario_harvest_method.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="uc_processor_scenario_merch_chip_value.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="uc_processor_scenario_run.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
+    <Compile Include="uc_processor_scenario_escalators_value.cs" />
+    <Compile Include="uc_processor_scenario_harvest_method.cs" />
+    <Compile Include="uc_processor_scenario_merch_chip_value.cs" />
+    <Compile Include="uc_processor_scenario_run.cs" />
     <Compile Include="uc_processor_scenario_run.Designer.cs">
       <DependentUpon>uc_processor_scenario_run.cs</DependentUpon>
     </Compile>
-    <Compile Include="uc_processor_scenario_spc_dbh_group_value.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="uc_processor_tree_spc.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="uc_processor_tree_spc_edit.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="uc_project.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="uc_rx_edit.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="uc_rx_harvest_cost_column_list.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="uc_rx_harvest_method.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="uc_rx_list.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="uc_rx_package_edit.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="uc_rx_package_harvest_cost_column_list.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="uc_rx_package_list.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="uc_scenario.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="uc_optimizer_scenario_copy.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
+    <Compile Include="uc_processor_scenario_spc_dbh_group_value.cs" />
+    <Compile Include="uc_processor_tree_spc.cs" />
+    <Compile Include="uc_processor_tree_spc_edit.cs" />
+    <Compile Include="uc_project.cs" />
+    <Compile Include="uc_rx_edit.cs" />
+    <Compile Include="uc_rx_harvest_cost_column_list.cs" />
+    <Compile Include="uc_rx_harvest_method.cs" />
+    <Compile Include="uc_rx_list.cs" />
+    <Compile Include="uc_rx_package_edit.cs" />
+    <Compile Include="uc_rx_package_harvest_cost_column_list.cs" />
+    <Compile Include="uc_rx_package_list.cs" />
+    <Compile Include="uc_scenario.cs" />
+    <Compile Include="uc_optimizer_scenario_copy.cs" />
     <Compile Include="uc_optimizer_scenario_copy.designer.cs">
       <DependentUpon>uc_optimizer_scenario_copy.cs</DependentUpon>
     </Compile>
-    <Compile Include="uc_optimizer_scenario_costs.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="uc_optimizer_scenario_filter.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="uc_optimizer_scenario_fvs_prepost_optimization.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="uc_optimizer_scenario_fvs_prepost_variables_effective.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="uc_optimizer_scenario_fvs_prepost_variables_tiebreaker.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="uc_scenario_harvest_cost_column_edit.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="uc_scenario_notes.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="uc_scenario_open.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="uc_optimizer_scenario_owner_groups.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="uc_optimizer_scenario_psite.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="uc_optimizer_scenario_run.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="uc_optimizer_scenario_last_tiebreak_rank.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="uc_select_list_item.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="uc_select_previous_expression.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="uc_table_exists_dialog.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="uc_textbox.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="uc_processor_scenario_tree_diam_groups_edit.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="uc_processor_scenario_tree_diam_groups_list.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="uc_processor_scenario_tree_spc_groups.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="uc_optimizer_scenario_processor_scenario_select.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
+    <Compile Include="uc_optimizer_scenario_costs.cs" />
+    <Compile Include="uc_optimizer_scenario_filter.cs" />
+    <Compile Include="uc_optimizer_scenario_fvs_prepost_optimization.cs" />
+    <Compile Include="uc_optimizer_scenario_fvs_prepost_variables_effective.cs" />
+    <Compile Include="uc_optimizer_scenario_fvs_prepost_variables_tiebreaker.cs" />
+    <Compile Include="uc_scenario_harvest_cost_column_edit.cs" />
+    <Compile Include="uc_scenario_notes.cs" />
+    <Compile Include="uc_scenario_open.cs" />
+    <Compile Include="uc_optimizer_scenario_owner_groups.cs" />
+    <Compile Include="uc_optimizer_scenario_psite.cs" />
+    <Compile Include="uc_optimizer_scenario_run.cs" />
+    <Compile Include="uc_optimizer_scenario_last_tiebreak_rank.cs" />
+    <Compile Include="uc_select_list_item.cs" />
+    <Compile Include="uc_select_previous_expression.cs" />
+    <Compile Include="uc_table_exists_dialog.cs" />
+    <Compile Include="uc_textbox.cs" />
+    <Compile Include="uc_processor_scenario_tree_diam_groups_edit.cs" />
+    <Compile Include="uc_processor_scenario_tree_diam_groups_list.cs" />
+    <Compile Include="uc_processor_scenario_tree_spc_groups.cs" />
+    <Compile Include="uc_optimizer_scenario_processor_scenario_select.cs" />
     <Compile Include="uc_optimizer_scenario_processor_scenario_select.Designer.cs">
       <DependentUpon>uc_optimizer_scenario_processor_scenario_select.cs</DependentUpon>
     </Compile>
