@@ -209,6 +209,24 @@ namespace FIA_Biosum_Manager
                     oDataMgr.AddColumn(conn, strTreeTable, "drybio_ag", "DOUBLE", null);
                 }
             }
+
+            string strFvsOutDb = ReferenceProjectDirectory.Trim() + Tables.FVS.DefaultFVSTreeListDbFile;
+            if (System.IO.File.Exists(strFvsOutDb))
+            {
+                using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(strFvsOutDb)))
+                {
+                    conn.Open();
+                    if (oDataMgr.TableExist(conn, Tables.FVS.DefaultFVSCutTreeTvbcTableName))
+                    {
+                        if (!oDataMgr.FieldExist(conn, $@"select * from { Tables.FVS.DefaultFVSCutTreeTvbcTableName} limit 1", "WOODLAND_YN"))
+                        {
+                            // The table will be recreated when FVSOut runs for the first time
+                            oDataMgr.m_strSQL = $@"DROP TABLE {Tables.FVS.DefaultFVSCutTreeTvbcTableName}";
+                            oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+                        }
+                    }
+                }
+            }
         }
 
         // Method to compare two versions.
