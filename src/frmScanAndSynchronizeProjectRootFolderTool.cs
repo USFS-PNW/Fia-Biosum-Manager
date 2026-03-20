@@ -1,12 +1,9 @@
-﻿using System;
+﻿using SQLite.ADO;
+using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
 using System.Linq;
-using System.Text;
 using System.Windows.Forms;
-using SQLite.ADO;
 
 namespace FIA_Biosum_Manager
 {
@@ -311,7 +308,7 @@ namespace FIA_Biosum_Manager
                         string strRemainder =
                             lvDatasources.Items[x].SubItems[COLUMN_PATH].Text.Trim().Substring(strReplace.Trim().Length + 1, lvDatasources.Items[x].SubItems[COLUMN_PATH].Text.Trim().Length - strReplace.Trim().Length - 1);
 
-                        string strNewString = lblCurrentProjectFolder.Text.Trim() + "\\" + strRemainder;
+                        string strNewString = lblCurrentProjectFolder.Text.Trim().ToLower() + "\\" + strRemainder;
                         lvDatasources.Items[x].SubItems[COLUMN_PATH].Text = strNewString;
 
                     }
@@ -319,26 +316,29 @@ namespace FIA_Biosum_Manager
                     {
                         lvDatasources.Items[x].SubItems[COLUMN_PATHFOUND].Text = "Yes";
                         lvDatasources.Items[x].SubItems[COLUMN_PATHFOUND].BackColor = Color.Green;
+                        if (lvDatasources.Items[x].SubItems[COLUMN_PATH].Text.Trim().ToUpper().Contains(lblCurrentProjectFolder.Text.Trim().ToUpper()))
+                        {
+                            lvDatasources.Items[x].SubItems[COLUMN_SYNCD].Text = "Yes";
+                            lvDatasources.Items[x].SubItems[COLUMN_SYNCD].BackColor = Color.Green;
+
+                        }
+                        else
+                        {
+                            lvDatasources.Items[x].SubItems[COLUMN_SYNCD].Text = "No";
+                            lvDatasources.Items[x].SubItems[COLUMN_SYNCD].BackColor = Color.Red;
+                            intRootNF++;
+                        }
                     }
                     else
                     {
                         lvDatasources.Items[x].SubItems[COLUMN_PATHFOUND].Text = "No";
                         lvDatasources.Items[x].SubItems[COLUMN_PATHFOUND].BackColor = Color.Red;
                         intPathNF++;
-
-                    }
-                    if (lvDatasources.Items[x].SubItems[COLUMN_PATH].Text.Trim().ToUpper().Contains(lblCurrentProjectFolder.Text.Trim().ToUpper()))
-                    {
-                        lvDatasources.Items[x].SubItems[COLUMN_SYNCD].Text = "Yes";
-                        lvDatasources.Items[x].SubItems[COLUMN_SYNCD].BackColor = Color.Green;
-
-                    }
-                    else
-                    {
                         lvDatasources.Items[x].SubItems[COLUMN_SYNCD].Text = "No";
                         lvDatasources.Items[x].SubItems[COLUMN_SYNCD].BackColor = Color.Red;
                         intRootNF++;
                     }
+                    
             }
         }
             lblFolderPaths.Text = intPathNF.ToString().Trim();
@@ -350,6 +350,7 @@ namespace FIA_Biosum_Manager
         private void btnAnalyze_Click(object sender, EventArgs e)
         {
             List<string> oProjectRootFolders = new List<string>();
+            List<string> oCorrectProjectFolders = new List<string>();
             for (int x = 0; x <= lvDatasources.Items.Count - 1; x++)
             {
                 
@@ -361,9 +362,11 @@ namespace FIA_Biosum_Manager
                     string strProjectRootFolder = "";
                     string strDatasource = lvDatasources.Items[x].SubItems[COLUMN_DATASOURCE].Text.Trim();
                     string strPath = lvDatasources.Items[x].SubItems[COLUMN_PATH].Text.Trim().ToUpper();
+                    string strScenario = lvDatasources.Items[x].SubItems[COLUMN_SCENARIO].Text.Trim();
+                    string strTableType = lvDatasources.Items[x].SubItems[COLUMN_TABLETYPE].Text.Trim();
                     if (strDatasource == "TreatmentOptimizer")
                     {
-                        // THIS CONDITION WILL BE MET BY THE 'NA' ROWS THAT ARE LISTED FOR EACH SCENARIO GENERATED FROM THE CORE scenario_core_rule_definitions.mdb\scenario table
+                        // THIS CONDITION WILL BE MET BY THE 'NA' ROWS THAT ARE LISTED FOR EACH SCENARIO GENERATED FROM THE CORE scenario_core_rule_definitions.db\scenario table
                         intIndex = strPath.IndexOf(@"\OPTIMIZER\", 0);
                         if (intIndex > 0)
                         {
@@ -372,7 +375,7 @@ namespace FIA_Biosum_Manager
                     }
                     else if (strDatasource == "Processor")
                     {
-                        // THIS CONDITION WILL BE MET BY THE 'NA' ROWS THAT ARE LISTED FOR EACH SCENARIO GENERATED FROM THE PROCESSOR scenario_core_rule_definitions.mdb\scenario table
+                        // THIS CONDITION WILL BE MET BY THE 'NA' ROWS THAT ARE LISTED FOR EACH SCENARIO GENERATED FROM THE PROCESSOR scenario_core_rule_definitions.db\scenario table
                         intIndex = strPath.IndexOf(@"\PROCESSOR\", 0);
                         if (intIndex > 0)
                         {
@@ -392,10 +395,29 @@ namespace FIA_Biosum_Manager
                     }
                     if (strProjectRootFolder.Trim().Length > 0)
                     {
-                        if ((int)oProjectRootFolders.Where(p => p == strProjectRootFolder).Count() == 0)
+                        if (strProjectRootFolder.Trim().ToUpper().TrimEnd('\\') == lblCurrentProjectFolder.Text.Trim().ToUpper())
+                        {
+                            oCorrectProjectFolders.Add("Datasource: " + strDatasource + ", Scenario: " + strScenario + ", Table Type: " + strTableType);
+                        }
+                        else if ((int)oProjectRootFolders.Where(p => p == strProjectRootFolder).Count() == 0)
                             oProjectRootFolders.Add(strProjectRootFolder);
                     }
+                    else
+                    {
+                        oCorrectProjectFolders.Add("Datasource: " + strDatasource + ", Scenario: " + strScenario + ", Table Type: " + strTableType);
+                    }
+
                 }
+            }
+            if (oCorrectProjectFolders != null && oCorrectProjectFolders.Count > 0 && oCorrectProjectFolders[0] != null)
+            {
+                string strCorrectProjectFoldersError = "WARNING: The following data source paths have errors that cannot be fixed with the Scan and Sync tool \n\n";
+                foreach (string strFolder in oCorrectProjectFolders)
+                {
+                    strCorrectProjectFoldersError += strFolder + "\n";
+                }
+                strCorrectProjectFoldersError += "\nManual inspection of these data sources and use of the Data Source Edit screen is suggested for fixing these paths.";
+                MessageBox.Show(strCorrectProjectFoldersError, "Scan and Synchronize Project Folder Tool", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
             }
             if (oProjectRootFolders != null && oProjectRootFolders.Count > 0 && oProjectRootFolders[0] != null)
             {

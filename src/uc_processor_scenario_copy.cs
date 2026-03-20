@@ -62,7 +62,7 @@ namespace FIA_Biosum_Manager
             //
             //OPEN CONNECTION TO DB FILE CONTAINING Processor Scenario TABLE
             //
-            //scenario mdb connection
+            //scenario db connection
             string strProcessorScenarioDB =
               frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() +
               "\\processor\\" + Tables.ProcessorScenarioRuleDefinitions.DefaultDbFile;

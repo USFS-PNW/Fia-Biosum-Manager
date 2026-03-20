@@ -695,7 +695,6 @@ namespace FIA_Biosum_Manager
             static public string DefaultScenarioHarvestCostColumnsTableName { get { return "scenario_harvest_cost_columns"; } }
             static public string DefaultScenarioDatasourceTableName { get { return @"scenario_datasource"; } }
             static public string DefaultScenarioCostsTableName { get { return "scenario_costs"; } }
-            static public string DefaultScenarioTableAccessDbFile { get { return @"optimizer\db\scenario_optimizer_rule_definitions.mdb"; } }
             static public string DefaultScenarioTableDbFile { get { return @"optimizer\db\scenario_optimizer_rule_definitions.db"; } }
             static public string DefaultScenarioTableName { get { return "scenario"; } }
             static public string DefaultScenarioCondFilterMiscTableName { get { return "scenario_cond_filter_misc"; } }
@@ -2367,7 +2366,7 @@ namespace FIA_Biosum_Manager
             public FIAPlot()
             {
             }
-            public string DefaultPlotTableSqliteDbFile { get { return @"db\master.db"; } }
+            public string DefaultPlotTableDbFile { get { return @"db\master.db"; } }
             public string DefaultPlotTableName { get { return "plot"; } }
             public string DefaultConditionTableName { get { return "cond"; } }
             public string DefaultTreeTableName { get { return "tree"; } }
@@ -2380,8 +2379,6 @@ namespace FIA_Biosum_Manager
             public string DefaultPopTableDbFile { get { return @"db\master.db"; } }
             public string DefaultSeedlingTableName { get { return "fiadb_seedling_input"; } }
 
-            public string DefaultDWMDbFile { get { return @"db\master_aux.accdb"; } }
-            public string DefaultDWMSqliteDbFile { get { return @"db\master_aux.db"; } }
             public string DefaultDWMCoarseWoodyDebrisName { get { return "DWM_COARSE_WOODY_DEBRIS"; } }
             public string DefaultDWMDuffLitterFuelName { get { return "DWM_DUFF_LITTER_FUEL"; } }
             public string DefaultDWMFineWoodyDebrisName { get { return "DWM_FINE_WOODY_DEBRIS"; } }
@@ -2418,7 +2415,6 @@ namespace FIA_Biosum_Manager
                     "lat DOUBLE," +
                     "lon DOUBLE," +
                     "macro_breakpoint_dia INTEGER," +
-                    "precipitation DOUBLE," +
                     "ecosubcd CHAR(7)," +
                     "biosum_status_cd INTEGER," +
                     "cn CHAR(34)," +
@@ -2544,8 +2540,6 @@ namespace FIA_Biosum_Manager
                     "volbfnet DOUBLE," +
                     "volbfgrs DOUBLE," +
                     "voltsgrs DOUBLE," +
-                    "drybiot DOUBLE," +
-                    "drybiom DOUBLE," +
                     "bhage INTEGER," +
                     "cullbf DOUBLE," +
                     "cullcf DOUBLE," +
@@ -2574,10 +2568,8 @@ namespace FIA_Biosum_Manager
                     "bfsnd INTEGER," +
                     "standing_dead_cd INTEGER," +
                     "volcfsnd DOUBLE," +
+                    "drybio_ag DOUBLE," +
                     "drybio_bole DOUBLE," +
-                    "drybio_top DOUBLE," +
-                    "drybio_sapling DOUBLE," +
-                    "drybio_wdld_spp DOUBLE," +
                     "fvs_tree_id CHAR(10)," +
                     "cn CHAR(34)," +
                     "biosum_status_cd INTEGER)";
@@ -3193,12 +3185,11 @@ namespace FIA_Biosum_Manager
         {
 
             static public string DefaultTreeSpeciesDollarValuesTableName { get { return "scenario_tree_species_diam_dollar_values"; } }
-            static public string DefaultHarvestMethodDbFile { get { return @"db\scenario_processor_rule_definitions.mdb"; } }
             static public string DefaultHarvestMethodTableName { get { return "scenario_harvest_method"; } }
             static public string DefaultMoveInCostsTableName { get { return "scenario_move_in_costs"; } }
             static public string DefaultHarvestCostColumnsTableName { get { return "scenario_harvest_cost_columns"; } }
             static public string DefaultCostRevenueEscalatorsTableName { get { return "scenario_cost_revenue_escalators"; } }
-            static public string DefaultAdditionalHarvestCostsDbFile { get { return @"db\scenario_processor_rule_definitions.mdb"; } }
+            static public string DefaultAdditionalHarvestCostsDbFile { get { return @"db\scenario_processor_rule_definitions.db"; } }
             static public string DefaultAdditionalHarvestCostsTableName { get { return "scenario_additional_harvest_costs"; } }
             static public string DefaultTreeDiamGroupsTableName { get { return "scenario_tree_diam_groups"; } }
             static public string DefaultTreeSpeciesGroupsTableName { get { return "scenario_tree_species_groups"; } }

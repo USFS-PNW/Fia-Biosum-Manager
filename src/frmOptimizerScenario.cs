@@ -4289,7 +4289,7 @@ namespace FIA_Biosum_Manager
         public bool BackupGisData()
         {
             string strFileSuffix = "_" + DateTime.Now.ToString("MMddyyyy");
-            string strBackedUpMdb = "";
+            string strBackedUpDb = "";
             bool bSuccess = false;
             // travel times
             int intTable = m_oProjectDs.getValidTableNameRow(Datasource.TableTypes.TravelTimes);
@@ -4310,7 +4310,7 @@ namespace FIA_Biosum_Manager
                     return false;
                 }
                 System.IO.File.Copy(strDirectoryPath + "\\" + strFileName, strDirectoryPath + "\\" + strNewFileName);
-                strBackedUpMdb = strDirectoryPath + "\\" + strFileName;
+                strBackedUpDb = strDirectoryPath + "\\" + strFileName;
             }
  
             // processing sites
@@ -4322,7 +4322,7 @@ namespace FIA_Biosum_Manager
             strTableStatus = m_oProjectDs.m_strDataSource[intTable, FIA_Biosum_Manager.Datasource.TABLESTATUS].Trim();
             if (strTableStatus == "F")
             {
-                if (strBackedUpMdb.Equals(strDirectoryPath + "\\" + strFileName))
+                if (strBackedUpDb.Equals(strDirectoryPath + "\\" + strFileName))
                 {
                     // Do nothing, we already made a backup for travel times
                 }

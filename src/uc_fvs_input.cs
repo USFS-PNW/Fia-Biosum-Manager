@@ -1175,7 +1175,7 @@ namespace FIA_Biosum_Manager
             m_intError = 0;
             string strCurVariant = "";
             string strVariant;
-            string strMasterDb = strProjectDirectory + "\\" + frmMain.g_oTables.m_oFIAPlot.DefaultPlotTableSqliteDbFile;
+            string strMasterDb = strProjectDirectory + "\\" + frmMain.g_oTables.m_oFIAPlot.DefaultPlotTableDbFile;
 
             m_strDebugFile = this.strProjectDirectory + Tables.FIA2FVS.DefaultFvsInputFolderName + "\\biosum_fvs_input_debug.txt";
             if (File.Exists(m_strDebugFile)) System.IO.File.Delete(m_strDebugFile);

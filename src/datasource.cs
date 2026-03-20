@@ -29,11 +29,11 @@ namespace FIA_Biosum_Manager
 		public const int DATATYPE_LIST=8;
 		public const int MACROVAR=9;
 		public string m_strRandomPathAndFile = "";
-		public int m_intNumberOfValidTables=0;  //MDB file is FOUND and table is FOUND
+		public int m_intNumberOfValidTables=0;  //DB file is FOUND and table is FOUND
         /// <summary>
         /// 1st Array Item: sequence of datasource;
         /// 2nd Array Item:
-        /// 0=TABLETYPE,1=DIRECTORY PATH,2=MDBFILE,3=FILESTATUS,4=TABLE,5=TABLESTATUS
+        /// 0=TABLETYPE,1=DIRECTORY PATH,2=DBFILE,3=FILESTATUS,4=TABLE,5=TABLESTATUS
         /// ,6=RECORDCOUNT,7=COLUMN_LIST (COMMA-DELIMITED),8=DATATYPE_LIST (COMMA-DELIMITED)
         /// 9=MACRO VARIABLE NAME
         /// </summary>
@@ -93,243 +93,6 @@ namespace FIA_Biosum_Manager
 		~Datasource()
 		{
 		}
-		
-		///<summary>
-		///Load a 2 dimensional array with 
-		///this datasource information:
-		///Table Type, MDB paths and files, table names, file/table
-		///found, table record count.
-		///OPTIONAL: table columns and datatypes will also load into the array
-		///          if the variable LoadColumnNamesAndDataTypes is set to true
- 	    ///</summary>
-		public void populate_datasource_array_access()
-		{
-            macrosubst oMacroSub = new macrosubst();
-            oMacroSub.ReferenceGeneralMacroSubstitutionVariableCollection = frmMain.g_oGeneralMacroSubstitutionVariable_Collection;
-            
-            int intRecCnt=0;    		
-			string strPathAndFile="";
-			string strSQL="";
-			string strConn="";
-			this.m_intNumberOfTables=0;
-
-            FIA_Biosum_Manager.ado_data_access  p_ado = new ado_data_access();
-            SQLite.ADO.DataMgr oDataMgr = new SQLite.ADO.DataMgr();
-
-
-            System.Data.OleDb.OleDbConnection oConn = new System.Data.OleDb.OleDbConnection();
-			strConn = p_ado.getMDBConnString(this.m_strDataSourceDBFile,"admin","");
-			oConn.ConnectionString = strConn;
-			this.m_intError = 0;
-			this.m_strError = "";
-			try
-			{
-				oConn.Open();
-			}
-			catch (System.Data.OleDb.OleDbException oleException)
-			{
-				this.m_strError = "Failed to make an oleDb connection with " + strConn;
-				MessageBox.Show (this.m_strError + " OledbError=" + oleException.Message);
-				this.m_intError = -1;
-				return;
-			}
-			intRecCnt = Convert.ToInt32(p_ado.getRecordCount(oConn,"select count(*) from " + this.m_strDataSourceTableName,this.m_strDataSourceTableName));
-			this.m_strDataSource = new String[intRecCnt,10];
-			System.Data.OleDb.OleDbCommand oCommand = oConn.CreateCommand();
-		    if (this.m_strScenarioId.Trim().Length > 0)
-		    {
-		        oCommand.CommandText = "select table_type,path,file,table_name from scenario_datasource" +
-		                               " where scenario_id = '" + this.m_strScenarioId.Trim() + "';";
-		    }
-		    else
-		    {
-		        oCommand.CommandText =
-		            "select table_type,path,file,table_name from " + this.m_strDataSourceTableName + ";";
-			}
-				                           
-			try
-			{
-				System.Data.OleDb.OleDbDataReader oDataReader = oCommand.ExecuteReader();
-				int x = 0;
-				
-				ado_data_access oExistsAdo = new ado_data_access();
-                using (var oExistsConn = new System.Data.OleDb.OleDbConnection())
-                {
-                    while (oDataReader.Read())
-                    {
-                        this.m_intNumberOfTables++;
-                        // Add a ListItem object to the ListView.
-                        this.m_strDataSource[x, TABLETYPE] = oDataReader["table_type"].ToString().Trim();
-                        this.m_strDataSource[x, PATH] = oDataReader["path"].ToString().Trim();
-                        this.m_strDataSource[x, DBFILE] = oDataReader["file"].ToString().Trim();
-                        strPathAndFile = oMacroSub.GeneralTranslateVariableSubstitution(oDataReader["path"].ToString().Trim()) +
-                            "\\" + oDataReader["file"].ToString().Trim();
-                        if (System.IO.File.Exists(strPathAndFile) == true)
-                        {
-                            this.m_strDataSource[x, FILESTATUS] = "F";
-                            this.m_strDataSource[x, TABLE] = oDataReader["table_name"].ToString().Trim();
-                            string strExistsConn = oExistsAdo.getMDBConnString(strPathAndFile, "", "");
-                            bool bSQLite = false;
-                            if (System.IO.Path.GetExtension(this.m_strDataSource[x, DBFILE]).Trim().ToUpper().Equals(".DB"))
-                            {
-                                // This is an SQLite data source
-                                bSQLite = true;
-                            }
-
-                            // this is the first time the connection is used -> not open yet
-                            if (!bSQLite)
-                            {
-                                if (String.IsNullOrEmpty(oExistsConn.ConnectionString))
-                                {
-                                    oExistsConn.ConnectionString = strExistsConn;
-                                    oExistsConn.Open();
-                                }
-                                else
-                                {
-                                    // close and reopen the connection if the target database has changed
-                                    // the connectionString returned by the connection doesn't include the "Password" key that is included
-                                    // in strExistsConn
-                                    if (oExistsConn.ConnectionString + "Password=;" != strExistsConn)
-                                    {
-                                        if (oExistsConn.State != ConnectionState.Closed)
-                                        {
-                                            oExistsConn.Close();
-                                            oExistsConn.ConnectionString = strExistsConn;
-                                            oExistsConn.Open();
-                                        }
-                                    }
-                                }
-                            }
-                            
-                            //see if the table exists in the mdb database container
-                            if (!bSQLite && oExistsAdo.TableExist(oExistsConn, oDataReader["table_name"].ToString().Trim()) == true)
-                            {
-                                this.m_strDataSource[x, TABLESTATUS] = "F";
-                                this.m_strDataSource[x, RECORDCOUNT] = "0";
-                                this.m_strDataSource[x, COLUMN_LIST] = "";
-                                this.m_strDataSource[x, DATATYPE_LIST] = "";
-
-                                if (this.LoadTableRecordCount || this.LoadTableColumnNamesAndDataTypes)
-                                {
-                                    strConn = p_ado.getMDBConnString(strPathAndFile, "admin", "");
-                                    p_ado.OpenConnection(strConn);
-                                    if (p_ado.m_intError == 0)
-                                    {
-                                        strSQL = "select count(*) from " + oDataReader["table_name"].ToString();
-                                        if (this.LoadTableRecordCount) this.m_strDataSource[x, RECORDCOUNT] = Convert.ToString(p_ado.getRecordCount(strConn, strSQL, oDataReader["table_name"].ToString()));
-                                        if (this.LoadTableColumnNamesAndDataTypes) p_ado.getFieldNamesAndDataTypes(strConn, "select * from " + oDataReader["table_name"].ToString(), ref this.m_strDataSource[x, COLUMN_LIST], ref this.m_strDataSource[x, DATATYPE_LIST]);
-                                        p_ado.CloseConnection(p_ado.m_OleDbConnection);
-                                        while (p_ado.m_OleDbConnection.State != ConnectionState.Closed)
-                                            System.Threading.Thread.Sleep(5000);
-                                        p_ado.m_OleDbConnection.Dispose();
-                                    }
-                                }
-                            }
-                            else if (bSQLite)
-                            {
-                                string strDbConn = oDataMgr.GetConnectionString(strPathAndFile);
-                                using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strDbConn))
-                                {
-                                    conn.Open();
-                                    if (oDataMgr.TableExist(conn, oDataReader["table_name"].ToString().Trim()) == true)
-                                    {
-                                        this.m_strDataSource[x, TABLESTATUS] = "F";
-                                        this.m_strDataSource[x, RECORDCOUNT] = "0";
-                                        this.m_strDataSource[x, COLUMN_LIST] = "";
-                                        this.m_strDataSource[x, DATATYPE_LIST] = "";
-
-                                        if (this.LoadTableRecordCount || this.LoadTableColumnNamesAndDataTypes)
-                                        {
-                                            oDataMgr.CloseConnection(conn);
-                                            string strDsConn = oDataMgr.GetConnectionString(strPathAndFile);
-                                            using (System.Data.SQLite.SQLiteConnection deetsConn = new System.Data.SQLite.SQLiteConnection(strDsConn))
-                                            {
-                                                deetsConn.Open();
-                                                if (oDataMgr.m_intError == 0)
-                                                {
-                                                    strSQL = "select count(*) from " + oDataReader["table_name"].ToString();
-                                                    if (this.LoadTableRecordCount) this.m_strDataSource[x, RECORDCOUNT] = Convert.ToString(oDataMgr.getRecordCount(deetsConn, strSQL, oDataReader["table_name"].ToString()));
-                                                    if (this.LoadTableColumnNamesAndDataTypes) oDataMgr.getFieldNamesAndDataTypes(deetsConn, "select * from " + oDataReader["table_name"].ToString(), ref this.m_strDataSource[x, COLUMN_LIST], ref this.m_strDataSource[x, DATATYPE_LIST]);
-                                                }
-                                            }
-                                        }
-                                    }
-                                    else
-                                    {
-										this.m_strDataSource[x, TABLESTATUS] = "NF";
-									}
-								}
-                            }
-                            else
-                            {
-                                this.m_strDataSource[x, TABLESTATUS] = "NF";
-                                this.m_strDataSource[x, RECORDCOUNT] = "0";
-                            }
-                        }
-                        else
-                        {
-                            this.m_strDataSource[x, FILESTATUS] = "NF";
-                            this.m_strDataSource[x, TABLE] = oDataReader["table_name"].ToString().Trim();
-                            this.m_strDataSource[x, TABLESTATUS] = "NF";
-                            this.m_strDataSource[x, RECORDCOUNT] = "0";
-                        }
-                        UpdateTableMacroVariable(this.m_strDataSource[x, TABLETYPE], this.m_strDataSource[x, TABLE]);
-
-                        x++;
-                    }
-				}
-                oExistsAdo = null;
-				oDataReader.Close();
-                oDataReader.Dispose();
-			}
-			catch
-			{
-				this.m_intError = -1;
-				this.m_strError = "The Query Command " + oCommand.CommandText.ToString() + " Failed";
-				MessageBox.Show(this.m_strError);
-				if (oConn != null)
-				{
-					if (oConn.State==System.Data.ConnectionState.Open)
-					{
-						oConn.Close();
-						while (oConn.State != System.Data.ConnectionState.Closed)
-							System.Threading.Thread.Sleep(1000);
-                        oConn.Dispose();
-						oConn = null;
-					}
-				}
-				p_ado= null;
-				return;
-			}
-			finally
-			{
-				if (oConn != null)
-				{
-					if (oConn.State==System.Data.ConnectionState.Open)
-					{
-						oConn.Close();
-						while (oConn.State != System.Data.ConnectionState.Closed)
-							System.Threading.Thread.Sleep(1000);
-                        oConn.Dispose();
-						oConn = null;
-					}
-				}
-			}
-			
-			if (oConn != null)
-			{
-				if (oConn.State==System.Data.ConnectionState.Open)
-				{
-					oConn.Close();
-					while (oConn.State != System.Data.ConnectionState.Closed)
-						System.Threading.Thread.Sleep(1000);
-
-					oConn = null;
-				}
-			}
-			p_ado = null;
-		}
-
         ///<summary>
         ///Load a 2 dimensional array with 
         ///this datasource information:
@@ -509,7 +272,7 @@ namespace FIA_Biosum_Manager
 		
 	///<summary>
 	///Return the location of the specified table within the m_strDataSource array.
-	///-1 is returned if the strTableType is not found or the MDB file is not
+	///-1 is returned if the strTableType is not found or the DB file is not
 	///found or the table is not found
 	///</summary>
 	/// <param name="strTableType">The unique id for the datasource table</param>
@@ -640,7 +403,7 @@ namespace FIA_Biosum_Manager
 			return "";
 		}
 		/// <summary>
-		/// get the full path to mdb file
+		/// get the full path to db file
 		/// </summary>
 		/// <param name="p_strTableType"></param>
 		/// <returns></returns>
@@ -862,31 +625,6 @@ namespace FIA_Biosum_Manager
 			}
 		}
 
-        public void UpdateDataSourcePath(string strTableType, string strPath, string strFile, string strTableName)
-        {
-            ado_data_access oAdo = new ado_data_access();
-            string strConn = oAdo.getMDBConnString(this.m_strDataSourceDBFile, "", "");
-            if (this.m_strScenarioId.Trim().Length > 0)
-            {
-                oAdo.m_strSQL = "UPDATE " + this.m_strDataSourceTableName + " SET path = '" + strPath + "', " +
-                    "file = '" + strFile + "', " +
-                    "table_name = '" + strTableName + "'" +
-                    " WHERE scenario_id = '" + this.m_strScenarioId + "' AND " +
-                    "table_type = '" + strTableType + "';";
-            }
-            else
-            {
-                oAdo.m_strSQL = "UPDATE " + this.m_strDataSourceTableName + " SET path = '" + strPath + "', " +
-                    "file = '" + strFile + "', " +
-                    "table_name = '" + strTableName + "'" +
-                    " WHERE table_type = '" + strTableType + "';";
-            }
-            using (var oConn = new System.Data.OleDb.OleDbConnection(strConn))
-            {
-                oConn.Open();
-                oAdo.SqlNonQuery(oConn, oAdo.m_strSQL);
-            }
-        }
 		public bool LoadTableColumnNamesAndDataTypes
 		{
 			get {return this._bLoadFieldNamesAndDatatypes;}

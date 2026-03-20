@@ -1636,7 +1636,6 @@ namespace FIA_Biosum_Manager
 
 
                             //UPDATE THE SCENARIO-LEVEL COSTS (IF APPLICABLE)
-                            // THESE HAVE A DEPENDENCY ON MS ACCESS TABLES
                             if (bHasScenarioCosts)
                             {
                                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
@@ -2438,7 +2437,7 @@ namespace FIA_Biosum_Manager
                             y++;
                             frmMain.g_oDelegate.SetControlPropertyValue(ReferenceProgressBarEx, "Value", y);
                             bool blnCreateReconcileTreesTable = false;
-                            // print reconcile trees table if debug at highest level; This will be in temporary .accdb
+                            // print reconcile trees table if debug at highest level; This will be in temporary .db
                             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                                 blnCreateReconcileTreesTable = true;
                             m_intError = mainProcessor.UpdateTrees(strVariant, strRxPackage, this.ReferenceProcessorScenarioForm.LoadedQueries.m_oDataSource.getFullPathAndFile(Datasource.TableTypes.Tree),
@@ -2636,7 +2635,7 @@ namespace FIA_Biosum_Manager
                     if (System.IO.File.Exists(m_strOPCOSTBatchFile))
                         System.IO.File.Delete(m_strOPCOSTBatchFile);
 
-                    //compact mdb
+                    //compact db
                     string strOpcostInputPath = "";
                     if (m_intError == 0)
                     {

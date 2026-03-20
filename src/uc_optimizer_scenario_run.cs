@@ -1162,7 +1162,7 @@ namespace FIA_Biosum_Manager
             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
             {
                 frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n");
-                frmMain.g_oUtils.WriteText(m_strDebugFile, "Create A Temporary MDB File With Links To All The Optimizer Tables And Scenario Result Tables\r\n");
+                frmMain.g_oUtils.WriteText(m_strDebugFile, "Create A Temporary DB File With Links To All The Optimizer Tables And Scenario Result Tables\r\n");
                 frmMain.g_oUtils.WriteText(m_strDebugFile, "------------------------------------------------------------------------------------------------\r\n");
             }
             try

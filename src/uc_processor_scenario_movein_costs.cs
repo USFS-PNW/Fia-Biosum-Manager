@@ -366,7 +366,7 @@ namespace FIA_Biosum_Manager
             //
             //OPEN CONNECTION TO DB FILE CONTAINING PROCESSOR SCENARIO TABLES
             //
-            //scenario mdb connection
+            //scenario db connection
             SQLite.ADO.DataMgr oDataMgr = new SQLite.ADO.DataMgr();
             string strScenarioDB =
                 frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() +

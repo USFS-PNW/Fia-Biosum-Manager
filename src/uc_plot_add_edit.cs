@@ -21,7 +21,7 @@ namespace FIA_Biosum_Manager
         //private int m_intError=0;
         public const int TABLETYPE = 0;
         public const int PATH = 1;
-        public const int MDBFILE = 2;
+        public const int DBFILE = 2;
         public const int FILESTATUS = 3;
         public const int TABLE = 4;
         public const int TABLESTATUS = 5;

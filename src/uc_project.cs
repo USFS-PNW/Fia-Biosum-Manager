@@ -128,124 +128,8 @@ namespace FIA_Biosum_Manager
 			}
 			base.Dispose( disposing );
 		}
-		public void OpenProjectTable(string strRootDir, string strFile)
-		{
-            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
-            {
-                frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n//\r\n");
-                frmMain.g_oUtils.WriteText(m_strDebugFile, "//uc_project.OpenProjectTable \r\n");
-                frmMain.g_oUtils.WriteText(m_strDebugFile, "//\r\n");
-            }
-            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                frmMain.g_oUtils.WriteText(m_strDebugFile, "uc_project.OpenProjectTable: strRootDir=" + strRootDir + " strFile=" + strFile + "\r\n");
-			frmMain.g_sbpInfo.Text = "Loading Project...Stand By";
-            this.m_intError = 0;
-			this.m_strError = "";
-            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                frmMain.g_oUtils.WriteText(m_strDebugFile, "uc_project.OpenProjectTable: Instantiate ado_data_access \r\n");
-
-			ado_data_access p_ado = new ado_data_access();
-			int intLastSlash;
-			
-			string strFullPath = strRootDir + "\\DB\\" + strFile;
-            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                frmMain.g_oUtils.WriteText(m_strDebugFile, "uc_project.OpenProjectTable: strFullPath=" + strFullPath + "\r\n");
-
-			string strConn=p_ado.getMDBConnString(strFullPath,"admin","");
-
-            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                frmMain.g_oUtils.WriteText(m_strDebugFile, "uc_project.OpenProjectTable: Open DBFile with Connection String=" + strConn + "\r\n");
-
-			try
-			{
-				p_ado.OpenConnection(strConn);
-			}
-			catch (Exception e)
-            {
-				string er = e.StackTrace;
-            }
-
-           
-            if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                frmMain.g_oUtils.WriteText(m_strDebugFile, "uc_project.OpenProjectTable: OpenConnection error Value=" + p_ado.m_intError.ToString() + "\r\n");
-			if (p_ado.m_intError==0)
-			{
-				try
-				{
-                    
-					bool bAppVerColumnExist = p_ado.ColumnExist(p_ado.m_OleDbConnection,"project","application_version");
-					//string strConn = "Provider=Microsoft.Jet.OLEDB.4.0;Data Source=" + strFullPath + ";User Id=admin;Password=;";
-					p_ado.SqlQueryReader(p_ado.m_OleDbConnection,"select * from project");
-
-					p_ado.m_OleDbDataReader.Read();
-                    // Adding trim function to remove extra spaces
-					m_strNewProjectId=p_ado.m_OleDbDataReader["proj_id"].ToString().Trim();
-                    m_strNewName=p_ado.m_OleDbDataReader["created_by"].ToString().Trim();
-				    m_strNewDate=p_ado.m_OleDbDataReader["created_date"].ToString();
-		            m_strNewOrganization=p_ado.m_OleDbDataReader["company"].ToString().Trim();
-		            m_strNewDescription=p_ado.m_OleDbDataReader["description"].ToString().Trim();
-		            m_strOldProjectDirectory=p_ado.m_OleDbDataReader["project_root_directory"].ToString();
-                    
-					if (bAppVerColumnExist)
-					{
-						if (p_ado.m_OleDbDataReader["application_version"] != System.DBNull.Value)
-							this.m_strNewProjectVersion = p_ado.m_OleDbDataReader["application_version"].ToString().Trim();
-						else
-							this.m_strNewProjectVersion="";
-					}
-					else
-					{
-						this.m_strNewProjectVersion="";
-					}
-
-				
-				}
-				catch (Exception caught)
-				{
-					MessageBox.Show(caught.Message);
-				}
-				p_ado.m_OleDbDataReader.Close();
-				p_ado.m_OleDbDataReader = null;
-				p_ado.m_OleDbCommand = null;
-				p_ado.m_OleDbConnection.Close();
-				p_ado.m_OleDbConnection = null;
-			}
-			else 
-			{
-				this.m_intError = p_ado.m_intError;
-                this.m_strError = p_ado.m_strError;
-                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
-                    frmMain.g_oUtils.WriteText(m_strDebugFile, "uc_project.OpenProjectTable: !!Failed to open project file!! Error=" + m_strError + "\r\n");
-
-			}
-			intLastSlash = strRootDir.LastIndexOf('\\');
-			if (intLastSlash > 0)
-			{
-				m_strNewRootDirectory = strRootDir.Substring(0, intLastSlash);
-			}
-			if (m_strNewProjectId != strRootDir.Substring(intLastSlash + 1))
-			{
-				m_strNewProjectId = strRootDir.Substring(intLastSlash + 1);
-
-			}
-			p_ado = null;
-			//m_strProjectId = this.txtProjectId.Text.ToString();  
-			if (this.m_strAction=="VIEW") 
-			{
-				this.grpboxDescription.Enabled=false;
-				this.grpboxProjectDirectory.Enabled=false;
-				this.grpboxProjectId.Enabled=false;
-				this.grpboxOrganization.Enabled=false;
-				this.grpboxCreated.Enabled=false;
-				this.btnEdit.Enabled=true;
-				this.btnCancel.Enabled=false;
-                this.btnSave.Enabled=false;
-                
-			}
-			frmMain.g_sbpInfo.Text = "Ready";
-		}
-
-		public void OpenProjectTableNew(string strProjDir, string strFile)
+		
+		public void OpenProjectTable(string strProjDir, string strFile)
         {
 			if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
 			{
@@ -698,7 +582,7 @@ namespace FIA_Biosum_Manager
 			}
 			else 
 			{
-				this.OpenProjectTableNew(this.m_strProjectDirectory,this.m_strProjectFile);
+				this.OpenProjectTable(this.m_strProjectDirectory,this.m_strProjectFile);
 			}
 		    this.m_strAction="";
 		    
@@ -1175,7 +1059,7 @@ namespace FIA_Biosum_Manager
 
 
 				//make the new project the current project
-				this.OpenProjectTableNew(this.m_strProjectDirectory, "project.db");
+				this.OpenProjectTable(this.m_strProjectDirectory, "project.db");
 
 				if (this.m_intError == 0)
 				{
@@ -1338,7 +1222,7 @@ namespace FIA_Biosum_Manager
 			this.m_strNewProjectDirectory = "";
 			OpenFileDialog OpenFileDialog1 = new OpenFileDialog();
 			OpenFileDialog1.Title = "Open FIA Biosum Project Database File";
-			OpenFileDialog1.Filter = "Database Files (*.MDB,*.MDE,*.ACCDB,*.DB,*.SQLITE,*SQLITE3) |*.mdb;*.mde;*.accdb;*.db;*.sqlite;*.sqlite3";
+			OpenFileDialog1.Filter = "SQLite Database Files (*.DB,*.SQLITE,*SQLITE3) |*.db;*.sqlite;*.sqlite3";
 			
 			DialogResult result =  OpenFileDialog1.ShowDialog();
 			this.m_intError=0;
@@ -1356,38 +1240,8 @@ namespace FIA_Biosum_Manager
                         frmMain.g_oUtils.WriteText(m_strDebugFile, "uc_project.Open_Profect: strNewProjectDirectory=" + m_strNewProjectDirectory + " strNewProjectFile=" + m_strNewProjectFile + "\r\n");
                     }
 
-					if (this.m_strNewProjectFile.EndsWith(".mdb") || this.m_strNewProjectFile.EndsWith(".mde") || this.m_strNewProjectFile.EndsWith(".accdb"))
-                    {
-						// Warn if trying to open project.mdb with version 5.12.1
-						string strProjVersionFile = m_strNewProjectDirectory + "\\application.version";
-						string strProjVersion = "";
-						if (System.IO.File.Exists(strProjVersionFile))
-						{
-							using (System.IO.StreamReader reader = new System.IO.StreamReader(strProjVersionFile))
-							{
-								string strTemp = reader.ReadLine();
-								if (strTemp != null)
-								{
-									strProjVersion = strTemp.Trim();
-								}
-							}
-						}
-						if (strProjVersion == "5.12.1")
-						{
-							System.Text.StringBuilder sb = new System.Text.StringBuilder();
-							sb.Append("WARNING: You are trying to open an Access project database instead of a SQLite project database! ");
-							sb.Append("BioSum version v5.12.1 requires using a SQLite project.db.");
-							System.Windows.Forms.DialogResult res =
-								System.Windows.Forms.MessageBox.Show(sb.ToString(), "FIA Biosum", System.Windows.Forms.MessageBoxButtons.OK);
-							this.m_intError = -1;
-							return;
-						}
-						this.OpenProjectTable(this.m_strNewProjectDirectory, this.m_strNewProjectFile);
-					}
-                    else
-                    {
-						this.OpenProjectTableNew(this.m_strNewProjectDirectory, this.m_strNewProjectFile);
-                    }
+					this.OpenProjectTable(this.m_strNewProjectDirectory, this.m_strNewProjectFile);
+                    
 
 					if (this.m_strNewProjectId.Length > 100)
                     {
@@ -1437,7 +1291,7 @@ namespace FIA_Biosum_Manager
                 }
                     
                 
-				this.OpenProjectTableNew(this.m_strNewProjectDirectory, this.m_strNewProjectFile);
+				this.OpenProjectTable(this.m_strNewProjectDirectory, this.m_strNewProjectFile);
                 
 			}
 			else 
@@ -1571,152 +1425,8 @@ namespace FIA_Biosum_Manager
 			
 		}
 
+		
 		public void SetProjectPathEnvironmentVariables()
-        {
-			if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
-			{
-				frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n//\r\n");
-				frmMain.g_oUtils.WriteText(m_strDebugFile, "//uc_project.SetProjectPathEnvironmentVariables \r\n");
-				frmMain.g_oUtils.WriteText(m_strDebugFile, "//\r\n");
-			}
-			int x;
-
-			string strFullPath = "";
-
-			string strConn = "";
-			string strSQL = "";
-			string strOldProjDir = "";
-			string strProjDir = "";
-
-			frmMain.g_oGeneralMacroSubstitutionVariable_Collection.Item(frmMain.OLDPROJDIR).VariableSubstitutionString = this.m_strOldProjectDirectory.Trim();
-			frmMain.g_oGeneralMacroSubstitutionVariable_Collection.Item(frmMain.PROJDIR).VariableSubstitutionString = this.m_strProjectDirectory.Trim();
-
-			strProjDir = m_strProjectDirectory.Trim();
-			strOldProjDir = this.m_strOldProjectDirectory.Trim();
-
-			if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
-				frmMain.g_oUtils.WriteText(m_strDebugFile, "uc_project.SetProjectPathEnvironmentVariables: Replace old project directory (" + strOldProjDir + ") with new project directory (" + strProjDir + ")\r\n");
-
-			/**********************************************
-			 **instantiate the ado_data_access class
-			 **********************************************/
-			ado_data_access oAdo = new ado_data_access();
-			DataMgr oDataMgr = new DataMgr();
-			//
-			//PROJECT DATA SOURCE
-			//
-			strFullPath = strProjDir + "\\db\\" + this.m_strProjectFile;
-			strConn = oAdo.getMDBConnString(strFullPath, "", "");
-			if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
-				frmMain.g_oUtils.WriteText(m_strDebugFile, "uc_project.SetProjectPathEnvironmentVariables: Open Connection to Project Dbfile " + strConn + ")\r\n");
-			oAdo.OpenConnection(strConn);
-
-			if (this.txtProjectId.Text.Trim().Length > 20)
-            {
-				strSQL = "ALTER TABLE project ALTER COLUMN proj_id TEXT(100)";
-				if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-					frmMain.g_oUtils.WriteText(m_strDebugFile, "uc_project.SetProjectPathEnvironmentVariables: Execute SQL \r\n" + strSQL + "\r\n");
-
-				oAdo.SqlNonQuery(oAdo.m_OleDbConnection, strSQL);
-			}
-
-			strSQL = "UPDATE project SET proj_id = '" + this.txtProjectId.Text.Trim() + "'";
-			if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-				frmMain.g_oUtils.WriteText(m_strDebugFile, "uc_project.SetProjectPathEnvironmentVariables: Execute SQL \r\n" + strSQL + "\r\n");
-
-			oAdo.SqlNonQuery(oAdo.m_OleDbConnection, strSQL);
-
-			strSQL = "UPDATE project SET project_root_directory = '" + strProjDir + "' " +
-					 "WHERE proj_id = '" + this.txtProjectId.Text.Trim() + "';";
-			if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-				frmMain.g_oUtils.WriteText(m_strDebugFile, "uc_project.SetProjectPathEnvironmentVariables: Execute SQL \r\n" + strSQL + "\r\n");
-
-			oAdo.SqlNonQuery(oAdo.m_OleDbConnection, strSQL);
-
-			strSQL = "UPDATE datasource " +
-					 "SET path = REPLACE(TRIM(LCASE(path))," +
-								"'" + strOldProjDir.Trim().ToLower() + "'," +
-								"'" + strProjDir.Trim().ToLower() + "')";
-			oAdo.SqlNonQuery(oAdo.m_OleDbConnection, strSQL);
-
-			if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-				frmMain.g_oUtils.WriteText(m_strDebugFile, "uc_project.SetProjectPathEnvironmentVariables: Execute SQL \r\n" + strSQL + "\r\n");
-
-			oAdo.CloseConnection(oAdo.m_OleDbConnection);
-			//
-			//TREATMENT OPTIMIZER SCENARIO DATA SOURCE
-			//
-			strFullPath = strProjDir + "\\" + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableDbFile;
-			if (System.IO.File.Exists(strFullPath))
-			{
-				strConn = oDataMgr.GetConnectionString(strFullPath);
-				if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
-					frmMain.g_oUtils.WriteText(m_strDebugFile, "uc_project.SetProjectPathEnvironmentVariables: Open Connection to Treatment Optimizer Scenario Dbfile " + strConn + ")\r\n");
-
-				using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strConn))
-				{
-					conn.Open();
-					strSQL = "UPDATE scenario_datasource " +
-					 "SET path = REPLACE(TRIM(LOWER(path))," +
-								"'" + strOldProjDir.Trim().ToLower() + "'," +
-								"'" + strProjDir.Trim().ToLower() + "')";
-					if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-						frmMain.g_oUtils.WriteText(m_strDebugFile, "uc_project.SetProjectPathEnvironmentVariables: Execute SQL \r\n" + strSQL + "\r\n");
-					oDataMgr.SqlNonQuery(conn, strSQL);
-					strSQL = "UPDATE scenario " +
-					"SET path = REPLACE(TRIM(LOWER(path))," +
-							   "'" + strOldProjDir.Trim().ToLower() + "'," +
-							   "'" + strProjDir.Trim().ToLower() + "')";
-					if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-						frmMain.g_oUtils.WriteText(m_strDebugFile, "uc_project.SetProjectPathEnvironmentVariables: Execute SQL \r\n" + strSQL + "\r\n");
-					oDataMgr.SqlNonQuery(conn, strSQL);
-				}
-			}
-			//
-			//PROCESSOR SCENARIO DATA SOURCE
-			//
-			strFullPath = $@"{strProjDir}\processor\{Tables.ProcessorScenarioRuleDefinitions.DefaultDbFile}";
-			if (System.IO.File.Exists(strFullPath))
-			{
-				strConn = oDataMgr.GetConnectionString(strFullPath);
-				if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
-					frmMain.g_oUtils.WriteText(m_strDebugFile, "uc_project.SetProjectPathEnvironmentVariables: Open Connection to Processor Scenario Dbfile " + strConn + ")\r\n");
-				using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strConn))
-				{
-					conn.Open();
-					strSQL = "UPDATE scenario_datasource " +
-						 "SET path = REPLACE(TRIM(LOWER(path))," +
-									"'" + strOldProjDir.Trim().ToLower() + "'," +
-									"'" + strProjDir.Trim().ToLower() + "')";
-					if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-						frmMain.g_oUtils.WriteText(m_strDebugFile, "uc_project.SetProjectPathEnvironmentVariables: Execute SQL \r\n" + strSQL + "\r\n");
-					oDataMgr.SqlNonQuery(conn, strSQL);
-					strSQL = "UPDATE scenario " +
-						 "SET path = REPLACE(TRIM(LOWER(path))," +
-									"'" + strOldProjDir.Trim().ToLower() + "'," +
-									"'" + strProjDir.Trim().ToLower() + "')";
-					if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-						frmMain.g_oUtils.WriteText(m_strDebugFile, "uc_project.SetProjectPathEnvironmentVariables: Execute SQL \r\n" + strSQL + "\r\n");
-					oDataMgr.SqlNonQuery(conn, strSQL);
-				}
-			}
-
-			if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
-				frmMain.g_oUtils.WriteText(m_strDebugFile, "uc_project.SetProjectPathEnvironmentVariables: frmMain.g_oUtils.getDriveLetter for project \r\n");
-			m_strProjectDirectoryDrive = frmMain.g_oUtils.getDriveLetter(strProjDir);
-
-			this.txtRootDirectory.Text = strProjDir;
-
-
-			if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
-				frmMain.g_oUtils.WriteText(m_strDebugFile, "uc_project.SetProjectPathEnvironmentVariables: Leaving \r\n");
-
-			oAdo = null;
-
-		}
-
-
-		public void SetProjectPathEnvironmentVariablesSqlite()
 		{
             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
             {

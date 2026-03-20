@@ -932,11 +932,11 @@ namespace FIA_Biosum_Manager
         {
             string strScenario = uc_scenario1.txtScenarioId.Text.Trim();
             this.m_oProcessorScenarioItem.ScenarioId = strScenario;
-            string strScenarioMDB = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() +
+            string strScenarioDB = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() +
                 "\\processor\\" + Tables.ProcessorScenarioRuleDefinitions.DefaultDbFile;
-            this.m_oProcessorScenarioTools.LoadTreeDiameterGroupValues(strScenarioMDB,
+            this.m_oProcessorScenarioTools.LoadTreeDiameterGroupValues(strScenarioDB,
                 strScenario, this.m_oProcessorScenarioItem);
-            this.m_oProcessorScenarioTools.LoadTreeSpeciesGroupValues(strScenarioMDB, strScenario,
+            this.m_oProcessorScenarioTools.LoadTreeSpeciesGroupValues(strScenarioDB, strScenario,
                 this.m_oProcessorScenarioItem);
             this.m_bTreeGroupsFirstTime = false;
         }

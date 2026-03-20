@@ -103,7 +103,7 @@ namespace FIA_Biosum_Manager
 			this.label2.Name = "label2";
 			this.label2.Size = new System.Drawing.Size(440, 16);
 			this.label2.TabIndex = 6;
-			this.label2.Text = "MDB Tables";
+			this.label2.Text = "DB Tables";
 			// 
 			// listBox1
 			// 
@@ -214,7 +214,7 @@ namespace FIA_Biosum_Manager
 				this.btnCopy.Text = value;
 			}
 		}
-		public string strMDBFileLabel
+		public string strDBFileLabel
 		{
 			set
 			{

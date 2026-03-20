@@ -731,8 +731,6 @@ namespace FIA_Biosum_Manager
                     convertedType = "UNRECOGNIZED";
                     break;
             }
-            // MS Access ODBC driver interprets LONG INTEGER as LONG TEXT; If target is an SQLite table
-            // that may be read by MS ACCESS, INT32 needs to be INTEGER
             if (convertedType.Equals("LONG") && bTargetSqlite)
             {
                 convertedType = "INTEGER";
@@ -750,7 +748,7 @@ namespace FIA_Biosum_Manager
                 { "SPECIESFIA", "SPECIES" }
             };
             var translatedStr = strToCheck.ToUpper();
-            // Map SPECIESFIA to SPECIES. In the future, add other column mappings (e.g. stuff that's different in FVSOUT.db from the target Access Mdbs) here.
+            // Map SPECIESFIA to SPECIES. In the future, add other column mappings (e.g. stuff that's different in FVSOUT.db from the target dbs) here.
             if (sqliteToAccessColNames.Keys.Contains(translatedStr))
             {
                 translatedStr = sqliteToAccessColNames[translatedStr];                

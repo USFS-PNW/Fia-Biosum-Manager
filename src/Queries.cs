@@ -190,16 +190,6 @@ namespace FIA_Biosum_Manager
 			/// <returns></returns>
 			static public string GetFVSVariantRxPackageSQL(string p_strPlotTable, string p_strRxPackageTable)
 			{
-                //return "SELECT DISTINCT  a.fvs_variant,  b.rxpackage, b.rxcycle_length, b.simyear1_rx," + 
-                //	                                                                   "b.simyear2_rx," + 
-                //	                                                                   "b.simyear3_rx," + 
-                //	                                                                   "b.simyear4_rx  " + 
-                //	   "FROM " + p_strPlotTable + " a, " + 
-                //	      "(SELECT rxpackage,simyear1_rx,simyear2_rx,simyear3_rx,simyear4_rx,rxcycle_length " + 
-                //	       "FROM " + p_strRxPackageTable +  ") b " + 
-                //	   "WHERE a.fvs_variant IS NOT NULL AND " + 
-                //	          "LEN(TRIM(a.fvs_variant)) > 0 AND " + 
-                //	          "b.rxpackage IS NOT NULL AND LEN(TRIM(b.rxpackage)) > 0;";
                 return $@"SELECT DISTINCT  a.fvs_variant,  b.rxpackage, b.rxcycle_length, b.simyear1_rx, b.simyear2_rx, b.simyear3_rx, b.simyear4_rx 
                     FROM {p_strPlotTable} a, (SELECT rxpackage,simyear1_rx,simyear2_rx,simyear3_rx,simyear4_rx,rxcycle_length 
                     FROM {p_strRxPackageTable}) b WHERE a.fvs_variant IS NOT NULL AND LENGTH(TRIM(a.fvs_variant)) > 0 AND b.rxpackage IS NOT NULL 
@@ -211,13 +201,6 @@ namespace FIA_Biosum_Manager
             /// <param name="p_strPlotTable"></param>
             /// <param name="p_strRxPackageTable"></param>
             /// <returns></returns>
-            static public string GetFVSVariantSQL_access(string p_strPlotTable)
-            {
-                return "SELECT DISTINCT fvs_variant " +
-                       "FROM " + p_strPlotTable +
-                       " WHERE fvs_variant IS NOT NULL AND " +
-                              "LEN(TRIM(fvs_variant)) > 0;";
-            }
 
             static public string GetFVSVariantSQL(string p_strPlotTable)
             {
@@ -2177,7 +2160,7 @@ namespace FIA_Biosum_Manager
 		        {
 		        }
 
-		        //All the queries necessary to create the FVSIn.accdb FVS_StandInit table using intermediate tables
+		        //All the queries necessary to create the FVSIn.db FVS_StandInit table using intermediate tables
 		        public class StandInit
 		        {
 		            StandInit()
@@ -2269,7 +2252,7 @@ namespace FIA_Biosum_Manager
 
 
                         //Update CWD piece's biomass: scale by cosine_inclination or 1 if inclination is null 
-                        //Piece inclination is measured in degrees from 0 to 90. Convert to radians for Access cosine function
+                        //Piece inclination is measured in degrees from 0 to 90. Convert to radians for cosine function
                         strCwdSqlStmts[idx++] = "UPDATE CwdPieceWorkTable " +
                                                 "SET Biomass = Biomass / COS(inclination * 3.141592654 / 180) " +
                                                 "WHERE inclination IS NOT NULL;";

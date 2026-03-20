@@ -334,8 +334,6 @@ namespace FIA_Biosum_Manager
             
 			DialogResult result = ((frmMain)this.Parent.Parent).folderBrowserDialog1.ShowDialog();
 			//the variable myPic contains the string of the full File Name,it includes the full path. 
-			//string mymdb = OpenFileDialog1.FileName; 
-			//MessageBox.Show(mymdb);
 			if (result == DialogResult.OK) 
 			{
 				string strTemp = ((frmMain)this.Parent.Parent).folderBrowserDialog1.SelectedPath;
