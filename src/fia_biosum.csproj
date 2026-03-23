@@ -178,6 +178,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="btnMainForm.cs" />
+    <Compile Include="ListViewCompareChecked.cs" />
     <Compile Include="uc_tree_volume_export.cs" />
     <Compile Include="uc_tree_volume_export.Designer.cs">
       <DependentUpon>uc_tree_volume_export.cs</DependentUpon>

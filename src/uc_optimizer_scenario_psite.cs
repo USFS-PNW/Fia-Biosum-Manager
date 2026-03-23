@@ -28,8 +28,10 @@ namespace FIA_Biosum_Manager
 		private FIA_Biosum_Manager.frmOptimizerScenario _frmScenario=null;
 		private FIA_Biosum_Manager.ListViewAlternateBackgroundColors m_oLvRowColors = new ListViewAlternateBackgroundColors();
         private ListViewColumnSorter lvwColumnSorter;
+		private ListViewCompareChecked lvwColumnSorterChecked;
 
-	    const int COLUMN_CHECKBOX=0;
+
+		const int COLUMN_CHECKBOX=0;
 		const int COLUMN_PSITEID=1;
 		const int COLUMN_PSITECN=2;
 		const int COLUMN_PSITENAME=3;
@@ -119,6 +121,7 @@ namespace FIA_Biosum_Manager
             // to the ListView control.
             lvwColumnSorter = new ListViewColumnSorter();
             this.lstPSites.ListViewItemSorter = lvwColumnSorter;
+			lvwColumnSorterChecked = new ListViewCompareChecked(SortOrder.Descending);
 
 			for (x = 0; x <= ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem.m_oProcessingSiteItem_Collection.Count - 1; x++)
 			{
@@ -549,27 +552,37 @@ namespace FIA_Biosum_Manager
 		private void lstPSites_ColumnClick(object sender, System.Windows.Forms.ColumnClickEventArgs e)
 		{
             int x, y;
-            // Determine if clicked column is already the column that is being sorted.
-            if (e.Column == lvwColumnSorter.SortColumn)
-            {
-                // Reverse the current sort direction for this column.
-                if (lvwColumnSorter.Order == SortOrder.Ascending)
-                {
-                    lvwColumnSorter.Order = SortOrder.Descending;
-                }
-                else
-                {
-                    lvwColumnSorter.Order = SortOrder.Ascending;
-                }
-            }
+			// Determine if clicked column is already the column that is being sorted.
+			if (e.Column == 0)
+			{
+				lstPSites.ListViewItemSorter = lvwColumnSorterChecked;
+				this.lstPSites.Sort();
+			}
             else
             {
-                // Set the column number that is to be sorted; default to ascending.
-                lvwColumnSorter.SortColumn = e.Column;
-                lvwColumnSorter.Order = SortOrder.Ascending;
-            }
-            // Perform the sort with these new sort options.
-            this.lstPSites.Sort();
+				lstPSites.ListViewItemSorter = lvwColumnSorter;
+				if (e.Column == lvwColumnSorter.SortColumn)
+				{
+					// Reverse the current sort direction for this column.
+					if (lvwColumnSorter.Order == SortOrder.Ascending)
+					{
+						lvwColumnSorter.Order = SortOrder.Descending;
+					}
+					else
+					{
+						lvwColumnSorter.Order = SortOrder.Ascending;
+					}
+				}
+				else
+				{
+					// Set the column number that is to be sorted; default to ascending.
+					lvwColumnSorter.SortColumn = e.Column;
+					lvwColumnSorter.Order = SortOrder.Ascending;
+				}
+				// Perform the sort with these new sort options.
+				this.lstPSites.Sort();
+			}
+			
             //reinitialize the alternate row colors
             for (x = 0; x <= this.lstPSites.Items.Count - 1; x++)
             {
@@ -580,6 +593,8 @@ namespace FIA_Biosum_Manager
             }
            
 		}
+
+
 
 		private void btnSelectAll_Click(object sender, System.EventArgs e)
 		{
