@@ -160,7 +160,21 @@ namespace FIA_Biosum_Manager
             DataMgr oDataMgr = new DataMgr();
             frmMain.g_sbpInfo.Text = "Version Update: Updating plot and tree tables ...Stand by";
 
-            string strMasterDb = ReferenceProjectDirectory.Trim() + "\\" + frmMain.g_oTables.m_oFIAPlot.DefaultPlotTableDbFile;
+            Datasource oProjectDs = new Datasource();
+            // Find path to existing tables
+            oProjectDs.m_strDataSourceDBFile = this.ReferenceProjectDirectory + "\\db\\project.db";
+            oProjectDs.m_strDataSourceTableName = "datasource";
+            oProjectDs.m_strScenarioId = "";
+            oProjectDs.LoadTableColumnNamesAndDataTypes = false;
+            oProjectDs.LoadTableRecordCount = false;
+            oProjectDs.populate_datasource_array();
+            // Assuming the plot and tree tables are in the same db
+            int intPlotTable = oProjectDs.getTableNameRow(Datasource.TableTypes.Plot);
+
+            string strDirectoryPath = oProjectDs.m_strDataSource[intPlotTable, FIA_Biosum_Manager.Datasource.PATH].Trim();
+            string strFileName = oProjectDs.m_strDataSource[intPlotTable, FIA_Biosum_Manager.Datasource.DBFILE].Trim();
+
+            string strMasterDb = strDirectoryPath + "\\" + strFileName;
             using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(strMasterDb)))
             {
                 conn.Open();
