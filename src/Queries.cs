@@ -1810,16 +1810,9 @@ namespace FIA_Biosum_Manager
             }
 
             public static string[] FVSOutputTable_AuditPostSummaryDetailFVS_SPCDCHANGE_WARNING(string p_strInsertTable, 
-                string p_strFvsTreeTableName,string p_strTreeTable, string p_strFvsVariant, string p_strRxPackage, bool bUsingTvbc)
+                string p_strFvsTreeTableName,string p_strTreeTable, string p_strFvsVariant, string p_strRxPackage)
             {
                 string[] sqlArray = new string[1];
-                string drybiot = "drybiot";
-                string drybiom = "drybiom";
-                if (bUsingTvbc)
-                {
-                    drybiot = "drybio_ag";
-                    drybiom = "drybio_bole";
-                }
                 sqlArray[0] = "INSERT INTO  " + p_strInsertTable + " " +
                                    "SELECT * FROM " +
                                         "(SELECT 'FVS_SPECIES' AS COLUMN_NAME," +
@@ -1850,10 +1843,10 @@ namespace FIA_Biosum_Manager
                                                 "FIA.VOLCFNET AS FIA_TREE_VOLCFNET," +
                                                 "FVS.VOLTSGRS AS FVS_TREE_VOLTSGRS," +
                                                 "FIA.VOLTSGRS AS FIA_TREE_VOLTSGRS," +
-                                                $@"FVS.{drybiot} AS FVS_TREE_{drybiot.ToUpper()}," +
-                                                "FIA.DRYBIOT AS FIA_TREE_DRYBIOT," +
-                                                $@"FVS.{drybiom} AS FVS_TREE_{drybiom.ToUpper()}," +
-                                                "FIA.DRYBIOM AS FIA_TREE_DRYBIOM," +
+                                                "FVS.DRYBIO_AG AS FVS_TREE_DRYBIO_AG," +
+                                                "FIA.DRYBIO_AG AS FIA_TREE_DRYBIO_AG," +
+                                                "FVS.DRYBIO_BOLE AS FVS_TREE_DRYBIO_BOLE," +
+                                                "FIA.DRYBIO_BOLE AS FIA_TREE_DRYBIO_BOLE," +
                                                 "FIA.STATUSCD AS FIA_TREE_STATUSCD," +
                                                 "FIA.TREECLCD AS FIA_TREE_TREECLCD," +
                                                 "FIA.CULL AS FIA_TREE_CULL," +
