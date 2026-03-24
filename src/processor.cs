@@ -1559,14 +1559,14 @@ namespace FIA_Biosum_Manager
             p_tree.MerchWtGtPa = p_tree.MerchVolCfPa * p_tree.OdWgt / p_tree.DryToGreen / 2000;
 
             //nonMerchVolCfPa
-            if (p_tree.IsSapling)
+            if (p_tree.IsWoodlandSpecies)
             {
-                p_tree.NonMerchVolCfPa = ((p_tree.DryBioAg * ((100 - (double) m_scenarioHarvestMethod.SaplingMerchAsPercentOfTotalVol) / 100)) 
+                p_tree.NonMerchVolCfPa = ((p_tree.DryBioAg * ((100 - (double)m_scenarioHarvestMethod.WoodlandMerchAsPercentOfTotalVol) / 100))
                                          * p_tree.Tpa) / p_tree.OdWgt;
             }
-            else if (p_tree.IsWoodlandSpecies)
+            else if (p_tree.IsSapling)
             {
-                p_tree.NonMerchVolCfPa = ((p_tree.DryBioAg * ((100 - (double) m_scenarioHarvestMethod.WoodlandMerchAsPercentOfTotalVol) / 100)) 
+                p_tree.NonMerchVolCfPa = ((p_tree.DryBioAg * ((100 - (double) m_scenarioHarvestMethod.SaplingMerchAsPercentOfTotalVol) / 100)) 
                                          * p_tree.Tpa) / p_tree.OdWgt;
             }
             else
