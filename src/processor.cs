@@ -1527,8 +1527,8 @@ namespace FIA_Biosum_Manager
             }
             else if (p_tree.IsSapling)
             {
-                //convert drybio_ag to some kind of volume
-                p_tree.MerchVolCfPa = (p_tree.DryBioAg / p_tree.OdWgt) * p_tree.Tpa * ((double)m_scenarioHarvestMethod.SaplingMerchAsPercentOfTotalVol / 100);
+                //Rely on voltsgrs 24-MAR-2026
+                p_tree.MerchVolCfPa = p_tree.VolTsGrs * p_tree.Tpa * ((double)m_scenarioHarvestMethod.SaplingMerchAsPercentOfTotalVol / 100);
             }
             else
             {

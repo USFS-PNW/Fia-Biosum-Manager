@@ -4508,25 +4508,25 @@ namespace FIA_Biosum_Manager
                                     else if(m_postAuditCutTreeTable.Equals(Tables.FVS.DefaultFVSCutTreeTvbcTableName) &&
                                         (!SQLite.ColumnExist(conn, m_postAuditCutTreeTable, "DRYBIO_AG")))
                                     {
-                                        if (SQLite.AttachedTableExist(conn, "AUDITS.audit_Post_NOVALUE_ERROR"))
+                                        if (SQLite.AttachedTableExist(conn, "audit_Post_NOVALUE_ERROR"))
                                         {
-                                            SQLite.m_strSQL = $@"DROP TABLE AUDITS.audit_Post_NOVALUE_ERROR";
+                                            SQLite.m_strSQL = $@"DROP TABLE audit_Post_NOVALUE_ERROR";
                                             if (m_bDebug && frmMain.g_intDebugLevel > 2)
                                                 this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + SQLite.m_strSQL + "\r\n");
                                             SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
 
                                         }
-                                        if (SQLite.AttachedTableExist(conn, "AUDITS.audit_Post_VALUE_ERROR"))
+                                        if (SQLite.AttachedTableExist(conn, "audit_Post_VALUE_ERROR"))
                                         {
-                                            SQLite.m_strSQL = $@"DROP TABLE AUDITS.audit_Post_VALUE_ERROR";
+                                            SQLite.m_strSQL = $@"DROP TABLE audit_Post_VALUE_ERROR";
                                             if (m_bDebug && frmMain.g_intDebugLevel > 2)
                                                 this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + SQLite.m_strSQL + "\r\n");
                                             SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
 
                                         }
-                                        if (SQLite.AttachedTableExist(conn, "AUDITS.audit_Post_SPCDCHANGE_WARNING"))
+                                        if (SQLite.AttachedTableExist(conn, "audit_Post_SPCDCHANGE_WARNING"))
                                         {
-                                            SQLite.m_strSQL = $@"DROP TABLE AUDITS.audit_Post_SPCDCHANGE_WARNING";
+                                            SQLite.m_strSQL = $@"DROP TABLE audit_Post_SPCDCHANGE_WARNING";
                                             if (m_bDebug && frmMain.g_intDebugLevel > 2)
                                                 this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + SQLite.m_strSQL + "\r\n");
                                             SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
@@ -4766,7 +4766,7 @@ namespace FIA_Biosum_Manager
                                     "audit_Post_NOVALUE_ERROR",
                                     "audit_Post_SUMMARY",
                                     strTempCutListTable,
-                                    strVariant, strPackage, bUsingTvbc);
+                                    strVariant, strPackage);
 
                                 m_intProgressStepCurrentCount++;
                                 UpdateTherm(m_frmTherm.progressBar1,

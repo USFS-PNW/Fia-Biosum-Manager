@@ -1874,17 +1874,9 @@ namespace FIA_Biosum_Manager
             /// <param name="p_strFVSTreeFileName"></param>
             /// <returns></returns>
             public static string[] FVSOutputTable_AuditPostSummaryDetailFVS_NOVALUE_ERROR(string p_strInsertTable,string p_strPostAuditSummaryTable,string p_strFvsTreeTableName,
-                string p_strFvsVariant, string p_strRxPackage, bool bUsingTvbc)
+                string p_strFvsVariant, string p_strRxPackage)
             {
                 string[] sqlArray = new string[1];
-
-                string drybiot = "drybiot";
-                string drybiom = "drybiom";
-                if (bUsingTvbc)
-                {
-                    drybiot = "drybio_ag";
-                    drybiom = "drybio_bole";
-                }
 
                 sqlArray[0] =    "INSERT INTO  " + p_strInsertTable + " " +
                                     "SELECT * FROM " +
@@ -1923,8 +1915,8 @@ namespace FIA_Biosum_Manager
                                                    "TRIM(a.COLUMN_NAME) = 'RX' AND " +
                                                    "a.FVS_VARIANT = '" + p_strFvsVariant + "' AND a.RXPACKAGE='" + p_strRxPackage + "' " +
                                           "UNION " +
-                                          "SELECT a.COLUMN_NAME,'NULLS NOT ALLOWED WHEN WOODLAND SPECIES' AS ERROR_DESC, FVS_TREE.* FROM " + p_strPostAuditSummaryTable + " a," +
-                                            "(SELECT * FROM " + p_strFvsTreeTableName + " WHERE VOLTSGRS IS NULL AND WOODLAND_YN = 'Y') FVS_TREE " +
+                                          "SELECT a.COLUMN_NAME,'NULLS NOT ALLOWED WHEN WOODLAND SPECIES OR DBH < 5 INCHES' AS ERROR_DESC, FVS_TREE.* FROM " + p_strPostAuditSummaryTable + " a," +
+                                            "(SELECT * FROM " + p_strFvsTreeTableName + " WHERE VOLTSGRS IS NULL AND (WOODLAND_YN = 'Y' OR (DBH IS NOT NULL AND DBH < 5))) FVS_TREE " +
                                              "WHERE a.NOVALUE_ERROR IS NOT NULL AND " +
                                                    "LENGTH(TRIM(NOVALUE_ERROR)) > 0 AND " +
                                                    "a.NOVALUE_ERROR <> 'NA' AND " +
@@ -1969,21 +1961,21 @@ namespace FIA_Biosum_Manager
                                                    "a.FVS_VARIANT = '" + p_strFvsVariant + "' AND a.RXPACKAGE='" + p_strRxPackage + "' " +
                                           "UNION " +
                                           "SELECT a.COLUMN_NAME, 'NULLS NOT ALLOWED' AS ERROR_DESC,FVS_TREE.* FROM " + p_strPostAuditSummaryTable + " a," +
-                                            "(SELECT * FROM " + p_strFvsTreeTableName + $@" WHERE {drybiot.ToUpper()} IS NULL) FVS_TREE " +
+                                            "(SELECT * FROM " + p_strFvsTreeTableName + " WHERE DRYBIO_AG IS NULL) FVS_TREE " +
                                              "WHERE a.NOVALUE_ERROR IS NOT NULL AND " +
                                                    "LENGTH(TRIM(NOVALUE_ERROR)) > 0 AND " +
                                                    "a.NOVALUE_ERROR <> 'NA' AND " +
                                                    "CAST(a.NOVALUE_ERROR as INT) > 0 AND " +
-                                                   $@"TRIM(a.COLUMN_NAME) = '{drybiot.ToUpper()}' AND " +
+                                                   "TRIM(a.COLUMN_NAME) = 'DRYBIO_AG' AND " +
                                                    "a.FVS_VARIANT = '" + p_strFvsVariant + "' AND a.RXPACKAGE='" + p_strRxPackage + "' " +
                                           "UNION " +
                                           "SELECT a.COLUMN_NAME, 'NULLS NOT ALLOWED WHEN DBH >= 5 INCHES' AS ERROR_DESC,FVS_TREE.* FROM " + p_strPostAuditSummaryTable + " a," +
-                                            "(SELECT * FROM " + p_strFvsTreeTableName + $@" WHERE DBH IS NOT NULL AND DBH >= 5 AND {drybiom.ToUpper()} IS NULL AND WOODLAND_YN = 'N') FVS_TREE " +
+                                            "(SELECT * FROM " + p_strFvsTreeTableName + " WHERE DBH IS NOT NULL AND DBH >= 5 AND DRYBIO_BOLE IS NULL AND WOODLAND_YN = 'N') FVS_TREE " +
                                              "WHERE a.NOVALUE_ERROR IS NOT NULL AND " +
                                                    "LENGTH(TRIM(NOVALUE_ERROR)) > 0 AND " +
                                                    "a.NOVALUE_ERROR <> 'NA' AND " +
                                                    "CAST(a.NOVALUE_ERROR as INT) > 0 AND " +
-                                                   $@"TRIM(a.COLUMN_NAME) = '{drybiom.ToUpper()}' AND " +
+                                                   "TRIM(a.COLUMN_NAME) = 'DRYBIO_BOLE' AND " +
                                                    "a.FVS_VARIANT = '" + p_strFvsVariant + "' AND a.RXPACKAGE = '" + p_strRxPackage + "' " +
                                           "UNION " +
                                           "SELECT a.COLUMN_NAME,'NULLS NOT ALLOWED' AS ERROR_DESC, FVS_TREE.* FROM " + p_strPostAuditSummaryTable + " a," +
