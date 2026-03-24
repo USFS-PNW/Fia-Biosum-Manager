@@ -2194,9 +2194,9 @@ namespace FIA_Biosum_Manager
                             "FVS_TREE_VOLTSGRS DOUBLE," +
                             "FIA_TREE_VOLTSGRS DOUBLE," +
                             "FVS_TREE_DRYBIO_AG DOUBLE," +
-                            "FIA_TREE_DRYBIOT DOUBLE," +
+                            "FIA_TREE_DRYBIO_AG DOUBLE," +
                             "FVS_TREE_DRYBIO_BOLE DOUBLE," +
-                            "FIA_TREE_DRYBIOM DOUBLE," +
+                            "FIA_TREE_DRYBIO_BOLE DOUBLE," +
                             "FIA_TREE_STATUSCD BYTE," +
                             "FIA_TREE_TREECLCD BYTE," +
                             "FIA_TREE_CULL  DOUBLE," +
@@ -3058,7 +3058,8 @@ namespace FIA_Biosum_Manager
             static public string CreateTreeReconcilationTableSQL(string p_strTableName)
             {
                 return "CREATE TABLE " + p_strTableName +
-                       " (cn CHAR (34)," +
+                       " (rxcycle CHAR (1)," +
+                       " cn CHAR (34)," +
                        " fvs_tree_id CHAR(10)," +
                        " biosum_cond_id CHAR (25)," +
                        " biosum_plot_id CHAR (24)," +

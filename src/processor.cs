@@ -564,10 +564,10 @@ namespace FIA_Biosum_Manager
                                 strTempCn = treeList[idxCn];
                             }
                             SQLite.m_strSQL = "INSERT INTO " + strTableName + " " +
-                            "(cn, fvs_tree_id, biosum_cond_id, biosum_plot_id, spcd, merchWtGt, nonMerchWtGt, drybio_bole, " +
+                            "(rxcycle, cn, fvs_tree_id, biosum_cond_id, biosum_plot_id, spcd, merchWtGt, nonMerchWtGt, drybio_bole, " +
                             "drybio_ag, volCfNet, volCfGrs, volTsGrs, odWgt, dryToGreen, tpa, dbh, species_group, " +
                             "isSapling, isWoodland, isCull, diam_group, merch_value, opcost_type, biosum_category)" +
-                            "VALUES ('" + strTempCn + "', '" + strTempTree + "', '" + nextTree.CondId + "', '" + nextTree.PlotId + "', " +
+                            "VALUES ('" + nextTree.RxCycle + "','" + strTempCn + "', '" + strTempTree + "', '" + nextTree.CondId + "', '" + nextTree.PlotId + "', " +
                             nextTree.SpCd + ", " + nextTree.MerchWtGtPa + ", " + nextTree.NonMerchWtGtPa + ", " + nextTree.DryBioBole + ", " +
                             nextTree.DryBioAg + ", " + nextTree.VolCfNet + ", " + nextTree.VolCfGrs + ", " + nextTree.VolTsGrs + ", " + nextTree.OdWgt +
                             ", " + nextTree.DryToGreen + ", " + nextTree.Tpa + ", " + nextTree.Dbh + ", " + nextTree.SpeciesGroup + ", " +
@@ -1520,16 +1520,15 @@ namespace FIA_Biosum_Manager
 
         private void CalculateVolumeAndWeight(tree p_tree)
         {
-            
             //merchVolCfPa
-            if (p_tree.IsSapling)
+            if (p_tree.IsWoodlandSpecies)
             {
-                //convert drybio_ag to some kind of volume
-                p_tree.MerchVolCfPa = (p_tree.DryBioAg / p_tree.OdWgt) * p_tree.Tpa * ((double)m_scenarioHarvestMethod.SaplingMerchAsPercentOfTotalVol / 100);
+                p_tree.MerchVolCfPa = p_tree.VolTsGrs * ((double)m_scenarioHarvestMethod.WoodlandMerchAsPercentOfTotalVol / 100) * p_tree.Tpa;
             }
-            else if (p_tree.IsWoodlandSpecies)
+            else if (p_tree.IsSapling)
             {
-                p_tree.MerchVolCfPa = p_tree.VolTsGrs * ( (double) m_scenarioHarvestMethod.WoodlandMerchAsPercentOfTotalVol / 100) * p_tree.Tpa;
+                //Rely on voltsgrs 24-MAR-2026
+                p_tree.MerchVolCfPa = p_tree.VolTsGrs * p_tree.Tpa * ((double)m_scenarioHarvestMethod.SaplingMerchAsPercentOfTotalVol / 100);
             }
             else
             {
