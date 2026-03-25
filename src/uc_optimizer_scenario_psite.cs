@@ -556,7 +556,16 @@ namespace FIA_Biosum_Manager
 			if (e.Column == 0)
 			{
 				lstPSites.ListViewItemSorter = lvwColumnSorterChecked;
+
 				this.lstPSites.Sort();
+				if (lvwColumnSorterChecked.Order == SortOrder.Ascending)
+				{
+					lvwColumnSorterChecked.Order = SortOrder.Descending;
+				}
+				else
+				{
+					lvwColumnSorterChecked.Order = SortOrder.Ascending;
+				}
 			}
             else
             {
