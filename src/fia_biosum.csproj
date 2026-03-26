@@ -178,6 +178,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="btnMainForm.cs" />
+    <Compile Include="ListViewUtils.cs" />
     <Compile Include="uc_tree_volume_export.cs" />
     <Compile Include="uc_tree_volume_export.Designer.cs">
       <DependentUpon>uc_tree_volume_export.cs</DependentUpon>
@@ -234,9 +235,6 @@
     </Compile>
     <Compile Include="Help.cs" />
     <Compile Include="ListViewAlternateColors.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="ListViewColumnSorter.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="ListViewEx.cs" />
