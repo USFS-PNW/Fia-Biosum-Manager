@@ -484,7 +484,7 @@ namespace FIA_Biosum_Manager
 					break;
 				case "FVS TREE LIST FOR PROCESSOR":
 					oItem.VariableName="FvsTreeListForProcessorTable";
-                    if (p_strTableName.Trim().Length == 0) p_strTableName = Tables.FVS.DefaultFVSTreeTableName;
+                    if (p_strTableName.Trim().Length == 0) p_strTableName = Tables.FVS.DefaultFVSCutTreeTvbcTableName;
 					break;
 				case "TRAVEL TIMES":
                     if (p_strTableName.Trim().Length == 0) p_strTableName = Tables.TravelTime.DefaultTravelTimeTableName;

@@ -915,12 +915,12 @@ namespace FIA_Biosum_Manager
             {
                 conn.Open();
                 long lngTreeRecords = -1;
-                string strSQL = $@"SELECT COUNT(*) FROM {Tables.FVS.DefaultFVSCutTreeTableName} 
+                string strSQL = $@"SELECT COUNT(*) FROM {Tables.FVS.DefaultFVSCutTreeTvbcTableName} 
                                     WHERE FVS_VARIANT = '{strVariant}' and RXPACKAGE = '{strRxPackage}'";
-                lngTreeRecords = dataMgr.getRecordCount(conn, strSQL, Tables.FVS.DefaultFVSCutTreeTableName);
+                lngTreeRecords = dataMgr.getRecordCount(conn, strSQL, Tables.FVS.DefaultFVSCutTreeTvbcTableName);
                 if (lngTreeRecords < 1)
                 {
-                    string strMessage = $@"No records were found in {Tables.FVS.DefaultFVSCutTreeTableName} for {strVariant} {strRxPackage}. There is nothing to process!";
+                    string strMessage = $@"No records were found in {Tables.FVS.DefaultFVSCutTreeTvbcTableName} for {strVariant} {strRxPackage}. There is nothing to process!";
                     MessageBox.Show(strMessage, "FIA Biosum", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Exclamation);
                     this.m_intError = -1;
                     return;

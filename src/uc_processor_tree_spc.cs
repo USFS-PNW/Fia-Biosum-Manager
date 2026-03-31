@@ -2427,11 +2427,11 @@ namespace FIA_Biosum_Manager
 			using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strDbConn))
 			{
 				conn.Open();
-				string strSQL = $@"SELECT COUNT(*) FROM {Tables.FVS.DefaultFVSCutTreeTableName}";
-				long lngTreeRecords = oDataMgr.getRecordCount(conn, strSQL, Tables.FVS.DefaultFVSCutTreeTableName);
+				string strSQL = $@"SELECT COUNT(*) FROM {Tables.FVS.DefaultFVSCutTreeTvbcTableName}";
+				long lngTreeRecords = oDataMgr.getRecordCount(conn, strSQL, Tables.FVS.DefaultFVSCutTreeTvbcTableName);
 				if (lngTreeRecords < 1)
 				{
-					string strMessage = $@"No tree records were found in {Tables.FVS.DefaultFVSCutTreeTableName}. There is nothing to audit!";
+					string strMessage = $@"No tree records were found in {Tables.FVS.DefaultFVSCutTreeTvbcTableName}. There is nothing to audit!";
 					MessageBox.Show(strMessage, "FIA Biosum", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
 					return;
 				}

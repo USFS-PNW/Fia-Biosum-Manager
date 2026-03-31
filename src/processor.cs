@@ -80,7 +80,7 @@ namespace FIA_Biosum_Manager
             using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(SQLite.GetConnectionString(m_strSqliteConnection)))
             {
                 conn.Open();
-                // Attach FVS_CutTree table
+                // Attach fvs_CutTreeTvbc table
                 string strSQL = $@"ATTACH '{frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim()}\{Tables.FVS.DefaultFVSTreeListDbFile}' AS CUTLIST";
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + strSQL + "\r\n");
@@ -274,7 +274,7 @@ namespace FIA_Biosum_Manager
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "//This query didn't return any rows: \r\n");
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "//SELECT z.biosum_cond_id, c.biosum_plot_id, z.rxCycle, z.rx, z.rxYear, z.dbh, z.tpa, z.volCfNet, z.drybiot, \r\n");
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "//z.drybiom,z.FvsCreatedTree_YN, z.fvs_tree_id, z.fvs_species, z.volCfGrs, c.slope, c.elev, \r\n");
-                    frmMain.g_oUtils.WriteText(m_strDebugFile, "//c.gis_yard_dist_ft FROM FVS_CutTree z,  \r\n");
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "//c.gis_yard_dist_ft FROM fvs_CutTreeTvbc z,  \r\n");
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "//(SELECT p.biosum_plot_id,p.gis_yard_dist_ft,p.elev,d.biosum_cond_id,d.slope FROM plot p INNER JOIN cond d ON p.biosum_plot_id = d.biosum_plot_id) c \r\n");
                     frmMain.g_oUtils.WriteText(m_strDebugFile, $@"//WHERE z.rxpackage='{p_strRxPackage}' AND z.fvs_variant = '{p_strVariant}' AND z.biosum_cond_id = c.biosum_cond_id  \r\n");
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "//\r\n");
@@ -349,7 +349,7 @@ namespace FIA_Biosum_Manager
                 string strSQL = $@"ATTACH '{strFvsCutTreeDb}' AS CUT_TREE";
                 SQLite.SqlNonQuery(conn, strSQL);
                 strSQL = "SELECT DISTINCT t.fvs_tree_id, t.biosum_cond_id, t.spcd " +
-                    "FROM " + p_strTreeTableName + " t, " + Tables.FVS.DefaultFVSCutTreeTableName + " z " +
+                    "FROM " + p_strTreeTableName + " t, " + Tables.FVS.DefaultFVSCutTreeTvbcTableName + " z " +
                     "WHERE trim(t.fvs_tree_id) = z.fvs_tree_id " +
                     "AND t.biosum_cond_id = z.biosum_cond_id " +
                     "AND z.rxpackage='" + p_strRxPackage + "' " +

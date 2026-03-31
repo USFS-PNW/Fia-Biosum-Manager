@@ -1279,10 +1279,6 @@ namespace FIA_Biosum_Manager
             using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(strConn))
             {
                 conn.Open();
-                if (!dataMgr.TableExist(conn, Tables.FVS.DefaultFVSCutTreeTableName))
-                {
-                    frmMain.g_oTables.m_oFvs.CreateFVSOutTreeTable(dataMgr, conn, Tables.FVS.DefaultFVSCutTreeTableName);
-                }
                 if (!dataMgr.TableExist(conn, Tables.FVS.DefaultFVSCutTreeTvbcTableName))
                 {
                     frmMain.g_oTables.m_oFvs.CreateFVSOutTreeTvbcTable(dataMgr, conn, Tables.FVS.DefaultFVSCutTreeTvbcTableName);
@@ -2439,7 +2435,7 @@ namespace FIA_Biosum_Manager
             string idxCutlist = "IDX_CutList";  //FVS-created index on fvs_CutList.CaseId
             string idxSummaryStandId = "IDX_Summary_StandId";    //Biosum-created index on fvs_summary.StandId
             string idxCasesRunTitle = "IDX_Cases_RunTitle"; //BioSum-created index on fvs_summary.StandId
-            string idxCutListComposite = "IDX_CutList_Composite"; //BioSum-created index on fvs_cutTree.CaseID,StandId,Year,TreeId
+            string idxCutListComposite = "IDX_CutList_Composite"; //BioSum-created index on fvs_cutList.CaseID,StandId,Year,TreeId
             // Note: We also set some indexes in AppendRuntitleToFVSOut for FVSOut_BioSum.db
             DataMgr oDataMgr = new DataMgr();
             if (System.IO.File.Exists(strFvsOutDbPath))

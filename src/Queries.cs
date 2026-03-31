@@ -1598,7 +1598,7 @@ namespace FIA_Biosum_Manager
             }
             static public string[] FVSOutputTable_AuditPostSummaryFVS(string p_strRxTable,string p_strRxPackageTable,string p_strTreeTable,
                 string p_strPlotTable,string p_strCondTable, string p_strPostAuditSummaryTable,string p_strFvsTreeTableName,
-                string p_strRxPackage, string p_strFvsVariant, string p_strRxPackageWorktable, bool bUsingTvbc)
+                string p_strRxPackage, string p_strFvsVariant, string p_strRxPackageWorktable)
             {
                 string[] sqlArray = new string[12];
                 sqlArray[0] = $@"CREATE TABLE {p_strRxPackageTable} AS SELECT DISTINCT RXPACKAGE AS RXPACKAGE FROM {p_strRxPackageWorktable}";
@@ -1627,13 +1627,6 @@ namespace FIA_Biosum_Manager
                     CASE WHEN BIOSUM_COND_ID IS NULL OR LENGTH(TRIM(BIOSUM_COND_ID)) = 0 THEN '' WHEN LENGTH(TRIM(BIOSUM_COND_ID)) >= 24 THEN SUBSTR(BIOSUM_COND_ID,1,24) ELSE BIOSUM_COND_ID END
                     AS BIOSUM_PLOT_ID,BIOSUM_COND_ID FROM {p_strFvsTreeTableName}";
 
-                string drybiot = "drybiot";
-                string drybiom = "drybiom";
-                if (bUsingTvbc)
-                {
-                    drybiot = "drybio_ag";
-                    drybiom = "drybio_bole";
-                }
                 sqlArray[11] = "INSERT INTO  " + p_strPostAuditSummaryTable + " " +
                     "SELECT * FROM " +
                     "(SELECT DISTINCT " +
@@ -1743,24 +1736,24 @@ namespace FIA_Biosum_Manager
                         "WHERE DBH IS NOT NULL AND DBH >= 5 AND VOLCFGRS IS NULL) volcfgrs_no_value_count " +
                         "UNION " +
                         "SELECT DISTINCT '010' AS idx,'" + p_strFvsVariant + "' AS FVS_VARIANT," + "'" + p_strRxPackage + "' AS RXPACKAGE," +
-                        "'" + drybiot.ToUpper() + $@"' AS COLUMN_NAME, {drybiot}_no_value_count.NOVALUE_COUNT AS NOVALUE_ERROR," +
+                        "'DRYBIO_AG' AS COLUMN_NAME, drybio_ag_no_value_count.NOVALUE_COUNT AS NOVALUE_ERROR," +
                         "'NA' AS NF_IN_COND_TABLE_ERROR, 'NA' AS NF_IN_PLOT_TABLE_ERROR," +
                         "'NA' AS VALUE_ERROR, 'NA' AS NF_IN_RX_TABLE_ERROR," +
                         "'NA' AS NF_RXPACKAGE_RXCYCLE_RX_ERROR, 'NA' AS NF_IN_RXPACKAGE_TABLE_ERROR," +
                         "'NA' AS NF_IN_TREE_TABLE_ERROR, 'NA' AS TREE_SPECIES_CHANGE_WARNING, current_timestamp " +
                         "FROM " + p_strFvsTreeTableName + " fvs," +
                         "(SELECT COUNT(*) AS NOVALUE_COUNT FROM " + p_strFvsTreeTableName + " " +
-                        $@"WHERE {drybiot.ToUpper()} IS NULL) {drybiot}_no_value_count " +
+                        "WHERE DRYBIO_AG IS NULL) drybio_ag_no_value_count " +
                         "UNION " +
                         "SELECT DISTINCT '011' AS idx,'" + p_strFvsVariant + "' AS FVS_VARIANT," + "'" + p_strRxPackage + "' AS RXPACKAGE," +
-                        $@"'{drybiom.ToUpper()}' AS COLUMN_NAME, {drybiom}_no_value_count.NOVALUE_COUNT AS NOVALUE_ERROR," +
+                        "'DRYBIO_BOLE' AS COLUMN_NAME, drybio_bole_no_value_count.NOVALUE_COUNT AS NOVALUE_ERROR," +
                         "'NA' AS NF_IN_COND_TABLE_ERROR, 'NA' AS NF_IN_PLOT_TABLE_ERROR," +
                         "'NA' AS  VALUE_ERROR, 'NA' AS NF_IN_RX_TABLE_ERROR," +
                         "'NA' AS NF_RXPACKAGE_RXCYCLE_RX_ERROR, 'NA' AS NF_IN_RXPACKAGE_TABLE_ERROR," +
                         "'NA' AS NF_IN_TREE_TABLE_ERROR, 'NA' AS TREE_SPECIES_CHANGE_WARNING, current_timestamp " +
                         "FROM " + p_strFvsTreeTableName + " fvs," +
                         "(SELECT COUNT(*) AS NOVALUE_COUNT FROM " + p_strFvsTreeTableName + " " +
-                        $@"WHERE DBH IS NOT NULL AND DBH >= 5 AND {drybiom.ToUpper()} IS NULL) {drybiom}_no_value_count " +
+                        $@"WHERE DBH IS NOT NULL AND DBH >= 5 AND DRYBIO_BOLE IS NULL) drybio_bole_no_value_count " +
                         "UNION " +
                         "SELECT DISTINCT '012' AS idx,'" + p_strFvsVariant + "' AS FVS_VARIANT," + "'" + p_strRxPackage + "' AS RXPACKAGE," +
                         "'FVS_TREE_ID' AS COLUMN_NAME," +
@@ -3885,13 +3878,13 @@ namespace FIA_Biosum_Manager
 
                 // This is an update from the original implementation when all the cut lists were in separate databases
                 // No more need to generate multiple sql statements by variant, rxpackage
-                if (p_oDataMgr.AttachedTableExist(p_oConn, Tables.FVS.DefaultFVSCutTreeTableName))
+                if (p_oDataMgr.AttachedTableExist(p_oConn, Tables.FVS.DefaultFVSCutTreeTvbcTableName))
                 {
-                    strSql = $@"SELECT count(*) FROM {Tables.FVS.DefaultFVSCutTreeTableName}";
-                    long lngCount = p_oDataMgr.getRecordCount(p_oConn, strSql, Tables.FVS.DefaultFVSCutTreeTableName);
+                    strSql = $@"SELECT count(*) FROM {Tables.FVS.DefaultFVSCutTreeTvbcTableName}";
+                    long lngCount = p_oDataMgr.getRecordCount(p_oConn, strSql, Tables.FVS.DefaultFVSCutTreeTvbcTableName);
                     if (lngCount > 0)
                     {
-                        strSql = $@"CREATE TABLE {p_strIntoTable} AS SELECT DISTINCT {p_strColumnList} FROM {Tables.FVS.DefaultFVSCutTreeTableName}";
+                        strSql = $@"CREATE TABLE {p_strIntoTable} AS SELECT DISTINCT {p_strColumnList} FROM {Tables.FVS.DefaultFVSCutTreeTvbcTableName}";
                         strList.Add(strSql);
                     }
                 }

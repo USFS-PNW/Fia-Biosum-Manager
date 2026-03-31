@@ -306,7 +306,7 @@ namespace FIA_Biosum_Manager
             this.m_lvEx.Columns.Add("Cycle2Rx", 80, HorizontalAlignment.Left);
             this.m_lvEx.Columns.Add("Cycle3Rx", 80, HorizontalAlignment.Left);
             this.m_lvEx.Columns.Add("Cycle4Rx", 80, HorizontalAlignment.Left);
-            this.m_lvEx.Columns.Add("FVS_CutTree_DateTimeCreated", 80, HorizontalAlignment.Left);
+            this.m_lvEx.Columns.Add("FVS_CutTreeTvbc_DateTimeCreated", 80, HorizontalAlignment.Left);
             this.m_lvEx.Columns.Add("Processor_DateTimeCreated", 80, HorizontalAlignment.Left);
             this.m_lvEx.Columns[COL_CHECKBOX].Width = -2;
             this.m_lvEx.Columns[COL_VOLVAL].Width = -2;
@@ -524,14 +524,14 @@ namespace FIA_Biosum_Manager
                         if (frmMain.g_bSuppressProcessorScenarioTableRowCount == false)
                         {
                             m_oDataMgr.m_strSQL = "SELECT rxpackage, fvs_variant,COUNT(*) AS rxpackage_variant_count " +
-                                                  "FROM " + Tables.FVS.DefaultFVSCutTreeTableName +
+                                                  "FROM " + Tables.FVS.DefaultFVSCutTreeTvbcTableName +
                                                   " WHERE FVS_VARIANT = '" + strVariant + "' AND" +
                                                   " RXPACKAGE = '" + strRxPackage + "'" +
                                                   " GROUP BY rxpackage,fvs_variant";
                         }
                         else
                         {
-                            m_oDataMgr.m_strSQL = "SELECT rxpackage,fvs_variant, 1 AS rxpackage_variant_count FROM " + Tables.FVS.DefaultFVSCutTreeTableName +
+                            m_oDataMgr.m_strSQL = "SELECT rxpackage,fvs_variant, 1 AS rxpackage_variant_count FROM " + Tables.FVS.DefaultFVSCutTreeTvbcTableName +
                                                   " WHERE FVS_VARIANT = '" + strVariant + "' AND" +
                                                   " RXPACKAGE = '" + strRxPackage + "' LIMIT 1";
                         }
@@ -604,7 +604,7 @@ namespace FIA_Biosum_Manager
                         }
                         else
                         {
-                            // This variant package has no records in FVS_CutTree and isn't using FVS_Compute to indicate treatment activity
+                            // This variant package has no records in FVS_CutTreeTvbc and isn't using FVS_Compute to indicate treatment activity
                             bAddToList = false;
                         }
                         if (bAddToList)
@@ -749,7 +749,7 @@ namespace FIA_Biosum_Manager
                                 if (bInactiveVarRxPackage == false)
                                 {
                                     m_oDataMgr.m_strSQL = "SELECT DISTINCT DateTimeCreated " +
-                                                  "FROM " + Tables.FVS.DefaultFVSCutTreeTableName + " t " +
+                                                  "FROM " + Tables.FVS.DefaultFVSCutTreeTvbcTableName + " t " +
                                                   "WHERE t.fvs_variant ='" + strVariant + "' and t.rxpackage='" + strRxPackage + "'";
                                     if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                                         frmMain.g_oUtils.WriteText(strDebugFile, "EXECUTE SQL: " + m_oDataMgr.m_strSQL + " " + System.DateTime.Now.ToString() + "\r\n");
@@ -812,7 +812,7 @@ namespace FIA_Biosum_Manager
                             else
                             {
                                 //did not find package item so display error
-                                strErrMsg = strErrMsg + "Table " + Tables.FVS.DefaultFVSCutTreeTableName + " contains RXPACKAGE: " + strRxPackage + " but " + strRxPackage + " is not a defined package. \r\n";
+                                strErrMsg = strErrMsg + "Table " + Tables.FVS.DefaultFVSCutTreeTvbcTableName + " contains RXPACKAGE: " + strRxPackage + " but " + strRxPackage + " is not a defined package. \r\n";
                             }
                         }
 
@@ -1010,7 +1010,7 @@ namespace FIA_Biosum_Manager
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                     frmMain.g_oUtils.WriteText(m_strDebugFile, m_oDataMgr.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
                 m_oDataMgr.SqlNonQuery(conn, m_oDataMgr.m_strSQL);
-                m_oDataMgr.m_strSQL = $@"CREATE TABLE temp_year AS SELECT DISTINCT biosum_cond_id||rxpackage||rx||rxcycle AS STAND,RXYEAR FROM {Tables.FVS.DefaultFVSCutTreeTableName}";
+                m_oDataMgr.m_strSQL = $@"CREATE TABLE temp_year AS SELECT DISTINCT biosum_cond_id||rxpackage||rx||rxcycle AS STAND,RXYEAR FROM {Tables.FVS.DefaultFVSCutTreeTvbcTableName}";
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                     frmMain.g_oUtils.WriteText(m_strDebugFile, m_oDataMgr.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
                 m_oDataMgr.SqlNonQuery(conn, m_oDataMgr.m_strSQL);

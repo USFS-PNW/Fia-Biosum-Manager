@@ -1178,7 +1178,6 @@ namespace FIA_Biosum_Manager
             static public string DefaultRxHarvestCostColumnsTableName { get { return "rx_harvest_cost_columns"; } }
             static public string DefaultRxPackageTableName { get { return "rxpackage"; } }
             static public string DefaultRxPackageDbFile { get { return @"db\master.db"; } }
-            static public string DefaultFVSTreeTableName { get { return "FVS_Tree"; } }
             static public string DefaultFVSCutTreeTableName { get { return "FVS_CutTree"; } }
             static public string DefaultFVSInForestTreeTableName { get { return "FVS_InForestTree"; } }
             static public string DefaultFVSCutTreeTvbcTableName { get { return "FVS_CutTreeTvbc"; } }
