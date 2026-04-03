@@ -4508,6 +4508,14 @@ namespace FIA_Biosum_Manager
                                             SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
 
                                         }
+                                        if (SQLite.AttachedTableExist(conn, "audit_Post_NOTFOUND_ERROR"))
+                                        {
+                                            SQLite.m_strSQL = $@"DROP TABLE audit_Post_NOTFOUND_ERROR";
+                                            if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                                                this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + SQLite.m_strSQL + "\r\n");
+                                            SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+
+                                        }
                                     }
                                 }
 
