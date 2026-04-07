@@ -1181,6 +1181,7 @@ namespace FIA_Biosum_Manager
             static public string DefaultFVSCutTreeTableName { get { return "FVS_CutTree"; } }
             static public string DefaultFVSInForestTreeTableName { get { return "FVS_InForestTree"; } }
             static public string DefaultFVSCutTreeTvbcTableName { get { return "FVS_CutTreeTvbc"; } }
+            static public string DefaultFVSInForestTreeTvbcTableName { get { return "FVS_InForestTreeTvbc"; } }
             static public string DefaultFVSTreeListDbFile { get { return @"\fvs\data\FVSOUT_TREE_LIST.db"; } }
             static public string DefaultFVSOutDbFile { get { return @"\fvs\data\FVSOut.db"; } }
             static public string DefaultFVSOutBiosumDbFile { get { return @"\fvs\data\FVSOut_BioSum.db"; } }
@@ -1288,19 +1289,34 @@ namespace FIA_Biosum_Manager
                     "bapctile DOUBLE," +
                     "htg DOUBLE," +
                     "dg DOUBLE," +
-                    "drybio_bole double," +
-                    "drybio_sapling double," +
-                    "drybio_top double," +
-                    "drybio_wdld_spp double," +
-                    "volcfsnd double," +
-                    "drybiom DOUBLE," +
-                    "drybiot DOUBLE," +
+                    "wood_sg_adj INTEGER," +
+                    "bark_sg_adj INTEGER," +
+                    "drybio_bole DOUBLE," +
+                    "volcfsnd DOUBLE," +
                     "volcfgrs DOUBLE," +
                     "volcfnet DOUBLE," +
                     "volcsgrs DOUBLE," +
                     "voltsgrs DOUBLE," +
+                    "voltsgrs_bark DOUBLE," +
+                    "volcfgrs_bark DOUBLE," +
+                    "volcfsnd_bark DOUBLE," +
+                    "volcfnet_bark DOUBLE," +
+                    "volcsgrs_bark DOUBLE," +
+                    "volbsnet DOUBLE," +
+                    "drybio_stem DOUBLE," +
+                    "drybio_stem_bark DOUBLE," +
+                    "drybio_stump DOUBLE," +
+                    "drybio_stump_bark DOUBLE," +
+                    "drybio_bole_bark  DOUBLE," +
+                    "drybio_branch DOUBLE," +
+                    "drybio_foliage DOUBLE," +
+                    "drybio_ag  DOUBLE," +
+                    "drybio_bg DOUBLE," +
+                    "carbon_ag DOUBLE," +
+                    "carbon_bg DOUBLE," +
                     "fvs_tree_id CHAR(10)," +
                     "FvsCreatedTree_YN CHAR(1) DEFAULT 'N'," +
+                    "WOODLAND_YN CHAR(1) DEFAULT 'N'," +
                     "DateTimeCreated DATE)";
             }
 
