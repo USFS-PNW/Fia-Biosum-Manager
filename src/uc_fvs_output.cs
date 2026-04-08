@@ -6640,12 +6640,8 @@ namespace FIA_Biosum_Manager
                 System.IO.File.Copy(strTreeListDbFile, strTreeTempDbFile, true);
                 if (m_bDebug && frmMain.g_intDebugLevel > 1)
                     this.WriteText(strDebugFile, "\r\nEND:Copy production file to work file: Source File Name:" + strTreeListDbFile + " Destination File Name:" + strTreeTempDbFile + " " + System.DateTime.Now.ToString() + "\r\n");
-                    //m_intProgressOverallTotalCount = lstRunTitles.Count + 2;
-                    //@ToDo: Change this back when development is done
-                    m_intProgressStepTotalCount = 3;
-                    //@ToDo: This too
-                    //for (int i = 0; i < lstRunTitles.Count; i++)
-                    for (int i = 0; i < 1; i++)
+                    m_intProgressOverallTotalCount = lstRunTitles.Count + 2;
+                    for (int i = 0; i < lstRunTitles.Count; i++)
                     {
                         // Example RunTitle: FVSOUT_BM_P001-101-101-101-101
                         string strFvsVariant = lstRunTitles[i].Substring(7, 2);
@@ -7104,14 +7100,14 @@ namespace FIA_Biosum_Manager
                                 {
                                     // Add integer key to calculation output table
                                     using (System.Data.SQLite.SQLiteConnection conn =
-                                        new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\" + Tables.VolumeAndBiomass.DefaultTvbcWorkDatabase)))
+                                        new System.Data.SQLite.SQLiteConnection(SQLite.GetConnectionString(frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\" + Tables.VolumeAndBiomass.DefaultTvbcWorkDatabase)))
                                     {
                                         conn.Open();
-                                        if (!oDataMgr.ColumnExist(conn, Tables.VolumeAndBiomass.TvbcTreeDataCalcTable, "TRE_CN2"))
+                                        if (!SQLite.ColumnExist(conn, Tables.VolumeAndBiomass.TvbcTreeDataCalcTable, "TRE_CN2"))
                                         {
-                                            oDataMgr.AddColumn(conn, Tables.VolumeAndBiomass.TvbcTreeDataCalcTable, "TRE_CN2", "INTEGER", "");
-                                            oDataMgr.SqlNonQuery(conn, $@"UPDATE {Tables.VolumeAndBiomass.TvbcTreeDataCalcTable} SET TRE_CN2 = cast(TRE_CN AS iNTEGER)");
-                                            oDataMgr.AddIndex(conn, Tables.VolumeAndBiomass.TvbcTreeDataCalcTable, "tvbc_calc_idx1", "TRE_CN2");
+                                            SQLite.AddColumn(conn, Tables.VolumeAndBiomass.TvbcTreeDataCalcTable, "TRE_CN2", "INTEGER", "");
+                                            SQLite.SqlNonQuery(conn, $@"UPDATE {Tables.VolumeAndBiomass.TvbcTreeDataCalcTable} SET TRE_CN2 = cast(TRE_CN AS iNTEGER)");
+                                            SQLite.AddIndex(conn, Tables.VolumeAndBiomass.TvbcTreeDataCalcTable, "tvbc_calc_idx1", "TRE_CN2");
                                         }
                                     }
 
@@ -7163,26 +7159,10 @@ namespace FIA_Biosum_Manager
 
                                     if (m_bDebug && frmMain.g_intDebugLevel > 2)
                                         this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
-                                    if (m_bDebug && frmMain.g_intDebugLevel > 2)
-                                        this.WriteText(strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + SQLite.m_strSQL + "\r\n");
-                                    SQLite.SqlNonQuery(SQLite.m_Connection, SQLite.m_strSQL);
-                                    if (m_bDebug && frmMain.g_intDebugLevel > 2)
-                                        this.WriteText(strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
 
-                                    // This query is customized because there are some fields missing from inForest that are in fvs_CutTree
-                                    SQLite.m_strSQL = $@"UPDATE {Tables.FVS.DefaultFVSInForestTreeTableName} 
-                                                        SET (volcfnet, volcfsnd, volcsgrs, voltsgrs) 
-                                                        = (select volcfnet_calc, volcfsnd_calc, volcsgrs_calc, voltsgrs_calc
-                                                        FROM FCS.{Tables.VolumeAndBiomass.BiosumVolumeCalcTable}
-                                                        WHERE {Tables.FVS.DefaultFVSInForestTreeTableName}.id = FCS.{Tables.VolumeAndBiomass.BiosumVolumeCalcTable}.tree)
-                                                        WHERE fvs_variant = '{strFvsVariant}' and rxpackage = '{strRxPackage}'";
-                                    if (m_bDebug && frmMain.g_intDebugLevel > 2)
-                                        this.WriteText(strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + SQLite.m_strSQL + "\r\n");
-                                    SQLite.SqlNonQuery(SQLite.m_Connection, SQLite.m_strSQL);
-                                    if (m_bDebug && frmMain.g_intDebugLevel > 2)
-                                        this.WriteText(strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
 
-                                    SQLite.m_strSQL = "DETACH DATABASE 'FCS'";
+
+                                    SQLite.m_strSQL = "DETACH DATABASE 'TVBC'";
                                     if (m_bDebug && frmMain.g_intDebugLevel > 2)
                                         this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + SQLite.m_strSQL + "\r\n");
                                     SQLite.SqlNonQuery(SQLite.m_Connection, SQLite.m_strSQL);
@@ -7200,7 +7180,7 @@ namespace FIA_Biosum_Manager
                                 if (SQLite.TableExist(conn, "cutlist_save_tree_species_work_table"))
                                 {
                                     //update fvs_species
-                                    SQLite.m_strSQL = Queries.VolumeAndBiomass.FVSOut.BuildInputSQLiteTableForVolumeCalculation_Step11(Tables.FVS.DefaultFVSInForestTreeTableName, strRxPackage);
+                                    SQLite.m_strSQL = Queries.VolumeAndBiomass.FVSOut.BuildInputSQLiteTableForVolumeCalculation_Step11(Tables.FVS.DefaultFVSInForestTreeTvbcTableName, strRxPackage);
                                     if (m_bDebug && frmMain.g_intDebugLevel > 2)
                                         this.WriteText(strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + SQLite.m_strSQL + "\r\n");
                                     SQLite.SqlNonQuery(conn, SQLite.m_strSQL);

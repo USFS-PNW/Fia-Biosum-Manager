@@ -1316,7 +1316,6 @@ namespace FIA_Biosum_Manager
                     "carbon_bg DOUBLE," +
                     "fvs_tree_id CHAR(10)," +
                     "FvsCreatedTree_YN CHAR(1) DEFAULT 'N'," +
-                    "WOODLAND_YN CHAR(1) DEFAULT 'N'," +
                     "DateTimeCreated DATE)";
             }
 
