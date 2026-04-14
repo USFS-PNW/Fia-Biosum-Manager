@@ -2316,7 +2316,7 @@ namespace FIA_Biosum_Manager
                         }
 
                         // DELETE SEEDLINGS FROM CUTTREE TABLE; INFOREST TABLE TBD
-                        if (strFvsTreeTable.Equals(Tables.FVS.DefaultFVSCutTreeTableName))
+                        if (strFvsTreeTable.Equals(Tables.FVS.DefaultFVSCutTreeTvbcTableName))
                         {
                             oDataMgr.m_strSQL = $@"DELETE FROM {strFvsTreeTable} WHERE DBH < 1.0" ;
                             if (m_bDebug && frmMain.g_intDebugLevel > 2)

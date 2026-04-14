@@ -197,25 +197,24 @@ namespace FIA_Biosum_Manager
                 m_oQueries.LoadDatasources(true);
 
                 //
-                //OPEN CONNECTION TO TREELIST DB FILE
+                //OPEN CONNECTION TO FVSOUT_TREE_LIST DB FILE
                 //
                 string strFvsTreeListDb = $@"{frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim()}{Tables.FVS.DefaultFVSTreeListDbFile}";
                 string strFVSTreeTableName = "";
-                if (File.Exists(strFvsTreeListDb))
-                {
-                    using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(m_oDataMgr.GetConnectionString(strFvsTreeListDb)))
-                    {
-                        conn.Open();
-                        if (m_oDataMgr.TableExist(conn, Tables.FVS.DefaultFVSCutTreeTableName))
-                        {
-                            strFVSTreeTableName = Tables.FVS.DefaultFVSCutTreeTableName;
-                        }
-                    }
-                }
+                //@ToDo: Re-enable this when we are ready to support FVS_CutTreeTvbc
+                //if (File.Exists(strFvsTreeListDb))
+                //{
+                //    using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(m_oDataMgr.GetConnectionString(strFvsTreeListDb)))
+                //    {
+                //        conn.Open();
+                //        if (m_oDataMgr.TableExist(conn, Tables.FVS.DefaultFVSCutTreeTvbcTableName))
+                //        {
+                //            strFVSTreeTableName = Tables.FVS.DefaultFVSCutTreeTvbcTableName;
+                //        }
+                //    }
+                //}
 
                 cmbDatasource.Items.Clear();
-                cmbDatasource.Items.Add("Tree Sample");
-                cmbDatasource.Items.Add("Tree Table");
                 if (!string.IsNullOrEmpty(strFVSTreeTableName))
                 {
                     cmbDatasource.Items.Add(strFVSTreeTableName);
@@ -224,7 +223,6 @@ namespace FIA_Biosum_Manager
             else
             {
                 cmbDatasource.Items.Clear();
-                cmbDatasource.Items.Add("Tree Sample");
             }
             if (bHasTvbcData)
             {
@@ -868,12 +866,12 @@ namespace FIA_Biosum_Manager
             // 
             this.cmbDatasource.FormattingEnabled = true;
             this.cmbDatasource.Items.AddRange(new object[] {
-            "Tree Sample"});
+            "Tree Sample TVBC"});
             this.cmbDatasource.Location = new System.Drawing.Point(12, 293);
             this.cmbDatasource.Name = "cmbDatasource";
             this.cmbDatasource.Size = new System.Drawing.Size(166, 24);
             this.cmbDatasource.TabIndex = 5;
-            this.cmbDatasource.Text = "Tree Sample";
+            this.cmbDatasource.Text = "Tree Sample TVBC";
             // 
             // btnLinkTableTest
             // 
@@ -881,7 +879,7 @@ namespace FIA_Biosum_Manager
             this.btnLinkTableTest.Name = "btnLinkTableTest";
             this.btnLinkTableTest.Size = new System.Drawing.Size(150, 21);
             this.btnLinkTableTest.TabIndex = 3;
-            this.btnLinkTableTest.Text = "Test Fics Workflow";
+            this.btnLinkTableTest.Text = "Test TVBC Workflow";
             this.btnLinkTableTest.UseVisualStyleBackColor = true;
             this.btnLinkTableTest.Click += new System.EventHandler(this.btnLinkTableTest_Click);
             // 
@@ -2024,50 +2022,14 @@ namespace FIA_Biosum_Manager
 
     private void btnLoad_Click(object sender, EventArgs e)
     {
-            if (cmbDatasource.Text.Trim().ToUpper() == "TREE SAMPLE") LoadTreeSample();
-            else if (cmbDatasource.Text.Trim().ToUpper() == "TREE SAMPLE TVBC") LoadTreeSampleTvbc();
-            else if (cmbDatasource.Text.Trim().ToUpper() == "TREE TABLE")
-            {
-                using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(m_oDataMgr.GetConnectionString(m_oQueries.m_oDataSource.getFullPathAndFile(Datasource.TableTypes.Plot))))
-                {
-                    conn.Open();
-                    m_oDataMgr.m_strSQL = "SELECT count(fvs_variant) FROM " + m_oQueries.m_oFIAPlot.m_strPlotTable + " " +
-                                      "WHERE fvs_variant IS NOT NULL AND LENGTH(TRIM(fvs_variant)) > 0";
-                    if (m_oDataMgr.getRecordCount(conn, m_oDataMgr.m_strSQL, "fvs_variant") > 0)
-
-                    {
-                        FIA_Biosum_Manager.frmDialog oDlg = new frmDialog();
-
-                        oDlg.uc_select_list_item1.lblTitle.Text = "FVS Variant";
-                        oDlg.uc_select_list_item1.listBox1.Sorted = true;
-                        oDlg.uc_select_list_item1.lblMsg.Hide();
-                        oDlg.uc_select_list_item1.loadvalues(m_oDataMgr, conn,
-                                                        "SELECT DISTINCT fvs_variant FROM " + m_oQueries.m_oFIAPlot.m_strPlotTable, new string[] { "fvs_variant" });
-                        oDlg.uc_select_list_item1.Show();
-
-                        DialogResult result = oDlg.ShowDialog();
-                        if (result == DialogResult.OK)
-                        {
-                            if (oDlg.uc_select_list_item1.listBox1.SelectedItems.Count > 0)
-                            {
-                                LoadTreeTable(oDlg.uc_select_list_item1.listBox1.SelectedItems[0].ToString().Trim());
-                            }
-                        }
-                        oDlg.Dispose();
-                    }
-                    else
-                    {
-                        LoadTreeTable("");
-                    }
-                }
-            }
+            if (cmbDatasource.Text.Trim().ToUpper() == "TREE SAMPLE TVBC") LoadTreeSampleTvbc();
             else
             {
                 string strFvsOutDb = $@"{frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim()}{Tables.FVS.DefaultFVSTreeListDbFile}";
                 using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(m_oDataMgr.GetConnectionString(strFvsOutDb)))
                 {
                     conn.Open();
-                    m_oDataMgr.m_strSQL = "SELECT count(fvs_variant) FROM " + Tables.FVS.DefaultFVSCutTreeTableName + "  LIMIT 1";
+                    m_oDataMgr.m_strSQL = "SELECT count(fvs_variant) FROM " + Tables.FVS.DefaultFVSCutTreeTvbcTableName + "  LIMIT 1";
                     if (m_oDataMgr.getRecordCount(conn, m_oDataMgr.m_strSQL, "fvs_variant") > 0)
 
                     {
@@ -2076,7 +2038,7 @@ namespace FIA_Biosum_Manager
                         oDlg.uc_select_list_item1.listBox1.Sorted = true;
                         oDlg.uc_select_list_item1.lblMsg.Hide();
                         oDlg.uc_select_list_item1.loadvalues(m_oDataMgr, conn,
-                                                        "SELECT DISTINCT fvs_variant, rxPackage FROM " + Tables.FVS.DefaultFVSCutTreeTableName, new string[] { "fvs_variant", "rxPackage" });
+                                                        "SELECT DISTINCT fvs_variant, rxPackage FROM " + Tables.FVS.DefaultFVSCutTreeTvbcTableName, new string[] { "fvs_variant", "rxPackage" });
                         oDlg.uc_select_list_item1.Show();
 
                         DialogResult result = oDlg.ShowDialog();
@@ -2294,241 +2256,13 @@ namespace FIA_Biosum_Manager
 
 
     }
-    private void LoadTreeSample()
-    {
-            m_strSelectedDBFile = m_strTreeSampleDBFile;
-            uc_gridview1.LoadGridView(m_oDataMgr.GetConnectionString(m_strTreeSampleDBFile),
-            "SELECT DRYBIOM," +
-                   "DRYBIOT," +
-                   "DRYBIO_BOLE," +
-                   "DRYBIO_SAPLING," +
-                   "DRYBIO_TOP," +
-                   "DRYBIO_WDLD_SPP," +
-                   "VOLCFGRS," +
-                   "VOLCFNET," +
-                   "VOLCFSND," +
-                   "VOLCSGRS," +
-                   "VOLTSGRS," + 
-                   "id," +
-                   "biosum_cond_id, " +
-                   "fvs_tree_id," +
-                   "SUBSTR(biosum_cond_id, 6, 2) AS state," +
-                   "SUBSTR(biosum_cond_id, 12, 3) AS county," +
-                   "SUBSTR(biosum_cond_id, 15, 7) AS plot," + 
-                   "fvs_variant," + 
-                   "InvYr," +
-                   "SpCd," +
-                   "Dbh," +
-                   "Ht," +
-                   "vol_loc_grp," +
-                   "CASE WHEN actualht IS NULL THEN Ht ELSE actualht END AS actualht," +
-                   "statuscd," +
-                   "treeclcd," +
-                   "cr," +
-                   "cull," +
-                   "CASE WHEN roughcull IS NULL THEN 0 ELSE roughcull END AS roughcull," +
-                   "decaycd," +
-                   "totage," +
-                   //START: ADDED BIOSUM_VOLUME COLUMNS
-                   "sitree," +
-                   "wdldstem," +
-                   "upper_dia," +
-                   "upper_dia_ht," +
-                   "centroid_dia," +
-                   "centroid_dia_ht_actual," +
-                   "sawht," +
-                   "htdmp," +
-                   "boleht," +
-                   "cullcf," +
-                   "cull_fld," +
-                   "culldead," +
-                   "cullform," +
-                   "cullmstop," +
-                   "cfsnd," +
-                   "bfsnd," +
-                   "precipitation," +
-                   "balive," +
-                   "diahtcd," +
-                   "standing_dead_cd, " +
-                   "ecosubcd, " +
-                   "stdorgcd " +
-             //END: ADDED BIOSUM_VOLUME COLUMNS
-             "FROM TreeSample", "TreeSample");
-
-        m_strGridTableSource = "TreeSample";
-    }
-        private void LoadTreeSampleTvbc()
+          private void LoadTreeSampleTvbc()
         {
             m_strSelectedDBFile = m_strTreeSampleDBFile;
             uc_gridview1.LoadGridView(m_oDataMgr.GetConnectionString(m_strTreeSampleDBFile),
             $@"SELECT * FROM {m_strSampleTvbcTable}", m_strSampleTvbcTable);
             m_strGridTableSource = m_strSampleTvbcTable;
         }
-
-        private void LoadTreeTable(string p_strFVSVariant)
-    {
-        if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
-        {
-            frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, "\r\n//\r\n");
-            frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, "//frmFCSTreeVolumeEdit.LoadTreeTable \r\n");
-            frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, "//\r\n");
-        }
-        frmMain.g_oFrmMain.ActivateStandByAnimation(
-          this.WindowState,
-          this.Left,
-          this.Height,
-          this.Width,
-          this.Top);
-
-            m_strSelectedDBFile = m_strTempDBFile;
-            //
-            //CREATE TREE TABLE WORK TABLE
-            //
-            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(m_oDataMgr.GetConnectionString(m_strSelectedDBFile)))
-            {
-                conn.Open();
-                // Attach master.db to populate worktables
-                m_oDataMgr.m_strSQL = $@"ATTACH DATABASE '{m_oQueries.m_oDataSource.getFullPathAndFile(Datasource.TableTypes.Tree)}' AS TREES";
-                m_oDataMgr.SqlNonQuery(conn, m_oDataMgr.m_strSQL);
-
-                if (m_oDataMgr.TableExist(conn, "tree_work_table"))
-                    m_oDataMgr.SqlNonQuery(conn, "DROP TABLE tree_work_table");
-                frmMain.g_sbpInfo.Text = "Loading Tree Table Data...Stand By";
-                m_oDataMgr.m_strSQL = frmMain.g_oTables.m_oFvs.CreateInputBiosumVolumesTableSQL("tree_work_table");
-                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, m_oDataMgr.m_strSQL + "\r\n\r\n");
-                m_oDataMgr.SqlNonQuery(conn, m_oDataMgr.m_strSQL);
-                //
-                //POPULATE TREE WORK TABLE
-                //
-                m_oDataMgr.m_strSQL = "INSERT INTO tree_work_table " +
-                    "(biosum_cond_id, InvYr,fvs_variant,spcd, dbh,ht,vol_loc_grp,actualht," +
-                    "statuscd, treeclcd,cr,cull,roughcull,decaycd,totage,diahtcd,standing_dead_cd," +
-                    "balive,precipitation,fvs_tree_id,ecosubcd,stdorgcd) " +
-                    "SELECT t.biosum_cond_id," +
-                    "CASE WHEN p.InvYr IS NULL AND p.MeasYear IS NOT NULL THEN p.MeasYear " +
-                    "WHEN p.InvYr IS NOT NULL THEN p.InvYr ELSE NULL END AS InvYr," +
-                    "p.fvs_variant," +
-                    "t.spcd, t.dia AS dbh," +
-                    "t.ht, c.vol_loc_grp, " +
-                    "CASE WHEN t.actualht IS NULL THEN t.Ht ELSE t.actualht END AS actualht," +
-                    "t.statuscd, t.treeclcd," +
-                    "CASE WHEN t.cr IS NULL THEN 0 ELSE t.cr END AS cr," +
-                    "CASE WHEN t.cull IS NULL THEN 0 ELSE ROUND(t.cull, 0) END AS cull," +
-                    "CASE WHEN t.roughcull IS NULL THEN 0 ELSE ROUND(t.roughcull, 0) END AS roughcull," +
-                    "CASE WHEN t.decaycd IS NULL THEN 0 ELSE t.decaycd END AS decaycd," +
-                    "t.totage, t.diahtcd, t.standing_dead_cd, c.balive, p.precipitation, " +
-                    "TRIM(t.fvs_tree_id), p.ecosubcd, c.stdorgcd " +
-                    "FROM " + m_oQueries.m_oFIAPlot.m_strTreeTable + " t " +
-                    "JOIN " + m_oQueries.m_oFIAPlot.m_strCondTable + " c ON c.biosum_cond_id = t.biosum_cond_id " +
-                    "JOIN " + m_oQueries.m_oFIAPlot.m_strPlotTable + " p ON p.biosum_plot_id = c.biosum_plot_id " +
-                    "WHERE (p.fvs_variant IS NULL OR p.fvs_variant='" + p_strFVSVariant + "') AND " +
-                    "(p.InvYr IS NOT NULL OR p.MeasYear IS NOT NULL)";
-
-                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, m_oDataMgr.m_strSQL + "\r\n\r\n");
-                m_oDataMgr.SqlNonQuery(conn, m_oDataMgr.m_strSQL);
-
-                //
-                //update columns
-                //
-                //total cull
-                //populate treeclcd column
-                if (m_oDataMgr.TableExist(conn, "cull_total_work_table") == true)
-                    m_oDataMgr.SqlNonQuery(conn, "DROP TABLE cull_total_work_table");
-                //m_oDataMgr.m_strSQL = "INSERT INTO cull_total_work_table" +
-                //    " SELECT id, CASE WHEN cull IS NOT NULL AND roughcull IS NOT NULL " +
-                //    "THEN cull + roughcull ELSE CASE WHEN cull IS NOT NULL " +
-                //    "THEN cull ELSE CASE WHEN roughcull IS NOT NULL " +
-                //    "THEN roughcull ELSE 0 END END END AS totalcull " +
-                //    "FROM Tree_Work_Table";
-                m_oDataMgr.m_strSQL = Queries.VolumeAndBiomass.FIAPlotInput.BuildInputTableForVolumeCalculation_Step4(
-                    "cull_total_work_table", "tree_work_table");
-                m_oDataMgr.m_strSQL = m_oDataMgr.m_strSQL.Replace("tre_cn", "id");
-                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, m_oDataMgr.m_strSQL + "\r\n\r\n");
-                m_oDataMgr.SqlNonQuery(conn, m_oDataMgr.m_strSQL);
-                m_oDataMgr.m_strSQL = Queries.VolumeAndBiomass.FIAPlotInput.PNWRS.BuildInputTableForVolumeCalculation_Step5(
-                    "cull_total_work_table", "tree_work_table");
-                m_oDataMgr.m_strSQL = m_oDataMgr.m_strSQL.Replace("tre_cn", "id");
-                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, m_oDataMgr.m_strSQL + "\r\n\r\n");
-                m_oDataMgr.SqlNonQuery(conn, m_oDataMgr.m_strSQL);
-
-                m_oDataMgr.m_strSQL = Queries.VolumeAndBiomass.FIAPlotInput.PNWRS.BuildInputTableForVolumeCalculation_Step6(
-                    "cull_total_work_table", "tree_work_table");
-                m_oDataMgr.m_strSQL = m_oDataMgr.m_strSQL.Replace("tre_cn", "id");
-                m_oDataMgr.m_strSQL = m_oDataMgr.m_strSQL.Replace("dia", "dbh");
-                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, m_oDataMgr.m_strSQL + "\r\n\r\n");
-                m_oDataMgr.SqlNonQuery(conn, m_oDataMgr.m_strSQL);
-            }
-
-            uc_gridview1.LoadGridView(m_oDataMgr.GetConnectionString(m_strTempDBFile),
-                "SELECT DRYBIOM," +
-                   "DRYBIOT," +
-                   "DRYBIO_BOLE_CALC AS DRYBIO_BOLE," +
-                   "DRYBIO_SAPLING_CALC AS DRYBIO_SAPLING," +
-                   "DRYBIO_TOP_CALC AS DRYBIO_TOP," +
-                   "DRYBIO_WDLD_SPP_CALC AS DRYBIO_WDLD_SPP," +
-                   "VOLCFGRS," +
-                   "VOLCFNET," +
-                   "VOLCFSND_CALC AS VOLCFSND," +
-                   "VOLCSGRS," +
-                   "VOLTSGRS," +
-                   "id," +
-                   "biosum_cond_id, " +
-                   "fvs_tree_id," +
-                   "SUBSTR(biosum_cond_id, 6, 2) AS state," +
-                   "SUBSTR(biosum_cond_id, 12, 3) AS county," +
-                   "SUBSTR(biosum_cond_id, 15, 7) AS plot," +
-                   "fvs_variant," + 
-                   "InvYr," +
-                   "SpCd," +
-                   "Dbh," +
-                   "Ht," +
-                   "vol_loc_grp," +
-                   "CASE WHEN actualht IS NULL THEN Ht ELSE actualht END AS actualht," +
-                   "statuscd," +
-                   "treeclcd," +
-                   "cr," +
-                   "cull," +
-                   "CASE WHEN roughcull IS NULL THEN 0 ELSE roughcull END AS roughcull," +
-                   "decaycd," + 
-                   "totage," +
-                   //START: ADDED BIOSUM_VOLUME COLUMNS
-                   "sitree," + 
-                   "wdldstem," + 
-                   "upper_dia," + 
-                   "upper_dia_ht," + 
-                   "centroid_dia," + 
-                   "centroid_dia_ht_actual," + 
-                   "sawht," + 
-                   "htdmp," + 
-                   "boleht," + 
-                   "cullcf," + 
-                   "cull_fld," + 
-                   "culldead," + 
-                   "cullform," + 
-                   "cullmstop," + 
-                   "cfsnd," + 
-                   "bfsnd," + 
-                   "precipitation," + 
-                   "balive," +
-                   "diahtcd," +
-                   "standing_dead_cd, " +
-                   "ecosubcd, " +
-                   "stdorgcd " +
-             //END: ADDED BIOSUM_VOLUME COLUMNS
-             "FROM tree_work_table", m_oQueries.m_oFIAPlot.m_strTreeTable);
-
-        m_strGridTableSource = "tree_work_table";
-        frmMain.g_oFrmMain.DeactivateStandByAnimation();
-        frmMain.g_sbpInfo.Text = "Ready";
-        if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
-            frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, "---Leaving: frmFCSTreeVolumeEdit.LoadTreeTable \r\n");
-    }
-
 
     private void btnEdit_Click(object sender, EventArgs e)
     {
@@ -2702,16 +2436,16 @@ namespace FIA_Biosum_Manager
         string strFile = frmMain.g_oUtils.getRandomFile(frmMain.g_oEnv.strTempDir, "db");
         string str="";
 
-        bool fcsTreeDbExists = System.IO.File.Exists(frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\" + Tables.VolumeAndBiomass.DefaultSqliteWorkDatabase);
-        bool bioSumCompsJarExists = System.IO.File.Exists(frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\BioSumComps.JAR");
-        bool fcsTreeCalcBatExists = System.IO.File.Exists(frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\fcs_tree_calc.bat");
-        bool bioSumCompsJarExecuted = false;
+        bool tvbcTreeDbExists = System.IO.File.Exists(frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\" + Tables.VolumeAndBiomass.DefaultTvbcWorkDatabase);
+        bool tvbcJarExists = System.IO.File.Exists(frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\FIA_TreeVBC.jar");
+        bool tvbcTreeCalcBatExists = System.IO.File.Exists(frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\tvbc_tree_calc.bat");
+        bool tvbcJarExecuted = false;
 
             //RUN here
-            if (fcsTreeDbExists && bioSumCompsJarExists && fcsTreeCalcBatExists)
+            if (tvbcTreeDbExists && tvbcJarExists && tvbcTreeCalcBatExists)
             {
-                frmMain.g_oUtils.RunProcess(frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum", "fcs_tree_calc.bat", "BAT");
-                bioSumCompsJarExecuted = true;
+                frmMain.g_oUtils.RunProcess(frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum", "tvbc_tree_calc.bat", "BAT");
+                tvbcJarExecuted = true;
             }
             else
             {
@@ -2719,23 +2453,23 @@ namespace FIA_Biosum_Manager
                 m_strError = "Missing required files";
             }
 
-            bool fcsErrorMsgExists = System.IO.File.Exists(frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\fcs_error_msg.txt");
-            if (fcsErrorMsgExists)
+            bool TvbcErrorMsgExists = System.IO.File.Exists(frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\tvbc_error_msg.txt");
+            if (TvbcErrorMsgExists)
             {
-                    m_strError = System.IO.File.ReadAllText(frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\fcs_error_msg.txt");
+                    m_strError = System.IO.File.ReadAllText(frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\tvbc_error_msg.txt");
                     if (m_strError.IndexOf("JAVA.EXE", 0) > 0)
                         m_strError = "Problem detected running JAVA.EXE";
                     m_intError = -2;
             }
 
-            str = $@"FCS_TREE.DB & BioSumComps.jar test report
+            str = $@"tvbc_tree_data.db & FIA_TreeVBC.jar test report
                 {Environment.NewLine}-----------------------------------------
-                {Environment.NewLine}Table Name: BIOSUM_CALC
-                {Environment.NewLine}FCS_TREE.DB FOUND: {(fcsTreeDbExists ? "Yes" : "No")}
-                {Environment.NewLine}FCS_TREE_CALC.BAT FOUND: {(fcsTreeCalcBatExists ? "Yes" : "No")}
-                {Environment.NewLine}BioSumComps.jar FOUND: {(bioSumCompsJarExists ? "Yes" : "No")}
-                {Environment.NewLine}BioSumComps EXECUTED:{(bioSumCompsJarExecuted ? "Yes" : "No")}
-                {Environment.NewLine}FCS_Errors FOUND: {(fcsErrorMsgExists ? "Yes" : "No")}";
+                {Environment.NewLine}Table Name: tvbc_tree_data_calc
+                {Environment.NewLine}tvbc_tree_data.DB FOUND: {(tvbcTreeDbExists ? "Yes" : "No")}
+                {Environment.NewLine}TVBC_TREE_CALC.BAT FOUND: {(tvbcTreeCalcBatExists ? "Yes" : "No")}
+                {Environment.NewLine}FIA_TreeVBC.jar FOUND: {(tvbcJarExists ? "Yes" : "No")}
+                {Environment.NewLine}FIA_TreeVBC EXECUTED:{(tvbcJarExecuted ? "Yes" : "No")}
+                {Environment.NewLine}Tvbc_Errors FOUND: {(TvbcErrorMsgExists ? "Yes" : "No")}";
 
             if (m_intError != 0)
                 str += $"{Environment.NewLine}Error Message: {m_strError}";
