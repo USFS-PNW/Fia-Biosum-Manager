@@ -2691,19 +2691,39 @@ namespace FIA_Biosum_Manager
                             }
                             // FVS creates a record for
                             // each condition for each cycle regardless of whether there is activity
-                            m_oDataMgr.m_strSQL = "CREATE TABLE " + strTargetPreTable + " AS SELECT " +
-                                        "biosum_cond_id, rxpackage, rx, rxcycle, fvs_variant, CAST(0 AS DOUBLE) AS " +
-                                        lblFvsVariableName.Text + " FROM " + strSourcePreTable;
+                            m_oDataMgr.m_strSQL = "CREATE TABLE " + strTargetPreTable + " " +
+                                "(biosum_cond_id CHAR(25), " +
+                                "rxpackage CHAR(3), " +
+                                "rx CHAR(3), " +
+                                "rxcycle CHAR(1), " +
+                                "fvs_variant CHAR(2), " +
+                                lblFvsVariableName.Text + " DOUBLE)";
                             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                             {
                                 frmMain.g_oUtils.WriteText(m_strDebugFile, "Creating final pre/post tables. They did not already exist \r\n");
                                 frmMain.g_oUtils.WriteText(m_strDebugFile, "sql: " + m_oDataMgr.m_strSQL + "\r\n\r\n");
                             }
-
                             m_oDataMgr.SqlNonQuery(conn, m_oDataMgr.m_strSQL);
-                            m_oDataMgr.m_strSQL = "CREATE TABLE " + strTargetPostTable + " AS SELECT " +
-                                        "biosum_cond_id, rxpackage, rx, rxcycle, fvs_variant, CAST(0 AS DOUBLE) AS " +
-                                        lblFvsVariableName.Text + " FROM " + strSourcePostTable;
+
+                            m_oDataMgr.m_strSQL = "INSERT INTO " + strTargetPreTable +
+                                " (biosum_cond_id, rxpackage, rx, rxcycle, fvs_variant) " +
+                                "SELECT biosum_cond_id, rxpackage, rx, rxcycle, fvs_variant " +
+                                "FROM " + strSourcePreTable;
+                            m_oDataMgr.SqlNonQuery(conn, m_oDataMgr.m_strSQL);
+
+                            m_oDataMgr.m_strSQL = "CREATE TABLE " + strTargetPostTable + " " +
+                                "(biosum_cond_id CHAR(25), " +
+                                "rxpackage CHAR(3), " +
+                                "rx CHAR(3), " +
+                                "rxcycle CHAR(1), " +
+                                "fvs_variant CHAR(2), " +
+                                lblFvsVariableName.Text + " DOUBLE)";
+                            m_oDataMgr.SqlNonQuery(strConn, m_oDataMgr.m_strSQL);
+
+                            m_oDataMgr.m_strSQL = "INSERT INTO " + strTargetPostTable +
+                                " (biosum_cond_id, rxpackage, rx, rxcycle, fvs_variant) " +
+                               "SELECT biosum_cond_id, rxpackage, rx, rxcycle, fvs_variant " +
+                               "FROM " + strSourcePostTable;
                             m_oDataMgr.SqlNonQuery(conn, m_oDataMgr.m_strSQL);
 
                             bNewTables = true;
