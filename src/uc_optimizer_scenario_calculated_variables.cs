@@ -1082,17 +1082,24 @@ namespace FIA_Biosum_Manager
                 }
             }
 
-            // Enable the refresh button if we have calculated weighted variables
-            string strPrePostWeightedDb = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory +
-                "\\" + Tables.OptimizerScenarioResults.DefaultCalculatedPrePostFVSVariableTableDbFile;
-            if (System.IO.File.Exists(strPrePostWeightedDb))
+            // Enable the refresh button if we have FVS variables
+            string strOptimizerDefsDb = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory +
+                "\\" + Tables.OptimizerDefinitions.DefaultDbFile;
+            if (System.IO.File.Exists(strOptimizerDefsDb))
             {
-                using (SQLiteConnection conn = new SQLiteConnection(m_oDataMgr.GetConnectionString(strPrePostWeightedDb)))
+                using (SQLiteConnection conn = new SQLiteConnection(m_oDataMgr.GetConnectionString(strOptimizerDefsDb)))
                 {
                     conn.Open();
-                    string[] arrTableNames = m_oDataMgr.getTableNames(conn);
-                    if (arrTableNames.Length > 0)
-                    BtnRecalculateAll.Enabled = true;
+
+                    string strFVSVariablesTable = Tables.OptimizerDefinitions.DefaultCalculatedFVSVariablesTableName;
+                    m_oDataMgr.m_strSQL = "SELECT * FROM " + strFVSVariablesTable;
+                    m_oDataMgr.SqlQueryReader(conn, m_oDataMgr.m_strSQL);
+
+                    if (m_oDataMgr.m_DataReader.HasRows)
+                    {
+                        BtnRecalculateAll.Enabled = true;
+                    }
+                    m_oDataMgr.m_DataReader.Close();
                 }
             }
 
