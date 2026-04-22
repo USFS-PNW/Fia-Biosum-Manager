@@ -1082,17 +1082,24 @@ namespace FIA_Biosum_Manager
                 }
             }
 
-            // Enable the refresh button if we have calculated weighted variables
-            string strPrePostWeightedDb = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory +
-                "\\" + Tables.OptimizerScenarioResults.DefaultCalculatedPrePostFVSVariableTableDbFile;
-            if (System.IO.File.Exists(strPrePostWeightedDb))
+            // Enable the refresh button if we have FVS variables
+            string strOptimizerDefsDb = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory +
+                "\\" + Tables.OptimizerDefinitions.DefaultDbFile;
+            if (System.IO.File.Exists(strOptimizerDefsDb))
             {
-                using (SQLiteConnection conn = new SQLiteConnection(m_oDataMgr.GetConnectionString(strPrePostWeightedDb)))
+                using (SQLiteConnection conn = new SQLiteConnection(m_oDataMgr.GetConnectionString(strOptimizerDefsDb)))
                 {
                     conn.Open();
-                    string[] arrTableNames = m_oDataMgr.getTableNames(conn);
-                    if (arrTableNames.Length > 0)
-                    BtnRecalculateAll.Enabled = true;
+
+                    string strFVSVariablesTable = Tables.OptimizerDefinitions.DefaultCalculatedFVSVariablesTableName;
+                    m_oDataMgr.m_strSQL = "SELECT * FROM " + strFVSVariablesTable;
+                    m_oDataMgr.SqlQueryReader(conn, m_oDataMgr.m_strSQL);
+
+                    if (m_oDataMgr.m_DataReader.HasRows)
+                    {
+                        BtnRecalculateAll.Enabled = true;
+                    }
+                    m_oDataMgr.m_DataReader.Close();
                 }
             }
 
@@ -2691,19 +2698,25 @@ namespace FIA_Biosum_Manager
                             }
                             // FVS creates a record for
                             // each condition for each cycle regardless of whether there is activity
-                            m_oDataMgr.m_strSQL = "CREATE TABLE " + strTargetPreTable + " AS SELECT " +
-                                        "biosum_cond_id, rxpackage, rx, rxcycle, fvs_variant, CAST(0 AS DOUBLE) AS " +
-                                        lblFvsVariableName.Text + " FROM " + strSourcePreTable;
+                            frmMain.g_oTables.m_oOptimizerDef.CreateWeightedFVSVariableTable(m_oDataMgr, conn, strTargetPreTable, lblFvsVariableName.Text);
                             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                             {
                                 frmMain.g_oUtils.WriteText(m_strDebugFile, "Creating final pre/post tables. They did not already exist \r\n");
                                 frmMain.g_oUtils.WriteText(m_strDebugFile, "sql: " + m_oDataMgr.m_strSQL + "\r\n\r\n");
                             }
 
+                            m_oDataMgr.m_strSQL = "INSERT INTO " + strTargetPreTable +
+                                " (biosum_cond_id, rxpackage, rx, rxcycle, fvs_variant) " +
+                                "SELECT biosum_cond_id, rxpackage, rx, rxcycle, fvs_variant " +
+                                "FROM " + strSourcePreTable;
                             m_oDataMgr.SqlNonQuery(conn, m_oDataMgr.m_strSQL);
-                            m_oDataMgr.m_strSQL = "CREATE TABLE " + strTargetPostTable + " AS SELECT " +
-                                        "biosum_cond_id, rxpackage, rx, rxcycle, fvs_variant, CAST(0 AS DOUBLE) AS " +
-                                        lblFvsVariableName.Text + " FROM " + strSourcePostTable;
+
+                            frmMain.g_oTables.m_oOptimizerDef.CreateWeightedFVSVariableTable(m_oDataMgr, conn, strTargetPostTable, lblFvsVariableName.Text);
+
+                            m_oDataMgr.m_strSQL = "INSERT INTO " + strTargetPostTable +
+                                " (biosum_cond_id, rxpackage, rx, rxcycle, fvs_variant) " +
+                               "SELECT biosum_cond_id, rxpackage, rx, rxcycle, fvs_variant " +
+                               "FROM " + strSourcePostTable;
                             m_oDataMgr.SqlNonQuery(conn, m_oDataMgr.m_strSQL);
 
                             bNewTables = true;

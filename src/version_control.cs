@@ -241,6 +241,22 @@ namespace FIA_Biosum_Manager
                     }
                 }
             }
+
+            // delete any existing weighed fvs variable tables
+            frmMain.g_sbpInfo.Text = "Version Update: Deleting weighted FVS variable tables ...Stand by";
+
+            string strWeightedFVSVariablesDb = this.ReferenceProjectDirectory + "\\" + Tables.OptimizerScenarioResults.DefaultCalculatedPrePostFVSVariableTableDbFile;
+            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(strWeightedFVSVariablesDb)))
+            {
+                conn.Open();
+
+                string[] arrTableNames = oDataMgr.getTableNames(conn);
+                foreach (string strTable in arrTableNames)
+                {
+                    oDataMgr.m_strSQL = "DROP TABLE " + strTable;
+                    oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+                }
+            }
         }
 
         // Method to compare two versions.

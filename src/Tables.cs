@@ -949,6 +949,22 @@ namespace FIA_Biosum_Manager
             static public string DefaultOptimizerProjectConfigTableName { get { return "project_config"; } }
             static public string DefaultDbFile { get { return @"optimizer\db\optimizer_definitions.db"; } }
 
+            public void CreateWeightedFVSVariableTable(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName, string p_strVariableName)
+            {
+                p_oDataMgr.SqlNonQuery(p_oConn, CreateWeightedFVSVariableTableSQL(p_strTableName, p_strVariableName));
+            }
+
+            static public string CreateWeightedFVSVariableTableSQL(string p_strTableName, string p_strVariableName)
+            {
+                return "CREATE TABLE " + p_strTableName + " (" +
+                    "biosum_cond_id CHAR(25)," +
+                    "rxpackage CHAR(3)," +
+                    "rx CHAR(3)," +
+                    "rxcycle CHAR(1)," +
+                    "fvs_variant CHAR(2)," +
+                    p_strVariableName + " DOUBLE)";
+            }
+
         }
 
 
