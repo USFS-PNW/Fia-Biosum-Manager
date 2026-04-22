@@ -3041,10 +3041,11 @@ namespace FIA_Biosum_Manager
                 public static string BuildInputTableForTvbcVolumeCalculation_Step2(string p_strInputVolumesTable, string p_strFIATreeTable, string p_strFIAPlotTable, string p_strFIACondTable)
                 {
                     return $@"UPDATE {p_strInputVolumesTable} 
-                        SET (spcd,statuscd,treeclcd,cull,roughcull,decaycd,balive,ecosubcd,stdorgcd,actualht) 
-                        = (select t.spcd, case when t.statuscd is null then 1 else t.statuscd end,treeclcd, case when t.cull is null then 0 else t.cull end,case when t.roughcull is null then 0 else t.roughcull end,
+                        SET (spcd,statuscd,treeclcd,wdldstem,cull,roughcull,decaycd,balive,ecosubcd,stdorgcd,actualht,cull_fld,cullform,cullmstop) 
+                        = (select t.spcd, case when t.statuscd is null then 1 else t.statuscd end,treeclcd, wdldstem, case when t.cull is null then 0 else t.cull end,case when t.roughcull is null then 0 else t.roughcull end,
                         case when t.decaycd is null then 0 else t.decaycd end,c.balive, p.ecosubcd, c.stdorgcd, 
-                        case when t.actualht <> t.ht then {p_strInputVolumesTable}.ht - t.ht + t.actualht else {p_strInputVolumesTable}.actualht end
+                        case when t.actualht <> t.ht then {p_strInputVolumesTable}.ht - t.ht + t.actualht else {p_strInputVolumesTable}.actualht end,
+                        cull_fld,cullform,cullmstop
                         FROM {p_strFIATreeTable} t inner join {p_strFIACondTable} c, {p_strFIAPlotTable} p
                         WHERE t.biosum_cond_id = c.biosum_cond_id and {p_strInputVolumesTable}.biosum_cond_id = c.biosum_cond_id and c.biosum_plot_id = p.biosum_plot_id and {p_strInputVolumesTable}.fvs_tree_id = trim(t.fvs_tree_id))
                         WHERE FvsCreatedTree_YN = 'N'";
@@ -3067,7 +3068,10 @@ namespace FIA_Biosum_Manager
                     //        INNER JOIN {strFiaTreeSpeciesRefTable} ref ON cint(b.spcd)=ref.spcd
                     //        SET b.diahtcd=IIF(ref.woodland_yn='N', 1, 2) WHERE b.fvscreatedtree_yn='Y'";
                     return $@"UPDATE {Tables.VolumeAndBiomass.BiosumVolumesInputTable} as b
-                        SET diahtcd = case when woodland_yn='N' then 1 else 2 end
+                        SET diahtcd = case when woodland_yn='N' then 1 else 2 end,
+                        wdldstem = case when woodland_yn='Y' then 1 end,
+                        treeclcd = case when woodland_yn='Y' then 3 else 2 end,
+                        cull = 0, roughcull = 0
                         FROM {strFiaTreeSpeciesRefTable} r
                         WHERE CAST(b.spcd as integer)=r.spcd and b.fvscreatedtree_yn='Y'";
                 }
