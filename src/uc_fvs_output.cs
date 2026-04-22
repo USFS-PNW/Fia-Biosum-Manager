@@ -2843,46 +2843,46 @@ namespace FIA_Biosum_Manager
                     if (m_bDebug && frmMain.g_intDebugLevel > 2)
                         this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
 
-                    //populate treeclcd column
-                    if (oDataMgr.TableExist(oConn, "CULL_TOTAL_WORK_TABLE"))
-                        oDataMgr.SqlNonQuery(oConn, "DROP TABLE CULL_TOTAL_WORK_TABLE");
+                    //Custom CULL Processing
+                    //if (oDataMgr.TableExist(oConn, "CULL_TOTAL_WORK_TABLE"))
+                    //    oDataMgr.SqlNonQuery(oConn, "DROP TABLE CULL_TOTAL_WORK_TABLE");
 
-                    foreach (var strSQL in Queries.VolumeAndBiomass.FVSOut.BuildInputTableForVolumeCalculation_Step4(
-                        "cull_total_work_table", Tables.VolumeAndBiomass.BiosumVolumesInputTable))
-                    {
-                        oDataMgr.m_strSQL = strSQL;
-                        if (m_bDebug && frmMain.g_intDebugLevel > 2)
-                            this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + oDataMgr.m_strSQL + "\r\n");
-                        oDataMgr.SqlNonQuery(oConn, oDataMgr.m_strSQL);
-                        if (m_bDebug && frmMain.g_intDebugLevel > 2)
-                            this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
-                    }
-
-                    m_intProgressStepCurrentCount++;
-                    UpdateTherm(m_frmTherm.progressBar1,
-                        m_intProgressStepCurrentCount,
-                        m_intProgressStepTotalCount);
-
-                    oDataMgr.m_strSQL = Queries.VolumeAndBiomass.FVSOut.PNWRS.BuildInputTableForVolumeCalculation_Step5(
-                        "cull_total_work_table", Tables.VolumeAndBiomass.BiosumVolumesInputTable);
-                    if (m_bDebug && frmMain.g_intDebugLevel > 2)
-                        this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + oDataMgr.m_strSQL + "\r\n");
-                    oDataMgr.SqlNonQuery(oConn, oDataMgr.m_strSQL);
-                    if (m_bDebug && frmMain.g_intDebugLevel > 2)
-                        this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
+                    //foreach (var strSQL in Queries.VolumeAndBiomass.FVSOut.BuildInputTableForVolumeCalculation_Step4(
+                    //    "cull_total_work_table", Tables.VolumeAndBiomass.BiosumVolumesInputTable))
+                    //{
+                    //    oDataMgr.m_strSQL = strSQL;
+                    //    if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                    //        this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + oDataMgr.m_strSQL + "\r\n");
+                    //    oDataMgr.SqlNonQuery(oConn, oDataMgr.m_strSQL);
+                    //    if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                    //        this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
+                    //}
 
                     m_intProgressStepCurrentCount++;
                     UpdateTherm(m_frmTherm.progressBar1,
                         m_intProgressStepCurrentCount,
                         m_intProgressStepTotalCount);
 
-                    oDataMgr.m_strSQL = Queries.VolumeAndBiomass.FVSOut.PNWRS.BuildInputTableForVolumeCalculation_Step6(
-                        "cull_total_work_table", Tables.VolumeAndBiomass.BiosumVolumesInputTable);
-                    if (m_bDebug && frmMain.g_intDebugLevel > 2)
-                        this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + oDataMgr.m_strSQL + "\r\n");
-                    oDataMgr.SqlNonQuery(oConn, oDataMgr.m_strSQL);
-                    if (m_bDebug && frmMain.g_intDebugLevel > 2)
-                        this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
+                    //oDataMgr.m_strSQL = Queries.VolumeAndBiomass.FVSOut.PNWRS.BuildInputTableForVolumeCalculation_Step5(
+                    //    "cull_total_work_table", Tables.VolumeAndBiomass.BiosumVolumesInputTable);
+                    //if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                    //    this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + oDataMgr.m_strSQL + "\r\n");
+                    //oDataMgr.SqlNonQuery(oConn, oDataMgr.m_strSQL);
+                    //if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                    //    this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
+
+                    m_intProgressStepCurrentCount++;
+                    UpdateTherm(m_frmTherm.progressBar1,
+                        m_intProgressStepCurrentCount,
+                        m_intProgressStepTotalCount);
+
+                    //oDataMgr.m_strSQL = Queries.VolumeAndBiomass.FVSOut.PNWRS.BuildInputTableForVolumeCalculation_Step6(
+                    //    "cull_total_work_table", Tables.VolumeAndBiomass.BiosumVolumesInputTable);
+                    //if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                    //    this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + oDataMgr.m_strSQL + "\r\n");
+                    //oDataMgr.SqlNonQuery(oConn, oDataMgr.m_strSQL);
+                    //if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                    //    this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
 
                     m_intProgressStepCurrentCount++;
                     UpdateTherm(m_frmTherm.progressBar1,
@@ -6968,7 +6968,6 @@ namespace FIA_Biosum_Manager
                             if (m_bDebug && frmMain.g_intDebugLevel > 2)
                                 this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
 
-                            //Start cull calculations
                             SQLite.m_strSQL = Queries.VolumeAndBiomass.FVSOut.BuildInputTableForVolumeCalculation_Step3(
                                               Tables.VolumeAndBiomass.BiosumVolumesInputTable,
                                               m_oQueries.m_oFIAPlot.m_strCondTable);
@@ -6978,42 +6977,43 @@ namespace FIA_Biosum_Manager
                             if (m_bDebug && frmMain.g_intDebugLevel > 2)
                                 this.WriteText(strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
 
+                            //Start cull calculations
                             //populate treeclcd column
-                            if (SQLite.TableExist(oConn, "CULL_TOTAL_WORK_TABLE"))
-                                SQLite.SqlNonQuery(oConn, "DROP TABLE CULL_TOTAL_WORK_TABLE");
+                            //if (SQLite.TableExist(oConn, "CULL_TOTAL_WORK_TABLE"))
+                            //    SQLite.SqlNonQuery(oConn, "DROP TABLE CULL_TOTAL_WORK_TABLE");
 
-                            foreach (var strSQL in Queries.VolumeAndBiomass.FVSOut.BuildInputTableForVolumeCalculation_Step4(
-                                "cull_total_work_table", Tables.VolumeAndBiomass.BiosumVolumesInputTable))
-                            {
-                                SQLite.m_strSQL = strSQL;
-                                if (m_bDebug && frmMain.g_intDebugLevel > 2)
-                                    this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + SQLite.m_strSQL + "\r\n");
-                                SQLite.SqlNonQuery(oConn, SQLite.m_strSQL);
-                                if (m_bDebug && frmMain.g_intDebugLevel > 2)
-                                    this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
-                            }
+                            //foreach (var strSQL in Queries.VolumeAndBiomass.FVSOut.BuildInputTableForVolumeCalculation_Step4(
+                            //    "cull_total_work_table", Tables.VolumeAndBiomass.BiosumVolumesInputTable))
+                            //{
+                            //    SQLite.m_strSQL = strSQL;
+                            //    if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                            //        this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + SQLite.m_strSQL + "\r\n");
+                            //    SQLite.SqlNonQuery(oConn, SQLite.m_strSQL);
+                            //    if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                            //        this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
+                            //}
 
-                            SQLite.m_strSQL = Queries.VolumeAndBiomass.FVSOut.PNWRS.BuildInputTableForVolumeCalculation_Step5(
-                                                "cull_total_work_table",
-                                                Tables.VolumeAndBiomass.BiosumVolumesInputTable);
-                            if (m_bDebug && frmMain.g_intDebugLevel > 2)
-                                this.WriteText(strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + SQLite.m_strSQL + "\r\n");
-                            SQLite.SqlNonQuery(oConn, SQLite.m_strSQL);
-                            if (m_bDebug && frmMain.g_intDebugLevel > 2)
-                                this.WriteText(strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
+                            //SQLite.m_strSQL = Queries.VolumeAndBiomass.FVSOut.PNWRS.BuildInputTableForVolumeCalculation_Step5(
+                            //                    "cull_total_work_table",
+                            //                    Tables.VolumeAndBiomass.BiosumVolumesInputTable);
+                            //if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                            //    this.WriteText(strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + SQLite.m_strSQL + "\r\n");
+                            //SQLite.SqlNonQuery(oConn, SQLite.m_strSQL);
+                            //if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                            //    this.WriteText(strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
 
-                            SQLite.m_strSQL = Queries.VolumeAndBiomass.FVSOut.PNWRS.BuildInputTableForVolumeCalculation_Step6(
-                                              "cull_total_work_table",
-                                              Tables.VolumeAndBiomass.BiosumVolumesInputTable);
-                            if (m_bDebug && frmMain.g_intDebugLevel > 2)
-                                this.WriteText(strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + SQLite.m_strSQL + "\r\n");
-                            SQLite.SqlNonQuery(oConn, SQLite.m_strSQL);
-                            if (m_bDebug && frmMain.g_intDebugLevel > 2)
-                                this.WriteText(strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
+                            //SQLite.m_strSQL = Queries.VolumeAndBiomass.FVSOut.PNWRS.BuildInputTableForVolumeCalculation_Step6(
+                            //                  "cull_total_work_table",
+                            //                  Tables.VolumeAndBiomass.BiosumVolumesInputTable);
+                            //if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                            //    this.WriteText(strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + SQLite.m_strSQL + "\r\n");
+                            //SQLite.SqlNonQuery(oConn, SQLite.m_strSQL);
+                            //if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                            //    this.WriteText(strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
 
                             // Delete work table
-                            if (SQLite.TableExist(oConn, "CULL_TOTAL_WORK_TABLE"))
-                                SQLite.SqlNonQuery(oConn, "DROP TABLE CULL_TOTAL_WORK_TABLE");
+                            //if (SQLite.TableExist(oConn, "CULL_TOTAL_WORK_TABLE"))
+                            //    SQLite.SqlNonQuery(oConn, "DROP TABLE CULL_TOTAL_WORK_TABLE");
 
                             m_intProgressStepCurrentCount++;
                             UpdateTherm(m_frmTherm.progressBar1,
