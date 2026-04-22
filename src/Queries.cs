@@ -3041,10 +3041,11 @@ namespace FIA_Biosum_Manager
                 public static string BuildInputTableForTvbcVolumeCalculation_Step2(string p_strInputVolumesTable, string p_strFIATreeTable, string p_strFIAPlotTable, string p_strFIACondTable)
                 {
                     return $@"UPDATE {p_strInputVolumesTable} 
-                        SET (spcd,statuscd,treeclcd,wdldstem,cull,roughcull,decaycd,balive,ecosubcd,stdorgcd,actualht) 
+                        SET (spcd,statuscd,treeclcd,wdldstem,cull,roughcull,decaycd,balive,ecosubcd,stdorgcd,actualht,cull_fld,cullform,cullmstop) 
                         = (select t.spcd, case when t.statuscd is null then 1 else t.statuscd end,treeclcd, wdldstem, case when t.cull is null then 0 else t.cull end,case when t.roughcull is null then 0 else t.roughcull end,
                         case when t.decaycd is null then 0 else t.decaycd end,c.balive, p.ecosubcd, c.stdorgcd, 
-                        case when t.actualht <> t.ht then {p_strInputVolumesTable}.ht - t.ht + t.actualht else {p_strInputVolumesTable}.actualht end
+                        case when t.actualht <> t.ht then {p_strInputVolumesTable}.ht - t.ht + t.actualht else {p_strInputVolumesTable}.actualht end,
+                        cull_fld,cullform,cullmstop
                         FROM {p_strFIATreeTable} t inner join {p_strFIACondTable} c, {p_strFIAPlotTable} p
                         WHERE t.biosum_cond_id = c.biosum_cond_id and {p_strInputVolumesTable}.biosum_cond_id = c.biosum_cond_id and c.biosum_plot_id = p.biosum_plot_id and {p_strInputVolumesTable}.fvs_tree_id = trim(t.fvs_tree_id))
                         WHERE FvsCreatedTree_YN = 'N'";
