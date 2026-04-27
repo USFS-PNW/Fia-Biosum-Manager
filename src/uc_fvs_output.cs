@@ -6900,17 +6900,17 @@ namespace FIA_Biosum_Manager
                             // Attach master.db
                             SQLite.m_strSQL = $@"attach '{m_oQueries.m_oDataSource.getFullPathAndFile(Datasource.TableTypes.Tree)}' as master";
                             if (m_bDebug && frmMain.g_intDebugLevel > 2)
-                                this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + SQLite.m_strSQL + "\r\n");
+                                this.WriteText(strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + SQLite.m_strSQL + "\r\n");
                             SQLite.SqlNonQuery(oConn, SQLite.m_strSQL);
                             if (m_bDebug && frmMain.g_intDebugLevel > 2)
-                                this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
+                                this.WriteText(strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
                             // Attach biosum_ref.db
                             SQLite.m_strSQL = $@"attach '{m_oQueries.m_oDataSource.getFullPathAndFile(Datasource.TableTypes.FiaTreeSpeciesReference)}' as ref";
                             if (m_bDebug && frmMain.g_intDebugLevel > 2)
-                                this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + SQLite.m_strSQL + "\r\n");
+                                this.WriteText(strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + SQLite.m_strSQL + "\r\n");
                             SQLite.SqlNonQuery(oConn, SQLite.m_strSQL);
                             if (m_bDebug && frmMain.g_intDebugLevel > 2)
-                                this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
+                                this.WriteText(strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
               
                             //NOTE: this query handles existing FIADB trees that have been grown forward.
                             SQLite.m_strSQL = Queries.VolumeAndBiomass.FVSOut.BuildInputTableForTvbcVolumeCalculation_Step2(
@@ -6945,29 +6945,19 @@ namespace FIA_Biosum_Manager
                             // Set ECOSUBCD for FVS-Created trees
                             SQLite.m_strSQL = Queries.VolumeAndBiomass.FVSOut.BuildInputTableForVolumeCalculationEcoSubCdFvs(m_oQueries.m_oFIAPlot.m_strPlotTable, m_oQueries.m_oFIAPlot.m_strCondTable);
                             if (m_bDebug && frmMain.g_intDebugLevel > 2)
-                                this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + SQLite.m_strSQL + "\r\n");
+                                this.WriteText(strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + SQLite.m_strSQL + "\r\n");
                             SQLite.SqlNonQuery(oConn, SQLite.m_strSQL);
                             if (m_bDebug && frmMain.g_intDebugLevel > 2)
-                                this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
+                                this.WriteText(strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
 
                             // Overwrite ECOSUBCD for ALL trees, if needed, from ECOSUBCD_REF; biosum_ref.db was already attached above
                             SQLite.m_strSQL = Queries.VolumeAndBiomass.FVSOut.BuildInputTableForVolumeCalculationEcoSubAll(Tables.VolumeAndBiomass.BiosumVolumesInputTable);
                             if (m_bDebug && frmMain.g_intDebugLevel > 2)
-                                this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + SQLite.m_strSQL + "\r\n");
+                                this.WriteText(strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + SQLite.m_strSQL + "\r\n");
                             SQLite.SqlNonQuery(oConn, SQLite.m_strSQL);
                             if (m_bDebug && frmMain.g_intDebugLevel > 2)
-                                this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");                    
+                                this.WriteText(strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");                    
                             
-                            //Set STATUSCD for seedlings; It is populated from TVBC for all other trees
-                            SQLite.m_strSQL = $@"UPDATE {Tables.FVS.DefaultFVSCutTreeTvbcTableName} as b SET statuscd=t.statuscd
-                                FROM {m_oQueries.m_oFIAPlot.m_strTreeTable} t WHERE t.biosum_cond_id=b.biosum_cond_id AND TRIM(t.fvs_tree_id)=b.fvs_tree_id
-                                AND rxpackage='{strRxPackage}' AND fvs_variant='{strFvsVariant}' and dbh < 1.0";
-                            if (m_bDebug && frmMain.g_intDebugLevel > 2)
-                                this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + SQLite.m_strSQL + "\r\n");
-                            SQLite.SqlNonQuery(oConn, SQLite.m_strSQL);
-                            if (m_bDebug && frmMain.g_intDebugLevel > 2)
-                                this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
-
                             SQLite.m_strSQL = Queries.VolumeAndBiomass.FVSOut.BuildInputTableForVolumeCalculation_Step3(
                                               Tables.VolumeAndBiomass.BiosumVolumesInputTable,
                                               m_oQueries.m_oFIAPlot.m_strCondTable);
@@ -6987,10 +6977,10 @@ namespace FIA_Biosum_Manager
                             //{
                             //    SQLite.m_strSQL = strSQL;
                             //    if (m_bDebug && frmMain.g_intDebugLevel > 2)
-                            //        this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + SQLite.m_strSQL + "\r\n");
+                            //        this.WriteText(strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + SQLite.m_strSQL + "\r\n");
                             //    SQLite.SqlNonQuery(oConn, SQLite.m_strSQL);
                             //    if (m_bDebug && frmMain.g_intDebugLevel > 2)
-                            //        this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
+                            //        this.WriteText(strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
                             //}
 
                             //SQLite.m_strSQL = Queries.VolumeAndBiomass.FVSOut.PNWRS.BuildInputTableForVolumeCalculation_Step5(
@@ -7138,7 +7128,7 @@ namespace FIA_Biosum_Manager
                                     SQLite.m_strSQL = Queries.VolumeAndBiomass.FVSOut.BuildInputTableForVolumeCalculation_Step9(
                                         Tables.FVS.DefaultFVSInForestTreeTvbcTableName, Tables.VolumeAndBiomass.TvbcTreeDataCalcTable, strFvsVariant, strRxPackage);
                                     if (m_bDebug && frmMain.g_intDebugLevel > 2)
-                                        this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + SQLite.m_strSQL + "\r\n");
+                                        this.WriteText(strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + SQLite.m_strSQL + "\r\n");
 
                                     using (System.Data.SQLite.SQLiteTransaction oTransaction = SQLite.m_Connection.BeginTransaction(IsolationLevel.ReadCommitted))
                                     {
@@ -7158,16 +7148,16 @@ namespace FIA_Biosum_Manager
                                     }
 
                                     if (m_bDebug && frmMain.g_intDebugLevel > 2)
-                                        this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
+                                        this.WriteText(strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
 
 
 
                                     SQLite.m_strSQL = "DETACH DATABASE 'TVBC'";
                                     if (m_bDebug && frmMain.g_intDebugLevel > 2)
-                                        this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + SQLite.m_strSQL + "\r\n");
+                                        this.WriteText(strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + SQLite.m_strSQL + "\r\n");
                                     SQLite.SqlNonQuery(SQLite.m_Connection, SQLite.m_strSQL);
                                     if (m_bDebug && frmMain.g_intDebugLevel > 2)
-                                        this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
+                                        this.WriteText(strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
                                     SQLite.CloseAndDisposeConnection(SQLite.m_Connection, true);
                                 }
                             }
