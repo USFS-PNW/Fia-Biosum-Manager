@@ -2433,7 +2433,6 @@ namespace FIA_Biosum_Manager
     private void TestExternalDatabaseConnection()
     {
         frmMain.g_oDelegate.CurrentThreadProcessDone = false;
-        string strFile = frmMain.g_oUtils.getRandomFile(frmMain.g_oEnv.strTempDir, "db");
         string str="";
 
         bool tvbcTreeDbExists = System.IO.File.Exists(frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\" + Tables.VolumeAndBiomass.DefaultTvbcWorkDatabase);
@@ -2442,8 +2441,31 @@ namespace FIA_Biosum_Manager
         bool tvbcJarExecuted = false;
 
             //RUN here
+            SQLite.ADO.DataMgr dataMgr = new SQLite.ADO.DataMgr();
             if (tvbcTreeDbExists && tvbcJarExists && tvbcTreeCalcBatExists)
             {
+                // vacuum tvbc database before running test
+                try
+                {
+                    string strDbVacuumDbPath = frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\" + Tables.VolumeAndBiomass.DefaultTvbcWorkDatabase;
+                    using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(dataMgr.GetConnectionString(strDbVacuumDbPath)))
+                    {
+                        conn.Open();
+                        System.Data.SQLite.SQLiteCommand command = conn.CreateCommand();
+                        command.CommandText = $@"DELETE FROM {Tables.VolumeAndBiomass.TvbcTreeDataTable}";
+                        command.ExecuteNonQuery();
+                        command.CommandText = $@"DELETE FROM {Tables.VolumeAndBiomass.TvbcTreeDataCalcTable}";
+                        command.ExecuteNonQuery();
+                        command.CommandText = "VACUUM";
+                        command.ExecuteNonQuery();
+                    }
+                }
+                catch (Exception e)
+                {
+                    MessageBox.Show("An error occurred when trying to vacuum the database!", "FIA BioSum");
+                    m_intError = -1;
+                }
+
                 frmMain.g_oUtils.RunProcess(frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum", "tvbc_tree_calc.bat", "BAT");
                 tvbcJarExecuted = true;
             }

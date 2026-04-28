@@ -2922,6 +2922,12 @@ namespace FIA_Biosum_Manager
                         //
                         oDataMgr.OpenConnection(false, 1, strTreeTempDbFile, "BIOSUM");
                         oDataMgr.SqlNonQuery(oDataMgr.m_Connection, "ATTACH DATABASE '" + tvbcDbPath + "' AS TVBC");
+                        if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                            this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + $"DELETE FROM {Tables.VolumeAndBiomass.TvbcTreeDataTable}" + "\r\n");
+                        oDataMgr.SqlNonQuery(oDataMgr.m_Connection, $"DELETE FROM {Tables.VolumeAndBiomass.TvbcTreeDataTable}");
+                        if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                            this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
+
                         UpdateTherm(m_frmTherm.progressBar1,
                             m_intProgressStepTotalCount,
                             m_intProgressStepTotalCount);
@@ -7057,6 +7063,11 @@ namespace FIA_Biosum_Manager
                                 SQLite.OpenConnection(false, 1, strTreeTempDbFile, "BIOSUM");
                                 SQLite.SqlNonQuery(SQLite.m_Connection, "ATTACH DATABASE '" + frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\" + Tables.VolumeAndBiomass.DefaultTvbcWorkDatabase +
                                     "' AS TVBC");
+                                if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                                    this.WriteText(m_strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + $"DELETE FROM {Tables.VolumeAndBiomass.TvbcTreeDataTable}" + "\r\n");
+                                SQLite.SqlNonQuery(SQLite.m_Connection, $"DELETE FROM {Tables.VolumeAndBiomass.TvbcTreeDataTable}");
+                                if (m_bDebug && frmMain.g_intDebugLevel > 2)
+                                    this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
 
                                 //insert records 
                                 //from 
