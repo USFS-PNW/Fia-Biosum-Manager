@@ -2910,15 +2910,18 @@ namespace FIA_Biosum_Manager
                         m_intError = -1;
                         m_strError = frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\tvbc_tree_calc.bat not found";
                     }
+                    string tvbcDbPath = frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\" + Tables.VolumeAndBiomass.DefaultTvbcWorkDatabase;
+                    if (m_intError == 0)
+                    {
+                        this.VacuumTvbcDb(tvbcDbPath);
+                    }
                     if (m_intError == 0)
                     {
                         //
                         //RE-CONNECT TO SQLITE AND REMOVE DATA FROM TVBC SQLITE DB
                         //
                         oDataMgr.OpenConnection(false, 1, strTreeTempDbFile, "BIOSUM");
-                        oDataMgr.SqlNonQuery(oDataMgr.m_Connection, "ATTACH DATABASE '" + frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\" + Tables.VolumeAndBiomass.DefaultTvbcWorkDatabase +
-                            "' AS TVBC");
-                        oDataMgr.SqlNonQuery(oDataMgr.m_Connection, $"DELETE FROM {Tables.VolumeAndBiomass.TvbcTreeDataTable}");
+                        oDataMgr.SqlNonQuery(oDataMgr.m_Connection, "ATTACH DATABASE '" + tvbcDbPath + "' AS TVBC");
                         UpdateTherm(m_frmTherm.progressBar1,
                             m_intProgressStepTotalCount,
                             m_intProgressStepTotalCount);
@@ -6634,7 +6637,10 @@ namespace FIA_Biosum_Manager
                 {
                 string strTreeTempDbFile = frmMain.g_oUtils.getRandomFile(frmMain.g_oEnv.strTempDir, "db");
                 string strTreeListDbFile = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() + Tables.FVS.DefaultFVSTreeListDbFile;
-                //copy the production file to the temp folder which will be used as the work db file.
+                    // Vacuum the FVSOut_TreeList.db before copying it to the work db file
+                    this.VacuumTvbcDb(strTreeListDbFile);
+                    
+                    //copy the production file to the temp folder which will be used as the work db file.
                 if (m_bDebug && frmMain.g_intDebugLevel > 1)
                     this.WriteText(strDebugFile, "\r\nSTART:Copy production file to work file: Source File Name:" + strTreeListDbFile + " Destination File Name:" + strTreeTempDbFile + " " + System.DateTime.Now.ToString() + "\r\n");
                 System.IO.File.Copy(strTreeListDbFile, strTreeTempDbFile, true);
@@ -7031,6 +7037,11 @@ namespace FIA_Biosum_Manager
                                 m_intError = -1;
                                 m_strError = frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\tvbc_tree_calc.bat not found";
                             }
+                            string tvbcDbPath = frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\" + Tables.VolumeAndBiomass.DefaultTvbcWorkDatabase;
+                            if (m_intError == 0)
+                            {
+                                this.VacuumTvbcDb(tvbcDbPath);
+                            }
                             if (m_intError == 0)
                             {
                                 m_intProgressStepCurrentCount++;
@@ -7046,7 +7057,6 @@ namespace FIA_Biosum_Manager
                                 SQLite.OpenConnection(false, 1, strTreeTempDbFile, "BIOSUM");
                                 SQLite.SqlNonQuery(SQLite.m_Connection, "ATTACH DATABASE '" + frmMain.g_oEnv.strApplicationDataDirectory + "\\FIABiosum\\" + Tables.VolumeAndBiomass.DefaultTvbcWorkDatabase +
                                     "' AS TVBC");
-                                SQLite.SqlNonQuery(SQLite.m_Connection, $"DELETE FROM {Tables.VolumeAndBiomass.TvbcTreeDataTable}");
 
                                 //insert records 
                                 //from 
@@ -7226,7 +7236,7 @@ namespace FIA_Biosum_Manager
                 else
                 {
                     this.FVSRecordsFinished();
-                    MessageBox.Show($@"The FVSOut.db for this project does not contain an FVS_TreeList table. The {Tables.FVS.DefaultFVSInForestTreeTableName} table cannot be created!", "FIA Biosum");
+                    MessageBox.Show($@"The FVSOut.db for this project does not contain an FVS_TreeList table. The {Tables.FVS.DefaultFVSInForestTreeTvbcTableName} table cannot be created!", "FIA Biosum");
                 }
             }
             catch (System.Threading.ThreadInterruptedException err)
@@ -7260,6 +7270,8 @@ namespace FIA_Biosum_Manager
             int z;
             string[] strSourceTableArray = new string[0];
             string strFvsOutDb = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() + Tables.FVS.DefaultFVSOutDbFile;
+            // vacuum audits.db before beginning
+            this.VacuumTvbcDb(p_strDbFile);            
             using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(SQLite.GetConnectionString(strFvsOutDb)))
             {
                 conn.Open();
@@ -7749,6 +7761,9 @@ namespace FIA_Biosum_Manager
                                 {
                                     string strTreeTempDbFile = frmMain.g_oUtils.getRandomFile(frmMain.g_oEnv.strTempDir, "db");
                                     string strTreeListDbFile = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() + Tables.FVS.DefaultFVSTreeListDbFile;
+                                    //vacuum the production file before copying it to the work db
+                                    this.VacuumTvbcDb(strTreeListDbFile);
+                                    
                                     //copy the production file to the temp folder which will be used as the work db file.
                                     if (m_bDebug && frmMain.g_intDebugLevel > 1)
                                         this.WriteText(m_strDebugFile, "\r\nSTART:Copy production file to work file: Source File Name:" + strTreeListDbFile + " Destination File Name:" + strTreeTempDbFile + " " + System.DateTime.Now.ToString() + "\r\n");
@@ -7877,6 +7892,25 @@ namespace FIA_Biosum_Manager
 
             frmMain.g_oDelegate.m_oEventThreadStopped.Set();
             this.Invoke(frmMain.g_oDelegate.m_oDelegateThreadFinished);
+
+        }
+        private void VacuumTvbcDb(string strDbVacuumDbPath)
+        {
+            try
+            {
+                using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(SQLite.GetConnectionString(strDbVacuumDbPath)))
+                {
+                    conn.Open();
+                    System.Data.SQLite.SQLiteCommand command = conn.CreateCommand();
+                    command.CommandText = $@"VACUUM";
+                    command.ExecuteNonQuery();
+                }
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show("An error occurred when trying to vacuum the database!", "FIA BioSum");
+                m_intError = -1;
+            }
 
         }
     }
