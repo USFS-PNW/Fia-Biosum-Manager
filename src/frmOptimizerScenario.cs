@@ -4460,7 +4460,8 @@ namespace FIA_Biosum_Manager
                         " SELECT DISTINCT s.psite_id, psite_cn, name, trancd, trancd_def, biocd, biocd_def, " +
                         "exists_yn, lat, lon, state, city, mill_type, county, status, '' AS notes " +
                         "FROM source." + strPSitesTableName + " AS s, " + strTravelTimesTableName + " AS t " +
-                        "WHERE s.psite_id = t.psite_id GROUP BY s.psite_id, psite_cn, name, trancd, trancd_def, " +
+                        "WHERE s.psite_id = t.psite_id " +
+                        "AND biocd BETWEEN 1 AND 6 GROUP BY s.psite_id, psite_cn, name, trancd, trancd_def, " +
                         "biocd, biocd_def, exists_yn, lat, lon, state, city, mill_type, county, status";
                     if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                         frmMain.g_oUtils.WriteText(strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + oDataMgr.m_strSQL + "\r\n");
