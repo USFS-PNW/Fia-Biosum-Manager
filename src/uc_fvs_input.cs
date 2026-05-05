@@ -86,6 +86,8 @@ namespace FIA_Biosum_Manager
         private CheckBox chkUsePrevDia;
         private Label lblSurfaceWarning;
         private GroupBox grpFVSlist;
+        private CheckBox chkOverwriteCR;
+        private TextBox txtOverwriteCR;
 
         delegate string[] GetListBoxItemsDlg(CheckedListBox checkedListBox);
 
@@ -186,6 +188,8 @@ namespace FIA_Biosum_Manager
             this.lblTitle = new System.Windows.Forms.Label();
             this.lblSurfaceWarning = new System.Windows.Forms.Label();
             this.grpFVSlist = new System.Windows.Forms.GroupBox();
+            this.chkOverwriteCR = new System.Windows.Forms.CheckBox();
+            this.txtOverwriteCR = new System.Windows.Forms.TextBox();
             this.groupBox1.SuspendLayout();
             this.grpFVSlist.SuspendLayout();
             this.otherOptionsGroupBox.SuspendLayout();
@@ -587,9 +591,11 @@ namespace FIA_Biosum_Manager
             // otherOptionsGroupBox
             // 
             this.otherOptionsGroupBox.Controls.Add(this.chkIncludeSeedlings);
+            this.otherOptionsGroupBox.Controls.Add(this.chkOverwriteCR);
+            this.otherOptionsGroupBox.Controls.Add(this.txtOverwriteCR);
             this.otherOptionsGroupBox.Location = new System.Drawing.Point(28, 407);
             this.otherOptionsGroupBox.Name = "otherOptionsGroupBox";
-            this.otherOptionsGroupBox.Size = new System.Drawing.Size(275, 60);
+            this.otherOptionsGroupBox.Size = new System.Drawing.Size(275, 110);
             this.otherOptionsGroupBox.TabIndex = 103;
             this.otherOptionsGroupBox.TabStop = false;
             this.otherOptionsGroupBox.Text = "Other Options";
@@ -605,6 +611,28 @@ namespace FIA_Biosum_Manager
             this.chkIncludeSeedlings.TabIndex = 4;
             this.chkIncludeSeedlings.Text = "Include seedlings from FIADB";
             this.chkIncludeSeedlings.UseVisualStyleBackColor = true;
+            //
+            // chkOverwriteCR
+            //
+            this.chkOverwriteCR.AutoSize = true;
+            this.chkOverwriteCR.Checked = true;
+            this.chkOverwriteCR.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.chkOverwriteCR.Location = new System.Drawing.Point(6, 44);
+            this.chkOverwriteCR.Name = "chkOverwriteCR";
+            this.chkOverwriteCR.Size = new System.Drawing.Size(139, 21);
+            this.chkOverwriteCR.TabIndex = 5;
+            this.chkOverwriteCR.Text = "Change single digit crown ratios to:";
+            this.chkOverwriteCR.UseVisualStyleBackColor = true;
+            this.chkOverwriteCR.CheckedChanged += new System.EventHandler(this.chkOverwriteCR_CheckChanged);
+            //
+            // txtOverwriteCR
+            //
+            this.txtOverwriteCR.Location = new System.Drawing.Point(30, 66);
+            this.txtOverwriteCR.Name = "txtOverwriteCR";
+            this.txtOverwriteCR.Size = new System.Drawing.Size(30, 21);
+            this.txtOverwriteCR.TabIndex = 6;
+            this.txtOverwriteCR.Text = "10";
+            this.txtOverwriteCR.Validating += new System.ComponentModel.CancelEventHandler(this.txtOverwriteCR_Validating);
             // 
             // grpCalibOptions
             // 
@@ -1129,6 +1157,8 @@ namespace FIA_Biosum_Manager
                 frmMain.g_oDelegate.GetControlPropertyValue(txtMinLargeFwdTL, "Text", false).ToString();
             p_fvs.strMinCwdTransectLengthTotal =
                 frmMain.g_oDelegate.GetControlPropertyValue(txtMinCwdTL, "Text", false).ToString();
+            p_fvs.strOverwriteCRValue =
+                frmMain.g_oDelegate.GetControlPropertyValue(txtOverwriteCR, "Text", false).ToString();
 
             bool bFirst = true;
             foreach (var item in GetCheckedListBoxItems(chkLstBoxDuffYears))
@@ -1167,6 +1197,7 @@ namespace FIA_Biosum_Manager
             p_fvs.strDataDirectory = p_fvs.strDataDirectory.Trim();
             p_fvs.strGroup = (string)frmMain.g_oDelegate.GetControlPropertyValue((Control)this.cmbSelectedGroup, "SelectedItem", false);
             p_fvs.strGroup = p_fvs.strGroup.Trim();
+            p_fvs.bOverwriteCR = (bool)frmMain.g_oDelegate.GetControlPropertyValue(chkOverwriteCR, "Checked", false);
         }
 
         
@@ -1220,7 +1251,7 @@ namespace FIA_Biosum_Manager
                             {
                                 lstStates = m_dictVariantStates[strCurVariant];
                             }
-                            p_fvsinput.StartFIA2FVSNew(oDataMgr, m_bOverwrite, strMasterDb, m_strDebugFile,
+                            p_fvsinput.StartFIA2FVS(oDataMgr, m_bOverwrite, strMasterDb, m_strDebugFile,
                                 strCurVariant, lstStates);
                         }
                         frmMain.g_oDelegate.SetControlPropertyValue(
@@ -1553,6 +1584,20 @@ namespace FIA_Biosum_Manager
             }
         }
 
+        private void txtOverwriteCR_Validating(object sender, CancelEventArgs e)
+        {
+            double temp;
+            if (!double.TryParse(txtOverwriteCR.Text, out temp))
+            {
+                txtOverwriteCR.Text = "10";
+            }
+        }
+
+        private void chkOverwriteCR_CheckChanged(object sender, EventArgs e)
+        {
+            if (chkOverwriteCR.Checked) this.txtOverwriteCR.Enabled = true;
+            else this.txtOverwriteCR.Enabled = false;
+        }
 
         private void linkLabelFuelModel_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
