@@ -2708,13 +2708,13 @@ namespace FIA_Biosum_Manager
                 oDataMgr.SqlNonQuery(tempConn, oDataMgr.m_strSQL);
 
                 // Populate variant field in tree table
-                oDataMgr.m_strSQL = "UPDATE " + Tables.FIA2FVS.DefaultFvsInputTreeTableName +
-                    " SET VARIANT = '" + strVariant + "' WHERE VARIANT IS NULL";
+                oDataMgr.m_strSQL = Queries.FVS.FVSInput.TreeInit.PopulateVariant(strVariant);
+                DebugLogSQL(oDataMgr.m_strSQL);
                 oDataMgr.SqlNonQuery(tempConn, oDataMgr.m_strSQL);
 
                 // Overwrite single digit CRRATIOs to 10
-                oDataMgr.m_strSQL = "UPDATE " + Tables.FIA2FVS.DefaultFvsInputTreeTableName +
-                    " SET CRRATIO = 10 WHERE CRRATIO < 10";
+                oDataMgr.m_strSQL = Queries.FVS.FVSInput.TreeInit.OverwriteCRRATIO();
+                DebugLogSQL(oDataMgr.m_strSQL);
                 oDataMgr.SqlNonQuery(tempConn, oDataMgr.m_strSQL);
 
                 // Copy data from temp tables to final tables
