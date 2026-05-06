@@ -56,8 +56,6 @@ namespace FIA_Biosum_Manager
         private string m_strLitterExcludedYears;
         private bool m_bUsePrevHt;
         private bool m_bUsePrevDia;
-        private string m_strOverwriteCRValue = "10";
-        private bool m_bOverwriteCR;
 
         //Added for FIA2FVS implementation
         private bool m_bIncludeSeedlings;
@@ -572,17 +570,6 @@ namespace FIA_Biosum_Manager
             get { return m_strGroup; }
         }
 
-        public string strOverwriteCRValue
-        {
-            set { m_strOverwriteCRValue = value; }
-            get { return m_strOverwriteCRValue; }
-        }
-
-        public bool bOverwriteCR
-        {
-            set { m_bOverwriteCR = value; }
-            get { return m_bOverwriteCR; }
-        }
 
         /// <summary>
         /// Site index functions beginning with "z" were programmed by Tara: these have been checked against the publications.
@@ -2725,13 +2712,10 @@ namespace FIA_Biosum_Manager
                     " SET VARIANT = '" + strVariant + "' WHERE VARIANT IS NULL";
                 oDataMgr.SqlNonQuery(tempConn, oDataMgr.m_strSQL);
 
-                // Overwrite CRRATIO in tree table if selected
-                if (bOverwriteCR)
-                {
-                    oDataMgr.m_strSQL = "UPDATE " + Tables.FIA2FVS.DefaultFvsInputTreeTableName +
-                        " SET CRRATIO = " + strOverwriteCRValue.Trim() + " WHERE CRRATIO < 10";
-                    oDataMgr.SqlNonQuery(tempConn, oDataMgr.m_strSQL);
-                }
+                // Overwrite single digit CRRATIOs to 10
+                oDataMgr.m_strSQL = "UPDATE " + Tables.FIA2FVS.DefaultFvsInputTreeTableName +
+                    " SET CRRATIO = 10 WHERE CRRATIO < 10";
+                oDataMgr.SqlNonQuery(tempConn, oDataMgr.m_strSQL);
 
                 // Copy data from temp tables to final tables
                 if (!oDataMgr.DatabaseAttached(tempConn, strInDirAndFile))
