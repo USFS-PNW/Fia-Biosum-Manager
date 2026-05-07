@@ -1924,11 +1924,11 @@ namespace FIA_Biosum_Manager
                     m_oDataMgr.m_strSQL = "INSERT INTO " + Tables.ProcessorScenarioRun.DefaultTreeVolValSpeciesDiamGroupsTableName + " (biosum_cond_id, rxpackage," +
                                            "rx, rxcycle, species_group, diam_group, chip_vol_cf, chip_wt_gt, " +
                                            "chip_val_dpa, chip_mkt_val_pgt, merch_vol_cf, merch_wt_gt, merch_val_dpa, " +
-                                           "merch_to_chipbin_YN, bc_vol_cf, bc_wt_gt, stand_residue_wt_gt, place_holder, DateTimeCreated) " +
+                                           "merch_to_chipbin_YN, bc_vol_cf, bc_wt_gt, stand_residue_wt_gt, biosum_harvest_method_category, place_holder, DateTimeCreated) " +
                                            "SELECT biosum_cond_id, rxpackage, " +
                                            "rx, rxcycle, species_group, diam_group, chip_vol_cf, chip_wt_gt, " +
                                            "chip_val_dpa, chip_mkt_val_pgt, merch_vol_cf, merch_wt_gt, merch_val_dpa, " +
-                                           "merch_to_chipbin_YN, bc_vol_cf, bc_wt_gt, stand_residue_wt_gt, place_holder, DateTimeCreated " +
+                                           "merch_to_chipbin_YN, bc_vol_cf, bc_wt_gt, stand_residue_wt_gt, biosum_harvest_method_category, place_holder, DateTimeCreated " +
                                            "FROM TreeVolValLowSlope";
                     if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                         frmMain.g_oUtils.WriteText(m_strDebugFile, m_oDataMgr.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");

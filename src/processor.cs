@@ -1149,16 +1149,14 @@ namespace FIA_Biosum_Manager
                     "merch_vol_cf, merch_wt_gt, merch_val_dpa, " +
                     "merch_to_chipbin_YN,  " +
                     "bc_vol_cf, bc_wt_gt, stand_residue_wt_gt, " +
-                    //"biosum_harvest_method_category, DateTimeCreated, place_holder)" +
-                    "DateTimeCreated, place_holder)" +
+                    "biosum_harvest_method_category, DateTimeCreated, place_holder)" +
                     "VALUES ('" + nextStand.CondId + "', '" + nextStand.RxPackage + "', '" + nextStand.Rx + "', '" +
                     nextStand.RxCycle + "', " + nextStand.SpeciesGroup + ", " + nextStand.DiamGroup + ", " +
                     nextStand.ChipVolCfPa + ", " + nextStand.ChipWtGtPa + ", " + (nextStand.ChipWtGtPa * nextStand.ChipMktValPgt) +
                     ", " + nextStand.ChipMktValPgt + ", " + nextStand.TotalMerchVolCfPa + ", " + nextStand.TotalMerchWtGtPa + ", " + nextStand.TotalMerchValDpa +
                     ", '" + nextStand.MerchToChip + "', " + nextStand.TotalBrushCutVolCfPa + "," +
                     nextStand.TotalBrushCutWtGtPa + ", " + nextStand.StandResidueWtGtPa + ", " +
-                    //nextStand.HarvestMethodCategory + ", '" + strDateTimeCreated + "', 'N')";
-                    "'" + strDateTimeCreated + "', 'N')";
+                    nextStand.HarvestMethodCategory + ", '" + strDateTimeCreated + "', 'N')";
                     lstSql.Add(strSQL);
                 }
 
