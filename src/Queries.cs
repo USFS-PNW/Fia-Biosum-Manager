@@ -3141,23 +3141,6 @@ namespace FIA_Biosum_Manager
                 }
 
                 /// <summary>
-                /// Update biosum_volumes_input field (balive) from pre_Fvs_Summary table for FVS-created trees.
-                /// This is an alternate query used by the Tree Troubleshooter to remove a dependency on FVSOut.db
-                /// </summary>
-                /// <param name="p_strInputVolumesTable"></param>
-                /// <param name="p_strFvsVariant"></param>
-                /// <param name="p_strRxPackage"></param>
-                /// <returns></returns>
-                public static string BuildInputSQLiteTableForVolumeCalculation_Step1a(string p_strInputVolumesTable, string p_strFvsVariant,
-                    string p_strRxPackage)
-                {
-                    return $@"UPDATE {p_strInputVolumesTable} as i 
-                        SET(balive) = (select f.ba) FROM {Tables.FVS.DefaultPreFVSSummaryTableName} f
-                        WHERE i.biosum_cond_id = f.biosum_cond_id and i.invyr = f.year
-                        and f.fvs_variant = '{p_strFvsVariant}' and rxpackage = '{p_strRxPackage}' and i.FvsCreatedTree_YN = 'Y'";
-                }
-
-                /// <summary>
                 /// Update tree fields to have values other than null. Also assign the VOL_LOC_GRP value from the condition table.
                 /// </summary>
                 /// <param name="p_strInputVolumesTable"></param>
