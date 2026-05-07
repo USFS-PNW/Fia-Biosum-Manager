@@ -2712,8 +2712,9 @@ namespace FIA_Biosum_Manager
                 DebugLogSQL(oDataMgr.m_strSQL);
                 oDataMgr.SqlNonQuery(tempConn, oDataMgr.m_strSQL);
 
-                // Overwrite single digit CRRATIOs to 10
-                oDataMgr.m_strSQL = Queries.FVS.FVSInput.TreeInit.OverwriteCRRATIO();
+                // Overwrite single digit CRRATIOs
+                int intCRMin = 10;
+                oDataMgr.m_strSQL = Queries.FVS.FVSInput.TreeInit.OverwriteCRRATIO(intCRMin);
                 DebugLogSQL(oDataMgr.m_strSQL);
                 oDataMgr.SqlNonQuery(tempConn, oDataMgr.m_strSQL);
 
