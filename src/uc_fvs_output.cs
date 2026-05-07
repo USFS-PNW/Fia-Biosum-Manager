@@ -2723,7 +2723,7 @@ namespace FIA_Biosum_Manager
                     if (oDataMgr.TableExist(conn, Tables.VolumeAndBiomass.BiosumVolumesInputTable))
                         oDataMgr.SqlNonQuery(conn, "DROP TABLE " + Tables.VolumeAndBiomass.BiosumVolumesInputTable);
                     //This should be calling the tvbc versions
-                    frmMain.g_oTables.m_oFvs.CreateTvbcInputBiosumVolumesTable(oDataMgr, conn, Tables.VolumeAndBiomass.BiosumVolumesInputTable);
+                    frmMain.g_oTables.m_oFvs.CreateTvbcInputBiosumVolumesTable(oDataMgr, conn, Tables.VolumeAndBiomass.BiosumVolumesInputTable,false);
                     oDataMgr.m_strSQL = Queries.VolumeAndBiomass.FVSOut.BuildInputTvbcTableForVolumeCalculation_Step1(
                                        Tables.VolumeAndBiomass.BiosumVolumesInputTable,
                                        strFvsTreeTable);
@@ -6886,7 +6886,7 @@ namespace FIA_Biosum_Manager
 
                             if (SQLite.TableExist(conn, Tables.VolumeAndBiomass.BiosumVolumesInputTable))
                                 SQLite.SqlNonQuery(conn, "DROP TABLE " + Tables.VolumeAndBiomass.BiosumVolumesInputTable);
-                            frmMain.g_oTables.m_oFvs.CreateTvbcInputBiosumVolumesTable(SQLite, conn, Tables.VolumeAndBiomass.BiosumVolumesInputTable);
+                            frmMain.g_oTables.m_oFvs.CreateTvbcInputBiosumVolumesTable(SQLite, conn, Tables.VolumeAndBiomass.BiosumVolumesInputTable,false);
                             SQLite.m_strSQL = Queries.VolumeAndBiomass.FVSOut.BuildInputTvbcTableForVolumeCalculation_Step1(
                                                Tables.VolumeAndBiomass.BiosumVolumesInputTable,
                                                Tables.FVS.DefaultFVSInForestTreeTvbcTableName);
