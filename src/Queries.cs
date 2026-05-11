@@ -2822,7 +2822,7 @@ namespace FIA_Biosum_Manager
                     public static string OverwriteCRRATIO(int intCRMin)
                     {
                         string strSQL = "UPDATE " + Tables.FIA2FVS.DefaultFvsInputTreeTableName +
-                            " SET CRRATIO = " + intCRMin + " WHERE CRRATIO < 10";
+                            " SET CRRATIO = " + intCRMin + " WHERE CRRATIO > 0 AND CRRATIO < 10";
                         return strSQL;
                     }
 
