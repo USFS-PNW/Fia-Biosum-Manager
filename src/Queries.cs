@@ -2819,10 +2819,10 @@ namespace FIA_Biosum_Manager
                         return strSQL;
                     }
 
-                    public static string OverwriteCRRATIO(int intCRMin)
+                    public static string OverwriteCRRATIO(int intCRMin, int intOverwriteMax)
                     {
                         string strSQL = "UPDATE " + Tables.FIA2FVS.DefaultFvsInputTreeTableName +
-                            " SET CRRATIO = " + intCRMin + " WHERE CRRATIO > 0 AND CRRATIO < " + intCRMin;
+                            " SET CRRATIO = " + intCRMin + " WHERE CRRATIO > 0 AND CRRATIO < " + intOverwriteMax;
                         return strSQL;
                     }
 
