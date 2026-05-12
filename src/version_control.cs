@@ -258,6 +258,53 @@ namespace FIA_Biosum_Manager
                 }
             }
         }
+        public void UpdateDatasources_5_13_1(string strProjectDirectory)
+        {
+            //@ToDo: Remove below when ready to release
+            ReferenceProjectDirectory = strProjectDirectory;
+            DataMgr oDataMgr = new DataMgr();
+            frmMain.g_sbpInfo.Text = "Version Update: Updating Processor Rule Definitions for Carbon Metrics ...Stand by";
+
+            // Create temporary database to assemble new table
+            string strTempDbFile = frmMain.g_oUtils.getRandomFile(frmMain.g_oEnv.strTempDir, "db");
+            string strTempTable = "tmpWoodValue";
+            string strProcessorDb = ReferenceProjectDirectory.Trim() + "\\processor\\" + Tables.ProcessorScenarioRuleDefinitions.DefaultDbFile;
+            oDataMgr.CreateDbFile(strTempDbFile);
+            long recordCount = 0;
+            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(strTempDbFile)))
+            {
+                conn.Open();
+                frmMain.g_oTables.m_oProcessorScenarioRuleDefinitions.CreateScenarioTreeSpeciesDollarValuesTable(oDataMgr, conn, strTempTable);
+                oDataMgr.m_strSQL = $@"ATTACH DATABASE '{strProcessorDb}' AS SOURCE";
+                oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+                oDataMgr.m_strSQL = "INSERT INTO tmpWoodValue(scenario_id,species_group,diam_group,merch_value, chip_value,merch_pct,chip_pct)" +
+                    " SELECT scenario_id, species_group, diam_group, merch_value, chip_value," +
+                    " CASE WHEN wood_bin = 'M' THEN 100 ELSE 0 END," +
+                    " CASE WHEN wood_bin = 'C' THEN 100 ELSE 0 END" +
+                    " FROM " + Tables.ProcessorScenarioRuleDefinitions.DefaultTreeSpeciesDollarValuesTableName;
+                oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+                recordCount = oDataMgr.getRecordCount(conn, "SELECT count(distinct species_group) FROM " + strTempTable, strTempTable);
+            }
+            if (recordCount > 0)
+            {
+                // This means we've moved the data to the new table and can drop and re-add the existing one
+                using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(strProcessorDb)))
+                {
+                    conn.Open();
+                    oDataMgr.SqlNonQuery(conn, $@"DROP TABLE {Tables.ProcessorScenarioRuleDefinitions.DefaultTreeSpeciesDollarValuesTableName}");
+                    frmMain.g_oTables.m_oProcessorScenarioRuleDefinitions.CreateScenarioTreeSpeciesDollarValuesTable(oDataMgr, conn, 
+                        Tables.ProcessorScenarioRuleDefinitions.DefaultTreeSpeciesDollarValuesTableName);
+                    oDataMgr.m_strSQL = $@"ATTACH DATABASE '{strTempDbFile}' AS SOURCE";
+                    oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+                    oDataMgr.m_strSQL = "INSERT INTO " + Tables.ProcessorScenarioRuleDefinitions.DefaultTreeSpeciesDollarValuesTableName +
+                        "(scenario_id,species_group,diam_group,merch_pct,merch_value,chip_pct,chip_value,wood4_pct,wood4_value,wood5_pct,wood5_value,wood6_pct,wood6_value)" +
+                        " SELECT * FROM " + strTempTable;
+                    oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+                    oDataMgr.SqlNonQuery(conn, "DETACH DATABASE 'SOURCE'");
+                }
+            }
+
+        }
 
         // Method to compare two versions.
         // Returns 1 if v2 is smaller, -1 
@@ -302,7 +349,6 @@ namespace FIA_Biosum_Manager
             }
             return 0;
         }
-
         public string ReferenceProjectDirectory
 		{
 			get {return _strProjDir;}
