@@ -1220,7 +1220,7 @@ namespace FIA_Biosum_Manager
                             {
                                 lstStates = m_dictVariantStates[strCurVariant];
                             }
-                            p_fvsinput.StartFIA2FVSNew(oDataMgr, m_bOverwrite, strMasterDb, m_strDebugFile,
+                            p_fvsinput.StartFIA2FVS(oDataMgr, m_bOverwrite, strMasterDb, m_strDebugFile,
                                 strCurVariant, lstStates);
                         }
                         frmMain.g_oDelegate.SetControlPropertyValue(
@@ -1552,7 +1552,6 @@ namespace FIA_Biosum_Manager
                 txtMinCwdTL.Text = "48";
             }
         }
-
 
         private void linkLabelFuelModel_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {

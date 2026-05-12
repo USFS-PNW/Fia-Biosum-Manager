@@ -570,6 +570,7 @@ namespace FIA_Biosum_Manager
             get { return m_strGroup; }
         }
 
+
         /// <summary>
         /// Site index functions beginning with "z" were programmed by Tara: these have been checked against the publications.
         /// Site index functions beginning with "q" were taken from Bruce Hiserote's Visual Basic program 4/2002: these should be fine.
@@ -2418,7 +2419,7 @@ namespace FIA_Biosum_Manager
         }
 
         
-        public void StartFIA2FVSNew(SQLite.ADO.DataMgr oDataMgr, bool bOverwrite, string strMasterDb,
+        public void StartFIA2FVS(SQLite.ADO.DataMgr oDataMgr, bool bOverwrite, string strMasterDb,
             string strDebugFile, string strVariant, List<string> lstStates)
         {
             // Copy the target database from BioSum application directory
@@ -2707,8 +2708,15 @@ namespace FIA_Biosum_Manager
                 oDataMgr.SqlNonQuery(tempConn, oDataMgr.m_strSQL);
 
                 // Populate variant field in tree table
-                oDataMgr.m_strSQL = "UPDATE " + Tables.FIA2FVS.DefaultFvsInputTreeTableName +
-                    " SET VARIANT = '" + strVariant + "' WHERE VARIANT IS NULL";
+                oDataMgr.m_strSQL = Queries.FVS.FVSInput.TreeInit.PopulateVariant(strVariant);
+                DebugLogSQL(oDataMgr.m_strSQL);
+                oDataMgr.SqlNonQuery(tempConn, oDataMgr.m_strSQL);
+
+                // Overwrite single digit CRRATIOs
+                int intCRMin = 1;
+                int intOverwriteMax = 10;
+                oDataMgr.m_strSQL = Queries.FVS.FVSInput.TreeInit.OverwriteCRRATIO(intCRMin, intOverwriteMax);
+                DebugLogSQL(oDataMgr.m_strSQL);
                 oDataMgr.SqlNonQuery(tempConn, oDataMgr.m_strSQL);
 
                 // Copy data from temp tables to final tables

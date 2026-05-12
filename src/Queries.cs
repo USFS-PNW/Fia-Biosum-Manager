@@ -2812,6 +2812,20 @@ namespace FIA_Biosum_Manager
                         return strSQL;
                     }
 
+                    public static string PopulateVariant(string strVariant)
+                    {
+                        string strSQL = "UPDATE " + Tables.FIA2FVS.DefaultFvsInputTreeTableName +
+                            " SET VARIANT = '" + strVariant + "' WHERE VARIANT IS NULL";
+                        return strSQL;
+                    }
+
+                    public static string OverwriteCRRATIO(int intCRMin, int intOverwriteMax)
+                    {
+                        string strSQL = "UPDATE " + Tables.FIA2FVS.DefaultFvsInputTreeTableName +
+                            " SET CRRATIO = " + intCRMin + " WHERE CRRATIO BETWEEN 0 AND " + intOverwriteMax;
+                        return strSQL;
+                    }
+
                 }
 
             }
