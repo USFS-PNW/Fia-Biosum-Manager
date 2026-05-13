@@ -3226,7 +3226,7 @@ namespace FIA_Biosum_Manager
                 p_oDataMgr.SqlNonQuery(p_oConn, CreateScenarioTreeSpeciesDollarValuesTableSQL(p_strTableName));
                 // This table didn't have any indexes in the MS AccessVersion
             }
-            static public string CreateScenarioTreeSpeciesDollarValuesTableSQL(string p_strTableName)
+            static public string CreateScenarioTreeSpeciesDollarValuesTableOldSQL(string p_strTableName)
             {
                 return "CREATE TABLE " + p_strTableName + " (" +
                     "scenario_id CHAR(20)," +
@@ -3235,6 +3235,23 @@ namespace FIA_Biosum_Manager
                     "wood_bin CHAR(1) DEFAULT 'M'," +
                     "merch_value DOUBLE DEFAULT 0," +
                     "chip_value DOUBLE DEFAULT 0)";
+            }
+            static public string CreateScenarioTreeSpeciesDollarValuesTableSQL(string p_strTableName)
+            {
+                return "CREATE TABLE " + p_strTableName + " (" +
+                    "scenario_id CHAR(20)," +
+                    "species_group INTEGER," +
+                    "diam_group INTEGER," +
+                    "merch_pct INTEGER DEFAULT 0," +
+                    "merch_value DOUBLE DEFAULT 0," +
+                    "chip_pct INTEGER DEFAULT 0," +
+                    "chip_value DOUBLE DEFAULT 0," +
+                    "wood4_pct INTEGER DEFAULT 0," +
+                    "wood4_value DOUBLE DEFAULT 0," +
+                    "wood5_pct INTEGER DEFAULT 0," +
+                    "wood5_value DOUBLE DEFAULT 0," +
+                    "wood6_pct INTEGER DEFAULT 0," +
+                    "wood6_value DOUBLE DEFAULT 0)";
             }
             public void CreateScenarioHarvestMethodTable(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
             {

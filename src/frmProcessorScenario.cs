@@ -2484,6 +2484,14 @@ namespace FIA_Biosum_Manager
             using (System.Data.SQLite.SQLiteConnection oConn = new System.Data.SQLite.SQLiteConnection(strConn))
             {
                 oConn.Open();
+
+                //@ToDo: v5.13.1 This is temporary
+                //if (dataMgr.FieldExist(oConn, 
+                //    $@"SELECT * FROM {Tables.ProcessorScenarioRuleDefinitions.DefaultTreeSpeciesDollarValuesTableName}", "wood_bin"))
+                //{
+                //    version_control oCtl = new version_control();
+                //    oCtl.UpdateDatasources_5_13_1(frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim());
+                //}
                 dataMgr.SqlQueryReader(oConn, "SELECT wood_bin,merch_value,chip_value,species_group,diam_group " +
                     "FROM " + Tables.ProcessorScenarioRuleDefinitions.DefaultTreeSpeciesDollarValuesTableName +
                     " WHERE UPPER(TRIM(scenario_id))='" + p_oProcessorScenarioItem.ScenarioId.Trim().ToUpper() + "'");
