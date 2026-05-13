@@ -2715,7 +2715,7 @@ namespace FIA_Biosum_Manager
                 // Overwrite single digit CRRATIOs
                 int intCRMin = 1;
                 int intOverwriteMax = 10;
-                oDataMgr.m_strSQL = Queries.FVS.FVSInput.TreeInit.OverwriteCRRATIO(intCRMin, intOverwriteMax);
+                oDataMgr.m_strSQL = Queries.FVS.FVSInput.TreeInit.OverwriteCRRATIO("master." + m_strTreeTable, intCRMin, intOverwriteMax);
                 DebugLogSQL(oDataMgr.m_strSQL);
                 oDataMgr.SqlNonQuery(tempConn, oDataMgr.m_strSQL);
 

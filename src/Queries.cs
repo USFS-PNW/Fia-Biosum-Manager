@@ -2819,10 +2819,11 @@ namespace FIA_Biosum_Manager
                         return strSQL;
                     }
 
-                    public static string OverwriteCRRATIO(int intCRMin, int intOverwriteMax)
+                    public static string OverwriteCRRATIO(string strTreeTable, int intCRMin, int intOverwriteMax)
                     {
                         string strSQL = "UPDATE " + Tables.FIA2FVS.DefaultFvsInputTreeTableName +
-                            " SET CRRATIO = " + intCRMin + " WHERE CRRATIO BETWEEN 0 AND " + intOverwriteMax;
+                            " SET CRRATIO = " + intCRMin + " FROM " + strTreeTable + " AS t " +
+                            "WHERE TRIM(TREE_CN) = TRIM(t.cn) AND t.CR >= 0 AND t.CR < " + intOverwriteMax;
                         return strSQL;
                     }
 
