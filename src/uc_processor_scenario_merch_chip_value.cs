@@ -19,7 +19,15 @@ namespace FIA_Biosum_Manager
 		private System.Windows.Forms.Panel panel1;
 		private System.Windows.Forms.Label lblSpcGrp;
 		private System.Windows.Forms.Label lblDbhClass;
-		private System.Windows.Forms.Label lblMerchValue;
+        private System.Windows.Forms.Label lblChipPct;
+        private System.Windows.Forms.Label lblMerchValue;
+        private System.Windows.Forms.Label lblMerchPct;
+        private System.Windows.Forms.Label lblWood4Value;
+        private System.Windows.Forms.Label lblWood4Pct;
+        private System.Windows.Forms.Label lblWood5Value;
+        private System.Windows.Forms.Label lblWood5Pct;
+        private System.Windows.Forms.Label lblWood6Value;
+        private System.Windows.Forms.Label lblWood6Pct;
         private System.Windows.Forms.Panel pnlMerchValues;
         private FIA_Biosum_Manager.uc_processor_scenario_spc_dbh_group_value_collection uc_processor_scenario_spc_dbh_group_value_collection1 = new uc_processor_scenario_spc_dbh_group_value_collection();
 		private System.Windows.Forms.Label lblChipValue;
@@ -426,7 +434,15 @@ namespace FIA_Biosum_Manager
             this.lblChipValue = new System.Windows.Forms.Label();
             this.pnlMerchValues = new System.Windows.Forms.Panel();
             this.uc_processor_scenario_spc_dbh_group_value1 = new FIA_Biosum_Manager.uc_processor_scenario_spc_dbh_group_value();
+            this.lblChipPct = new System.Windows.Forms.Label();
             this.lblMerchValue = new System.Windows.Forms.Label();
+            this.lblMerchPct = new System.Windows.Forms.Label();
+            this.lblWood4Value = new System.Windows.Forms.Label();
+            this.lblWood4Pct = new System.Windows.Forms.Label();
+            this.lblWood5Value = new System.Windows.Forms.Label();
+            this.lblWood5Pct = new System.Windows.Forms.Label();
+            this.lblWood6Value = new System.Windows.Forms.Label();
+            this.lblWood6Pct = new System.Windows.Forms.Label();
             this.lblDbhClass = new System.Windows.Forms.Label();
             this.lblSpcGrp = new System.Windows.Forms.Label();
             this.lblTitle = new System.Windows.Forms.Label();
@@ -449,35 +465,20 @@ namespace FIA_Biosum_Manager
             // panel1
             // 
             this.panel1.AutoScroll = true;
-            this.panel1.Controls.Add(this.lblChips);
             this.panel1.Controls.Add(this.txtChipValue);
             this.panel1.Controls.Add(this.label2);
             this.panel1.Controls.Add(this.label1);
             this.panel1.Controls.Add(this.lblChipValue);
             this.panel1.Controls.Add(this.pnlMerchValues);
-            this.panel1.Controls.Add(this.lblMerchValue);
-            this.panel1.Controls.Add(this.lblDbhClass);
-            this.panel1.Controls.Add(this.lblSpcGrp);
             this.panel1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.panel1.Location = new System.Drawing.Point(3, 48);
             this.panel1.Name = "panel1";
             this.panel1.Size = new System.Drawing.Size(690, 453);
             this.panel1.TabIndex = 30;
             // 
-            // lblChips
-            // 
-            this.lblChips.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblChips.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(64)))), ((int)(((byte)(0)))));
-            this.lblChips.Location = new System.Drawing.Point(310, 54);
-            this.lblChips.Name = "lblChips";
-            this.lblChips.Size = new System.Drawing.Size(66, 65);
-            this.lblChips.TabIndex = 9;
-            this.lblChips.Text = "Allocate to Energy Wood";
-            this.lblChips.TextAlign = System.Drawing.ContentAlignment.BottomCenter;
-            // 
             // txtChipValue
             // 
-            this.txtChipValue.Location = new System.Drawing.Point(546, 103);
+            this.txtChipValue.Location = new System.Drawing.Point(408, 80);
             this.txtChipValue.Name = "txtChipValue";
             this.txtChipValue.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.txtChipValue.Size = new System.Drawing.Size(72, 20);
@@ -491,9 +492,9 @@ namespace FIA_Biosum_Manager
             // 
             this.label2.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label2.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(64)))), ((int)(((byte)(0)))));
-            this.label2.Location = new System.Drawing.Point(521, 49);
+            this.label2.Location = new System.Drawing.Point(15, 80);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(148, 51);
+            this.label2.Size = new System.Drawing.Size(400, 24);
             this.label2.TabIndex = 7;
             this.label2.Text = " Enter value for energy wood (chips) in $/green ton";
             this.label2.Click += new System.EventHandler(this.label2_Click);
@@ -504,16 +505,15 @@ namespace FIA_Biosum_Manager
             this.label1.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(64)))), ((int)(((byte)(0)))));
             this.label1.Location = new System.Drawing.Point(15, 8);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(424, 32);
+            this.label1.Size = new System.Drawing.Size(675, 32);
             this.label1.TabIndex = 6;
-            this.label1.Text = " Enter Average value in $/cubic foot for each species group and diameter class fo" +
-    "r merchantable wood";
+            this.label1.Text = "Enter Average value in $/cubic foot for each species group and diameter class for merchantable wood";
             // 
             // lblChipValue
             // 
             this.lblChipValue.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))), System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblChipValue.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(64)))), ((int)(((byte)(0)))));
-            this.lblChipValue.Location = new System.Drawing.Point(484, 16);
+            this.lblChipValue.Location = new System.Drawing.Point(15, 48);
             this.lblChipValue.Name = "lblChipValue";
             this.lblChipValue.Size = new System.Drawing.Size(203, 24);
             this.lblChipValue.TabIndex = 5;
@@ -525,9 +525,21 @@ namespace FIA_Biosum_Manager
             this.pnlMerchValues.BackColor = System.Drawing.SystemColors.Control;
             this.pnlMerchValues.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
             this.pnlMerchValues.Controls.Add(this.uc_processor_scenario_spc_dbh_group_value1);
+            this.pnlMerchValues.Controls.Add(this.lblSpcGrp);
+            this.pnlMerchValues.Controls.Add(this.lblDbhClass);
+            this.pnlMerchValues.Controls.Add(this.lblChips);
+            this.pnlMerchValues.Controls.Add(this.lblChipPct);
+            this.pnlMerchValues.Controls.Add(this.lblMerchValue);
+            this.pnlMerchValues.Controls.Add(this.lblMerchPct);
+            this.pnlMerchValues.Controls.Add(this.lblWood4Value);
+            this.pnlMerchValues.Controls.Add(this.lblWood4Pct);
+            this.pnlMerchValues.Controls.Add(this.lblWood5Value);
+            this.pnlMerchValues.Controls.Add(this.lblWood5Pct);
+            this.pnlMerchValues.Controls.Add(this.lblWood6Value);
+            this.pnlMerchValues.Controls.Add(this.lblWood6Pct);
             this.pnlMerchValues.Location = new System.Drawing.Point(8, 122);
             this.pnlMerchValues.Name = "pnlMerchValues";
-            this.pnlMerchValues.Size = new System.Drawing.Size(500, 317);
+            this.pnlMerchValues.Size = new System.Drawing.Size(676, 317);
             this.pnlMerchValues.TabIndex = 3;
             // 
             // uc_processor_scenario_spc_dbh_group_value1
@@ -535,32 +547,21 @@ namespace FIA_Biosum_Manager
             this.uc_processor_scenario_spc_dbh_group_value1.CubicFootDollarValue = "$0.00";
             this.uc_processor_scenario_spc_dbh_group_value1.DbhGroup = "";
             this.uc_processor_scenario_spc_dbh_group_value1.EnergyWood = false;
-            this.uc_processor_scenario_spc_dbh_group_value1.Location = new System.Drawing.Point(-2, 3);
+            this.uc_processor_scenario_spc_dbh_group_value1.Location = new System.Drawing.Point(-2, 70);
             this.uc_processor_scenario_spc_dbh_group_value1.Name = "uc_processor_scenario_spc_dbh_group_value1";
             this.uc_processor_scenario_spc_dbh_group_value1.ReferenceProcessorScenarioForm = null;
-            this.uc_processor_scenario_spc_dbh_group_value1.Size = new System.Drawing.Size(478, 34);
+            this.uc_processor_scenario_spc_dbh_group_value1.Size = new System.Drawing.Size(915, 30);
             this.uc_processor_scenario_spc_dbh_group_value1.SpeciesGroup = "";
             this.uc_processor_scenario_spc_dbh_group_value1.TabIndex = 0;
-            // 
-            // lblMerchValue
-            // 
-            this.lblMerchValue.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblMerchValue.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(64)))), ((int)(((byte)(0)))));
-            this.lblMerchValue.Location = new System.Drawing.Point(382, 79);
-            this.lblMerchValue.Name = "lblMerchValue";
-            this.lblMerchValue.Size = new System.Drawing.Size(104, 40);
-            this.lblMerchValue.TabIndex = 2;
-            this.lblMerchValue.Text = "Merchantable Value in $/ft3";
-            this.lblMerchValue.TextAlign = System.Drawing.ContentAlignment.BottomCenter;
             // 
             // lblDbhClass
             // 
             this.lblDbhClass.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblDbhClass.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(64)))), ((int)(((byte)(0)))));
-            this.lblDbhClass.Location = new System.Drawing.Point(216, 85);
+            this.lblDbhClass.Location = new System.Drawing.Point(164, 4);
             this.lblDbhClass.Name = "lblDbhClass";
-            this.lblDbhClass.Size = new System.Drawing.Size(88, 34);
-            this.lblDbhClass.TabIndex = 1;
+            this.lblDbhClass.Size = new System.Drawing.Size(66, 65);
+            this.lblDbhClass.TabIndex = 2;
             this.lblDbhClass.Text = "Tree DBH Class";
             this.lblDbhClass.TextAlign = System.Drawing.ContentAlignment.BottomCenter;
             // 
@@ -568,12 +569,122 @@ namespace FIA_Biosum_Manager
             // 
             this.lblSpcGrp.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblSpcGrp.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(64)))), ((int)(((byte)(0)))));
-            this.lblSpcGrp.Location = new System.Drawing.Point(15, 95);
+            this.lblSpcGrp.Location = new System.Drawing.Point(29, 4);
             this.lblSpcGrp.Name = "lblSpcGrp";
-            this.lblSpcGrp.Size = new System.Drawing.Size(104, 24);
-            this.lblSpcGrp.TabIndex = 0;
+            this.lblSpcGrp.Size = new System.Drawing.Size(104, 65);
+            this.lblSpcGrp.TabIndex = 1;
             this.lblSpcGrp.Text = "Species Group";
             this.lblSpcGrp.TextAlign = System.Drawing.ContentAlignment.BottomCenter;
+            // 
+            // lblChips
+            // 
+            this.lblChips.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblChips.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(64)))), ((int)(((byte)(0)))));
+            this.lblChips.Location = new System.Drawing.Point(238, 4);
+            this.lblChips.Name = "lblChips";
+            this.lblChips.Size = new System.Drawing.Size(66, 65);
+            this.lblChips.TabIndex = 3;
+            this.lblChips.Text = "Allocate to Energy Wood";
+            this.lblChips.TextAlign = System.Drawing.ContentAlignment.BottomCenter;
+            //
+            // lblChipPct
+            //
+            this.lblChipPct.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblChipPct.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(64)))), ((int)(((byte)(0)))));
+            this.lblChipPct.Location = new System.Drawing.Point(311, 4);
+            this.lblChipPct.Name = "lblChipPct";
+            this.lblChipPct.Size = new System.Drawing.Size(60, 65);
+            this.lblChipPct.TabIndex = 4;
+            this.lblChipPct.Text = "Pct Energy";
+            this.lblChipPct.TextAlign = System.Drawing.ContentAlignment.BottomCenter;
+            // 
+            // lblMerchValue
+            // 
+            this.lblMerchValue.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblMerchValue.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(64)))), ((int)(((byte)(0)))));
+            this.lblMerchValue.Location = new System.Drawing.Point(379, 4);
+            this.lblMerchValue.Name = "lblMerchValue";
+            this.lblMerchValue.Size = new System.Drawing.Size(60, 65);
+            this.lblMerchValue.TabIndex = 5;
+            this.lblMerchValue.Text = "Merch Value in $/ft3";
+            this.lblMerchValue.TextAlign = System.Drawing.ContentAlignment.BottomCenter;
+            //
+            // lblMerchPct
+            //
+            this.lblMerchPct.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblMerchPct.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(64)))), ((int)(((byte)(0)))));
+            this.lblMerchPct.Location = new System.Drawing.Point(447, 4);
+            this.lblMerchPct.Name = "lblMerchPct";
+            this.lblMerchPct.Size = new System.Drawing.Size(60, 65);
+            this.lblMerchPct.TabIndex = 6;
+            this.lblMerchPct.Text = "Pct Merch";
+            this.lblMerchPct.TextAlign = System.Drawing.ContentAlignment.BottomCenter;
+            //
+            // lblWood4Value
+            //
+            this.lblWood4Value.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblWood4Value.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(64)))), ((int)(((byte)(0)))));
+            this.lblWood4Value.Location = new System.Drawing.Point(515, 4);
+            this.lblWood4Value.Name = "lblWood4Value";
+            this.lblWood4Value.Size = new System.Drawing.Size(60, 65);
+            this.lblWood4Value.TabIndex = 7;
+            this.lblWood4Value.Text = "Wood4 Value in $/ft3";
+            this.lblWood4Value.TextAlign = System.Drawing.ContentAlignment.BottomCenter;
+            //
+            // lblWood4Pct
+            //
+            this.lblWood4Pct.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblWood4Pct.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(64)))), ((int)(((byte)(0)))));
+            this.lblWood4Pct.Location = new System.Drawing.Point(583, 4);
+            this.lblWood4Pct.Name = "lblWood4Pct";
+            this.lblWood4Pct.Size = new System.Drawing.Size(60, 65);
+            this.lblWood4Pct.TabIndex = 8;
+            this.lblWood4Pct.Text = "Pct Wood4";
+            this.lblWood4Pct.TextAlign = System.Drawing.ContentAlignment.BottomCenter;
+            //
+            // lblWood5Value
+            //
+            this.lblWood5Value.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblWood5Value.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(64)))), ((int)(((byte)(0)))));
+            this.lblWood5Value.Location = new System.Drawing.Point(651, 4);
+            this.lblWood5Value.Name = "lblWood5Value";
+            this.lblWood5Value.Size = new System.Drawing.Size(60, 65);
+            this.lblWood5Value.TabIndex = 9;
+            this.lblWood5Value.Text = "Wood5 Value in $/ft3";
+            this.lblWood5Value.TextAlign = System.Drawing.ContentAlignment.BottomCenter;
+            //
+            // lblWood5Pct
+            //
+            this.lblWood5Pct.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblWood5Pct.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(64)))), ((int)(((byte)(0)))));
+            this.lblWood5Pct.Location = new System.Drawing.Point(719, 4);
+            this.lblWood5Pct.Name = "lblWood5Pct";
+            this.lblWood5Pct.Size = new System.Drawing.Size(60, 65);
+            this.lblWood5Pct.TabIndex = 10;
+            this.lblWood5Pct.Text = "Pct Wood5";
+            this.lblWood5Pct.TextAlign = System.Drawing.ContentAlignment.BottomCenter;
+            //
+            // lblWood6Value
+            //
+            this.lblWood6Value.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblWood6Value.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(64)))), ((int)(((byte)(0)))));
+            this.lblWood6Value.Location = new System.Drawing.Point(787, 4);
+            this.lblWood6Value.Name = "lblWood6Value";
+            this.lblWood6Value.Size = new System.Drawing.Size(60, 65);
+            this.lblWood6Value.TabIndex = 11;
+            this.lblWood6Value.Text = "Wood6 Value in $/ft3";
+            this.lblWood6Value.TextAlign = System.Drawing.ContentAlignment.BottomCenter;
+            //
+            // lblWood6Pct
+            //
+            this.lblWood6Pct.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblWood6Pct.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(64)))), ((int)(((byte)(0)))));
+            this.lblWood6Pct.Location = new System.Drawing.Point(855, 4);
+            this.lblWood6Pct.Name = "lblWood6Pct";
+            this.lblWood6Pct.Size = new System.Drawing.Size(60, 65);
+            this.lblWood6Pct.TabIndex = 12;
+            this.lblWood6Pct.Text = "Pct Wood6";
+            this.lblWood6Pct.TextAlign = System.Drawing.ContentAlignment.BottomCenter;
             // 
             // lblTitle
             // 
