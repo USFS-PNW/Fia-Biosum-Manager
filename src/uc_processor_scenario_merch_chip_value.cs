@@ -57,11 +57,12 @@ namespace FIA_Biosum_Manager
 			m_oResizeForm.ResizeHeight=true;
 			m_oResizeForm.MaximumHeight = 650;
 			this.m_oValidate.MinValue=0;
-			this.m_oValidate.Money=true;
-			this.m_oValidate.RoundDecimalLength=2;
+            this.m_oValidate.Money = true;
+            this.m_oValidate.RoundDecimalLength=2;
 			this.m_oValidate.NullsAllowed=false;
 			this.m_oValidate.TestForMax=false;
 			this.m_oValidate.TestForMin=true;
+
 
 			// TODO: Add any initialization after the InitializeComponent call
 
@@ -136,10 +137,45 @@ namespace FIA_Biosum_Manager
                             this.uc_processor_scenario_spc_dbh_group_value1.DbhGroup =
                                 ReferenceProcessorScenarioForm.m_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).DbhGroup.Trim();
                             //
+                            //CHIP PERCENT
+                            //
+                            this.uc_processor_scenario_spc_dbh_group_value1.ChipPercent = ReferenceProcessorScenarioForm.m_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).ChipPercent;
+                            //
                             //MERCH CUBIC FOOT VALUE
                             //
                             this.m_oValidate.ValidateDecimal(ReferenceProcessorScenarioForm.m_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).MerchDollarPerCubicFootValue);
-                            this.uc_processor_scenario_spc_dbh_group_value1.CubicFootDollarValue = this.m_oValidate.ReturnValue;
+                            this.uc_processor_scenario_spc_dbh_group_value1.MerchDollarValue = this.m_oValidate.ReturnValue;
+                            //
+                            //MERCH PERCENT
+                            //
+                            this.uc_processor_scenario_spc_dbh_group_value1.MerchPercent = ReferenceProcessorScenarioForm.m_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).MerchPercent;
+                            //
+                            //WOOD4 CUBIC FOOT VALUE
+                            //
+                            this.m_oValidate.ValidateDecimal(ReferenceProcessorScenarioForm.m_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).Wood4DollarPerCubicFootValue);
+                            this.uc_processor_scenario_spc_dbh_group_value1.Wood4DollarValue = this.m_oValidate.ReturnValue;
+                            //
+                            //WOOD4 PERCENT
+                            //
+                            this.uc_processor_scenario_spc_dbh_group_value1.Wood4Percent = ReferenceProcessorScenarioForm.m_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).Wood4Percent;
+                            //
+                            //WOOD5 CUBIC FOOT VALUE
+                            //
+                            this.m_oValidate.ValidateDecimal(ReferenceProcessorScenarioForm.m_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).Wood5DollarPerCubicFootValue);
+                            this.uc_processor_scenario_spc_dbh_group_value1.Wood5DollarValue = this.m_oValidate.ReturnValue;
+                            //
+                            //WOOD5 PERCENT
+                            //
+                            this.uc_processor_scenario_spc_dbh_group_value1.Wood5Percent = ReferenceProcessorScenarioForm.m_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).Wood5Percent;
+                            //
+                            //WOOD6 CUBIC FOOT VALUE
+                            //
+                            this.m_oValidate.ValidateDecimal(ReferenceProcessorScenarioForm.m_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).Wood6DollarPerCubicFootValue);
+                            this.uc_processor_scenario_spc_dbh_group_value1.Wood6DollarValue = this.m_oValidate.ReturnValue;
+                            //
+                            //WOOD6 PERCENT
+                            //
+                            this.uc_processor_scenario_spc_dbh_group_value1.Wood6Percent = ReferenceProcessorScenarioForm.m_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).Wood6Percent;
                             //
                             //USE AS ENERGY WOOD
                             //
@@ -170,10 +206,45 @@ namespace FIA_Biosum_Manager
                             oItem.DbhGroup =
                                 ReferenceProcessorScenarioForm.m_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).DbhGroup.Trim();
                             //
+                            //CHIP PERCENT
+                            //
+                            oItem.ChipPercent = ReferenceProcessorScenarioForm.m_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).ChipPercent;
+                            //
                             //MERCH CUBIC FOOT VALUE
                             //
                             this.m_oValidate.ValidateDecimal(ReferenceProcessorScenarioForm.m_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).MerchDollarPerCubicFootValue);
-                            oItem.CubicFootDollarValue = this.m_oValidate.ReturnValue;
+                            oItem.MerchDollarValue = this.m_oValidate.ReturnValue;
+                            //
+                            //MERCH PERCENT
+                            //
+                            oItem.MerchPercent = ReferenceProcessorScenarioForm.m_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).MerchPercent;
+                            //
+                            //WOOD4 CUBIC FOOT VALUE
+                            //
+                            this.m_oValidate.ValidateDecimal(ReferenceProcessorScenarioForm.m_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).Wood4DollarPerCubicFootValue);
+                            oItem.Wood4DollarValue = this.m_oValidate.ReturnValue;
+                            //
+                            //WOOD4 PERCENT
+                            //
+                            oItem.Wood4Percent = ReferenceProcessorScenarioForm.m_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).Wood4Percent;
+                            //
+                            //WOOD5 CUBIC FOOT VALUE
+                            //
+                            this.m_oValidate.ValidateDecimal(ReferenceProcessorScenarioForm.m_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).Wood5DollarPerCubicFootValue);
+                            oItem.Wood5DollarValue = this.m_oValidate.ReturnValue;
+                            //
+                            //WOOD5 PERCENT
+                            //
+                            oItem.Wood5Percent = ReferenceProcessorScenarioForm.m_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).Wood5Percent;
+                            //
+                            //WOOD6 CUBIC FOOT VALUE
+                            //
+                            this.m_oValidate.ValidateDecimal(ReferenceProcessorScenarioForm.m_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).Wood6DollarPerCubicFootValue);
+                            oItem.Wood6DollarValue = this.m_oValidate.ReturnValue;
+                            //
+                            //WOOD6 PERCENT
+                            //
+                            oItem.Wood6Percent = ReferenceProcessorScenarioForm.m_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).Wood6Percent;
                             //
                             //USE AS ENERGY WOOD
                             oItem.EnergyWood =
@@ -236,10 +307,45 @@ namespace FIA_Biosum_Manager
                             this.uc_processor_scenario_spc_dbh_group_value1.DbhGroup =
                                 ReferenceProcessorScenarioForm.m_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).DbhGroup.Trim();
                             //
+                            //CHIP PERCENT
+                            //
+                            this.uc_processor_scenario_spc_dbh_group_value1.ChipPercent = ReferenceProcessorScenarioForm.m_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).ChipPercent;
+                            //
                             //MERCH CUBIC FOOT VALUE
                             //
                             this.m_oValidate.ValidateDecimal(ReferenceProcessorScenarioForm.m_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).MerchDollarPerCubicFootValue);
-                            this.uc_processor_scenario_spc_dbh_group_value1.CubicFootDollarValue = this.m_oValidate.ReturnValue;
+                            this.uc_processor_scenario_spc_dbh_group_value1.MerchDollarValue = this.m_oValidate.ReturnValue;
+                            //
+                            //MERCH PERCENT
+                            //
+                            this.uc_processor_scenario_spc_dbh_group_value1.MerchPercent = ReferenceProcessorScenarioForm.m_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).MerchPercent;
+                            //
+                            //WOOD4 CUBIC FOOT VALUE
+                            //
+                            this.m_oValidate.ValidateDecimal(ReferenceProcessorScenarioForm.m_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).Wood4DollarPerCubicFootValue);
+                            this.uc_processor_scenario_spc_dbh_group_value1.Wood4DollarValue = this.m_oValidate.ReturnValue;
+                            //
+                            //WOOD4 PERCENT
+                            //
+                            this.uc_processor_scenario_spc_dbh_group_value1.Wood4Percent = ReferenceProcessorScenarioForm.m_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).Wood4Percent;
+                            //
+                            //WOOD5 CUBIC FOOT VALUE
+                            //
+                            this.m_oValidate.ValidateDecimal(ReferenceProcessorScenarioForm.m_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).Wood5DollarPerCubicFootValue);
+                            this.uc_processor_scenario_spc_dbh_group_value1.Wood5DollarValue = this.m_oValidate.ReturnValue;
+                            //
+                            //WOOD5 PERCENT
+                            //
+                            this.uc_processor_scenario_spc_dbh_group_value1.Wood5Percent = ReferenceProcessorScenarioForm.m_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).Wood5Percent;
+                            //
+                            //WOOD6 CUBIC FOOT VALUE
+                            //
+                            this.m_oValidate.ValidateDecimal(ReferenceProcessorScenarioForm.m_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).Wood6DollarPerCubicFootValue);
+                            this.uc_processor_scenario_spc_dbh_group_value1.Wood6DollarValue = this.m_oValidate.ReturnValue;
+                            //
+                            //WOOD6 PERCENT
+                            //
+                            this.uc_processor_scenario_spc_dbh_group_value1.Wood6Percent = ReferenceProcessorScenarioForm.m_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).Wood6Percent;
                             //
                             //USE AS ENERGY WOOD
                             //
@@ -270,10 +376,45 @@ namespace FIA_Biosum_Manager
                             oItem.DbhGroup =
                                 ReferenceProcessorScenarioForm.m_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).DbhGroup.Trim();
                             //
+                            //CHIP PERCENT
+                            //
+                            oItem.ChipPercent = ReferenceProcessorScenarioForm.m_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).ChipPercent;
+                            //
                             //MERCH CUBIC FOOT VALUE
                             //
                             this.m_oValidate.ValidateDecimal(ReferenceProcessorScenarioForm.m_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).MerchDollarPerCubicFootValue);
-                            oItem.CubicFootDollarValue = this.m_oValidate.ReturnValue;
+                            oItem.MerchDollarValue = this.m_oValidate.ReturnValue;
+                            //
+                            //MERCH PERCENT
+                            //
+                            oItem.MerchPercent = ReferenceProcessorScenarioForm.m_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).MerchPercent;
+                            //
+                            //WOOD4 CUBIC FOOT VALUE
+                            //
+                            this.m_oValidate.ValidateDecimal(ReferenceProcessorScenarioForm.m_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).Wood4DollarPerCubicFootValue);
+                            oItem.Wood4DollarValue = this.m_oValidate.ReturnValue;
+                            //
+                            //WOOD4 PERCENT
+                            //
+                            oItem.Wood4Percent = ReferenceProcessorScenarioForm.m_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).Wood4Percent;
+                            //
+                            //WOOD5 CUBIC FOOT VALUE
+                            //
+                            this.m_oValidate.ValidateDecimal(ReferenceProcessorScenarioForm.m_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).Wood5DollarPerCubicFootValue);
+                            oItem.Wood5DollarValue = this.m_oValidate.ReturnValue;
+                            //
+                            //WOOD5 PERCENT
+                            //
+                            oItem.Wood5Percent = ReferenceProcessorScenarioForm.m_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).Wood5Percent;
+                            //
+                            //WOOD6 CUBIC FOOT VALUE
+                            //
+                            this.m_oValidate.ValidateDecimal(ReferenceProcessorScenarioForm.m_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).Wood6DollarPerCubicFootValue);
+                            oItem.Wood6DollarValue = this.m_oValidate.ReturnValue;
+                            //
+                            //WOOD6 PERCENT
+                            //
+                            oItem.Wood6Percent = ReferenceProcessorScenarioForm.m_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).Wood6Percent;
                             //
                             //USE AS ENERGY WOOD
                             //
@@ -301,9 +442,16 @@ namespace FIA_Biosum_Manager
 			int x;
 			string strSpcGrp="";
 			string strDbhGrp="";
-			string strMerchValue="";
-			string strChipValue="";
-            string strWoodBin = "";
+            string strChipValue = "";
+            string strChipPct = "";
+            string strMerchValue="";
+            string strMerchPct = "";
+            string strWood4Value = "";
+            string strWood4Pct = "";
+            string strWood5Value = "";
+            string strWood5Pct = "";
+            string strWood6Value = "";
+            string strWood6Pct = "";
             string strSql = "";
 
             SQLite.ADO.DataMgr oDataMgr = new SQLite.ADO.DataMgr();
@@ -367,16 +515,34 @@ namespace FIA_Biosum_Manager
 			{
 				strSpcGrp = uc_processor_scenario_spc_dbh_group_value_collection1.Item(x).SpeciesGroup.Trim();
 				strDbhGrp = uc_processor_scenario_spc_dbh_group_value_collection1.Item(x).DbhGroup.Trim();
-                strWoodBin = uc_processor_scenario_spc_dbh_group_value_collection1.Item(x).GetWoodBin();
-				strMerchValue = uc_processor_scenario_spc_dbh_group_value_collection1.Item(x).CubicFootDollarValue.Trim();
+                strChipValue = this.txtChipValue.Text.Trim();
+                strChipValue = strChipValue.Replace("$", "");
+                strChipPct = uc_processor_scenario_spc_dbh_group_value_collection1.Item(x).ChipPercent.Trim();
+                strMerchValue = uc_processor_scenario_spc_dbh_group_value_collection1.Item(x).MerchDollarValue.Trim();
 				strMerchValue = strMerchValue.Replace("$","");
-				strChipValue = this.txtChipValue.Text.Trim();
-				strChipValue = strChipValue.Replace("$","");
+                strMerchPct = uc_processor_scenario_spc_dbh_group_value_collection1.Item(x).MerchPercent.Trim();
+                strWood4Value = uc_processor_scenario_spc_dbh_group_value_collection1.Item(x).Wood4DollarValue.Trim();
+                strWood4Value = strWood4Value.Replace("$", "");
+                strWood4Pct = uc_processor_scenario_spc_dbh_group_value_collection1.Item(x).Wood4Percent.Trim();
+                strWood5Value = uc_processor_scenario_spc_dbh_group_value_collection1.Item(x).Wood5DollarValue.Trim();
+                strWood5Value = strWood5Value.Replace("$", "");
+                strWood5Pct = uc_processor_scenario_spc_dbh_group_value_collection1.Item(x).Wood5Percent.Trim();
+                strWood6Value = uc_processor_scenario_spc_dbh_group_value_collection1.Item(x).Wood6DollarValue.Trim();
+                strWood6Value = strWood6Value.Replace("$", "");
+                strWood6Pct = uc_processor_scenario_spc_dbh_group_value_collection1.Item(x).Wood6Percent.Trim();
+
 
                 strSql = "UPDATE scenario_tree_species_diam_dollar_values " +
-                    "SET merch_value = " + strMerchValue + "," +
-                    "chip_value = " + strChipValue + "," +
-                    "wood_bin = '" + strWoodBin.Trim() + "' WHERE EXISTS (" +
+                    "SET chip_value = " + strChipValue + "," +
+                    "chip_pct = " + strChipPct + "," +
+                    "merch_value = " + strMerchValue + "," +
+                    "merch_pct = " + strMerchPct + "," +
+                    "wood4_value = " + strWood4Value + "," +
+                    "wood4_pct = " + strWood4Pct + "," +
+                    "wood5_value = " + strWood5Value + "," +
+                    "wood5_pct = " + strWood5Pct + "," +
+                    "wood6_value = " + strWood6Value + "," +
+                    "wood6_pct = " + strWood6Pct + " WHERE EXISTS (" +
                     "SELECT * FROM spcgrp_dbhgrp " +
                     "WHERE scenario_tree_species_diam_dollar_values.species_group = spcgrp_dbhgrp.species_group " +
                     "AND scenario_tree_species_diam_dollar_values.diam_group = spcgrp_dbhgrp.diam_group " +
@@ -496,7 +662,7 @@ namespace FIA_Biosum_Manager
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(400, 24);
             this.label2.TabIndex = 7;
-            this.label2.Text = " Enter value for energy wood (chips) in $/green ton";
+            this.label2.Text = " Hog fuel (chipped residues) value ($/green ton):";
             this.label2.Click += new System.EventHandler(this.label2_Click);
             // 
             // label1
@@ -507,7 +673,7 @@ namespace FIA_Biosum_Manager
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(675, 32);
             this.label1.TabIndex = 6;
-            this.label1.Text = "Enter Average value in $/cubic foot for each species group and diameter class for merchantable wood";
+            this.label1.Text = "Enter % allocation and wood value  ($/ft3) per species group/diameter class and roundwood type";
             // 
             // lblChipValue
             // 
@@ -544,7 +710,15 @@ namespace FIA_Biosum_Manager
             // 
             // uc_processor_scenario_spc_dbh_group_value1
             // 
-            this.uc_processor_scenario_spc_dbh_group_value1.CubicFootDollarValue = "$0.00";
+            this.uc_processor_scenario_spc_dbh_group_value1.ChipPercent = "0";
+            this.uc_processor_scenario_spc_dbh_group_value1.MerchDollarValue = "$0.00";
+            this.uc_processor_scenario_spc_dbh_group_value1.MerchPercent = "100";
+            this.uc_processor_scenario_spc_dbh_group_value1.Wood4DollarValue = "$0.00";
+            this.uc_processor_scenario_spc_dbh_group_value1.Wood4Percent = "0";
+            this.uc_processor_scenario_spc_dbh_group_value1.Wood5DollarValue = "$0.00";
+            this.uc_processor_scenario_spc_dbh_group_value1.Wood5Percent = "0";
+            this.uc_processor_scenario_spc_dbh_group_value1.Wood4DollarValue = "$0.00";
+            this.uc_processor_scenario_spc_dbh_group_value1.Wood6Percent = "0";
             this.uc_processor_scenario_spc_dbh_group_value1.DbhGroup = "";
             this.uc_processor_scenario_spc_dbh_group_value1.EnergyWood = false;
             this.uc_processor_scenario_spc_dbh_group_value1.Location = new System.Drawing.Point(-2, 70);
@@ -562,7 +736,7 @@ namespace FIA_Biosum_Manager
             this.lblDbhClass.Name = "lblDbhClass";
             this.lblDbhClass.Size = new System.Drawing.Size(66, 65);
             this.lblDbhClass.TabIndex = 2;
-            this.lblDbhClass.Text = "Tree DBH Class";
+            this.lblDbhClass.Text = "Tree DBH Class (inches)";
             this.lblDbhClass.TextAlign = System.Drawing.ContentAlignment.BottomCenter;
             // 
             // lblSpcGrp
@@ -584,7 +758,7 @@ namespace FIA_Biosum_Manager
             this.lblChips.Name = "lblChips";
             this.lblChips.Size = new System.Drawing.Size(66, 65);
             this.lblChips.TabIndex = 3;
-            this.lblChips.Text = "Allocate to Energy Wood";
+            this.lblChips.Text = "Allocate All to Energy Wood";
             this.lblChips.TextAlign = System.Drawing.ContentAlignment.BottomCenter;
             //
             // lblChipPct
@@ -740,6 +914,19 @@ namespace FIA_Biosum_Manager
         private void txtChipValue_KeyPress(object sender, KeyPressEventArgs e)
         {
             ReferenceProcessorScenarioForm.m_bSave = true;
+        }
+
+        public void resize_ValuePanel()
+        {
+            if (this.panel1.Width - this.pnlMerchValues.Width > 16)
+            {
+                this.pnlMerchValues.Width = this.panel1.Width - 16;
+            }
+
+            if (this.pnlMerchValues.Width > 950)
+            {
+                this.pnlMerchValues.Width = 950;
+            }
         }
 	}
 }
