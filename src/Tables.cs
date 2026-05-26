@@ -405,6 +405,15 @@ namespace FIA_Biosum_Manager
                     "merch_vol_cf DOUBLE," +
                     "merch_wt_gt DOUBLE," +
                     "merch_val_dpa DOUBLE," +
+                    "wood4_vol_cf DOUBLE," +
+                    "wood4_wt_gt DOUBLE," +
+                    "wood4_val_dpa DOUBLE," +
+                    "wood5_vol_cf DOUBLE," +
+                    "wood5_wt_gt DOUBLE," +
+                    "wood5_val_dpa DOUBLE," +
+                    "wood6_vol_cf DOUBLE," +
+                    "wood6_wt_gt DOUBLE," +
+                    "wood6_val_dpa DOUBLE," +
                     "place_holder CHAR(1) DEFAULT 'N'," +
                     "PRIMARY KEY (biosum_cond_id,rxpackage,rx,rxcycle))";
             }
@@ -425,13 +434,25 @@ namespace FIA_Biosum_Manager
                     "rxcycle CHAR(1)," +
                     "chip_vol_cf DOUBLE," +
                     "merch_vol_cf DOUBLE," +
+                    "wood4_vol_cf DOUBLE," +
+                    "wood5_vol_cf DOUBLE," +
+                    "wood6_vol_cf DOUBLE," +
                     "chip_wt_gt DOUBLE," +
                     "merch_wt_gt DOUBLE," +
+                    "wood4_wt_gt DOUBLE," +
+                    "wood5_wt_gt DOUBLE," +
+                    "wood6_wt_gt DOUBLE," +
                     "chip_val_dpa DOUBLE," +
                     "merch_val_dpa DOUBLE," +
+                    "wood4_val_dpa DOUBLE," +
+                    "wood5_val_dpa DOUBLE," +
+                    "wood6_val_dpa DOUBLE," +
                     "harvest_onsite_cost_dpa DOUBLE," +
                     "chip_haul_cost_dpa DOUBLE," +
                     "merch_haul_cost_dpa DOUBLE," +
+                    "wood4_haul_cost_dpa DOUBLE," +
+                    "wood5_haul_cost_dpa DOUBLE," +
+                    "wood6_haul_cost_dpa DOUBLE," +
                     "merch_chip_nr_dpa DOUBLE," +
                     "merch_nr_dpa DOUBLE," +
                     "usebiomass_yn CHAR(1)," +
@@ -456,13 +477,25 @@ namespace FIA_Biosum_Manager
                     "rxpackage CHAR(3)," +
                     "chip_vol_cf_utilized DOUBLE," +
                     "merch_vol_cf DOUBLE," +
+                    "wood4_vol_cf DOUBLE," +
+                    "wood5_vol_cf DOUBLE," +
+                    "wood6_vol_cf DOUBLE," +
                     "chip_wt_gt_utilized DOUBLE," +
                     "merch_wt_gt DOUBLE," +
+                    "wood4_wt_gt DOUBLE," +
+                    "wood5_wt_gt DOUBLE," +
+                    "wood6_wt_gt DOUBLE," +
                     "chip_val_dpa_utilized DOUBLE," +
                     "merch_val_dpa DOUBLE," +
+                    "wood4_val_dpa DOUBLE," +
+                    "wood5_val_dpa DOUBLE," +
+                    "wood6_val_dpa DOUBLE," +
                     "harvest_onsite_cost_dpa DOUBLE," +
                     "chip_haul_cost_dpa_utilized DOUBLE," +
                     "merch_haul_cost_dpa DOUBLE," +
+                    "wood4_haul_cost_dpa DOUBLE," +
+                    "wood5_haul_cost_dpa DOUBLE," +
+                    "wood6_haul_cost_dpa DOUBLE," +
                     "merch_chip_nr_dpa DOUBLE," +
                     "merch_nr_dpa DOUBLE," +
                     "max_nr_dpa DOUBLE," +
@@ -502,6 +535,18 @@ namespace FIA_Biosum_Manager
                     "chip_haul_psite INTEGER," +
                     "chip_haul_psite_name CHAR(255)," +
                     "chip_haul_cost_dpgt DOUBLE DEFAULT 0," +
+                    "wood4_haul_cost_id INTEGER," +
+                    "wood4_haul_psite INTEGER," +
+                    "wood4_haul_psite_name CHAR(255)," +
+                    "wood4_haul_cost_dpgt DOUBLE DEFAULT 0," +
+                    "wood5_haul_cost_id INTEGER," +
+                    "wood5_haul_psite INTEGER," +
+                    "wood5_haul_psite_name CHAR(255)," +
+                    "wood5_haul_cost_dpgt DOUBLE DEFAULT 0," +
+                    "wood6_haul_cost_id INTEGER," +
+                    "wood6_haul_psite INTEGER," +
+                    "wood6_haul_psite_name CHAR(255)," +
+                    "wood6_haul_cost_dpgt DOUBLE DEFAULT 0," +
                     "cond_too_far_steep_yn CHAR(1) DEFAULT 'N'," +
                     "cond_accessible_yn CHAR(1) DEFAULT 'Y'," +
                     "PRIMARY KEY (biosum_plot_id, biosum_cond_id))";
@@ -529,6 +574,12 @@ namespace FIA_Biosum_Manager
                     "MERCH_PSITE_NAME CHAR(255)," +
                     "CHIP_PSITE_NUM INTEGER," +
                     "CHIP_PSITE_NAME CHAR(255)," +
+                    "WOOD4_PSITE_NUM INTEGER," +
+                    "WOOD4_PSITE_NAME CHAR(255)," +
+                    "WOOD5_PSITE_NUM INTEGER," +
+                    "WOOD5_PSITE_NAME CHAR(255)," +
+                    "WOOD6_PSITE_NUM INTEGER," +
+                    "WOOD6_PSITE_NAME CHAR(255)," +
                     "CONSTRAINT " + p_strTableName + "_pk PRIMARY KEY (BIOSUM_COND_ID))";
             }
 

@@ -2535,15 +2535,12 @@ namespace FIA_Biosum_Manager
                 oConn.Open();
 
                 //@ToDo: v5.13.1 This is temporary
-                //if (dataMgr.FieldExist(oConn,
-                //    $@"SELECT * FROM {Tables.ProcessorScenarioRuleDefinitions.DefaultTreeSpeciesDollarValuesTableName}", "wood_bin"))
-                //{
-                //    version_control oCtl = new version_control();
-                //    oCtl.UpdateDatasources_5_13_1(frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim());
-                //}
-                //dataMgr.SqlQueryReader(oConn, "SELECT wood_bin,merch_value,chip_value,species_group,diam_group " +
-                //    "FROM " + Tables.ProcessorScenarioRuleDefinitions.DefaultTreeSpeciesDollarValuesTableName +
-                //    " WHERE UPPER(TRIM(scenario_id))='" + p_oProcessorScenarioItem.ScenarioId.Trim().ToUpper() + "'");
+                if (dataMgr.FieldExist(oConn,
+                    $@"SELECT * FROM {Tables.ProcessorScenarioRuleDefinitions.DefaultTreeSpeciesDollarValuesTableName}", "wood_bin"))
+                {
+                    version_control oCtl = new version_control();
+                    oCtl.UpdateDatasources_5_13_1(frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim());
+                }
 
                 dataMgr.SqlQueryReader(oConn, "SELECT chip_value, merch_value, wood4_value, wood5_value, wood6_value, " +
                     "chip_pct, merch_pct, wood4_pct, wood5_pct, wood6_pct, species_group, diam_group " +

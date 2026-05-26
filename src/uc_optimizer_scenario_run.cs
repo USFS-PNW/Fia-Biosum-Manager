@@ -5238,7 +5238,8 @@ namespace FIA_Biosum_Manager
                     fieldsAndDataTypes += field + " " + dataType + ", ";
                 }
 
-                string[] columnsFromTreeVolValSum = { "merch_vol_cf", "chip_vol_cf", "chip_wt_gt", "chip_val_dpa", "merch_wt_gt", "merch_val_dpa" };
+                string[] columnsFromTreeVolValSum = { "merch_vol_cf", "chip_vol_cf", "wood4_vol_cf", "wood5_vol_cf", "wood6_vol_cf", 
+                    "merch_wt_gt", "chip_wt_gt", "wood4_wt_gt", "wood5_wt_gt", "wood6_wt_gt", "merch_val_dpa", "chip_val_dpa", "wood4_val_dpa", "wood5_val_dpa", "wood6_val_dpa" };
                 foreach (string column in columnsFromTreeVolValSum)
                 {
                     field = "";
@@ -5255,7 +5256,11 @@ namespace FIA_Biosum_Manager
                 fieldsAndDataTypes += "harvest_onsite_cost_dpa " + dataType + ", ";
 
                 fieldsAndDataTypes += "escalator_merch_haul_cpa_pt DOUBLE, merch_haul_cost_dpa DOUBLE, escalator_chip_haul_cpa_pt DOUBLE," +
-                    "chip_haul_cost_dpa DOUBLE, merch_chip_nr_dpa DOUBLE, merch_nr_dpa DOUBLE, usebiomass_yn CHAR(1), max_nr_dpa DOUBLE, ";
+                    "chip_haul_cost_dpa DOUBLE, escalator_wood4_haul_cpa_pt DOUBLE, wood4_haul_cost_dpa DOUBLE, " +
+                    "escalator_wood5_haul_cpa_pt DOUBLE, wood5_haul_cost_dpa DOUBLE, " +
+                    "escalator_wood6_haul_cpa_pt DOUBLE, wood6_haul_cost_dpa DOUBLE, " +
+                    "merch_chip_nr_dpa DOUBLE, merch_nr_dpa DOUBLE, wood4_nr_dpa DOUBLE, wood5_nr_dpa DOUBLE, wood6_nr_dpa DOUBLE, " +
+                    "usebiomass_yn CHAR(1), max_nr_dpa DOUBLE, ";
 
                 string[] columnsFromCondTable = { "acres", "owngrpcd" };
                 foreach (string column in columnsFromCondTable)
