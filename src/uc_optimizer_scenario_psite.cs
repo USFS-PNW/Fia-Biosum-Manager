@@ -184,22 +184,34 @@ namespace FIA_Biosum_Manager
 
                 //bio processing type
                 intSubItemCount = 0;
-				byteTranCd = Convert.ToByte(ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem.m_oProcessingSiteItem_Collection.Item(x).BiomassCode);
-				if (byteTranCd == 2)
+				byteBioCd = Convert.ToByte(ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem.m_oProcessingSiteItem_Collection.Item(x).BiomassCode);
+				if (byteBioCd == 2)
 				{
 					this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add("Chips");
 					intSubItemCount = this.lstPSites.Items[lstPSites.Items.Count - 1].SubItems.Count;
 					this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems[intSubItemCount - 1].Font = new Font("Microsoft Sans Serif", (float)8.25, System.Drawing.FontStyle.Regular);
 				}
-				else if (byteTranCd == 3)
+				else if (byteBioCd == 3)
 				{
-					this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add("Both");
+					this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add("Merch & Chips");
 					intSubItemCount = this.lstPSites.Items[lstPSites.Items.Count - 1].SubItems.Count;
 					this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems[intSubItemCount - 1].Font = new Font("Microsoft Sans Serif", (float)8.25, System.Drawing.FontStyle.Regular);
 				}
-				else if (byteTranCd == 4)
+				else if (byteBioCd == 4)
 				{
-					this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add("Other");
+					this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add("Wood4");
+					intSubItemCount = this.lstPSites.Items[lstPSites.Items.Count - 1].SubItems.Count;
+					this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems[intSubItemCount - 1].Font = new Font("Microsoft Sans Serif", (float)8.25, System.Drawing.FontStyle.Regular);
+				}
+				else if (byteBioCd == 5)
+                {
+					this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add("Wood5");
+					intSubItemCount = this.lstPSites.Items[lstPSites.Items.Count - 1].SubItems.Count;
+					this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems[intSubItemCount - 1].Font = new Font("Microsoft Sans Serif", (float)8.25, System.Drawing.FontStyle.Regular);
+				}
+				else if (byteBioCd == 6)
+                {
+					this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems.Add("Wood6");
 					intSubItemCount = this.lstPSites.Items[lstPSites.Items.Count - 1].SubItems.Count;
 					this.lstPSites.Items[this.lstPSites.Items.Count - 1].SubItems[intSubItemCount - 1].Font = new Font("Microsoft Sans Serif", (float)8.25, System.Drawing.FontStyle.Regular);
 				}
@@ -325,13 +337,21 @@ namespace FIA_Biosum_Manager
                     {
 						strBioCd = "2";
                     }
-					else if (lstPSites.Items[x].SubItems[COLUMN_PSITEBIOPROCESSTYPE].Text.Trim() == "Both")
+					else if (lstPSites.Items[x].SubItems[COLUMN_PSITEBIOPROCESSTYPE].Text.Trim() == "Merch & Chips")
                     {
 						strBioCd = "3";
                     }
-                    else if (lstPSites.Items[x].SubItems[COLUMN_PSITEBIOPROCESSTYPE].Text.Trim() == "Other")
+                    else if (lstPSites.Items[x].SubItems[COLUMN_PSITEBIOPROCESSTYPE].Text.Trim() == "Wood4")
                     {
                         strBioCd = "4";
+                    }
+					else if (lstPSites.Items[x].SubItems[COLUMN_PSITEBIOPROCESSTYPE].Text.Trim() == "Wood5")
+                    {
+						strBioCd = "5";
+                    }
+					else if (lstPSites.Items[x].SubItems[COLUMN_PSITEBIOPROCESSTYPE].Text.Trim() == "Wood6")
+                    {
+						strBioCd = "6";
                     }
                     else
                     {

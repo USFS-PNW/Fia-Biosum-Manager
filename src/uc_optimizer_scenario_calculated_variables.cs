@@ -1609,7 +1609,7 @@ namespace FIA_Biosum_Manager
                 string strVariableSource = Tables.OptimizerScenarioResults.DefaultScenarioResultsPostEconomicWeightedTableName +
                     "." + lblEconVariableName.Text.Trim();
                 strSql = strSql + lblEconVariableName.Text.Trim() + "','" + strDescription + "','" +
-                    strVariableType + "','" + strBaselinePackage + "','" + strVariableSource + "', 'N')";
+                    strVariableType + "', null,'" + strVariableSource + "', 'omit')";
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                 {
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "Add parent record for Economic weighted variable \r\n");
