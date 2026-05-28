@@ -7444,16 +7444,11 @@ namespace FIA_Biosum_Manager
 
             /*****************************************************************
             **create the table structures in the temp work tables db file
-            **and give them the name OF all_road_merch_haul_costs_work_table and 
-            **                          all_road_chip_haul_costs_work_table
-            **                          cheapest_road_merch_haul_costs_work_table
-            **                          cheapest_road_chip_haul_costs_work_table
-            **                          cheapest_rail_merch_haul_costs_work_table
-            **                          cheapest_rail_chip_haul_costs_work_table
-            **                          merch_plot_to_rh_to_collector_haul_costs_work_table
-            **                          chip_plot_to_rh_to_collector_haul_costs_work_table
-            **                          combine_chip_rail_road_haul_costs_work_table
-            **                          combine_merch_rail_road_haul_costs_work_table
+            **and give them the name of all_road_[wood type]_haul_costs_work_table
+            **                          cheapest_road_[wood type]_haul_costs_work_table
+            **                          cheapest_rail_[wood type]_haul_costs_work_table
+            **                          [wood type]_plot_to_rh_to_collector_haul_costs_work_table
+            **                          combine_[wood type]_rail_road_haul_costs_work_table
             **                          psite_accessible_work_table
             *****************************************************************/
 
@@ -7474,10 +7469,17 @@ namespace FIA_Biosum_Manager
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "--Create haul costs work tables from the haul_costs table SQL\r\n");
 
-                string[] arrHaulCostWorkTables = { "all_road_chip_haul_costs_work_table", "all_road_merch_haul_costs_work_table", "cheapest_road_merch_haul_costs_work_table",
-                "cheapest_road_chip_haul_costs_work_table", "cheapest_rail_merch_haul_costs_work_table", "cheapest_rail_chip_haul_costs_work_table", "cheapest_merch_haul_costs_work_table",
-                "cheapest_chip_haul_costs_work_table", "chip_plot_to_rh_to_collector_haul_costs_work_table", "merch_plot_to_rh_to_collector_haul_costs_work_table",
-                "combine_chip_rail_road_haul_costs_work_table", "combine_merch_rail_road_haul_costs_work_table"};
+                string[] arrHaulCostWorkTables = { "all_road_merch_haul_costs_work_table", "all_road_chip_haul_costs_work_table", "all_road_wood4_haul_costs_work_table",
+                "all_road_wood5_haul_costs_work_table", "all_road_wood6_haul_costs_work_table",
+                "merch_plot_to_rh_to_collector_haul_costs_work_table", "chip_plot_to_rh_to_collector_haul_costs_work_table",
+                "wood4_plot_to_rh_to_collector_haul_costs_work_table", "wood5_plot_to_rh_to_collector_haul_costs_work_table",
+                "wood6_plot_to_rh_to_collector_haul_costs_work_table", "cheapest_road_merch_haul_costs_work_table",
+                "cheapest_road_chip_haul_costs_work_table", "cheapest_road_wood4_haul_costs_work_table", "cheapest_road_wood5_haul_costs_work_table",
+                "cheapest_road_wood6_haul_costs_work_table", "cheapest_rail_merch_haul_costs_work_table", "cheapest_rail_chip_haul_costs_work_table", "cheapest_rail_wood4_haul_costs_work_table",
+                "cheapest_rail_wood5_haul_costs_work_table", "cheapest_rail_wood6_haul_costs_work_table", "combine_merch_rail_road_haul_costs_work_table",
+                "combine_chip_rail_road_haul_costs_work_table", "combine_wood4_rail_road_haul_costs_work_table", "combine_wood5_rail_road_haul_costs_work_table",
+                "combine_wood6_rail_road_haul_costs_work_table", "cheapest_merch_haul_costs_work_table", "cheapest_chip_haul_costs_work_table", "cheapest_wood4_haul_costs_work_table",
+                "cheapest_wood5_haul_costs_work_table", "cheapest_wood6_haul_costs_work_table"};
 
                 foreach (string table in arrHaulCostWorkTables)
                 {
@@ -7495,11 +7497,11 @@ namespace FIA_Biosum_Manager
 
                 /*****************************************************************
                 **create the railroad table structures in the temp work tables file
-                **and give them the name OF merch_rh_to_collector_haul_costs_work_table
-                **                          chip_rh_to_collector_haul_costs_work_table
+                **and give them the name of [wood type]_rh_to_collector_haul_costs_work_table
                 *****************************************************************/
 
-                string[] arrHaulCostRailroadTables = { "merch_rh_to_collector_haul_costs_work_table", "chip_rh_to_collector_haul_costs_work_table" };
+                string[] arrHaulCostRailroadTables = { "merch_rh_to_collector_haul_costs_work_table", "chip_rh_to_collector_haul_costs_work_table", "wood4_rh_to_collector_haul_costs_work_table",
+                "wood5_rh_to_collector_haul_costs_work_table", "wood6_rh_to_collector_haul_costs_work_table"};
 
                 foreach (string table in arrHaulCostRailroadTables)
                 {
