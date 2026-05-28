@@ -14,9 +14,25 @@ namespace FIA_Biosum_Manager
 	{
 		private System.Windows.Forms.TextBox txtSpeciesGroup;
 		private System.Windows.Forms.TextBox txtDbhGroup;
-		private System.Windows.Forms.TextBox txtCubicFootDollarValue;
+		private System.Windows.Forms.TextBox txtChipPct;
+		private System.Windows.Forms.TextBox txtMerchValue;
+		private System.Windows.Forms.TextBox txtMerchPct;
+		private System.Windows.Forms.TextBox txtWood4Value;
+		private System.Windows.Forms.TextBox txtWood4Pct;
+		private System.Windows.Forms.TextBox txtWood5Value;
+		private System.Windows.Forms.TextBox txtWood5Pct;
+		private System.Windows.Forms.TextBox txtWood6Value;
+		private System.Windows.Forms.TextBox txtWood6Pct;
 		private FIA_Biosum_Manager.ValidateNumericValues m_oValidate = new ValidateNumericValues();
-		private string m_strCubicFootDollarValueSave="";
+		private string m_strMerchValueSave = "";
+		private string m_strWood4ValueSave = "";
+		private string m_strWood5ValueSave = "";
+		private string m_strWood6ValueSave = "";
+		private string m_strChipPctSave = "";
+		private string m_strMerchPctSave = "";
+		private string m_strWood4PctSave = "";
+		private string m_strWood5PctSave = "";
+		private string m_strWood6PctSave = "";
         public bool m_bSave = false;
         private CheckBox chkChips;
         private frmProcessorScenario _oFrmProcessorScenario = null;
@@ -49,10 +65,50 @@ namespace FIA_Biosum_Manager
 			}
 			base.Dispose( disposing );
 		}
-		public string CubicFootDollarValue
+		public string MerchDollarValue
 		{
-			get {return this.txtCubicFootDollarValue.Text.Trim();}
-			set {this.txtCubicFootDollarValue.Text = value;m_strCubicFootDollarValueSave=value;}
+			get {return this.txtMerchValue.Text.Trim();}
+			set {this.txtMerchValue.Text = value;m_strMerchValueSave=value;}
+		}
+		public string Wood4DollarValue
+        {
+            get { return this.txtWood4Value.Text.Trim(); }
+			set { this.txtWood4Value.Text = value; m_strWood4ValueSave = value; }
+        }
+		public string Wood5DollarValue
+        {
+            get { return this.txtWood5Value.Text.Trim(); }
+            set { this.txtWood5Value.Text = value; m_strWood5ValueSave = value; }
+        }
+		public string Wood6DollarValue
+        {
+            get { return this.txtWood6Value.Text.Trim(); }
+            set { this.txtWood6Value.Text = value; m_strWood6ValueSave = value; }
+        }
+		public string ChipPercent
+        {
+            get { return this.txtChipPct.Text.Trim(); }
+            set { this.txtChipPct.Text = value; m_strChipPctSave = value; }
+        }
+		public string MerchPercent
+        {
+            get { return this.txtMerchPct.Text.Trim(); }
+            set { this.txtMerchPct.Text = value; m_strMerchPctSave = value; }
+        }
+		public string Wood4Percent
+        {
+            get { return this.txtWood4Pct.Text.Trim(); }
+            set { this.txtWood4Pct.Text = value; m_strWood4PctSave = value; }
+        }
+		public string Wood5Percent
+		{
+			get { return this.txtWood5Pct.Text.Trim(); }
+			set { this.txtWood5Pct.Text = value; m_strWood5PctSave = value; }
+		}
+		public string Wood6Percent
+		{
+			get { return this.txtWood6Pct.Text.Trim(); }
+			set { this.txtWood6Pct.Text = value; m_strWood6PctSave = value; }
 		}
 		public string DbhGroup
 		{
@@ -98,59 +154,178 @@ namespace FIA_Biosum_Manager
 		{
             this.txtSpeciesGroup = new System.Windows.Forms.TextBox();
             this.txtDbhGroup = new System.Windows.Forms.TextBox();
-            this.txtCubicFootDollarValue = new System.Windows.Forms.TextBox();
+            this.txtMerchValue = new System.Windows.Forms.TextBox();
             this.chkChips = new System.Windows.Forms.CheckBox();
-            this.SuspendLayout();
+			this.txtChipPct = new System.Windows.Forms.TextBox();
+			this.txtMerchPct = new System.Windows.Forms.TextBox();
+			this.txtWood4Value = new System.Windows.Forms.TextBox();
+			this.txtWood4Pct = new System.Windows.Forms.TextBox();
+			this.txtWood5Value = new System.Windows.Forms.TextBox();
+			this.txtWood5Pct = new System.Windows.Forms.TextBox();
+			this.txtWood6Value = new System.Windows.Forms.TextBox();
+			this.txtWood6Pct = new System.Windows.Forms.TextBox();
+			this.SuspendLayout();
             // 
             // txtSpeciesGroup
             // 
             this.txtSpeciesGroup.Location = new System.Drawing.Point(8, 6);
             this.txtSpeciesGroup.Name = "txtSpeciesGroup";
-            this.txtSpeciesGroup.Size = new System.Drawing.Size(192, 20);
+            this.txtSpeciesGroup.Size = new System.Drawing.Size(150, 20);
             this.txtSpeciesGroup.TabIndex = 0;
             this.txtSpeciesGroup.Enter += new System.EventHandler(this.txtSpeciesGroup_Enter);
             this.txtSpeciesGroup.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtSpeciesGroup_KeyPress);
             // 
             // txtDbhGroup
             // 
-            this.txtDbhGroup.Location = new System.Drawing.Point(208, 6);
+            this.txtDbhGroup.Location = new System.Drawing.Point(166, 6);
             this.txtDbhGroup.Name = "txtDbhGroup";
-            this.txtDbhGroup.Size = new System.Drawing.Size(88, 20);
+            this.txtDbhGroup.Size = new System.Drawing.Size(66, 20);
             this.txtDbhGroup.TabIndex = 1;
             this.txtDbhGroup.Enter += new System.EventHandler(this.txtDbhGroup_Enter);
             this.txtDbhGroup.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtDbhGroup_KeyPress);
-            // 
-            // txtCubicFootDollarValue
-            // 
-            this.txtCubicFootDollarValue.Location = new System.Drawing.Point(355, 6);
-            this.txtCubicFootDollarValue.Name = "txtCubicFootDollarValue";
-            this.txtCubicFootDollarValue.RightToLeft = System.Windows.Forms.RightToLeft.No;
-            this.txtCubicFootDollarValue.ShortcutsEnabled = false;
-            this.txtCubicFootDollarValue.Size = new System.Drawing.Size(112, 20);
-            this.txtCubicFootDollarValue.TabIndex = 2;
-            this.txtCubicFootDollarValue.Text = "$0.00";
-            this.txtCubicFootDollarValue.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
-            this.txtCubicFootDollarValue.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtCubicFootDollarValue_KeyPress);
-            this.txtCubicFootDollarValue.Leave += new System.EventHandler(this.txtValue_Leave);
-            // 
-            // chkChips
-            // 
-            this.chkChips.AutoSize = true;
-            this.chkChips.Location = new System.Drawing.Point(319, 9);
-            this.chkChips.Name = "chkChips";
-            this.chkChips.Size = new System.Drawing.Size(15, 14);
-            this.chkChips.TabIndex = 3;
-            this.chkChips.UseVisualStyleBackColor = true;
-            this.chkChips.CheckedChanged += new System.EventHandler(this.chkChips_CheckedChanged);
-            // 
-            // uc_processor_scenario_spc_dbh_group_value
-            // 
-            this.Controls.Add(this.chkChips);
-            this.Controls.Add(this.txtCubicFootDollarValue);
-            this.Controls.Add(this.txtDbhGroup);
-            this.Controls.Add(this.txtSpeciesGroup);
+			// 
+			// chkChips
+			// 
+			this.chkChips.AutoSize = true;
+			this.chkChips.Location = new System.Drawing.Point(265, 9);
+			this.chkChips.Name = "chkChips";
+			this.chkChips.Size = new System.Drawing.Size(15, 14);
+			this.chkChips.TabIndex = 2;
+			this.chkChips.UseVisualStyleBackColor = true;
+			this.chkChips.CheckedChanged += new System.EventHandler(this.chkChips_CheckedChanged);
+			//
+			// txtChipPct
+			//
+			this.txtChipPct.Location = new System.Drawing.Point(323, 6);
+			this.txtChipPct.Name = "txtChipPct";
+			this.txtChipPct.RightToLeft = System.Windows.Forms.RightToLeft.No;
+			this.txtChipPct.ShortcutsEnabled = false;
+			this.txtChipPct.Size = new System.Drawing.Size(40, 20);
+			this.txtChipPct.TabIndex = 3;
+			this.txtChipPct.Text = "0";
+			this.txtChipPct.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+			this.txtChipPct.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtValueOrPct_KeyPress);
+			// 
+			// txtMerchValue
+			// 
+			this.txtMerchValue.Location = new System.Drawing.Point(381, 6);
+            this.txtMerchValue.Name = "txtMerchValue";
+            this.txtMerchValue.RightToLeft = System.Windows.Forms.RightToLeft.No;
+            this.txtMerchValue.ShortcutsEnabled = false;
+            this.txtMerchValue.Size = new System.Drawing.Size(60, 20);
+            this.txtMerchValue.TabIndex = 4;
+            this.txtMerchValue.Text = "$0.00";
+            this.txtMerchValue.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+            this.txtMerchValue.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtValueOrPct_KeyPress);
+            this.txtMerchValue.Leave += new System.EventHandler(this.txtMerchValue_Leave);
+			//
+			// txtMerchPct
+			//
+			this.txtMerchPct.Location = new System.Drawing.Point(459, 6);
+			this.txtMerchPct.Name = "txtMerchPct";
+			this.txtMerchPct.RightToLeft = System.Windows.Forms.RightToLeft.No;
+			this.txtMerchPct.ShortcutsEnabled = false;
+			this.txtMerchPct.Size = new System.Drawing.Size(40, 20);
+			this.txtMerchPct.TabIndex = 5;
+			this.txtMerchPct.Text = "100";
+			this.txtMerchPct.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+			this.txtMerchPct.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtValueOrPct_KeyPress);
+			this.txtMerchPct.Leave += new System.EventHandler(this.txtMerchPct_Leave);
+			//
+			// txtWood4Value
+			//
+			this.txtWood4Value.Location = new System.Drawing.Point(517, 6);
+			this.txtWood4Value.Name = "txtWood4Value";
+			this.txtWood4Value.RightToLeft = System.Windows.Forms.RightToLeft.No;
+			this.txtWood4Value.ShortcutsEnabled = false;
+			this.txtWood4Value.Size = new System.Drawing.Size(60, 20);
+			this.txtWood4Value.TabIndex = 6;
+			this.txtWood4Value.Text = "$0.00";
+			this.txtWood4Value.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+			this.txtWood4Value.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtValueOrPct_KeyPress);
+			this.txtWood4Value.Leave += new System.EventHandler(this.txtWood4Value_Leave);
+			//
+			// txtWood4Pct
+			//
+			this.txtWood4Pct.Location = new System.Drawing.Point(595, 6);
+			this.txtWood4Pct.Name = "txtWood4Pct";
+			this.txtWood4Pct.RightToLeft = System.Windows.Forms.RightToLeft.No;
+			this.txtWood4Pct.ShortcutsEnabled = false;
+			this.txtWood4Pct.Size = new System.Drawing.Size(40, 20);
+			this.txtWood4Pct.TabIndex = 7;
+			this.txtWood4Pct.Text = "0";
+			this.txtWood4Pct.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+			this.txtWood4Pct.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtValueOrPct_KeyPress);
+			this.txtWood4Pct.Leave += new System.EventHandler(this.txtWood4Pct_Leave);
+			//
+			// txtWood5Value
+			//
+			this.txtWood5Value.Location = new System.Drawing.Point(653, 6);
+			this.txtWood5Value.Name = "txtWood5Value";
+			this.txtWood5Value.RightToLeft = System.Windows.Forms.RightToLeft.No;
+			this.txtWood5Value.ShortcutsEnabled = false;
+			this.txtWood5Value.Size = new System.Drawing.Size(60, 20);
+			this.txtWood5Value.TabIndex = 8;
+			this.txtWood5Value.Text = "$0.00";
+			this.txtWood5Value.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+			this.txtWood5Value.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtValueOrPct_KeyPress);
+			this.txtWood5Value.Leave += new System.EventHandler(this.txtWood5Value_Leave);
+			//
+			// txtWood5Pct
+			//
+			this.txtWood5Pct.Location = new System.Drawing.Point(731, 6);
+			this.txtWood5Pct.Name = "txtWood5Pct";
+			this.txtWood5Pct.RightToLeft = System.Windows.Forms.RightToLeft.No;
+			this.txtWood5Pct.ShortcutsEnabled = false;
+			this.txtWood5Pct.Size = new System.Drawing.Size(40, 20);
+			this.txtWood5Pct.TabIndex = 9;
+			this.txtWood5Pct.Text = "0";
+			this.txtWood5Pct.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+			this.txtWood5Pct.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtValueOrPct_KeyPress);
+			this.txtWood5Pct.Leave += new System.EventHandler(this.txtWood5Pct_Leave);
+			//
+			// txtWood6Value
+			//
+			this.txtWood6Value.Location = new System.Drawing.Point(789, 6);
+			this.txtWood6Value.Name = "txtWood6Value";
+			this.txtWood6Value.RightToLeft = System.Windows.Forms.RightToLeft.No;
+			this.txtWood6Value.ShortcutsEnabled = false;
+			this.txtWood6Value.Size = new System.Drawing.Size(60, 20);
+			this.txtWood6Value.TabIndex = 10;
+			this.txtWood6Value.Text = "$0.00";
+			this.txtWood6Value.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+			this.txtWood6Value.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtValueOrPct_KeyPress);
+			this.txtWood6Value.Leave += new System.EventHandler(this.txtWood6Value_Leave);
+			//
+			// txtWood6Pct
+			//
+			this.txtWood6Pct.Location = new System.Drawing.Point(867, 6);
+			this.txtWood6Pct.Name = "txtWood6Pct";
+			this.txtWood6Pct.RightToLeft = System.Windows.Forms.RightToLeft.No;
+			this.txtWood6Pct.ShortcutsEnabled = false;
+			this.txtWood6Pct.Size = new System.Drawing.Size(40, 20);
+			this.txtWood6Pct.TabIndex = 11;
+			this.txtWood6Pct.Text = "0";
+			this.txtWood6Pct.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+			this.txtWood6Pct.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtValueOrPct_KeyPress);
+			this.txtWood6Pct.Leave += new System.EventHandler(this.txtWood6Pct_Leave);
+			// 
+			// uc_processor_scenario_spc_dbh_group_value
+			// 
+			this.Controls.Add(this.txtSpeciesGroup);
+			this.Controls.Add(this.txtDbhGroup);
+			this.Controls.Add(this.chkChips);
+			this.Controls.Add(this.txtChipPct);
+			this.Controls.Add(this.txtMerchValue);
+			this.Controls.Add(this.txtMerchPct);
+			this.Controls.Add(this.txtWood4Value);
+			this.Controls.Add(this.txtWood4Pct);
+			this.Controls.Add(this.txtWood5Value);
+			this.Controls.Add(this.txtWood5Pct);
+			this.Controls.Add(this.txtWood6Value);
+			this.Controls.Add(this.txtWood6Pct);
             this.Name = "uc_processor_scenario_spc_dbh_group_value";
-            this.Size = new System.Drawing.Size(474, 32);
+            this.Size = new System.Drawing.Size(915, 32);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -167,54 +342,164 @@ namespace FIA_Biosum_Manager
 			e.Handled=true;
 		}
 
-		private void txtValue_Leave(object sender, System.EventArgs e)
-		{
-			m_oValidate.RoundDecimalLength=2;
-			m_oValidate.Money=true;
-			m_oValidate.NullsAllowed=false;
-			m_oValidate.TestForMaxMin=false;
-			m_oValidate.TestForMin=true;
-			m_oValidate.MinValue=0;
-			m_oValidate.ValidateDecimal(txtCubicFootDollarValue.Text);
-            if (m_oValidate.m_intError == 0)
-            {
-                
-                                
-                txtCubicFootDollarValue.Text = m_oValidate.ReturnValue;
-
-            }
-            else
-            {
-                this.txtCubicFootDollarValue.Text = this.m_strCubicFootDollarValueSave;
-                this.txtCubicFootDollarValue.Focus();
-
-            }
-
-
+		private void txtMerchValue_Leave(object sender, System.EventArgs e)
+        {
+			m_oValidate.RoundDecimalLength = 2;
+			m_oValidate.Money = true;
+			m_oValidate.NullsAllowed = false;
+			m_oValidate.TestForMaxMin = false;
+			m_oValidate.TestForMin = true;
+			m_oValidate.MinValue = 0;
+			m_oValidate.ValidateDecimal(txtMerchValue.Text);
+			if (m_oValidate.m_intError == 0)
+			{
+				txtMerchValue.Text = m_oValidate.ReturnValue;
+			}
+			else
+			{
+				this.txtMerchValue.Text = this.m_strMerchValueSave;
+				this.txtMerchValue.Focus();
+			}
 		}
+
+		private void txtWood4Value_Leave(object sender, System.EventArgs e)
+        {
+			m_oValidate.RoundDecimalLength = 2;
+			m_oValidate.Money = true;
+			m_oValidate.NullsAllowed = false;
+			m_oValidate.TestForMaxMin = false;
+			m_oValidate.TestForMin = true;
+			m_oValidate.MinValue = 0;
+			m_oValidate.ValidateDecimal(txtWood4Value.Text);
+			if (m_oValidate.m_intError == 0)
+			{
+				txtWood4Value.Text = m_oValidate.ReturnValue;
+			}
+			else
+			{
+				this.txtWood4Value.Text = this.m_strWood4ValueSave;
+				this.txtWood4Value.Focus();
+			}
+		}
+
+		private void txtWood5Value_Leave(object sender, System.EventArgs e)
+        {
+			m_oValidate.RoundDecimalLength = 2;
+			m_oValidate.Money = true;
+			m_oValidate.NullsAllowed = false;
+			m_oValidate.TestForMaxMin = false;
+			m_oValidate.TestForMin = true;
+			m_oValidate.MinValue = 0;
+			m_oValidate.ValidateDecimal(txtWood4Value.Text);
+			m_oValidate.ValidateDecimal(txtWood5Value.Text);
+			if (m_oValidate.m_intError == 0)
+			{
+				txtWood5Value.Text = m_oValidate.ReturnValue;
+			}
+			else
+			{
+				this.txtWood5Value.Text = this.m_strWood5ValueSave;
+				this.txtWood5Value.Focus();
+			}
+		}
+
+		private void txtWood6Value_Leave(object sender, System.EventArgs e)
+        {
+			m_oValidate.RoundDecimalLength = 2;
+			m_oValidate.Money = true;
+			m_oValidate.NullsAllowed = false;
+			m_oValidate.TestForMaxMin = false;
+			m_oValidate.TestForMin = true;
+			m_oValidate.MinValue = 0;
+			m_oValidate.ValidateDecimal(txtWood6Value.Text);
+			if (m_oValidate.m_intError == 0)
+			{
+				txtWood6Value.Text = m_oValidate.ReturnValue;
+			}
+			else
+			{
+				this.txtWood6Value.Text = this.m_strWood6ValueSave;
+				this.txtWood6Value.Focus();
+			}
+		}
+
+		private void txtMerchPct_Leave(object sender, System.EventArgs e)
+		{
+			int intChipPct = 100 - int.Parse(txtMerchPct.Text) - int.Parse(txtWood4Pct.Text) - int.Parse(txtWood5Pct.Text) - int.Parse(txtWood6Pct.Text);
+			txtChipPct.Text = intChipPct.ToString();
+		}
+		private void txtWood4Pct_Leave(object sender, System.EventArgs e)
+		{
+			int intChipPct = 100 - int.Parse(txtMerchPct.Text) - int.Parse(txtWood4Pct.Text) - int.Parse(txtWood5Pct.Text) - int.Parse(txtWood6Pct.Text);
+			txtChipPct.Text = intChipPct.ToString();
+		}
+		private void txtWood5Pct_Leave(object sender, System.EventArgs e)
+		{
+			int intChipPct = 100 - int.Parse(txtMerchPct.Text) - int.Parse(txtWood4Pct.Text) - int.Parse(txtWood5Pct.Text) - int.Parse(txtWood6Pct.Text);
+			txtChipPct.Text = intChipPct.ToString();
+		}
+
+		private void txtWood6Pct_Leave(object sender, System.EventArgs e)
+		{
+			int intChipPct = 100 - int.Parse(txtMerchPct.Text) - int.Parse(txtWood4Pct.Text) - int.Parse(txtWood5Pct.Text) - int.Parse(txtWood6Pct.Text);
+			txtChipPct.Text = intChipPct.ToString();
+		}
+
 		public void SaveValues()
 		{
-			this.m_strCubicFootDollarValueSave=this.txtCubicFootDollarValue.Text;
+			this.m_strMerchValueSave = this.txtMerchValue.Text;
+			this.m_strWood4ValueSave = this.txtWood4Value.Text;
+			this.m_strWood5ValueSave = this.txtWood5Value.Text;
+			this.m_strWood6ValueSave = this.txtWood6Value.Text;
 		}
 
 		private void txtSpeciesGroup_Enter(object sender, System.EventArgs e)
 		{
-			txtCubicFootDollarValue.Focus();
+			txtChipPct.Focus();
 		}
 
 		private void txtDbhGroup_Enter(object sender, System.EventArgs e)
 		{
-			txtCubicFootDollarValue.Focus();
+			txtChipPct.Focus();
 		}
 
         private void chkChips_CheckedChanged(object sender, EventArgs e)
         {
             if (this.ReferenceProcessorScenarioForm != null) ReferenceProcessorScenarioForm.m_bSave = true;
-            if (chkChips.Checked) this.txtCubicFootDollarValue.Enabled = false;
-            else this.txtCubicFootDollarValue.Enabled = true;
+			if (chkChips.Checked)
+			{
+				this.txtChipPct.Text = "100";
+				this.txtChipPct.Enabled = false;
+				this.txtMerchValue.Enabled = false;
+				this.txtMerchPct.Text = "0";
+				this.txtMerchPct.Enabled = false;
+				this.txtWood4Value.Enabled = false;
+				this.txtWood4Pct.Text = "0";
+				this.txtWood4Pct.Enabled = false;
+				this.txtWood5Value.Enabled = false;
+				this.txtWood5Pct.Text = "0";
+				this.txtWood5Pct.Enabled = false;
+				this.txtWood6Value.Enabled = false;
+				this.txtWood6Pct.Text = "0";
+				this.txtWood6Pct.Enabled = false;
+			}
+			else
+			{
+				this.txtChipPct.Text = "0";
+				this.txtChipPct.Enabled = true;
+				this.txtMerchValue.Enabled = true;
+				this.txtMerchPct.Text = "100";
+				this.txtMerchPct.Enabled = true;
+				this.txtWood4Value.Enabled = true;
+				this.txtWood4Pct.Enabled = true;
+				this.txtWood5Value.Enabled = true;
+				this.txtWood5Pct.Enabled = true;
+				this.txtWood6Value.Enabled = true;
+				this.txtWood6Pct.Enabled = true;
+			}
         }
 
-        private void txtCubicFootDollarValue_KeyPress(object sender, KeyPressEventArgs e)
+        private void txtValueOrPct_KeyPress(object sender, KeyPressEventArgs e)
         {
             ReferenceProcessorScenarioForm.m_bSave = true;
         }

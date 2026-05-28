@@ -54,14 +54,20 @@ namespace FIA_Biosum_Manager
         const string VARIABLE_FVS = "FVS";
         public const string PREFIX_CHIP_VOLUME = "chip_volume";
         public const string PREFIX_MERCH_VOLUME = "merchantable_volume";
+        public const string PREFIX_WOOD4_VOLUME = "wood4_volume";
+        public const string PREFIX_WOOD5_VOLUME = "wood5_volume";
+        public const string PREFIX_WOOD6_VOLUME = "wood6_volume";
         public const string PREFIX_TOTAL_VOLUME = "total_volume";
+        public const string PREFIX_NON_RESIDUE_VOLUME = "non_residue_wood_volume";
         public const string PREFIX_NET_REVENUE = "net_revenue";
         public const string PREFIX_TREATMENT_HAUL_COSTS = "treatment_haul_costs";
         public const string PREFIX_ONSITE_TREATMENT_COSTS = "onsite_treatment_costs";
         //These parallel arrays must remain in the same order
-        static readonly string[] PREFIX_ECON_VALUE_ARRAY = { PREFIX_TOTAL_VOLUME, PREFIX_MERCH_VOLUME, PREFIX_CHIP_VOLUME,  
+        static readonly string[] PREFIX_ECON_VALUE_ARRAY = { PREFIX_TOTAL_VOLUME, PREFIX_NON_RESIDUE_VOLUME, PREFIX_MERCH_VOLUME, PREFIX_CHIP_VOLUME,
+                                                             PREFIX_WOOD4_VOLUME, PREFIX_WOOD5_VOLUME, PREFIX_WOOD6_VOLUME,
                                                              PREFIX_NET_REVENUE, PREFIX_TREATMENT_HAUL_COSTS, PREFIX_ONSITE_TREATMENT_COSTS };
-        static readonly string[] PREFIX_ECON_NAME_ARRAY = { "Total Volume", "Merchantable Volume", "Chip Volume",
+        static readonly string[] PREFIX_ECON_NAME_ARRAY = { "Total Volume", "Non-Residue Wood Volume", "Merchantable Volume", "Chip Volume",
+                                                            "Wood4 Volume", "Wood5 Volume", "Wood6 Volume", 
                                                             "Net Revenue","Treatment And Haul Costs", "OnSite Treatment Costs"};
         private bool b_FVSTableEnabled = false;
         private string m_strFvsViewTableName = "view_weights";
@@ -1603,7 +1609,7 @@ namespace FIA_Biosum_Manager
                 string strVariableSource = Tables.OptimizerScenarioResults.DefaultScenarioResultsPostEconomicWeightedTableName +
                     "." + lblEconVariableName.Text.Trim();
                 strSql = strSql + lblEconVariableName.Text.Trim() + "','" + strDescription + "','" +
-                    strVariableType + "','" + strBaselinePackage + "','" + strVariableSource + "', 'N')";
+                    strVariableType + "', null,'" + strVariableSource + "', 'omit')";
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                 {
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "Add parent record for Economic weighted variable \r\n");

@@ -134,6 +134,8 @@ namespace FIA_Biosum_Manager
                     }
                 }
             }
+
+            //UpdateDatasources_5_13_1(frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory);
             frmMain.g_oFrmMain.DeactivateStandByAnimation();
 
             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
@@ -301,6 +303,37 @@ namespace FIA_Biosum_Manager
                         " SELECT * FROM " + strTempTable;
                     oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
                     oDataMgr.SqlNonQuery(conn, "DETACH DATABASE 'SOURCE'");
+                }
+            }
+
+            string strOptimizerDefinitionsDb = this.ReferenceProjectDirectory + "\\" + Tables.OptimizerDefinitions.DefaultDbFile;
+            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(strOptimizerDefinitionsDb)))
+            {
+                conn.Open();
+
+                int intVariables = (int)oDataMgr.getRecordCount(conn, "SELECT COUNT(*) FROM " + Tables.OptimizerDefinitions.DefaultCalculatedOptimizerVariablesTableName, 
+                    Tables.OptimizerDefinitions.DefaultCalculatedOptimizerVariablesTableName);
+
+                oDataMgr.m_strSQL = "SELECT * FROM " + Tables.OptimizerDefinitions.DefaultCalculatedOptimizerVariablesTableName +
+                    " WHERE VARIABLE_NAME = 'wood4_volume_1'";
+                if (oDataMgr.getRecordCount(conn, oDataMgr.m_strSQL, Tables.OptimizerDefinitions.DefaultCalculatedOptimizerVariablesTableName) == 0)
+                {
+                    oDataMgr.m_strSQL = "INSERT INTO " + Tables.OptimizerDefinitions.DefaultCalculatedOptimizerVariablesTableName +
+                        " (VARIABLE_NAME, VARIABLE_DESCRIPTION, VARIABLE_TYPE, VARIABLE_SOURCE, HANDLE_NEGATIVES)" +
+                        " VALUES ('wood4_volume_1', 'Sum of wood4 volume for 4 cycles. Each cycle is weighted at 1', 'ECON', " +
+                        "'ECON_BY_RX_UTILIZED_SUM.wood4_vol_cf', 'omit'), ('wood5_volume_1', 'Sum of wood5 volume for 4 cycles. Each cycle is weighted at 1', " +
+                        "'ECON', 'ECON_BY_RX_UTILIZED_SUM.wood5_vol_cf', 'omit'), ('wood6_volume_1', 'Sum of wood6 volume for 4 cycles. Each cycle is weighted at 1', " +
+                        "'ECON', 'ECON_BY_RX_UTILIZED_SUM.wood6_vol_cf', 'omit'), ('non_residue_wood_volume_1', " +
+                        "'Sum of merch, wood4, wood5, and wood6 volumes for 4 cycles. Each cycle is weighted at 1', 'ECON', 'CALCULATED', 'omit')";
+                    oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+
+                    oDataMgr.m_strSQL = "INSERT INTO " + Tables.OptimizerDefinitions.DefaultCalculatedEconVariablesTableName +
+                        " (calculated_variables_id, rxcycle, weight) VALUES " +
+                        "(" + (intVariables + 1) + ", '1', 1), (" + (intVariables + 1) + ", '2', 1), (" + (intVariables + 1) + ", '3', 1), (" + (intVariables + 1) + ", '4', 1), " +
+                        "(" + (intVariables + 2) + ", '1', 1), (" + (intVariables + 2) + ", '2', 1), (" + (intVariables + 2) + ", '3', 1), (" + (intVariables + 2) + ", '4', 1), " +
+                        "(" + (intVariables + 3) + ", '1', 1), (" + (intVariables + 3) + ", '2', 1), (" + (intVariables + 3) + ", '3', 1), (" + (intVariables + 3) + ", '4', 1), " +
+                        "(" + (intVariables + 4) + ", '1', 1), (" + (intVariables + 4) + ", '2', 1), (" + (intVariables + 4) + ", '3', 1), (" + (intVariables + 4) + ", '4', 1)";
+                    oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
                 }
             }
 

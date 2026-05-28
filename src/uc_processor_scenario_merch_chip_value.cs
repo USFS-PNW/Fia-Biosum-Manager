@@ -19,7 +19,15 @@ namespace FIA_Biosum_Manager
 		private System.Windows.Forms.Panel panel1;
 		private System.Windows.Forms.Label lblSpcGrp;
 		private System.Windows.Forms.Label lblDbhClass;
-		private System.Windows.Forms.Label lblMerchValue;
+        private System.Windows.Forms.Label lblChipPct;
+        private System.Windows.Forms.Label lblMerchValue;
+        private System.Windows.Forms.Label lblMerchPct;
+        private System.Windows.Forms.Label lblWood4Value;
+        private System.Windows.Forms.Label lblWood4Pct;
+        private System.Windows.Forms.Label lblWood5Value;
+        private System.Windows.Forms.Label lblWood5Pct;
+        private System.Windows.Forms.Label lblWood6Value;
+        private System.Windows.Forms.Label lblWood6Pct;
         private System.Windows.Forms.Panel pnlMerchValues;
         private FIA_Biosum_Manager.uc_processor_scenario_spc_dbh_group_value_collection uc_processor_scenario_spc_dbh_group_value_collection1 = new uc_processor_scenario_spc_dbh_group_value_collection();
 		private System.Windows.Forms.Label lblChipValue;
@@ -49,11 +57,12 @@ namespace FIA_Biosum_Manager
 			m_oResizeForm.ResizeHeight=true;
 			m_oResizeForm.MaximumHeight = 650;
 			this.m_oValidate.MinValue=0;
-			this.m_oValidate.Money=true;
-			this.m_oValidate.RoundDecimalLength=2;
+            this.m_oValidate.Money = true;
+            this.m_oValidate.RoundDecimalLength=2;
 			this.m_oValidate.NullsAllowed=false;
 			this.m_oValidate.TestForMax=false;
 			this.m_oValidate.TestForMin=true;
+
 
 			// TODO: Add any initialization after the InitializeComponent call
 
@@ -128,10 +137,45 @@ namespace FIA_Biosum_Manager
                             this.uc_processor_scenario_spc_dbh_group_value1.DbhGroup =
                                 ReferenceProcessorScenarioForm.m_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).DbhGroup.Trim();
                             //
+                            //CHIP PERCENT
+                            //
+                            this.uc_processor_scenario_spc_dbh_group_value1.ChipPercent = ReferenceProcessorScenarioForm.m_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).ChipPercent;
+                            //
                             //MERCH CUBIC FOOT VALUE
                             //
                             this.m_oValidate.ValidateDecimal(ReferenceProcessorScenarioForm.m_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).MerchDollarPerCubicFootValue);
-                            this.uc_processor_scenario_spc_dbh_group_value1.CubicFootDollarValue = this.m_oValidate.ReturnValue;
+                            this.uc_processor_scenario_spc_dbh_group_value1.MerchDollarValue = this.m_oValidate.ReturnValue;
+                            //
+                            //MERCH PERCENT
+                            //
+                            this.uc_processor_scenario_spc_dbh_group_value1.MerchPercent = ReferenceProcessorScenarioForm.m_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).MerchPercent;
+                            //
+                            //WOOD4 CUBIC FOOT VALUE
+                            //
+                            this.m_oValidate.ValidateDecimal(ReferenceProcessorScenarioForm.m_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).Wood4DollarPerCubicFootValue);
+                            this.uc_processor_scenario_spc_dbh_group_value1.Wood4DollarValue = this.m_oValidate.ReturnValue;
+                            //
+                            //WOOD4 PERCENT
+                            //
+                            this.uc_processor_scenario_spc_dbh_group_value1.Wood4Percent = ReferenceProcessorScenarioForm.m_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).Wood4Percent;
+                            //
+                            //WOOD5 CUBIC FOOT VALUE
+                            //
+                            this.m_oValidate.ValidateDecimal(ReferenceProcessorScenarioForm.m_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).Wood5DollarPerCubicFootValue);
+                            this.uc_processor_scenario_spc_dbh_group_value1.Wood5DollarValue = this.m_oValidate.ReturnValue;
+                            //
+                            //WOOD5 PERCENT
+                            //
+                            this.uc_processor_scenario_spc_dbh_group_value1.Wood5Percent = ReferenceProcessorScenarioForm.m_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).Wood5Percent;
+                            //
+                            //WOOD6 CUBIC FOOT VALUE
+                            //
+                            this.m_oValidate.ValidateDecimal(ReferenceProcessorScenarioForm.m_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).Wood6DollarPerCubicFootValue);
+                            this.uc_processor_scenario_spc_dbh_group_value1.Wood6DollarValue = this.m_oValidate.ReturnValue;
+                            //
+                            //WOOD6 PERCENT
+                            //
+                            this.uc_processor_scenario_spc_dbh_group_value1.Wood6Percent = ReferenceProcessorScenarioForm.m_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).Wood6Percent;
                             //
                             //USE AS ENERGY WOOD
                             //
@@ -162,10 +206,45 @@ namespace FIA_Biosum_Manager
                             oItem.DbhGroup =
                                 ReferenceProcessorScenarioForm.m_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).DbhGroup.Trim();
                             //
+                            //CHIP PERCENT
+                            //
+                            oItem.ChipPercent = ReferenceProcessorScenarioForm.m_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).ChipPercent;
+                            //
                             //MERCH CUBIC FOOT VALUE
                             //
                             this.m_oValidate.ValidateDecimal(ReferenceProcessorScenarioForm.m_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).MerchDollarPerCubicFootValue);
-                            oItem.CubicFootDollarValue = this.m_oValidate.ReturnValue;
+                            oItem.MerchDollarValue = this.m_oValidate.ReturnValue;
+                            //
+                            //MERCH PERCENT
+                            //
+                            oItem.MerchPercent = ReferenceProcessorScenarioForm.m_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).MerchPercent;
+                            //
+                            //WOOD4 CUBIC FOOT VALUE
+                            //
+                            this.m_oValidate.ValidateDecimal(ReferenceProcessorScenarioForm.m_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).Wood4DollarPerCubicFootValue);
+                            oItem.Wood4DollarValue = this.m_oValidate.ReturnValue;
+                            //
+                            //WOOD4 PERCENT
+                            //
+                            oItem.Wood4Percent = ReferenceProcessorScenarioForm.m_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).Wood4Percent;
+                            //
+                            //WOOD5 CUBIC FOOT VALUE
+                            //
+                            this.m_oValidate.ValidateDecimal(ReferenceProcessorScenarioForm.m_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).Wood5DollarPerCubicFootValue);
+                            oItem.Wood5DollarValue = this.m_oValidate.ReturnValue;
+                            //
+                            //WOOD5 PERCENT
+                            //
+                            oItem.Wood5Percent = ReferenceProcessorScenarioForm.m_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).Wood5Percent;
+                            //
+                            //WOOD6 CUBIC FOOT VALUE
+                            //
+                            this.m_oValidate.ValidateDecimal(ReferenceProcessorScenarioForm.m_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).Wood6DollarPerCubicFootValue);
+                            oItem.Wood6DollarValue = this.m_oValidate.ReturnValue;
+                            //
+                            //WOOD6 PERCENT
+                            //
+                            oItem.Wood6Percent = ReferenceProcessorScenarioForm.m_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).Wood6Percent;
                             //
                             //USE AS ENERGY WOOD
                             oItem.EnergyWood =
@@ -228,10 +307,45 @@ namespace FIA_Biosum_Manager
                             this.uc_processor_scenario_spc_dbh_group_value1.DbhGroup =
                                 ReferenceProcessorScenarioForm.m_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).DbhGroup.Trim();
                             //
+                            //CHIP PERCENT
+                            //
+                            this.uc_processor_scenario_spc_dbh_group_value1.ChipPercent = ReferenceProcessorScenarioForm.m_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).ChipPercent;
+                            //
                             //MERCH CUBIC FOOT VALUE
                             //
                             this.m_oValidate.ValidateDecimal(ReferenceProcessorScenarioForm.m_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).MerchDollarPerCubicFootValue);
-                            this.uc_processor_scenario_spc_dbh_group_value1.CubicFootDollarValue = this.m_oValidate.ReturnValue;
+                            this.uc_processor_scenario_spc_dbh_group_value1.MerchDollarValue = this.m_oValidate.ReturnValue;
+                            //
+                            //MERCH PERCENT
+                            //
+                            this.uc_processor_scenario_spc_dbh_group_value1.MerchPercent = ReferenceProcessorScenarioForm.m_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).MerchPercent;
+                            //
+                            //WOOD4 CUBIC FOOT VALUE
+                            //
+                            this.m_oValidate.ValidateDecimal(ReferenceProcessorScenarioForm.m_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).Wood4DollarPerCubicFootValue);
+                            this.uc_processor_scenario_spc_dbh_group_value1.Wood4DollarValue = this.m_oValidate.ReturnValue;
+                            //
+                            //WOOD4 PERCENT
+                            //
+                            this.uc_processor_scenario_spc_dbh_group_value1.Wood4Percent = ReferenceProcessorScenarioForm.m_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).Wood4Percent;
+                            //
+                            //WOOD5 CUBIC FOOT VALUE
+                            //
+                            this.m_oValidate.ValidateDecimal(ReferenceProcessorScenarioForm.m_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).Wood5DollarPerCubicFootValue);
+                            this.uc_processor_scenario_spc_dbh_group_value1.Wood5DollarValue = this.m_oValidate.ReturnValue;
+                            //
+                            //WOOD5 PERCENT
+                            //
+                            this.uc_processor_scenario_spc_dbh_group_value1.Wood5Percent = ReferenceProcessorScenarioForm.m_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).Wood5Percent;
+                            //
+                            //WOOD6 CUBIC FOOT VALUE
+                            //
+                            this.m_oValidate.ValidateDecimal(ReferenceProcessorScenarioForm.m_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).Wood6DollarPerCubicFootValue);
+                            this.uc_processor_scenario_spc_dbh_group_value1.Wood6DollarValue = this.m_oValidate.ReturnValue;
+                            //
+                            //WOOD6 PERCENT
+                            //
+                            this.uc_processor_scenario_spc_dbh_group_value1.Wood6Percent = ReferenceProcessorScenarioForm.m_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).Wood6Percent;
                             //
                             //USE AS ENERGY WOOD
                             //
@@ -262,10 +376,45 @@ namespace FIA_Biosum_Manager
                             oItem.DbhGroup =
                                 ReferenceProcessorScenarioForm.m_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).DbhGroup.Trim();
                             //
+                            //CHIP PERCENT
+                            //
+                            oItem.ChipPercent = ReferenceProcessorScenarioForm.m_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).ChipPercent;
+                            //
                             //MERCH CUBIC FOOT VALUE
                             //
                             this.m_oValidate.ValidateDecimal(ReferenceProcessorScenarioForm.m_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).MerchDollarPerCubicFootValue);
-                            oItem.CubicFootDollarValue = this.m_oValidate.ReturnValue;
+                            oItem.MerchDollarValue = this.m_oValidate.ReturnValue;
+                            //
+                            //MERCH PERCENT
+                            //
+                            oItem.MerchPercent = ReferenceProcessorScenarioForm.m_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).MerchPercent;
+                            //
+                            //WOOD4 CUBIC FOOT VALUE
+                            //
+                            this.m_oValidate.ValidateDecimal(ReferenceProcessorScenarioForm.m_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).Wood4DollarPerCubicFootValue);
+                            oItem.Wood4DollarValue = this.m_oValidate.ReturnValue;
+                            //
+                            //WOOD4 PERCENT
+                            //
+                            oItem.Wood4Percent = ReferenceProcessorScenarioForm.m_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).Wood4Percent;
+                            //
+                            //WOOD5 CUBIC FOOT VALUE
+                            //
+                            this.m_oValidate.ValidateDecimal(ReferenceProcessorScenarioForm.m_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).Wood5DollarPerCubicFootValue);
+                            oItem.Wood5DollarValue = this.m_oValidate.ReturnValue;
+                            //
+                            //WOOD5 PERCENT
+                            //
+                            oItem.Wood5Percent = ReferenceProcessorScenarioForm.m_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).Wood5Percent;
+                            //
+                            //WOOD6 CUBIC FOOT VALUE
+                            //
+                            this.m_oValidate.ValidateDecimal(ReferenceProcessorScenarioForm.m_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).Wood6DollarPerCubicFootValue);
+                            oItem.Wood6DollarValue = this.m_oValidate.ReturnValue;
+                            //
+                            //WOOD6 PERCENT
+                            //
+                            oItem.Wood6Percent = ReferenceProcessorScenarioForm.m_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).Wood6Percent;
                             //
                             //USE AS ENERGY WOOD
                             //
@@ -293,9 +442,16 @@ namespace FIA_Biosum_Manager
 			int x;
 			string strSpcGrp="";
 			string strDbhGrp="";
-			string strMerchValue="";
-			string strChipValue="";
-            string strWoodBin = "";
+            string strChipValue = "";
+            string strChipPct = "";
+            string strMerchValue="";
+            string strMerchPct = "";
+            string strWood4Value = "";
+            string strWood4Pct = "";
+            string strWood5Value = "";
+            string strWood5Pct = "";
+            string strWood6Value = "";
+            string strWood6Pct = "";
             string strSql = "";
 
             SQLite.ADO.DataMgr oDataMgr = new SQLite.ADO.DataMgr();
@@ -359,16 +515,34 @@ namespace FIA_Biosum_Manager
 			{
 				strSpcGrp = uc_processor_scenario_spc_dbh_group_value_collection1.Item(x).SpeciesGroup.Trim();
 				strDbhGrp = uc_processor_scenario_spc_dbh_group_value_collection1.Item(x).DbhGroup.Trim();
-                strWoodBin = uc_processor_scenario_spc_dbh_group_value_collection1.Item(x).GetWoodBin();
-				strMerchValue = uc_processor_scenario_spc_dbh_group_value_collection1.Item(x).CubicFootDollarValue.Trim();
+                strChipValue = this.txtChipValue.Text.Trim();
+                strChipValue = strChipValue.Replace("$", "");
+                strChipPct = uc_processor_scenario_spc_dbh_group_value_collection1.Item(x).ChipPercent.Trim();
+                strMerchValue = uc_processor_scenario_spc_dbh_group_value_collection1.Item(x).MerchDollarValue.Trim();
 				strMerchValue = strMerchValue.Replace("$","");
-				strChipValue = this.txtChipValue.Text.Trim();
-				strChipValue = strChipValue.Replace("$","");
+                strMerchPct = uc_processor_scenario_spc_dbh_group_value_collection1.Item(x).MerchPercent.Trim();
+                strWood4Value = uc_processor_scenario_spc_dbh_group_value_collection1.Item(x).Wood4DollarValue.Trim();
+                strWood4Value = strWood4Value.Replace("$", "");
+                strWood4Pct = uc_processor_scenario_spc_dbh_group_value_collection1.Item(x).Wood4Percent.Trim();
+                strWood5Value = uc_processor_scenario_spc_dbh_group_value_collection1.Item(x).Wood5DollarValue.Trim();
+                strWood5Value = strWood5Value.Replace("$", "");
+                strWood5Pct = uc_processor_scenario_spc_dbh_group_value_collection1.Item(x).Wood5Percent.Trim();
+                strWood6Value = uc_processor_scenario_spc_dbh_group_value_collection1.Item(x).Wood6DollarValue.Trim();
+                strWood6Value = strWood6Value.Replace("$", "");
+                strWood6Pct = uc_processor_scenario_spc_dbh_group_value_collection1.Item(x).Wood6Percent.Trim();
+
 
                 strSql = "UPDATE scenario_tree_species_diam_dollar_values " +
-                    "SET merch_value = " + strMerchValue + "," +
-                    "chip_value = " + strChipValue + "," +
-                    "wood_bin = '" + strWoodBin.Trim() + "' WHERE EXISTS (" +
+                    "SET chip_value = " + strChipValue + "," +
+                    "chip_pct = " + strChipPct + "," +
+                    "merch_value = " + strMerchValue + "," +
+                    "merch_pct = " + strMerchPct + "," +
+                    "wood4_value = " + strWood4Value + "," +
+                    "wood4_pct = " + strWood4Pct + "," +
+                    "wood5_value = " + strWood5Value + "," +
+                    "wood5_pct = " + strWood5Pct + "," +
+                    "wood6_value = " + strWood6Value + "," +
+                    "wood6_pct = " + strWood6Pct + " WHERE EXISTS (" +
                     "SELECT * FROM spcgrp_dbhgrp " +
                     "WHERE scenario_tree_species_diam_dollar_values.species_group = spcgrp_dbhgrp.species_group " +
                     "AND scenario_tree_species_diam_dollar_values.diam_group = spcgrp_dbhgrp.diam_group " +
@@ -426,7 +600,15 @@ namespace FIA_Biosum_Manager
             this.lblChipValue = new System.Windows.Forms.Label();
             this.pnlMerchValues = new System.Windows.Forms.Panel();
             this.uc_processor_scenario_spc_dbh_group_value1 = new FIA_Biosum_Manager.uc_processor_scenario_spc_dbh_group_value();
+            this.lblChipPct = new System.Windows.Forms.Label();
             this.lblMerchValue = new System.Windows.Forms.Label();
+            this.lblMerchPct = new System.Windows.Forms.Label();
+            this.lblWood4Value = new System.Windows.Forms.Label();
+            this.lblWood4Pct = new System.Windows.Forms.Label();
+            this.lblWood5Value = new System.Windows.Forms.Label();
+            this.lblWood5Pct = new System.Windows.Forms.Label();
+            this.lblWood6Value = new System.Windows.Forms.Label();
+            this.lblWood6Pct = new System.Windows.Forms.Label();
             this.lblDbhClass = new System.Windows.Forms.Label();
             this.lblSpcGrp = new System.Windows.Forms.Label();
             this.lblTitle = new System.Windows.Forms.Label();
@@ -449,35 +631,20 @@ namespace FIA_Biosum_Manager
             // panel1
             // 
             this.panel1.AutoScroll = true;
-            this.panel1.Controls.Add(this.lblChips);
             this.panel1.Controls.Add(this.txtChipValue);
             this.panel1.Controls.Add(this.label2);
             this.panel1.Controls.Add(this.label1);
             this.panel1.Controls.Add(this.lblChipValue);
             this.panel1.Controls.Add(this.pnlMerchValues);
-            this.panel1.Controls.Add(this.lblMerchValue);
-            this.panel1.Controls.Add(this.lblDbhClass);
-            this.panel1.Controls.Add(this.lblSpcGrp);
             this.panel1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.panel1.Location = new System.Drawing.Point(3, 48);
             this.panel1.Name = "panel1";
             this.panel1.Size = new System.Drawing.Size(690, 453);
             this.panel1.TabIndex = 30;
             // 
-            // lblChips
-            // 
-            this.lblChips.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblChips.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(64)))), ((int)(((byte)(0)))));
-            this.lblChips.Location = new System.Drawing.Point(310, 54);
-            this.lblChips.Name = "lblChips";
-            this.lblChips.Size = new System.Drawing.Size(66, 65);
-            this.lblChips.TabIndex = 9;
-            this.lblChips.Text = "Allocate to Energy Wood";
-            this.lblChips.TextAlign = System.Drawing.ContentAlignment.BottomCenter;
-            // 
             // txtChipValue
             // 
-            this.txtChipValue.Location = new System.Drawing.Point(546, 103);
+            this.txtChipValue.Location = new System.Drawing.Point(408, 80);
             this.txtChipValue.Name = "txtChipValue";
             this.txtChipValue.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.txtChipValue.Size = new System.Drawing.Size(72, 20);
@@ -491,11 +658,11 @@ namespace FIA_Biosum_Manager
             // 
             this.label2.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label2.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(64)))), ((int)(((byte)(0)))));
-            this.label2.Location = new System.Drawing.Point(521, 49);
+            this.label2.Location = new System.Drawing.Point(15, 80);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(148, 51);
+            this.label2.Size = new System.Drawing.Size(400, 24);
             this.label2.TabIndex = 7;
-            this.label2.Text = " Enter value for energy wood (chips) in $/green ton";
+            this.label2.Text = " Hog fuel (chipped residues) value ($/green ton):";
             this.label2.Click += new System.EventHandler(this.label2_Click);
             // 
             // label1
@@ -504,16 +671,15 @@ namespace FIA_Biosum_Manager
             this.label1.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(64)))), ((int)(((byte)(0)))));
             this.label1.Location = new System.Drawing.Point(15, 8);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(424, 32);
+            this.label1.Size = new System.Drawing.Size(675, 32);
             this.label1.TabIndex = 6;
-            this.label1.Text = " Enter Average value in $/cubic foot for each species group and diameter class fo" +
-    "r merchantable wood";
+            this.label1.Text = "Enter % allocation and wood value  ($/ft3) per species group/diameter class and roundwood type";
             // 
             // lblChipValue
             // 
             this.lblChipValue.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))), System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblChipValue.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(64)))), ((int)(((byte)(0)))));
-            this.lblChipValue.Location = new System.Drawing.Point(484, 16);
+            this.lblChipValue.Location = new System.Drawing.Point(15, 48);
             this.lblChipValue.Name = "lblChipValue";
             this.lblChipValue.Size = new System.Drawing.Size(203, 24);
             this.lblChipValue.TabIndex = 5;
@@ -525,55 +691,174 @@ namespace FIA_Biosum_Manager
             this.pnlMerchValues.BackColor = System.Drawing.SystemColors.Control;
             this.pnlMerchValues.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
             this.pnlMerchValues.Controls.Add(this.uc_processor_scenario_spc_dbh_group_value1);
+            this.pnlMerchValues.Controls.Add(this.lblSpcGrp);
+            this.pnlMerchValues.Controls.Add(this.lblDbhClass);
+            this.pnlMerchValues.Controls.Add(this.lblChips);
+            this.pnlMerchValues.Controls.Add(this.lblChipPct);
+            this.pnlMerchValues.Controls.Add(this.lblMerchValue);
+            this.pnlMerchValues.Controls.Add(this.lblMerchPct);
+            this.pnlMerchValues.Controls.Add(this.lblWood4Value);
+            this.pnlMerchValues.Controls.Add(this.lblWood4Pct);
+            this.pnlMerchValues.Controls.Add(this.lblWood5Value);
+            this.pnlMerchValues.Controls.Add(this.lblWood5Pct);
+            this.pnlMerchValues.Controls.Add(this.lblWood6Value);
+            this.pnlMerchValues.Controls.Add(this.lblWood6Pct);
             this.pnlMerchValues.Location = new System.Drawing.Point(8, 122);
             this.pnlMerchValues.Name = "pnlMerchValues";
-            this.pnlMerchValues.Size = new System.Drawing.Size(500, 317);
+            this.pnlMerchValues.Size = new System.Drawing.Size(676, 317);
             this.pnlMerchValues.TabIndex = 3;
             // 
             // uc_processor_scenario_spc_dbh_group_value1
             // 
-            this.uc_processor_scenario_spc_dbh_group_value1.CubicFootDollarValue = "$0.00";
+            this.uc_processor_scenario_spc_dbh_group_value1.ChipPercent = "0";
+            this.uc_processor_scenario_spc_dbh_group_value1.MerchDollarValue = "$0.00";
+            this.uc_processor_scenario_spc_dbh_group_value1.MerchPercent = "100";
+            this.uc_processor_scenario_spc_dbh_group_value1.Wood4DollarValue = "$0.00";
+            this.uc_processor_scenario_spc_dbh_group_value1.Wood4Percent = "0";
+            this.uc_processor_scenario_spc_dbh_group_value1.Wood5DollarValue = "$0.00";
+            this.uc_processor_scenario_spc_dbh_group_value1.Wood5Percent = "0";
+            this.uc_processor_scenario_spc_dbh_group_value1.Wood4DollarValue = "$0.00";
+            this.uc_processor_scenario_spc_dbh_group_value1.Wood6Percent = "0";
             this.uc_processor_scenario_spc_dbh_group_value1.DbhGroup = "";
             this.uc_processor_scenario_spc_dbh_group_value1.EnergyWood = false;
-            this.uc_processor_scenario_spc_dbh_group_value1.Location = new System.Drawing.Point(-2, 3);
+            this.uc_processor_scenario_spc_dbh_group_value1.Location = new System.Drawing.Point(-2, 70);
             this.uc_processor_scenario_spc_dbh_group_value1.Name = "uc_processor_scenario_spc_dbh_group_value1";
             this.uc_processor_scenario_spc_dbh_group_value1.ReferenceProcessorScenarioForm = null;
-            this.uc_processor_scenario_spc_dbh_group_value1.Size = new System.Drawing.Size(478, 34);
+            this.uc_processor_scenario_spc_dbh_group_value1.Size = new System.Drawing.Size(915, 30);
             this.uc_processor_scenario_spc_dbh_group_value1.SpeciesGroup = "";
             this.uc_processor_scenario_spc_dbh_group_value1.TabIndex = 0;
-            // 
-            // lblMerchValue
-            // 
-            this.lblMerchValue.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblMerchValue.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(64)))), ((int)(((byte)(0)))));
-            this.lblMerchValue.Location = new System.Drawing.Point(382, 79);
-            this.lblMerchValue.Name = "lblMerchValue";
-            this.lblMerchValue.Size = new System.Drawing.Size(104, 40);
-            this.lblMerchValue.TabIndex = 2;
-            this.lblMerchValue.Text = "Merchantable Value in $/ft3";
-            this.lblMerchValue.TextAlign = System.Drawing.ContentAlignment.BottomCenter;
             // 
             // lblDbhClass
             // 
             this.lblDbhClass.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblDbhClass.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(64)))), ((int)(((byte)(0)))));
-            this.lblDbhClass.Location = new System.Drawing.Point(216, 85);
+            this.lblDbhClass.Location = new System.Drawing.Point(164, 4);
             this.lblDbhClass.Name = "lblDbhClass";
-            this.lblDbhClass.Size = new System.Drawing.Size(88, 34);
-            this.lblDbhClass.TabIndex = 1;
-            this.lblDbhClass.Text = "Tree DBH Class";
+            this.lblDbhClass.Size = new System.Drawing.Size(66, 65);
+            this.lblDbhClass.TabIndex = 2;
+            this.lblDbhClass.Text = "Tree DBH Class (inches)";
             this.lblDbhClass.TextAlign = System.Drawing.ContentAlignment.BottomCenter;
             // 
             // lblSpcGrp
             // 
             this.lblSpcGrp.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblSpcGrp.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(64)))), ((int)(((byte)(0)))));
-            this.lblSpcGrp.Location = new System.Drawing.Point(15, 95);
+            this.lblSpcGrp.Location = new System.Drawing.Point(29, 4);
             this.lblSpcGrp.Name = "lblSpcGrp";
-            this.lblSpcGrp.Size = new System.Drawing.Size(104, 24);
-            this.lblSpcGrp.TabIndex = 0;
+            this.lblSpcGrp.Size = new System.Drawing.Size(104, 65);
+            this.lblSpcGrp.TabIndex = 1;
             this.lblSpcGrp.Text = "Species Group";
             this.lblSpcGrp.TextAlign = System.Drawing.ContentAlignment.BottomCenter;
+            // 
+            // lblChips
+            // 
+            this.lblChips.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblChips.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(64)))), ((int)(((byte)(0)))));
+            this.lblChips.Location = new System.Drawing.Point(238, 4);
+            this.lblChips.Name = "lblChips";
+            this.lblChips.Size = new System.Drawing.Size(66, 65);
+            this.lblChips.TabIndex = 3;
+            this.lblChips.Text = "Allocate All to Energy Wood";
+            this.lblChips.TextAlign = System.Drawing.ContentAlignment.BottomCenter;
+            //
+            // lblChipPct
+            //
+            this.lblChipPct.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblChipPct.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(64)))), ((int)(((byte)(0)))));
+            this.lblChipPct.Location = new System.Drawing.Point(311, 4);
+            this.lblChipPct.Name = "lblChipPct";
+            this.lblChipPct.Size = new System.Drawing.Size(60, 65);
+            this.lblChipPct.TabIndex = 4;
+            this.lblChipPct.Text = "Pct Energy";
+            this.lblChipPct.TextAlign = System.Drawing.ContentAlignment.BottomCenter;
+            // 
+            // lblMerchValue
+            // 
+            this.lblMerchValue.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblMerchValue.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(64)))), ((int)(((byte)(0)))));
+            this.lblMerchValue.Location = new System.Drawing.Point(379, 4);
+            this.lblMerchValue.Name = "lblMerchValue";
+            this.lblMerchValue.Size = new System.Drawing.Size(60, 65);
+            this.lblMerchValue.TabIndex = 5;
+            this.lblMerchValue.Text = "Merch Value in $/ft3";
+            this.lblMerchValue.TextAlign = System.Drawing.ContentAlignment.BottomCenter;
+            //
+            // lblMerchPct
+            //
+            this.lblMerchPct.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblMerchPct.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(64)))), ((int)(((byte)(0)))));
+            this.lblMerchPct.Location = new System.Drawing.Point(447, 4);
+            this.lblMerchPct.Name = "lblMerchPct";
+            this.lblMerchPct.Size = new System.Drawing.Size(60, 65);
+            this.lblMerchPct.TabIndex = 6;
+            this.lblMerchPct.Text = "Pct Merch";
+            this.lblMerchPct.TextAlign = System.Drawing.ContentAlignment.BottomCenter;
+            //
+            // lblWood4Value
+            //
+            this.lblWood4Value.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblWood4Value.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(64)))), ((int)(((byte)(0)))));
+            this.lblWood4Value.Location = new System.Drawing.Point(515, 4);
+            this.lblWood4Value.Name = "lblWood4Value";
+            this.lblWood4Value.Size = new System.Drawing.Size(60, 65);
+            this.lblWood4Value.TabIndex = 7;
+            this.lblWood4Value.Text = "Wood4 Value in $/ft3";
+            this.lblWood4Value.TextAlign = System.Drawing.ContentAlignment.BottomCenter;
+            //
+            // lblWood4Pct
+            //
+            this.lblWood4Pct.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblWood4Pct.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(64)))), ((int)(((byte)(0)))));
+            this.lblWood4Pct.Location = new System.Drawing.Point(583, 4);
+            this.lblWood4Pct.Name = "lblWood4Pct";
+            this.lblWood4Pct.Size = new System.Drawing.Size(60, 65);
+            this.lblWood4Pct.TabIndex = 8;
+            this.lblWood4Pct.Text = "Pct Wood4";
+            this.lblWood4Pct.TextAlign = System.Drawing.ContentAlignment.BottomCenter;
+            //
+            // lblWood5Value
+            //
+            this.lblWood5Value.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblWood5Value.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(64)))), ((int)(((byte)(0)))));
+            this.lblWood5Value.Location = new System.Drawing.Point(651, 4);
+            this.lblWood5Value.Name = "lblWood5Value";
+            this.lblWood5Value.Size = new System.Drawing.Size(60, 65);
+            this.lblWood5Value.TabIndex = 9;
+            this.lblWood5Value.Text = "Wood5 Value in $/ft3";
+            this.lblWood5Value.TextAlign = System.Drawing.ContentAlignment.BottomCenter;
+            //
+            // lblWood5Pct
+            //
+            this.lblWood5Pct.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblWood5Pct.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(64)))), ((int)(((byte)(0)))));
+            this.lblWood5Pct.Location = new System.Drawing.Point(719, 4);
+            this.lblWood5Pct.Name = "lblWood5Pct";
+            this.lblWood5Pct.Size = new System.Drawing.Size(60, 65);
+            this.lblWood5Pct.TabIndex = 10;
+            this.lblWood5Pct.Text = "Pct Wood5";
+            this.lblWood5Pct.TextAlign = System.Drawing.ContentAlignment.BottomCenter;
+            //
+            // lblWood6Value
+            //
+            this.lblWood6Value.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblWood6Value.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(64)))), ((int)(((byte)(0)))));
+            this.lblWood6Value.Location = new System.Drawing.Point(787, 4);
+            this.lblWood6Value.Name = "lblWood6Value";
+            this.lblWood6Value.Size = new System.Drawing.Size(60, 65);
+            this.lblWood6Value.TabIndex = 11;
+            this.lblWood6Value.Text = "Wood6 Value in $/ft3";
+            this.lblWood6Value.TextAlign = System.Drawing.ContentAlignment.BottomCenter;
+            //
+            // lblWood6Pct
+            //
+            this.lblWood6Pct.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblWood6Pct.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(64)))), ((int)(((byte)(0)))));
+            this.lblWood6Pct.Location = new System.Drawing.Point(855, 4);
+            this.lblWood6Pct.Name = "lblWood6Pct";
+            this.lblWood6Pct.Size = new System.Drawing.Size(60, 65);
+            this.lblWood6Pct.TabIndex = 12;
+            this.lblWood6Pct.Text = "Pct Wood6";
+            this.lblWood6Pct.TextAlign = System.Drawing.ContentAlignment.BottomCenter;
             // 
             // lblTitle
             // 
@@ -629,6 +914,19 @@ namespace FIA_Biosum_Manager
         private void txtChipValue_KeyPress(object sender, KeyPressEventArgs e)
         {
             ReferenceProcessorScenarioForm.m_bSave = true;
+        }
+
+        public void resize_ValuePanel()
+        {
+            if (this.panel1.Width - this.pnlMerchValues.Width > 16)
+            {
+                this.pnlMerchValues.Width = this.panel1.Width - 16;
+            }
+
+            if (this.pnlMerchValues.Width > 950)
+            {
+                this.pnlMerchValues.Width = 950;
+            }
         }
 	}
 }

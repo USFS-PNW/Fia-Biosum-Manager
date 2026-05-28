@@ -125,6 +125,7 @@ namespace FIA_Biosum_Manager
 			this.uc_processor_scenario_merch_chip_value1.m_oResizeForm.ResizeControl();
 			this.uc_processor_scenario_merch_chip_value1.ReferenceProcessorScenarioForm=this;
 			this.uc_processor_scenario_merch_chip_value1.ScenarioId=uc_scenario1.txtScenarioId.Text.Trim();
+            this.uc_processor_scenario_merch_chip_value1.resize_ValuePanel();
 			//
 			//rule definitions escalators
 			//
@@ -1713,17 +1714,65 @@ namespace FIA_Biosum_Manager
                 get { return _bUseAsEnergyWood; }
                 set { _bUseAsEnergyWood = value; }
             }
+            private string _strChipsDollarPerCubicFootValue = "0.00";
+            public string ChipsDollarPerCubicFootValue
+            {
+                get { return _strChipsDollarPerCubicFootValue; }
+                set { _strChipsDollarPerCubicFootValue = value; }
+            }
             private string _strMerchDollarPerCubicFootValue = "0.00";
             public string MerchDollarPerCubicFootValue
             {
                 get { return _strMerchDollarPerCubicFootValue; }
                 set { _strMerchDollarPerCubicFootValue = value; }
             }
-            private string _strChipsDollarPerCubicFootValue = "0.00";
-            public string ChipsDollarPerCubicFootValue
+            private string _strWood4DollarPerCubicFootValue = "0.00";
+            public string Wood4DollarPerCubicFootValue
             {
-                get { return _strChipsDollarPerCubicFootValue; }
-                set { _strChipsDollarPerCubicFootValue = value; }
+                get { return _strWood4DollarPerCubicFootValue; }
+                set { _strWood4DollarPerCubicFootValue = value; }
+            }
+            private string _strWood5DollarPerCubicFootValue = "0.00";
+            public string Wood5DollarPerCubicFootValue
+            {
+                get { return _strWood5DollarPerCubicFootValue; }
+                set { _strWood5DollarPerCubicFootValue = value; }
+            }
+            private string _strWood6DollarPerCubicFootValue = "0.00";
+            public string Wood6DollarPerCubicFootValue
+            {
+                get { return _strWood6DollarPerCubicFootValue; }
+                set { _strWood6DollarPerCubicFootValue = value; }
+            }
+            private string _strChipPercent = "0";
+            public string ChipPercent
+            {
+                get { return _strChipPercent; }
+                set { _strChipPercent = value; }
+            }
+            private string _strMerchPercent = "0";
+            public string MerchPercent
+            {
+                get { return _strMerchPercent; }
+                set { _strMerchPercent = value; }
+            }
+            private string _strWood4Percent = "0";
+            public string Wood4Percent
+            {
+                get { return _strWood4Percent; }
+                set { _strWood4Percent = value; }
+            }
+            private string _strWood5Percent = "0";
+            public string Wood5Percent
+            {
+                get { return _strWood5Percent; }
+                set { _strWood5Percent = value; }
+            }
+            private string _strWood6Percent = "0";
+            public string Wood6Percent
+            {
+                get { return _strWood6Percent; }
+                set { _strWood6Percent = value; }
             }
             private int _intSpeciesGroupId;
             public int SpeciesGroupId
@@ -2486,15 +2535,17 @@ namespace FIA_Biosum_Manager
                 oConn.Open();
 
                 //@ToDo: v5.13.1 This is temporary
-                //if (dataMgr.FieldExist(oConn, 
-                //    $@"SELECT * FROM {Tables.ProcessorScenarioRuleDefinitions.DefaultTreeSpeciesDollarValuesTableName}", "wood_bin"))
-                //{
-                //    version_control oCtl = new version_control();
-                //    oCtl.UpdateDatasources_5_13_1(frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim());
-                //}
-                dataMgr.SqlQueryReader(oConn, "SELECT wood_bin,merch_value,chip_value,species_group,diam_group " +
+                if (dataMgr.FieldExist(oConn,
+                    $@"SELECT * FROM {Tables.ProcessorScenarioRuleDefinitions.DefaultTreeSpeciesDollarValuesTableName}", "wood_bin"))
+                {
+                    version_control oCtl = new version_control();
+                    oCtl.UpdateDatasources_5_13_1(frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim());
+                }
+
+                dataMgr.SqlQueryReader(oConn, "SELECT chip_value, merch_value, wood4_value, wood5_value, wood6_value, " +
+                    "chip_pct, merch_pct, wood4_pct, wood5_pct, wood6_pct, species_group, diam_group " +
                     "FROM " + Tables.ProcessorScenarioRuleDefinitions.DefaultTreeSpeciesDollarValuesTableName +
-                    " WHERE UPPER(TRIM(scenario_id))='" + p_oProcessorScenarioItem.ScenarioId.Trim().ToUpper() + "'");
+                    " WHERE UPPER(TRIM(scenario_id)) = '" + p_oProcessorScenarioItem.ScenarioId.Trim().ToUpper() + "'");
 
                 if (dataMgr.m_intError == 0)
                 {
@@ -2504,9 +2555,17 @@ namespace FIA_Biosum_Manager
                         {
                             string strSpcGrp = "";
                             string strDbhGrp = "";
-                            string strMerchValue = "0.00";
                             string strChipValue = "0.00";
-                            string strWoodBin = "";
+                            string strMerchValue = "0.00";
+                            string strWood4Value = "0.00";
+                            string strWood5Value = "0.00";
+                            string strWood6Value = "0.00";
+                            string strChipPct = "0";
+                            string strMerchPct = "0";
+                            string strWood4Pct = "0";
+                            string strWood5Pct = "0";
+                            string strWood6Pct = "0";
+                            //string strWoodBin = "";
 
                             if (dataMgr.m_DataReader["species_group"] != System.DBNull.Value)
                             {
@@ -2535,20 +2594,55 @@ namespace FIA_Biosum_Manager
                                     }
                                 }
                             }
+                            if (dataMgr.m_DataReader["chip_value"] != System.DBNull.Value &&
+                               dataMgr.m_DataReader["chip_value"].ToString().Trim().Length > 0)
+                            {
+                                strChipValue = String.Format("{0:0.00}", Convert.ToDouble(dataMgr.m_DataReader["chip_value"]));
+                            }
                             if (dataMgr.m_DataReader["merch_value"] != System.DBNull.Value &&
                                 dataMgr.m_DataReader["merch_value"].ToString().Trim().Length > 0)
                             {
                                 strMerchValue = String.Format("{0:0.00}", Convert.ToDouble(dataMgr.m_DataReader["merch_value"]));
                             }
-                            if (dataMgr.m_DataReader["chip_value"] != System.DBNull.Value &&
-                                dataMgr.m_DataReader["chip_value"].ToString().Trim().Length > 0)
+                            if (dataMgr.m_DataReader["wood4_value"] != System.DBNull.Value &&
+                                dataMgr.m_DataReader["wood4_value"].ToString().Trim().Length > 0)
                             {
-                                strChipValue = String.Format("{0:0.00}", Convert.ToDouble(dataMgr.m_DataReader["chip_value"]));
+                                strWood4Value = String.Format("{0:0.00}", Convert.ToDouble(dataMgr.m_DataReader["wood4_value"]));
                             }
-                            if (dataMgr.m_DataReader["wood_bin"] != System.DBNull.Value &&
-                                dataMgr.m_DataReader["wood_bin"].ToString().Trim().Length > 0)
+                            if (dataMgr.m_DataReader["wood5_value"] != System.DBNull.Value &&
+                               dataMgr.m_DataReader["wood5_value"].ToString().Trim().Length > 0)
                             {
-                                strWoodBin = dataMgr.m_DataReader["wood_bin"].ToString().Trim();
+                                strWood5Value = String.Format("{0:0.00}", Convert.ToDouble(dataMgr.m_DataReader["wood5_value"]));
+                            }
+                            if (dataMgr.m_DataReader["wood6_value"] != System.DBNull.Value &&
+                               dataMgr.m_DataReader["wood6_value"].ToString().Trim().Length > 0)
+                            {
+                                strWood4Value = String.Format("{0:0.00}", Convert.ToDouble(dataMgr.m_DataReader["wood6_value"]));
+                            }
+                            if (dataMgr.m_DataReader["chip_pct"] != System.DBNull.Value &&
+                               dataMgr.m_DataReader["chip_pct"].ToString().Trim().Length > 0)
+                            {
+                                strChipPct = Convert.ToString(dataMgr.m_DataReader["chip_pct"]);
+                            }
+                            if (dataMgr.m_DataReader["merch_pct"] != System.DBNull.Value &&
+                               dataMgr.m_DataReader["merch_pct"].ToString().Trim().Length > 0)
+                            {
+                                strMerchPct = Convert.ToString(dataMgr.m_DataReader["merch_pct"]);
+                            }
+                            if (dataMgr.m_DataReader["wood4_pct"] != System.DBNull.Value &&
+                               dataMgr.m_DataReader["wood4_pct"].ToString().Trim().Length > 0)
+                            {
+                                strWood4Pct = Convert.ToString(dataMgr.m_DataReader["wood4_pct"]);
+                            }
+                            if (dataMgr.m_DataReader["wood5_pct"] != System.DBNull.Value &&
+                               dataMgr.m_DataReader["wood5_pct"].ToString().Trim().Length > 0)
+                            {
+                                strWood5Pct = Convert.ToString(dataMgr.m_DataReader["wood5_pct"]);
+                            }
+                            if (dataMgr.m_DataReader["wood6_pct"] != System.DBNull.Value &&
+                               dataMgr.m_DataReader["wood6_pct"].ToString().Trim().Length > 0)
+                            {
+                                strWood6Pct = Convert.ToString(dataMgr.m_DataReader["wood6_pct"]);
                             }
                             if (strSpcGrp.Length > 0 && strDbhGrp.Length > 0)
                             {
@@ -2562,15 +2656,23 @@ namespace FIA_Biosum_Manager
                                         strDbhGrp.ToUpper() ==
                                         p_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).DbhGroup.Trim().ToUpper())
                                     {
-                                        p_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).MerchDollarPerCubicFootValue = strMerchValue;
                                         p_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).ChipsDollarPerCubicFootValue = strChipValue;
-                                        if (strWoodBin == "M")
+                                        p_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).MerchDollarPerCubicFootValue = strMerchValue;
+                                        p_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).Wood4DollarPerCubicFootValue = strWood4Value;
+                                        p_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).Wood5DollarPerCubicFootValue = strWood5Value;
+                                        p_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).Wood6DollarPerCubicFootValue = strWood6Value;
+                                        p_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).ChipPercent = strChipPct;
+                                        p_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).MerchPercent = strMerchPct;
+                                        p_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).Wood4Percent = strWood4Pct;
+                                        p_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).Wood5Percent = strWood5Pct;
+                                        p_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).Wood6Percent = strWood6Pct;
+                                        if (strChipPct == "100")
                                         {
-                                            p_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).UseAsEnergyWood = false;
+                                            p_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).UseAsEnergyWood = true;
                                         }
                                         else
                                         {
-                                            p_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).UseAsEnergyWood = true;
+                                            p_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).UseAsEnergyWood = false;
                                         }
                                     }
                                 }
