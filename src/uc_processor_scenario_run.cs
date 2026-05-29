@@ -1924,11 +1924,11 @@ namespace FIA_Biosum_Manager
                     m_oDataMgr.m_strSQL = "INSERT INTO " + Tables.ProcessorScenarioRun.DefaultTreeVolValSpeciesDiamGroupsTableName + " (biosum_cond_id, rxpackage," +
                                            "rx, rxcycle, species_group, diam_group, chip_vol_cf, chip_wt_gt, " +
                                            "chip_val_dpa, chip_mkt_val_pgt, merch_vol_cf, merch_wt_gt, merch_val_dpa, " +
-                                           "merch_to_chipbin_YN, bc_vol_cf, bc_wt_gt, stand_residue_wt_gt, biosum_harvest_method_category, place_holder, DateTimeCreated) " +
+                                           "bc_vol_cf, bc_wt_gt, stand_residue_wt_gt, biosum_harvest_method_category, place_holder, DateTimeCreated) " +
                                            "SELECT biosum_cond_id, rxpackage, " +
                                            "rx, rxcycle, species_group, diam_group, chip_vol_cf, chip_wt_gt, " +
                                            "chip_val_dpa, chip_mkt_val_pgt, merch_vol_cf, merch_wt_gt, merch_val_dpa, " +
-                                           "merch_to_chipbin_YN, bc_vol_cf, bc_wt_gt, stand_residue_wt_gt, biosum_harvest_method_category, place_holder, DateTimeCreated " +
+                                           "bc_vol_cf, bc_wt_gt, stand_residue_wt_gt, biosum_harvest_method_category, place_holder, DateTimeCreated " +
                                            "FROM TreeVolValLowSlope";
                     if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                         frmMain.g_oUtils.WriteText(m_strDebugFile, m_oDataMgr.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
@@ -2082,12 +2082,12 @@ namespace FIA_Biosum_Manager
                             //Insert a placeholder row with default values
                             m_oDataMgr.m_strSQL = "INSERT INTO " + Tables.ProcessorScenarioRun.DefaultTreeVolValSpeciesDiamGroupsTableName + " " +
                                 "(biosum_cond_id, rxpackage, rx, rxcycle, species_group, diam_group, " +
-                                "merch_wt_gt, merch_val_dpa, merch_vol_cf, merch_to_chipbin_YN, " +
+                                "merch_wt_gt, merch_val_dpa, merch_vol_cf," +
                                 "chip_wt_gt, chip_val_dpa, chip_vol_cf, bc_vol_cf, bc_wt_gt, " +
                                 "DateTimeCreated, place_holder) " +
                                 "VALUES ('" + cond_id + "', '" + rxpackage + "', '" + rx + "', '" + strRxCycle + "', " +
                                 intGroupPlaceholder + ", " + intGroupPlaceholder + ", " +
-                                intValuePlaceholder + ", " + intValuePlaceholder + ", " + intValuePlaceholder + ", 'N', " +
+                                intValuePlaceholder + ", " + intValuePlaceholder + ", " + intValuePlaceholder + ", " +
                                 intValuePlaceholder + ", " + intValuePlaceholder + ", " + intValuePlaceholder + ", " + intValuePlaceholder + ", " + intValuePlaceholder +
                                 ", '" + m_strDateTimeCreated + "', 'Y')";
 

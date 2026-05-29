@@ -1147,14 +1147,13 @@ namespace FIA_Biosum_Manager
                     "(biosum_cond_id, rxpackage, rx, rxcycle, species_group, diam_group, " +
                     "chip_vol_cf, chip_wt_gt, chip_val_dpa, chip_mkt_val_pgt," +
                     "merch_vol_cf, merch_wt_gt, merch_val_dpa, " +
-                    "merch_to_chipbin_YN,  " +
                     "bc_vol_cf, bc_wt_gt, stand_residue_wt_gt, " +
                     "biosum_harvest_method_category, DateTimeCreated, place_holder)" +
                     "VALUES ('" + nextStand.CondId + "', '" + nextStand.RxPackage + "', '" + nextStand.Rx + "', '" +
                     nextStand.RxCycle + "', " + nextStand.SpeciesGroup + ", " + nextStand.DiamGroup + ", " +
                     nextStand.ChipVolCfPa + ", " + nextStand.ChipWtGtPa + ", " + (nextStand.ChipWtGtPa * nextStand.ChipMktValPgt) +
                     ", " + nextStand.ChipMktValPgt + ", " + nextStand.TotalMerchVolCfPa + ", " + nextStand.TotalMerchWtGtPa + ", " + nextStand.TotalMerchValDpa +
-                    ", '" + nextStand.MerchToChip + "', " + nextStand.TotalBrushCutVolCfPa + "," +
+                    ", " + nextStand.TotalBrushCutVolCfPa + "," +
                     nextStand.TotalBrushCutWtGtPa + ", " + nextStand.StandResidueWtGtPa + ", " +
                     nextStand.HarvestMethodCategory + ", '" + strDateTimeCreated + "', 'N')";
                     lstSql.Add(strSQL);
@@ -1276,12 +1275,11 @@ namespace FIA_Biosum_Manager
                     {
                         int intSpcGroup = Convert.ToInt32(SQLite.m_DataReader["species_group"]);
                         int intDiamGroup = Convert.ToInt32(SQLite.m_DataReader["diam_group"]);
-                        string strWoodBin = Convert.ToString(SQLite.m_DataReader["wood_bin"]).Trim();
                         double dblMerchValue = Convert.ToDouble(SQLite.m_DataReader["merch_value"]);
                         double dblChipValue = Convert.ToDouble(SQLite.m_DataReader["chip_value"]);
                         string strKey = intDiamGroup + "|" + intSpcGroup;
                         dictSpeciesDiamValues.Add(strKey, new speciesDiamValue(intDiamGroup, intSpcGroup,
-                            strWoodBin, dblMerchValue, dblChipValue));
+                            dblMerchValue, dblChipValue));
                     }
                     SQLite.m_DataReader.Close();
                 }
@@ -1951,11 +1949,10 @@ namespace FIA_Biosum_Manager
             double _dblMerchValue;
             double _dblChipValue;
 
-            public speciesDiamValue(int diamGroup, int speciesGroup, string woodBin, double merchValue, double chipValue)
+            public speciesDiamValue(int diamGroup, int speciesGroup, double merchValue, double chipValue)
 			{
                 _intDiamGroup = diamGroup;
                 _intSpeciesGroup = speciesGroup;
-                _strWoodBin = woodBin;
                 _dblMerchValue = merchValue;
                 _dblChipValue = chipValue;
 			}
@@ -2589,10 +2586,6 @@ namespace FIA_Biosum_Manager
             {
                 get { return _intDiamGroup; }
                 set { _intDiamGroup = value; }
-            }
-            public string MerchToChip
-            {
-                get { return _strMerchToChip; }
             }
             public double ChipMktValPgt
             {
