@@ -4539,7 +4539,9 @@ namespace FIA_Biosum_Manager
                 p_dataMgr.m_strSQL = "INSERT INTO " + m_strTreeVolValSumTable +
                     " (biosum_cond_id,rxpackage,rx,rxcycle,chip_vol_cf," +
                     "chip_wt_gt,chip_val_dpa,merch_vol_cf," +
-                    "merch_wt_gt,merch_val_dpa,place_holder) " +
+                    "merch_wt_gt,merch_val_dpa,wood4_vol_cf,wood4_wt_gt," +
+                    "wood4_val_dpa,wood5_vol_cf,wood5_wt_gt,wood5_val_dpa," +
+                    "wood6_vol_cf,wood6_wt_gt,wood6_val_dpa,place_holder) " +
                     "SELECT s.biosum_cond_id, " +
                     "s.rxpackage,s.rx,s.rxcycle," +
                     "SUM(s.chip_vol_cf) AS chip_vol_cf," +
@@ -4557,7 +4559,6 @@ namespace FIA_Biosum_Manager
                     "SUM(s.wood6_vol_cf) AS wood6_vol_cf, " +
                     "SUM(s.wood6_wt_gt) AS wood6_wt_gt, " +
                     "SUM(s.wood6_val_dpa) AS wood6_val_dpa, " +
-                    "SUM(s.merch_vol_cf) + SUM(s.wood4_vol_cf) + SUM(s.wood5_vol_cf) + SUM(s.wood6_vol_cf) AS non_residue_vol_cf, " +
                     "s.place_holder " +
                     "FROM " + m_strTreeVolValBySpcDiamGroupsTable.Trim() + " AS s " + 
                     "GROUP BY biosum_cond_id,rxpackage,rx,rxcycle, place_holder " +
@@ -5904,46 +5905,6 @@ namespace FIA_Biosum_Manager
                         "FROM " + strOptimizationTableName + " AS e LEFT JOIN " + Tables.OptimizerScenarioResults.DefaultScenarioResultsEconByRxCycleTableName + " AS p " +
                         "ON e.biosum_cond_id = p.biosum_cond_id AND e.rxpackage = p.rxpackage AND e.rx = p.rx AND e.rxcycle AND p.rxcycle";
                 }
-                else if (this.m_oOptimizationVariable.strOptimizedVariable.Trim().ToUpper() == "WOOD4 VOLUME")
-                {
-                    p_dataMgr.m_strSQL = "UPDATE " + strOptimizationTableName +
-                        " SET pre_variable_name = 'p.wood4_vol_cf', post_variable_name = 'p.wood4_vol_cf', " +
-                        "pre_variable_value = CASE WHEN p.wood4_vol_cf IS NOT NULL THEN p.wood4_vol_cf ELSE 0 END, " +
-                        "post_variable_value = CASE WHEN p.wood4_vol_cf IS NOT NULL THEN p.wood4_vol_cf ELSE 0 END, " +
-                        "change_value = 0 " +
-                        "FROM " + strOptimizationTableName + " AS e LEFT JOIN " + Tables.OptimizerScenarioResults.DefaultScenarioResultsEconByRxCycleTableName + " AS p " +
-                        "ON e.biosum_cond_id = p.biosum_cond_id AND e.rxpackage = p.rxpackage AND e.rx = p.rx AND e.rxcycle AND p.rxcycle";
-                }
-                else if (this.m_oOptimizationVariable.strOptimizedVariable.Trim().ToUpper() == "WOOD5 VOLUME")
-                {
-                    p_dataMgr.m_strSQL = "UPDATE " + strOptimizationTableName +
-                        " SET pre_variable_name = 'p.wood5_vol_cf', post_variable_name = 'p.wood5_vol_cf', " +
-                        "pre_variable_value = CASE WHEN p.wood5_vol_cf IS NOT NULL THEN p.wood5_vol_cf ELSE 0 END, " +
-                        "post_variable_value = CASE WHEN p.wood5_vol_cf IS NOT NULL THEN p.wood5_vol_cf ELSE 0 END, " +
-                        "change_value = 0 " +
-                        "FROM " + strOptimizationTableName + " AS e LEFT JOIN " + Tables.OptimizerScenarioResults.DefaultScenarioResultsEconByRxCycleTableName + " AS p " +
-                        "ON e.biosum_cond_id = p.biosum_cond_id AND e.rxpackage = p.rxpackage AND e.rx = p.rx AND e.rxcycle AND p.rxcycle";
-                }
-                else if (this.m_oOptimizationVariable.strOptimizedVariable.Trim().ToUpper() == "WOOD6 VOLUME")
-                {
-                    p_dataMgr.m_strSQL = "UPDATE " + strOptimizationTableName +
-                        " SET pre_variable_name = 'p.wood6_vol_cf', post_variable_name = 'p.wood6_vol_cf', " +
-                        "pre_variable_value = CASE WHEN p.wood6_vol_cf IS NOT NULL THEN p.wood6_vol_cf ELSE 0 END, " +
-                        "post_variable_value = CASE WHEN p.wood6_vol_cf IS NOT NULL THEN p.wood6_vol_cf ELSE 0 END, " +
-                        "change_value = 0 " +
-                        "FROM " + strOptimizationTableName + " AS e LEFT JOIN " + Tables.OptimizerScenarioResults.DefaultScenarioResultsEconByRxCycleTableName + " AS p " +
-                        "ON e.biosum_cond_id = p.biosum_cond_id AND e.rxpackage = p.rxpackage AND e.rx = p.rx AND e.rxcycle AND p.rxcycle";
-                }
-                else if (this.m_oOptimizationVariable.strOptimizedVariable.Trim().ToUpper() == "NON-RESIDUE VOLUME")
-                {
-                    p_dataMgr.m_strSQL = "UPDATE " + strOptimizationTableName +
-                        " SET pre_variable_name = 'p.non_residue_vol_cf', post_variable_name = 'p.non_residue_vol_cf', " +
-                        "pre_variable_value = CASE WHEN p.non_residue_vol_cf IS NOT NULL THEN p.non_residue_vol_cf ELSE 0 END, " +
-                        "post_variable_value = CASE WHEN p.non_residue_vol_cf IS NOT NULL THEN p.non_residue_vol_cf ELSE 0 END, " +
-                        "change_value = 0 " +
-                        "FROM " + strOptimizationTableName + " AS e LEFT JOIN " + Tables.OptimizerScenarioResults.DefaultScenarioResultsEconByRxCycleTableName + " AS p " +
-                        "ON e.biosum_cond_id = p.biosum_cond_id AND e.rxpackage = p.rxpackage AND e.rx = p.rx AND e.rxcycle AND p.rxcycle";
-                }
                 else if (this.m_oOptimizationVariable.strOptimizedVariable.Trim().ToUpper() == "ECONOMIC ATTRIBUTE")
                 {
                     p_dataMgr.m_strSQL = getEconomicOptimizationSql();
@@ -6037,8 +5998,22 @@ namespace FIA_Biosum_Manager
                         strSql = "UPDATE " + strOptimizationTableName + " AS e " +
                             "SET pre_variable_name = '" + oItem.strVariableName + "', " +
                             "post_variable_name = '" + oItem.strVariableName + "', " +
-                            "pre_variable_value = CASE WHEN p.chip_vol_cf_utilized + p.merch_vol_cf IS NOT NULL THEN p.chip_vol_cf_utilized + p.merch_vol_cf ELSE 0 END, " +
-                            "post_variable_value = CASE WHEN p.chip_vol_cf_utilized + p.merch_vol_cf IS NOT NULL THEN p.chip_vol_cf_utilized + p.merch_vol_cf ELSE 0 END, " +
+                            "pre_variable_value = CASE WHEN p.chip_vol_cf_utilized + p.merch_vol_cf + p.wood4_vol_cf + " +
+                            "p.wood5_vol_cf + p.wood6_vol_cf IS NOT NULL THEN p.chip_vol_cf_utilized + p.merch_vol_cf + " +
+                            "p.wood4_vol_cf + p.wood5_vol_cf + p.wood6_vol_cf ELSE 0 END, " +
+                            "post_variable_value = CASE WHEN p.chip_vol_cf_utilized + p.merch_vol_cf + p.wood4_vol_cf + " +
+                            "p.wood5_vol_cf + p.wood6_vol_cf IS NOT NULL THEN p.chip_vol_cf_utilized + p.merch_vol_cf + " +
+                            "p.wood4_vol_cf + p.wood5_vol_cf + p.wood6_vol_cf ELSE 0 END, " +
+                            "change_value = 0 " +
+                            "FROM " + Tables.OptimizerScenarioResults.DefaultScenarioResultsEconByRxUtilSumTableName + " AS p WHERE e.biosum_cond_id = p.biosum_cond_id AND e.rxpackage = p.rxpackage";
+                    }
+                    else if (oItem.strVariableName.Equals("non_residue_wood_volume_1"))
+                    {
+                        strSql = "UPDATE " + strOptimizationTableName + " AS e " +
+                            "SET pre_variable_name = '" + oItem.strVariableName + "', " +
+                            "post_variable_name = '" + oItem.strVariableName + "', " +
+                            "pre_variable_value = p.merch_vol_cf + p.wood4_vol_cf + p.wood5_vol_cf + p.wood6_vol+_cf, " +
+                            "post_variable_value = p.merch_vol_cf + p.wood4_vol_cf + p.wood5_vol_cf + p.wood6_vol+_cf, " +
                             "change_value = 0 " +
                             "FROM " + Tables.OptimizerScenarioResults.DefaultScenarioResultsEconByRxUtilSumTableName + " AS p WHERE e.biosum_cond_id = p.biosum_cond_id AND e.rxpackage = p.rxpackage";
                     }
@@ -6047,8 +6022,10 @@ namespace FIA_Biosum_Manager
                         strSql = "UPDATE " + strOptimizationTableName + " AS e " +
                            "SET pre_variable_name = '" + oItem.strVariableName + "', " +
                            "post_variable_name = '" + oItem.strVariableName + "', " +
-                           "pre_variable_name = HARVEST_ONSITE_COST_DPA + MERCH_HAUL_COST_DPA + CASE WHEN MERCH_CHIP_NR_DPA < MAX_NR_DPA THEN 0 ELSE CHIP_HAUL_COST_DPA_utilized, " +
-                           "post_variable_name = HARVEST_ONSITE_COST_DPA + MERCH_HAUL_COST_DPA + CASE WHEN MERCH_CHIP_NR_DPA < MAX_NR_DPA THEN 0 ELSE CHIP_HAUL_COST_DPA_utilized, " +
+                           "pre_variable_name = HARVEST_ONSITE_COST_DPA + MERCH_HAUL_COST_DPA + WOOD4_HAUL_COST_DPA + " +
+                           "WOOD5_HAUL_COST_DPA + WOOD6_HAUL_COST_DPA + CASE WHEN MERCH_CHIP_NR_DPA < MAX_NR_DPA THEN 0 ELSE CHIP_HAUL_COST_DPA_utilized, " +
+                           "post_variable_name = HARVEST_ONSITE_COST_DPA + MERCH_HAUL_COST_DPA + WOOD4_HAUL_COST_DPA + " +
+                           "WOOD5_HAUL_COST_DPA + WOOD6_HAUL_COST_DPA + CASE WHEN MERCH_CHIP_NR_DPA < MAX_NR_DPA THEN 0 ELSE CHIP_HAUL_COST_DPA_utilized, " +
                            "change_value = 0 " +
                            "FROM " + Tables.OptimizerScenarioResults.DefaultScenarioResultsEconByRxUtilSumTableName + " AS p WHERE e.biosum_cond_id = p.biosum_cond_id AND e.rxpackage = p.rxpackage";
                     }
@@ -6241,8 +6218,23 @@ namespace FIA_Biosum_Manager
                                 p_dataMgr.m_strSQL = "UPDATE tiebreaker AS e " +
                                     "SET pre_variable1_name = '" + oItem.strFVSVariableName + "', " +
                                     "post_variable1_name = '" + oItem.strFVSVariableName + "', " +
-                                    "pre_variable1_value = CASE WHEN p.chip_vol_cf_utilized + p.non_residue_vol_cf IS NOT NULL THEN p.chip_vol_cf_utilized + p.non_residue_vol_cf ELSE 0 END, " +
-                                    "post_variable1_value = CASE WHEN p.chip_vol_cf_utilized + p.non_residue_vol_cf IS NOT NULL THEN p.chip_vol_cf_utilized + p.non_residue_vol_cf ELSE 0 END, " +
+                                    "pre_variable1_value = CASE WHEN p.chip_vol_cf_utilized + p.merch_vol_cf + p.wood4_vol_cf + " +
+                                    "p.wood5_vol_cf + p.wood6_vol_cf IS NOT NULL THEN p.chip_vol_cf_utilized + p.merch_vol_cf + " +
+                                    "p.wood4_vol_cf + p.wood5_vol_cf + p.wood6_vol_cf ELSE 0 END, " +
+                                    "post_variable1_value = CASE WHEN p.chip_vol_cf_utilized + p.merch_vol_cf + p.wood4_vol_cf + " +
+                                    "p.wood5_vol_cf + p.wood6_vol_cf IS NOT NULL THEN p.chip_vol_cf_utilized + p.merch_vol_cf + " +
+                                    "p.wood4_vol_cf + p.wood5_vol_cf + p.wood6_vol_cf ELSE 0 END, " +
+                                    "variable1_change = 0 " +
+                                    "FROM " + Tables.OptimizerScenarioResults.DefaultScenarioResultsEconByRxUtilSumTableName + " AS p " +
+                                    "WHERE e.biosum_cond_id = p.biosum_cond_id AND e.rxpackage = p.rxpackage";
+                            }
+                            else if (oItem.strFVSVariableName.Equals("non_residue_wood_volume_1"))
+                            {
+                                p_dataMgr.m_strSQL = "UPDATE tiebreaker AS e " +
+                                    "SET pre_variable1_name = '" + oItem.strFVSVariableName + "', " +
+                                    "post_variable1_name = '" + oItem.strFVSVariableName + "', " +
+                                    "pre_variable1_value = p.merch_vol_cf + p.wood4_vol_cf + p.wood5_vol_cf + p.wood6_vol_cf, " +
+                                    "post_variable1_value = p.merch_vol_cf + p.wood4_vol_cf + p.wood5_vol_cf + p.wood6_vol_cf, " +
                                     "variable1_change = 0 " +
                                     "FROM " + Tables.OptimizerScenarioResults.DefaultScenarioResultsEconByRxUtilSumTableName + " AS p " +
                                     "WHERE e.biosum_cond_id = p.biosum_cond_id AND e.rxpackage = p.rxpackage";
@@ -6408,7 +6400,7 @@ namespace FIA_Biosum_Manager
                 }
 
                 string[] columnsFromTreeVolValSum = { "merch_vol_cf", "chip_vol_cf", "wood4_vol_cf", "wood5_vol_cf", "wood6_vol_cf", 
-                    "merch_wt_gt", "chip_wt_gt", "wood4_wt_gt", "wood5_wt_gt", "wood6_wt_gt", "merch_val_dpa", "chip_val_dpa", "wood4_val_dpa", "wood5_val_dpa", "wood6_val_dpa", "non_residue_vol_cf" };
+                    "merch_wt_gt", "chip_wt_gt", "wood4_wt_gt", "wood5_wt_gt", "wood6_wt_gt", "merch_val_dpa", "chip_val_dpa", "wood4_val_dpa", "wood5_val_dpa", "wood6_val_dpa" };
                 foreach (string column in columnsFromTreeVolValSum)
                 {
                     field = "";
@@ -6450,11 +6442,12 @@ namespace FIA_Biosum_Manager
 
                 p_dataMgr.m_strSQL = "INSERT INTO " + m_strEconByRxWorkTableName +
                     " (biosum_cond_id, rxpackage, rx, rxcycle, merch_vol_cf, chip_vol_cf, wood4_vol_cf, wood5_vol_cf, wood6_vol_cf, merch_wt_gt, chip_wt_gt, " +
-                    "wood4_wt_gt, wood5_wt_gt, wood6_wt_gt, merch_val_dpa, chip_val_dpa, wood4_val_dpa, wood5_val_dpa, wood6_val_dpa, non_residue_vol_cf, " +
+                    "wood4_wt_gt, wood5_wt_gt, wood6_wt_gt, merch_val_dpa, chip_val_dpa, wood4_val_dpa, wood5_val_dpa, wood6_val_dpa, " +
                     "harvest_onsite_cost_dpa, escalator_merch_haul_cpa_pt, " +
-                    "escalator_chip_haul_cpa_pt, usebiomass_yn, max_nr_dpa, acres, owngrpcd) " +
+                    "escalator_chip_haul_cpa_pt, usebiomass_yn, escalator_wood4_haul_cpa_pt, escalator_wood5_haul_cpa_pt, escalator_wood6_haul_cpa_pt, max_nr_dpa, acres, owngrpcd) " +
                     "SELECT vc.biosum_cond_id, vc.rxpackage, vc.rx, vc.rxcycle, " +
-                    "tvvs.merch_vol_cf, tvvs.chip_vol_cf, tvvs.chip_wt_gt, tvvs.chip_val_dpa, tvvs.merch_wt_gt, tvvs.merch_val_dpa, hc.complete_cpa AS harvest_onsite_cost_dpa, " +
+                    "tvvs.merch_vol_cf, tvvs.chip_vol_cf, tvvs.wood4_vol_cf, tvvs.wood5_vol_cf, tvvs.wood6_vol_cf, tvvs.merch_wt_gt, tvvs.chip_wt_gt, tvvs.wood4_wt_gt, tvvs.wood5_wt_gt, tvvs.wood6_wt_gt, " +
+                    "tvvs.merch_val_dpa, tvvs.chip_val_dpa, tvvs.wood4_val_dpa, tvvs.wood5_val_dpa, tvvs.wood6_val_dpa, hc.complete_cpa AS harvest_onsite_cost_dpa, " +
                     "CASE WHEN psa.merch_haul_cost_dpgt IS NOT NULL THEN " +
                     "CASE WHEN tvvs.rxcycle = '2' THEN psa.merch_haul_cost_dpgt * " + m_oProcessorScenarioItem.m_oEscalators.OperatingCostsCycle2 + " ELSE " +
                     "CASE WHEN tvvs.rxcycle = '3' THEN psa.merch_haul_cost_dpgt * " + m_oProcessorScenarioItem.m_oEscalators.OperatingCostsCycle3 + " ELSE " +
@@ -6466,7 +6459,7 @@ namespace FIA_Biosum_Manager
                     "CASE WHEN tvvs.rxcycle = '4' THEN psa.chip_haul_cost_dpgt * " + m_oProcessorScenarioItem.m_oEscalators.OperatingCostsCycle4 + " ELSE " +
                     "psa.chip_haul_cost_dpgt END END END ELSE 0 END AS escalator_chip_haul_cpa_pt, " +
                     "CASE WHEN psa.chip_haul_psite IS NULL THEN 'N' ELSE 'Y' END AS usebiomass_yn, " +
-                    "CASE WHEN psa.wood4_haul_cst_dpgt IS NOT NULL THEN " +
+                    "CASE WHEN psa.wood4_haul_cost_dpgt IS NOT NULL THEN " +
                     "CASE WHEN tvvs.rxcycle = '2' THEN psa.wood4_haul_cost_dpgt * " + m_oProcessorScenarioItem.m_oEscalators.OperatingCostsCycle2 + " ELSE " +
                     "CASE WHEN tvvs.rxcycle = '3' THEN psa.wood4_haul_cost_dpgt * " + m_oProcessorScenarioItem.m_oEscalators.OperatingCostsCycle3 + " ELSE " +
                     "CASE WHEN tvvs.rxcycle = '4' THEN psa.wood4_haul_cost_dpgt * " + m_oProcessorScenarioItem.m_oEscalators.OperatingCostsCycle4 + " ELSE " +
@@ -6502,9 +6495,27 @@ namespace FIA_Biosum_Manager
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
                 p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
 
+                // Set wood4, wood5, and wood6 NULLS to 0 to ensure rest of math works
+                p_dataMgr.m_strSQL = "UPDATE " + m_strEconByRxWorkTableName +
+                    " SET wood4_vol_cf = IFNULL(wood4_vol_cf, 0), " +
+                    "wood5_vol_cf = IFNULL(wood5_vol_cf, 0), " +
+                    "wood6_vol_cf = IFNULL(wood6_vol_cf, 0), " +
+                    "wood4_wt_gt = IFNULL(wood4_wt_gt, 0), " +
+                    "wood5_wt_gt = IFNULL(wood5_wt_gt, 0), " +
+                    "wood6_wt_gt = IFNULL(wood6_wt_gt, 0), " +
+                    "wood4_val_dpa = IFNULL(wood4_val_dpa, 0), " +
+                    "wood5_val_dpa = IFNULL(wood5_val_dpa, 0), " +
+                    "wood6_val_dpa = IFNULL(wood6_val_dpa, 0), " +
+                    "wood4_haul_cost_dpa = IFNULL(wood4_haul_cost_dpa, 0), " +
+                    "wood5_haul_cost_dpa = IFNULL(wood5_haul_cost_dpa, 0), " +
+                    "wood6_haul_cost_dpa = IFNULL(wood6_haul_cost_dpa, 0)";
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
+                p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
+
                 p_dataMgr.m_strSQL = "UPDATE " + m_strEconByRxWorkTableName +
                     " SET merch_chip_nr_dpa = merch_val_dpa + chip_val_dpa + wood4_val_dpa + wood5_val_dpa + wood6_val_dpa - harvest_onsite_cost_dpa - " +
-                    "(chip_haul_cost_dpa + merch_haul_cost_dpa + wood4_haul_cost_dpa, wood5_haul_cost_dpa, wood6_haul_cost_dpa), " +
+                    "(chip_haul_cost_dpa + merch_haul_cost_dpa + wood4_haul_cost_dpa + wood5_haul_cost_dpa + wood6_haul_cost_dpa), " +
                     "merch_nr_dpa = merch_val_dpa - harvest_onsite_cost_dpa - merch_haul_cost_dpa, " +
                     "wood4_nr_dpa = wood4_val_dpa - harvest_onsite_cost_dpa - wood4_haul_cost_dpa, " +
                     "wood5_nr_dpa = wood5_val_dpa - harvest_onsite_cost_dpa - wood5_haul_cost_dpa, " +
@@ -6661,9 +6672,9 @@ namespace FIA_Biosum_Manager
 
                 string strInactiveStandsWorkTable = "InactiveStandsWorkTable";
                 string strSelectSQL = "SELECT vc.biosum_cond_id, vc.rxpackage, vc.rx, vc.rxcycle, " +
-                            "0 AS merch_vol_cf, 0 as chip_vol_cf, 0 AS wood4_vol_cf, 0 AS wood5_vol_cf, wood6_vol_cf, 0 as chip_wt_gt, " +
+                            "0 AS merch_vol_cf, 0 as chip_vol_cf, 0 AS wood4_vol_cf, 0 AS wood5_vol_cf, 0 AS wood6_vol_cf, 0 as chip_wt_gt, " +
                             "0 as chip_val_dpa, 0 as merch_wt_gt, 0 AS merch_val_dpa, 0 AS wood4_wt_gt, 0 AS wood4_val_dpa, " +
-                            "0 AS wood5_wt_gt, 0 AS wood5_val_dpa, 0 AS wood6_wt_gt, 0 AS wood6_val_dpa, 0 AS non_residue_vol_cf, " +
+                            "0 AS wood5_wt_gt, 0 AS wood5_val_dpa, 0 AS wood6_wt_gt, 0 AS wood6_val_dpa, " +
                             "hc.complete_cpa AS harvest_onsite_cost_dpa, 0 AS escalator_merch_haul_cpa_pt, " +
                             "0 AS escalator_wood4_haul_cpa_pt, 0 AS escalator_wood5_haul_cpa_pt, 0 AS escalator_wood6_haul_cpa_pt, " +
                             "0 AS merch_haul_cost_dpa, 0 AS wood4_haul_cost_dpa, 0 AS wood5_haul_cost_dpa, 0 AS wood6_haul_cost_dpa, " +
@@ -6689,7 +6700,7 @@ namespace FIA_Biosum_Manager
                 fieldsAndDataTypes += "merch_vol_cf INTEGER, chip_vol_cf INTEGER, wood4_vol_cf INTEGER, wood5_vol_cf INTEGER, wood6_vol_cf INTEGER, " +
                     "chip_wt_gt INTEGER, chip_val_dpa INTEGER, merch_wt_gt INTEGER, merch_val_dpa INTEGER, " +
                     "wood4_wt_gt INTEGER, wood4_val_dpa INTEGER, wood5_wt_gt INTEGER, wood5_val_dpa INTEGER, " +
-                    "wood6_wt_gt INTEGER, wood6_val_dpa INTEGER, non_residue_vol_cf INTEGER";
+                    "wood6_wt_gt INTEGER, wood6_val_dpa INTEGER, ";
 
                 field = "";
                 dataType = "";
@@ -6699,7 +6710,7 @@ namespace FIA_Biosum_Manager
 
                 fieldsAndDataTypes += "escalator_merch_haul_cpa_pt INTEGER, escalator_wood4_haul_cpa_pt INTEGER, escalator_wood5_haul_cpa_pt INTEGER, escalator_wood6_haul_cpa_pt INTEGER, " +
                     "merch_haul_cost_dpa INTEGER, wood4_haul_cost_dpa INTEGER, wood5_haul_cost_dpa INTEGER, wood6_haul_cost_dpa INTEGER, escalator_chip_haul_cpa_pt INTEGER, chip_haul_cost_dpa INTEGER, " +
-                    "merch_chip_nr_dpa INTEGER, merch_nr_dpa INTEGER, wood4_nr_dpa INTEGER, wood5_nr_dpa INTEGER, max_nr_dpa INTEGER, ";
+                    "merch_chip_nr_dpa INTEGER, merch_nr_dpa INTEGER, wood4_nr_dpa INTEGER, wood5_nr_dpa INTEGER, wood6_nr_dpa INTEGER, max_nr_dpa INTEGER, ";
 
                 foreach (string column in columnsFromCondTable)
                 {
@@ -6733,7 +6744,7 @@ namespace FIA_Biosum_Manager
                     "isw.chip_vol_cf, isw.wood4_vol_cf, isw.wood5_vol_cf, isw.wood6_vol_cf, " +
                     "isw.chip_wt_gt, isw.chip_val_dpa, isw.merch_wt_gt, isw.merch_val_dpa, " +
                     "isw.wood4_wt_gt, isw.wood4_val_dpa, isw.wood5_wt_gt, " +
-                    "isw.wood5_val_dpa, isw.wood6_wt_gt, isw.wood6_val_dpa, isw.non_residue_vol_cf, " +
+                    "isw.wood5_val_dpa, isw.wood6_wt_gt, isw.wood6_val_dpa, " +
                     "isw.harvest_onsite_cost_dpa, isw.escalator_merch_haul_cpa_pt, isw.escalator_wood4_haul_cpa_pt, " +
                     "isw.escalator_wood5_haul_cpa_pt, isw.escalator_wood6_haul_cpa_pt, isw.merch_haul_cost_dpa, " +
                     "isw.wood4_haul_cost_dpa, isw.wood5_haul_cost_dpa, isw.wood6_haul_cost_dpa, " +
@@ -6769,7 +6780,7 @@ namespace FIA_Biosum_Manager
                                     "wood4_vol_cf,wood4_wt_gt,wood4_val_dpa," +
                                     "wood5_vol_cf,wood5_wt_gt,wood5_val_dpa," +
                                     "wood6_vol_cf,wood6_wt_gt,wood6_val_dpa," +
-                                    "non_residue_vol_cf,harvest_onsite_cost_dpa," +
+                                    "harvest_onsite_cost_dpa," +
                                     "merch_haul_cost_dpa,wood4_haul_cost_dpa," +
                                     "wood5_haul_cost_dpa,wood6_haul_cost_dpa," +
                                     "chip_haul_cost_dpa,merch_chip_nr_dpa," +
@@ -6782,7 +6793,7 @@ namespace FIA_Biosum_Manager
                                     "wood4_vol_cf,wood4_wt_gt,wood4_val_dpa," +
                                     "wood5_vol_cf,wood5_wt_gt,wood5_val_dpa," +
                                     "wood6_vol_cf,wood6_wt_gt,wood6_val_dpa," +
-                                    "non_residue_vol_cf,harvest_onsite_cost_dpa," +
+                                    "harvest_onsite_cost_dpa," +
                                     "merch_haul_cost_dpa,wood4_haul_cost_dpa," +
                                     "wood5_haul_cost_dpa,wood6_haul_cost_dpa," +
                                     "chip_haul_cost_dpa,merch_chip_nr_dpa," +
@@ -7303,7 +7314,7 @@ namespace FIA_Biosum_Manager
                 p_dataMgr.m_strSQL = "INSERT INTO " + Tables.OptimizerScenarioResults.DefaultScenarioResultsEconByRxUtilSumTableName +
                     " (biosum_cond_id, rxpackage, chip_vol_cf_utilized, merch_vol_cf, wood4_vol_cf, wood5_vol_cf, wood6_vol_cf, chip_wt_gt_utilized, merch_wt_gt, " +
                     "wood4_wt_gt, wood5_wt_gt, wood6_wt_gt, chip_val_dpa_utilized, " +
-                    "merch_val_dpa, wood4_val_dpa, wood5_val_dpa, wood6_val_dpa, non_residue_vol_cf, harvest_onsite_cost_dpa, chip_haul_cost_dpa_utilized, merch_haul_cost_dpa, " +
+                    "merch_val_dpa, wood4_val_dpa, wood5_val_dpa, wood6_val_dpa,  harvest_onsite_cost_dpa, chip_haul_cost_dpa_utilized, merch_haul_cost_dpa, " +
                     "wood4_haul_cost_dpa, wood5_haul_cost_dpa, wood6_haul_cost_dpa, merch_chip_nr_dpa, " +
                     "merch_nr_dpa, wood4_nr_dpa, wood5_nr_dpa, wood6_nr_dpa, max_nr_dpa, haul_costs_dpa, treated_acres,acres, owngrpcd) " +
                     "SELECT a.biosum_cond_id, a.rxpackage, a.sum_chip_yield_cf AS chip_vol_cf_utilized, a.sum_merch_yield_cf AS merch_vol_cf, " +
@@ -7311,16 +7322,16 @@ namespace FIA_Biosum_Manager
                     "a.sum_chip_yield_gt AS chip_wt_gt_utilized, a.sum_merch_yield_gt AS merch_wt_gt, a.sum_wood4_yield_gt AS wood4_wt_gt, " +
                     "a.sum_wood5_yield_gt AS wood5_wt_gt, a.sum_wood6_yield_gt AS wood6_wt_gt, a.sum_chip_val_dpa AS chip_val_dpa_utilized, " +
                     "a.sum_merch_val_dpa AS merch_val_dpa, a.sum_wood4_val_dpa AS wood4_val_dpa, a.sum_wood5_val_dpa AS wood5_val_dpa, a.sum_wood6_val_dpa AS wood6_val_dpa, " +
-                    "a.sum_non_residue_yield_cf AS non_residue_vol_cf, a.sum_harvest_onsite_dpa AS harvest_onsite_cost_dpa, a.sum_haul_chip_dpa AS chip_haul_cost_dpa_utilized, " +
+                    "a.sum_harvest_onsite_dpa AS harvest_onsite_cost_dpa, a.sum_haul_chip_dpa AS chip_haul_cost_dpa_utilized, " +
                     "a.sum_haul_merch_dpa AS merch_haul_cost_dpa, a.sum_haul_wood4_dpa AS wood4_haul_cost_dpa, a.sum_haul_wood5_dpa AS wood5_haul_cost_dpa, a.sum_haul_wood6_dpa AS wood6_haul_cost_dpa, " +
                     "a.sum_merch_chip_nr_dpa AS merch_chip_nr_dpa, a.sum_merch_nr_dpa AS merch_nr_dpa, a.sum_wood4_nr_dpa AS wood4_nr_dpa, a.sum_wood5_nr_dpa AS wood5_nr_dpa, a.sum_wood6_nr_dpa AS wood6_nr_dpa, " +
                     "a.sum_max_nr_dpa AS max_nr_dpa, a.sum_haul_costs_dpa AS haul_costs_dpa, a.sum_treated_acres AS treated_acres, a.acres, a.owngrpcd " +
                     "FROM (SELECT biosum_cond_id, rxpackage, SUM(IFNULL(chip_vol_cf, 0)) AS sum_chip_yield_cf, SUM(IFNULL(merch_vol_cf, 0)) AS sum_merch_yield_cf, " +
-                    "SUM(IFNULL(wood4_vol_cf, 0)) AS sum_wood4_yield_cf, SUM(IFNULL(wood5_vol_cf, 0)) AS sum_wood5_yield_cf, SUM(IFNULL(wood6_vol_cf)) AS sum_wood6_yield_cf, " +
+                    "SUM(IFNULL(wood4_vol_cf, 0)) AS sum_wood4_yield_cf, SUM(IFNULL(wood5_vol_cf, 0)) AS sum_wood5_yield_cf, SUM(IFNULL(wood6_vol_cf, 0)) AS sum_wood6_yield_cf, " +
                     "SUM(IFNULL(chip_wt_gt, 0)) AS sum_chip_yield_gt, SUM(IFNULL(merch_wt_gt, 0)) AS sum_merch_yield_gt, SUM(IFNULL(wood4_wt_gt, 0)) AS sum_wood4_yield_gt, " +
                     "SUM(IFNULL(wood5_wt_gt, 0)) AS sum_wood5_yield_gt, SUM(IFNULL(wood6_wt_gt, 0)) AS sum_wood6_yield_gt, SUM(IFNULL(chip_val_dpa, 0)) AS sum_chip_val_dpa, " +
                     "SUM(IFNULL(merch_val_dpa, 0)) AS sum_merch_val_dpa, SUM(IFNULL(wood4_val_dpa, 0)) AS sum_wood4_val_dpa, SUM(IFNULL(wood5_val_dpa, 0)) AS sum_wood5_val_dpa, " +
-                    "SUM(IFNULL(wood6_val_dpa, 0)) AS sum_wood6_val_dpa, SUM(IFNULL(non_residue_vol_cf, 0)) AS sum_non_residue_yield_cf, " +
+                    "SUM(IFNULL(wood6_val_dpa, 0)) AS sum_wood6_val_dpa, " +
                     "SUM(IFNULL(harvest_onsite_cost_dpa, 0)) AS sum_harvest_onsite_dpa, SUM(IFNULL(chip_haul_cost_dpa, 0)) AS sum_haul_chip_dpa, " +
                     "SUM(IFNULL(merch_haul_cost_dpa, 0)) AS sum_haul_merch_dpa, SUM(IFNULL(wood4_haul_cost_dpa, 0)) AS sum_haul_wood4_dpa, SUM(IFNULL(wood5_haul_cost_dpa, 0)) AS sum_haul_wood5_dpa, " +
                     "SUM(IFNULL(wood6_haul_cost_dpa, 0)) AS sum_haul_wood6_dpa, SUM(IFNULL(merch_chip_nr_dpa, 0)) AS sum_merch_chip_nr_dpa, SUM(IFNULL(merch_nr_dpa, 0)) AS sum_merch_nr_dpa, " +
@@ -8648,7 +8659,7 @@ namespace FIA_Biosum_Manager
                 p_dataMgr.m_strSQL = "INSERT INTO " + Tables.OptimizerScenarioResults.DefaultScenarioResultsCondPsiteTableName +
                 " (BIOSUM_COND_ID,MERCH_PSITE_NUM,MERCH_PSITE_NAME,CHIP_PSITE_NUM,CHIP_PSITE_NAME,WOOD4_PSITE_NUM,WOOD4_PSITE_NAME," +
                 "WOOD5_PSITE_NUM,WOOD5_PSITE_NAME,WOOD6_PSITE_NUM,WOOD6_PSITE_NAME) " +
-                "SELECT a.biosum_cond_id, a.merch_haul_psite, a.merch_haul_psite_name, a.chip_haul_psite, a.chip_haul_psite_name " +
+                "SELECT a.biosum_cond_id, a.merch_haul_psite, a.merch_haul_psite_name, a.chip_haul_psite, a.chip_haul_psite_name, " +
                 "a.wood4_haul_psite, a.wood4_haul_psite_name, a.wood5_haul_psite, a.wood5_haul_psite_name, a.wood6_haul_psite, a.wood6_haul_psite_name " +
                 "FROM " + Tables.OptimizerScenarioResults.DefaultScenarioResultsPSiteAccessibleWorkTableName + " AS a " +
                 "JOIN validcombos AS b ON a.biosum_cond_id = b.biosum_cond_id " +

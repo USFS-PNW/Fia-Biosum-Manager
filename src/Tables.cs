@@ -414,7 +414,6 @@ namespace FIA_Biosum_Manager
                     "wood6_vol_cf DOUBLE," +
                     "wood6_wt_gt DOUBLE," +
                     "wood6_val_dpa DOUBLE," +
-                    "non_residue_vol_cf DOUBLE," +
                     "place_holder CHAR(1) DEFAULT 'N'," +
                     "PRIMARY KEY (biosum_cond_id,rxpackage,rx,rxcycle))";
             }
@@ -456,6 +455,9 @@ namespace FIA_Biosum_Manager
                     "wood6_haul_cost_dpa DOUBLE," +
                     "merch_chip_nr_dpa DOUBLE," +
                     "merch_nr_dpa DOUBLE," +
+                    "wood4_nr_dpa DOUBLE," +
+                    "wood5_nr_dpa DOUBLE," +
+                    "wood6_nr_dpa DOUBLE," +
                     "usebiomass_yn CHAR(1)," +
                     "max_nr_dpa DOUBLE," +
                     "acres DOUBLE," +
@@ -499,6 +501,9 @@ namespace FIA_Biosum_Manager
                     "wood6_haul_cost_dpa DOUBLE," +
                     "merch_chip_nr_dpa DOUBLE," +
                     "merch_nr_dpa DOUBLE," +
+                    "wood4_nr_dpa DOUBLE," +
+                    "wood5_nr_dpa DOUBLE," +
+                    "wood6_nr_dpa DOUBLE," +
                     "max_nr_dpa DOUBLE," +
                     "acres DOUBLE," +
                     "treated_acres DOUBLE," +
