@@ -414,6 +414,7 @@ namespace FIA_Biosum_Manager
                     "wood6_vol_cf DOUBLE," +
                     "wood6_wt_gt DOUBLE," +
                     "wood6_val_dpa DOUBLE," +
+                    "non_residue_vol_cf DOUBLE," +
                     "place_holder CHAR(1) DEFAULT 'N'," +
                     "PRIMARY KEY (biosum_cond_id,rxpackage,rx,rxcycle))";
             }
@@ -2410,7 +2411,10 @@ namespace FIA_Biosum_Manager
                     "harvest_costs_yn CHAR(1), " +
                     "cond_too_far_steep_yn CHAR(1), " +
                     "psite_merch_yn CHAR(1), " +
-                    "psite_chip_yn CHAR(1)) ";
+                    "psite_chip_yn CHAR(1), " +
+                    "psite_wood4_yn CHAR(1), " +
+                    "psite_wood5_yn CHAR(1), " +
+                    "psite_wood6_yn CHAR(1)) ";
             }
             public void CreatePlotCondRxAuditTable(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
             {

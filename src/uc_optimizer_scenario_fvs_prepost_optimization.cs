@@ -1151,6 +1151,50 @@ namespace FIA_Biosum_Manager
             CreateListViewOptimizationRow();
             this.m_oLvRowColors.AddRow();
             this.m_oLvRowColors.AddColumns(lvOptimizationListValues.Items.Count - 1, lvOptimizationListValues.Columns.Count);
+            this.lvOptimizationListValues.Items[lvOptimizationListValues.Items.Count - 1].SubItems[uc_optimizer_scenario_fvs_prepost_optimization.COLUMN_OPTIMIZE_VARIABLE].Text = "Wood4 Volume";
+            this.lvOptimizationListValues.Items[lvOptimizationListValues.Items.Count - 1].SubItems[uc_optimizer_scenario_fvs_prepost_optimization.COLUMN_FVS_VARIABLE].Text = "NA";
+            this.lvOptimizationListValues.Items[lvOptimizationListValues.Items.Count - 1].SubItems[uc_optimizer_scenario_fvs_prepost_optimization.COLUMN_VALUESOURCE].Text = "NA";
+            this.lvOptimizationListValues.Items[lvOptimizationListValues.Items.Count - 1].SubItems[uc_optimizer_scenario_fvs_prepost_optimization.COLUMN_MAXMIN].Text = "Not Defined";
+            this.lvOptimizationListValues.Items[lvOptimizationListValues.Items.Count - 1].SubItems[uc_optimizer_scenario_fvs_prepost_optimization.COLUMN_USEFILTER].Text = "No";
+            this.lvOptimizationListValues.Items[lvOptimizationListValues.Items.Count - 1].SubItems[uc_optimizer_scenario_fvs_prepost_optimization.COLUMN_FILTER_OPERATOR].Text = "Not Defined";
+            this.lvOptimizationListValues.Items[lvOptimizationListValues.Items.Count - 1].SubItems[uc_optimizer_scenario_fvs_prepost_optimization.COLUMN_FILTER_VALUE].Text = "Not Defined";
+
+            CreateListViewOptimizationRow();
+            this.m_oLvRowColors.AddRow();
+            this.m_oLvRowColors.AddColumns(lvOptimizationListValues.Items.Count - 1, lvOptimizationListValues.Columns.Count);
+            this.lvOptimizationListValues.Items[lvOptimizationListValues.Items.Count - 1].SubItems[uc_optimizer_scenario_fvs_prepost_optimization.COLUMN_OPTIMIZE_VARIABLE].Text = "Wood5 Volume";
+            this.lvOptimizationListValues.Items[lvOptimizationListValues.Items.Count - 1].SubItems[uc_optimizer_scenario_fvs_prepost_optimization.COLUMN_FVS_VARIABLE].Text = "NA";
+            this.lvOptimizationListValues.Items[lvOptimizationListValues.Items.Count - 1].SubItems[uc_optimizer_scenario_fvs_prepost_optimization.COLUMN_VALUESOURCE].Text = "NA";
+            this.lvOptimizationListValues.Items[lvOptimizationListValues.Items.Count - 1].SubItems[uc_optimizer_scenario_fvs_prepost_optimization.COLUMN_MAXMIN].Text = "Not Defined";
+            this.lvOptimizationListValues.Items[lvOptimizationListValues.Items.Count - 1].SubItems[uc_optimizer_scenario_fvs_prepost_optimization.COLUMN_USEFILTER].Text = "No";
+            this.lvOptimizationListValues.Items[lvOptimizationListValues.Items.Count - 1].SubItems[uc_optimizer_scenario_fvs_prepost_optimization.COLUMN_FILTER_OPERATOR].Text = "Not Defined";
+            this.lvOptimizationListValues.Items[lvOptimizationListValues.Items.Count - 1].SubItems[uc_optimizer_scenario_fvs_prepost_optimization.COLUMN_FILTER_VALUE].Text = "Not Defined";
+
+            CreateListViewOptimizationRow();
+            this.m_oLvRowColors.AddRow();
+            this.m_oLvRowColors.AddColumns(lvOptimizationListValues.Items.Count - 1, lvOptimizationListValues.Columns.Count);
+            this.lvOptimizationListValues.Items[lvOptimizationListValues.Items.Count - 1].SubItems[uc_optimizer_scenario_fvs_prepost_optimization.COLUMN_OPTIMIZE_VARIABLE].Text = "Wood6 Volume";
+            this.lvOptimizationListValues.Items[lvOptimizationListValues.Items.Count - 1].SubItems[uc_optimizer_scenario_fvs_prepost_optimization.COLUMN_FVS_VARIABLE].Text = "NA";
+            this.lvOptimizationListValues.Items[lvOptimizationListValues.Items.Count - 1].SubItems[uc_optimizer_scenario_fvs_prepost_optimization.COLUMN_VALUESOURCE].Text = "NA";
+            this.lvOptimizationListValues.Items[lvOptimizationListValues.Items.Count - 1].SubItems[uc_optimizer_scenario_fvs_prepost_optimization.COLUMN_MAXMIN].Text = "Not Defined";
+            this.lvOptimizationListValues.Items[lvOptimizationListValues.Items.Count - 1].SubItems[uc_optimizer_scenario_fvs_prepost_optimization.COLUMN_USEFILTER].Text = "No";
+            this.lvOptimizationListValues.Items[lvOptimizationListValues.Items.Count - 1].SubItems[uc_optimizer_scenario_fvs_prepost_optimization.COLUMN_FILTER_OPERATOR].Text = "Not Defined";
+            this.lvOptimizationListValues.Items[lvOptimizationListValues.Items.Count - 1].SubItems[uc_optimizer_scenario_fvs_prepost_optimization.COLUMN_FILTER_VALUE].Text = "Not Defined";
+
+            CreateListViewOptimizationRow();
+            this.m_oLvRowColors.AddRow();
+            this.m_oLvRowColors.AddColumns(lvOptimizationListValues.Items.Count - 1, lvOptimizationListValues.Columns.Count);
+            this.lvOptimizationListValues.Items[lvOptimizationListValues.Items.Count - 1].SubItems[uc_optimizer_scenario_fvs_prepost_optimization.COLUMN_OPTIMIZE_VARIABLE].Text = "Non-Residue Volume";
+            this.lvOptimizationListValues.Items[lvOptimizationListValues.Items.Count - 1].SubItems[uc_optimizer_scenario_fvs_prepost_optimization.COLUMN_FVS_VARIABLE].Text = "NA";
+            this.lvOptimizationListValues.Items[lvOptimizationListValues.Items.Count - 1].SubItems[uc_optimizer_scenario_fvs_prepost_optimization.COLUMN_VALUESOURCE].Text = "NA";
+            this.lvOptimizationListValues.Items[lvOptimizationListValues.Items.Count - 1].SubItems[uc_optimizer_scenario_fvs_prepost_optimization.COLUMN_MAXMIN].Text = "Not Defined";
+            this.lvOptimizationListValues.Items[lvOptimizationListValues.Items.Count - 1].SubItems[uc_optimizer_scenario_fvs_prepost_optimization.COLUMN_USEFILTER].Text = "No";
+            this.lvOptimizationListValues.Items[lvOptimizationListValues.Items.Count - 1].SubItems[uc_optimizer_scenario_fvs_prepost_optimization.COLUMN_FILTER_OPERATOR].Text = "Not Defined";
+            this.lvOptimizationListValues.Items[lvOptimizationListValues.Items.Count - 1].SubItems[uc_optimizer_scenario_fvs_prepost_optimization.COLUMN_FILTER_VALUE].Text = "Not Defined";
+
+            CreateListViewOptimizationRow();
+            this.m_oLvRowColors.AddRow();
+            this.m_oLvRowColors.AddColumns(lvOptimizationListValues.Items.Count - 1, lvOptimizationListValues.Columns.Count);
             this.lvOptimizationListValues.Items[lvOptimizationListValues.Items.Count - 1].SubItems[uc_optimizer_scenario_fvs_prepost_optimization.COLUMN_OPTIMIZE_VARIABLE].Text = "Stand Attribute";
             this.lvOptimizationListValues.Items[lvOptimizationListValues.Items.Count - 1].SubItems[uc_optimizer_scenario_fvs_prepost_optimization.COLUMN_FVS_VARIABLE].Text = "Not Defined";
             this.lvOptimizationListValues.Items[lvOptimizationListValues.Items.Count - 1].SubItems[uc_optimizer_scenario_fvs_prepost_optimization.COLUMN_VALUESOURCE].Text = "Not Defined";
@@ -1819,7 +1863,11 @@ namespace FIA_Biosum_Manager
 
 			//Either Revenue or Merch Volume has been selected
             if (this.lvOptimizationListValues.SelectedItems[0].SubItems[COLUMN_OPTIMIZE_VARIABLE].Text.Trim() == "Revenue" ||
-                this.lvOptimizationListValues.SelectedItems[0].SubItems[COLUMN_OPTIMIZE_VARIABLE].Text.Trim() == "Merchantable Volume")
+                this.lvOptimizationListValues.SelectedItems[0].SubItems[COLUMN_OPTIMIZE_VARIABLE].Text.Trim() == "Merchantable Volume" || 
+                this.lvOptimizationListValues.SelectedItems[0].SubItems[COLUMN_OPTIMIZE_VARIABLE].Text.Trim() == "Wood4 Volume" || 
+                this.lvOptimizationListValues.SelectedItems[0].SubItems[COLUMN_OPTIMIZE_VARIABLE].Text.Trim() == "Wood5 Volume" || 
+                this.lvOptimizationListValues.SelectedItems[0].SubItems[COLUMN_OPTIMIZE_VARIABLE].Text.Trim() == "Wood6 Volume" || 
+                this.lvOptimizationListValues.SelectedItems[0].SubItems[COLUMN_OPTIMIZE_VARIABLE].Text.Trim() == "Non-Residue Volume")
 			{
 				btnOptimiztionPrev.Hide();
 				this.lblOptimizationVariable.Text = this.lvOptimizationListValues.SelectedItems[0].SubItems[COLUMN_OPTIMIZE_VARIABLE].Text.Trim();
