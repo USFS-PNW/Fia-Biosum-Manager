@@ -2443,7 +2443,8 @@ namespace FIA_Biosum_Manager
                             m_intError = mainProcessor.UpdateTrees(strVariant, strRxPackage, this.ReferenceProcessorScenarioForm.LoadedQueries.m_oDataSource.getFullPathAndFile(Datasource.TableTypes.Tree),
                                 this.ReferenceProcessorScenarioForm.LoadedQueries.m_oFIAPlot.m_strTreeTable, this.ReferenceProcessorScenarioForm.LoadedQueries.m_oDataSource.getFullPathAndFile(Datasource.TableTypes.FiaTreeSpeciesReference),
                                 this.ReferenceProcessorScenarioForm.LoadedQueries.m_oDataSource.getValidDataSourceTableName(Datasource.TableTypes.FiaTreeSpeciesReference),
-                                this.ReferenceProcessorScenarioForm.LoadedQueries.m_oTravelTime.m_strDbFile, this.ReferenceProcessorScenarioForm.LoadedQueries.m_oTravelTime.m_strTravelTimeTable, blnCreateReconcileTreesTable);
+                                this.ReferenceProcessorScenarioForm.LoadedQueries.m_oTravelTime.m_strDbFile, this.ReferenceProcessorScenarioForm.LoadedQueries.m_oTravelTime.m_strTravelTimeTable, 
+                                ReferenceProcessorScenarioForm.m_oProcessorScenarioItem, blnCreateReconcileTreesTable);
 
                             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                             {

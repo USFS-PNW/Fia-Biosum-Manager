@@ -17,6 +17,7 @@ namespace FIA_Biosum_Manager
         private System.Collections.Generic.IDictionary<string, prescription> m_prescriptions;
         private System.Collections.Generic.IList<harvestMethod> m_harvestMethodList;
         private Escalators m_escalators;
+        private ProcessorScenarioItem.TreeSpeciesAndDbhDollarValuesItem_Collection m_speciesDiamValueCollection; 
         public System.Collections.Generic.List<string> m_standsWithNoYardingDistance;
         private string m_strSqliteConnection;
 
@@ -286,7 +287,7 @@ namespace FIA_Biosum_Manager
 
         public int UpdateTrees(string p_strVariant, string p_strRxPackage, string p_strTreeDbPath, string p_strTreeTableName, 
             string p_strTreeSpeciesDbPath, string p_strTreeSpeciesTableName, string p_strTravelTimesDbPath, string p_strTravelTimesTable, 
-            bool blnCreateReconcilationTable)
+            ProcessorScenarioItem oProcessorScenarioItem, bool blnCreateReconcilationTable)
         {
             if (m_trees == null)
             {
@@ -312,7 +313,9 @@ namespace FIA_Biosum_Manager
             System.Collections.Generic.IDictionary<string, treeSpecies> dictTreeSpecies = LoadTreeSpecies(p_strTreeSpeciesTableName);
             SQLite.SqlNonQuery(SQLite.m_Connection, $@"DETACH SPECIES_REF");
             //Load species diam values into reference dictionary
-            System.Collections.Generic.IDictionary<string, speciesDiamValue> dictSpeciesDiamValues = LoadSpeciesDiamValues(m_strScenarioId);
+            m_speciesDiamValueCollection = oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection;
+            System.Collections.Generic.IDictionary<string, ProcessorScenarioItem.TreeSpeciesAndDbhDollarValuesItem> dictSpeciesDiamValues 
+                = LoadSpeciesDiamValues();
             //Load diameter groups into reference list
             System.Collections.Generic.List<treeDiamGroup> listDiamGroups = LoadTreeDiamGroups();
             System.Collections.Generic.IDictionary<string, double> dictTravelTimes = null;
@@ -407,20 +410,11 @@ namespace FIA_Biosum_Manager
 
                     // set tree properties based on scenario_tree_species_diam_dollar_values
                     string strSpeciesDiamKey = nextTree.DiamGroup + "|" + nextTree.SpeciesGroup;
-                    speciesDiamValue treeSpeciesDiam = null;
+                        ProcessorScenarioItem.TreeSpeciesAndDbhDollarValuesItem treeSpeciesDiam = null;
                     if (dictSpeciesDiamValues.TryGetValue(strSpeciesDiamKey, out treeSpeciesDiam))
                     {
-                        nextTree.MerchValue = treeSpeciesDiam.MerchValue;
-                        nextTree.ChipValue = treeSpeciesDiam.ChipValue;
-                        switch (treeSpeciesDiam.WoodBin)
-                        {
-                            case "M":
-                                nextTree.IsNonCommercial = false;
-                                break;
-                            case "C":
-                                nextTree.IsNonCommercial = true;
-                                break;
-                        }
+                        nextTree.MerchValue = Convert.ToDouble(treeSpeciesDiam.MerchDollarPerCubicFootValue);
+                        nextTree.ChipValue = Convert.ToDouble(treeSpeciesDiam.ChipsDollarPerCubicFootValue);
                     }
                     else
                     {
@@ -675,7 +669,7 @@ namespace FIA_Biosum_Manager
                     {
                         nextInput.TotalSmLogTpa = nextInput.TotalSmLogTpa + nextTree.Tpa;
                         nextInput.SmLogMerchVolCfPa = nextInput.SmLogMerchVolCfPa + nextTree.MerchVolCfPa;
-                        if (nextTree.IsNonCommercial || nextTree.IsCull)
+                        if (nextTree.IsCull)
                         {
                             nextInput.SmLogNonCommMerchVolCfPa = nextInput.SmLogNonCommMerchVolCfPa + nextTree.MerchVolCfPa;
                             nextInput.SmLogNonCommVolCfPa = nextInput.SmLogNonCommVolCfPa + nextTree.TotalVolCfPa;
@@ -696,7 +690,7 @@ namespace FIA_Biosum_Manager
                     {
                         nextInput.TotalLgLogTpa = nextInput.TotalLgLogTpa + nextTree.Tpa;
                         nextInput.LgLogMerchVolCfPa = nextInput.LgLogMerchVolCfPa + nextTree.MerchVolCfPa;
-                        if (nextTree.IsNonCommercial || nextTree.IsCull)
+                        if (nextTree.IsCull)
                         {
                             nextInput.LgLogNonCommMerchVolCfPa = nextInput.LgLogNonCommMerchVolCfPa + nextTree.MerchVolCfPa;
                             nextInput.LgLogNonCommVolCfPa = nextInput.LgLogNonCommVolCfPa + nextTree.TotalVolCfPa;
@@ -1003,7 +997,7 @@ namespace FIA_Biosum_Manager
                                 break;
                         }
                         nextInput = new treeVolValInput(nextTree.CondId, nextTree.RxCycle, nextTree.RxPackage, nextTree.Rx,
-                            nextTree.SpeciesGroup, nextTree.DiamGroup, nextTree.IsNonCommercial, chipMktValPgt, nextTree.HarvestMethod.BiosumCategory);
+                            nextTree.SpeciesGroup, nextTree.DiamGroup, chipMktValPgt, nextTree.HarvestMethod.BiosumCategory);
                         dictTvvInput.Add(strKey, nextInput);
                     }
 
@@ -1036,9 +1030,9 @@ namespace FIA_Biosum_Manager
                     //metrics for small and large trees
                     else if (nextTree.TreeType == OpCostTreeType.SL || nextTree.TreeType == OpCostTreeType.LL)
                     {
-                        if (nextTree.BiosumCategory == 1 || nextTree.BiosumCategory == 3)
+                        if (nextTree.BiosumCategory == 3)
                         {
-                            if (nextTree.IsNonCommercial || nextTree.IsCull)
+                            if (nextTree.IsCull)
                             {
                                 // Only bole is chipped; nonMerch goes to stand residue
                                 nextInput.ChipVolCfPa = nextInput.ChipVolCfPa + nextTree.MerchVolCfPa;
@@ -1056,7 +1050,7 @@ namespace FIA_Biosum_Manager
                         }
                         else if (nextTree.BiosumCategory == 2)
                         {
-                            if (nextTree.IsNonCommercial || nextTree.IsCull)
+                            if (nextTree.IsCull)
                             {
                                 // Entire tree is chipped
                                 nextInput.ChipVolCfPa = nextInput.ChipVolCfPa + nextTree.TotalVolCfPa;
@@ -1076,7 +1070,7 @@ namespace FIA_Biosum_Manager
                         {
                             if (nextTree.TreeType == OpCostTreeType.SL)
                             {
-                                if (nextTree.IsNonCommercial || nextTree.IsCull)
+                                if (nextTree.IsCull)
                                 {
                                     // Entire tree is chipped
                                     nextInput.ChipVolCfPa = nextInput.ChipVolCfPa + nextTree.TotalVolCfPa;
@@ -1094,7 +1088,7 @@ namespace FIA_Biosum_Manager
                             }
                             else if (nextTree.TreeType == OpCostTreeType.LL)
                             {
-                                if (nextTree.IsNonCommercial || nextTree.IsCull)
+                                if (nextTree.IsCull)
                                 {
                                     // Only bole is chipped; nonMerch goes to stand residue
                                     nextInput.ChipVolCfPa = nextInput.ChipVolCfPa + nextTree.MerchVolCfPa;
@@ -1113,7 +1107,7 @@ namespace FIA_Biosum_Manager
                         }
                         else if (nextTree.BiosumCategory == 5)
                         {
-                            if (nextTree.IsNonCommercial || nextTree.IsCull)
+                            if (nextTree.IsCull)
                             {
                                 // Entire tree is chipped
                                 nextInput.ChipVolCfPa = nextInput.ChipVolCfPa + nextTree.TotalVolCfPa;
@@ -1258,33 +1252,17 @@ namespace FIA_Biosum_Manager
         /// The composite key is intDiamGroup + "|" + intSpcGroup
         /// The value is a speciesDiamValue object
         ///</summary> 
-        private System.Collections.Generic.IDictionary<String, speciesDiamValue> LoadSpeciesDiamValues(string p_scenario)
+        private System.Collections.Generic.IDictionary<String, ProcessorScenarioItem.TreeSpeciesAndDbhDollarValuesItem> LoadSpeciesDiamValues()
         {
-            System.Collections.Generic.IDictionary<String, speciesDiamValue> dictSpeciesDiamValues = 
-                new System.Collections.Generic.Dictionary<String, speciesDiamValue>();
+            System.Collections.Generic.IDictionary<String, ProcessorScenarioItem.TreeSpeciesAndDbhDollarValuesItem> dictSpeciesDiamValues = 
+                new System.Collections.Generic.Dictionary<String, ProcessorScenarioItem.TreeSpeciesAndDbhDollarValuesItem>();
 
-            if (SQLite.m_intError == 0)
+            for (int i = 0; i < m_speciesDiamValueCollection.Count; i++)
             {
-                string strSQL = "SELECT * FROM definitions." +
-                                Tables.ProcessorScenarioRuleDefinitions.DefaultTreeSpeciesDollarValuesTableName +
-                                " WHERE UPPER(TRIM(scenario_id)) = '" + p_scenario.Trim().ToUpper() + "'";
-                SQLite.SqlQueryReader(SQLite.m_Connection, strSQL);
-                if (SQLite.m_DataReader.HasRows)
-                {
-                    while (SQLite.m_DataReader.Read())
-                    {
-                        int intSpcGroup = Convert.ToInt32(SQLite.m_DataReader["species_group"]);
-                        int intDiamGroup = Convert.ToInt32(SQLite.m_DataReader["diam_group"]);
-                        double dblMerchValue = Convert.ToDouble(SQLite.m_DataReader["merch_value"]);
-                        double dblChipValue = Convert.ToDouble(SQLite.m_DataReader["chip_value"]);
-                        string strKey = intDiamGroup + "|" + intSpcGroup;
-                        dictSpeciesDiamValues.Add(strKey, new speciesDiamValue(intDiamGroup, intSpcGroup,
-                            dblMerchValue, dblChipValue));
-                    }
-                    SQLite.m_DataReader.Close();
-                }
+                ProcessorScenarioItem.TreeSpeciesAndDbhDollarValuesItem nextItem = m_speciesDiamValueCollection.Item(i);
+                string strKey = nextItem.DiameterGroupId + "|" + nextItem.SpeciesGroupId;
+                dictSpeciesDiamValues.Add(strKey, nextItem);
             }
-
             return dictSpeciesDiamValues;
         }
 
@@ -1532,7 +1510,7 @@ namespace FIA_Biosum_Manager
             }
 
             //merchValDpa
-            if (!p_tree.IsNonCommercial && !p_tree.IsCull)
+            if (!p_tree.IsCull)
             {
                 switch (p_tree.RxCycle)
                 {
@@ -1612,7 +1590,6 @@ namespace FIA_Biosum_Manager
             OpCostTreeType _opCostTreeType;
             int _intSpeciesGroup;
             int _intDiamGroup;
-            bool _boolIsNonCommercial;
             double _dblMerchValue;
             double _dblChipValue;
             int _intElev;
@@ -1738,11 +1715,6 @@ namespace FIA_Biosum_Manager
             {
                 get { return _intDiamGroup; }
                 set { _intDiamGroup = value; }
-            }
-            public bool IsNonCommercial
-            {
-                get { return _boolIsNonCommercial; }
-                set { _boolIsNonCommercial = value; }
             }
             public double MerchValue
             {
@@ -1940,45 +1912,6 @@ namespace FIA_Biosum_Manager
                 get { return _dblMaxDiam; }
             }
         }
-
-        private class speciesDiamValue
-        {
-            int _intSpeciesGroup;
-            int _intDiamGroup;
-            string _strWoodBin;
-            double _dblMerchValue;
-            double _dblChipValue;
-
-            public speciesDiamValue(int diamGroup, int speciesGroup, double merchValue, double chipValue)
-			{
-                _intDiamGroup = diamGroup;
-                _intSpeciesGroup = speciesGroup;
-                _dblMerchValue = merchValue;
-                _dblChipValue = chipValue;
-			}
-
-            public int DiamGroup
-            {
-                get { return _intDiamGroup; }
-            }
-            public int SpeciesGroup
-            {
-                get { return _intSpeciesGroup; }
-            }
-            public string WoodBin
-            {
-                get { return _strWoodBin; }
-            }
-            public double MerchValue
-            {
-                get { return _dblMerchValue; }
-            }
-            public double ChipValue
-            {
-                get { return _dblChipValue; }
-            }
-        }
-
         private class scenarioHarvestMethod
         {
             double _dblMinSmallLogDbh;
@@ -2540,7 +2473,7 @@ namespace FIA_Biosum_Manager
 
 
             public treeVolValInput(string condId, string rxCycle, string rxPackage, string rx,
-                                    int speciesGroup, int diamGroup, bool isNonCommercial,
+                                    int speciesGroup, int diamGroup,
                                     double chipMktValPgt, int harvestMethodCategory)
             {
                 _strCondId = condId;
@@ -2550,14 +2483,6 @@ namespace FIA_Biosum_Manager
                 _intSpeciesGroup = speciesGroup;
                 _intDiamGroup = diamGroup;
                 _intHarvestMethodCategory = harvestMethodCategory;
-                if (isNonCommercial)
-                {
-                    _strMerchToChip = "Y";
-                }
-                else
-                {
-                    _strMerchToChip = "N";
-                }
                 _dblChipMktValPgt = chipMktValPgt;
             }
             
