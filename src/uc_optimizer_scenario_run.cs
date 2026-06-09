@@ -6012,8 +6012,8 @@ namespace FIA_Biosum_Manager
                         strSql = "UPDATE " + strOptimizationTableName + " AS e " +
                             "SET pre_variable_name = '" + oItem.strVariableName + "', " +
                             "post_variable_name = '" + oItem.strVariableName + "', " +
-                            "pre_variable_value = p.merch_vol_cf + p.wood4_vol_cf + p.wood5_vol_cf + p.wood6_vol+_cf, " +
-                            "post_variable_value = p.merch_vol_cf + p.wood4_vol_cf + p.wood5_vol_cf + p.wood6_vol+_cf, " +
+                            "pre_variable_value = p.merch_vol_cf + p.wood4_vol_cf + p.wood5_vol_cf + p.wood6_vol_cf, " +
+                            "post_variable_value = p.merch_vol_cf + p.wood4_vol_cf + p.wood5_vol_cf + p.wood6_vol_cf, " +
                             "change_value = 0 " +
                             "FROM " + Tables.OptimizerScenarioResults.DefaultScenarioResultsEconByRxUtilSumTableName + " AS p WHERE e.biosum_cond_id = p.biosum_cond_id AND e.rxpackage = p.rxpackage";
                     }
@@ -8891,10 +8891,11 @@ namespace FIA_Biosum_Manager
                     }
 
                     p_dataMgr.m_strSQL = "INSERT INTO " + Tables.OptimizerScenarioResults.DefaultScenarioResultsDiameterSpeciesGroupRefTableName +
-                                    " (dbh_class_num, dbh_range_inches, spp_grp_code, spp_grp, to_chips, merch_val_dpcf, value_if_chipped_dpgt)" +
+                                    " (dbh_class_num, dbh_range_inches, spp_grp_code, spp_grp, to_chips, merch_val_dpcf, " +
+                                    "wood4_val_dpcf, wood5_val_dpcf, wood5_val_dpcf, value_if_chipped_dpgt)" +
                                     " VALUES (" + oItem.DiameterGroupId + ", '" + oItem.DbhGroup + "'," + oItem.SpeciesGroupId + ",'" + oItem.SpeciesGroup + "','" +
-                                    strEnergyWood + "', " + oItem.MerchDollarPerCubicFootValue + ", " +
-                                    dblChippedValue + ")";
+                                    strEnergyWood + "', " + oItem.MerchDollarPerCubicFootValue + ", " + oItem.Wood4DollarPerCubicFootValue + ", " +
+                                    oItem.Wood5DollarPerCubicFootValue + ", " + oItem.Wood6DollarPerCubicFootValue + ", " + dblChippedValue + ")";
 
                     if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
                         frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\nPopulate DIAMETER_SPP_GRP_REF_C table \r\n");

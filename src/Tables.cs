@@ -675,6 +675,9 @@ namespace FIA_Biosum_Manager
                     "SPP_GRP CHAR(50)," +
                     "TO_CHIPS CHAR(1)," +
                     "MERCH_VAL_DpCF DOUBLE," +
+                    "WOOD4_VAL_DpCF DOUBLE," +
+                    "WOOD5_VAL_DpCF DOUBLE," +
+                    "WOOD6_VAL_DpCF DOUBLE," +
                     "VALUE_IF_CHIPPED_DpGT DOUBLE," +
                     "CONSTRAINT " + p_strTableName + "_pk PRIMARY KEY (DBH_CLASS_NUM, SPP_GRP_CODE))";
             }
