@@ -6463,17 +6463,17 @@ namespace FIA_Biosum_Manager
                     "CASE WHEN tvvs.rxcycle = '2' THEN psa.wood4_haul_cost_dpgt * " + m_oProcessorScenarioItem.m_oEscalators.OperatingCostsCycle2 + " ELSE " +
                     "CASE WHEN tvvs.rxcycle = '3' THEN psa.wood4_haul_cost_dpgt * " + m_oProcessorScenarioItem.m_oEscalators.OperatingCostsCycle3 + " ELSE " +
                     "CASE WHEN tvvs.rxcycle = '4' THEN psa.wood4_haul_cost_dpgt * " + m_oProcessorScenarioItem.m_oEscalators.OperatingCostsCycle4 + " ELSE " +
-                    "psa.wood4_haul_cost_dpgt END END END ELSE 0 END AS escalator_wood4_haul_cpa_pt, " +
+                    "psa.wood4_haul_cost_dpgt END END END ELSE NULL END AS escalator_wood4_haul_cpa_pt, " +
                     "CASE WHEN psa.wood5_haul_cost_dpgt IS NOT NULL THEN " +
                     "CASE WHEN tvvs.rxcycle = '2' THEN psa.wood5_haul_cost_dpgt * " + m_oProcessorScenarioItem.m_oEscalators.OperatingCostsCycle2 + " ELSE " +
                     "CASE WHEN tvvs.rxcycle = '3' THEN psa.wood5_haul_cost_dpgt * " + m_oProcessorScenarioItem.m_oEscalators.OperatingCostsCycle3 + " ELSE " +
                     "CASE WHEN tvvs.rxcycle = '4' THEN psa.wood5_haul_cost_dpgt * " + m_oProcessorScenarioItem.m_oEscalators.OperatingCostsCycle4 + " ELSE " +
-                    "psa.wood5_haul_cost_dpgt END END END ELSE 0 END AS escalator_wood5_haul_cpa_pt, " +
+                    "psa.wood5_haul_cost_dpgt END END END ELSE NULL END AS escalator_wood5_haul_cpa_pt, " +
                     "CASE WHEN psa.wood6_haul_cost_dpgt IS NOT NULL THEN " +
                     "CASE WHEN tvvs.rxcycle = '2' THEN psa.wood6_haul_cost_dpgt * " + m_oProcessorScenarioItem.m_oEscalators.OperatingCostsCycle2 + " ELSE " +
                     "CASE WHEN tvvs.rxcycle = '3' THEN psa.wood6_haul_cost_dpgt * " + m_oProcessorScenarioItem.m_oEscalators.OperatingCostsCycle3 + " ELSE " +
                     "CASE WHEN tvvs.rxcycle = '4' THEN psa.wood6_haul_cost_dpgt * " + m_oProcessorScenarioItem.m_oEscalators.OperatingCostsCycle4 + " ELSE " +
-                    "psa.wood6_haul_cost_dpgt END END END ELSE 0 END AS escalator_wood6_haul_cpa_pt, " +
+                    "psa.wood6_haul_cost_dpgt END END END ELSE NULL END AS escalator_wood6_haul_cpa_pt, " +
                     "0.0 AS max_nr_dpa, c.acres, c.owngrpcd " +
                     "FROM validcombos AS vc, " + m_strCondTable + " AS c, " + m_strHvstCostsTable.Trim() + " AS hc, " +
                     Tables.OptimizerScenarioResults.DefaultScenarioResultsPSiteAccessibleWorkTableName + " AS psa, " + m_strTreeVolValSumTable.Trim() + " AS tvvs " +
@@ -6495,20 +6495,38 @@ namespace FIA_Biosum_Manager
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
                 p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
 
-                // Set wood4, wood5, and wood6 NULLS to 0 to ensure rest of math works
+                // Set wood4, wood5, and wood6 values to 0 if haul cost is NULL
+                // which means there is no psite for that wood type. This ensures
+                // they aren't included in futher calculations
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
+                p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
                 p_dataMgr.m_strSQL = "UPDATE " + m_strEconByRxWorkTableName +
-                    " SET wood4_vol_cf = IFNULL(wood4_vol_cf, 0), " +
-                    "wood5_vol_cf = IFNULL(wood5_vol_cf, 0), " +
-                    "wood6_vol_cf = IFNULL(wood6_vol_cf, 0), " +
-                    "wood4_wt_gt = IFNULL(wood4_wt_gt, 0), " +
-                    "wood5_wt_gt = IFNULL(wood5_wt_gt, 0), " +
-                    "wood6_wt_gt = IFNULL(wood6_wt_gt, 0), " +
-                    "wood4_val_dpa = IFNULL(wood4_val_dpa, 0), " +
-                    "wood5_val_dpa = IFNULL(wood5_val_dpa, 0), " +
-                    "wood6_val_dpa = IFNULL(wood6_val_dpa, 0), " +
-                    "wood4_haul_cost_dpa = IFNULL(wood4_haul_cost_dpa, 0), " +
-                    "wood5_haul_cost_dpa = IFNULL(wood5_haul_cost_dpa, 0), " +
-                    "wood6_haul_cost_dpa = IFNULL(wood6_haul_cost_dpa, 0)";
+                    " SET wood4_vol_cf = 0, wood4_wt_gt = 0, " +
+                    "wood4_val_dpa = 0, wood4_haul_cost_dpa = 0 " +
+                    "WHERE wood4_haul_cost_dpa IS NULL";
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
+                p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
+
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
+                p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
+                p_dataMgr.m_strSQL = "UPDATE " + m_strEconByRxWorkTableName +
+                    " SET wood5_vol_cf = 0, wood5_wt_gt = 0, " +
+                    "wood5_val_dpa = 0, wood5_haul_cost_dpa = 0 " +
+                    "WHERE wood5_haul_cost_dpa IS NULL";
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
+                p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
+
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
+                p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
+                p_dataMgr.m_strSQL = "UPDATE " + m_strEconByRxWorkTableName +
+                    " SET wood6_vol_cf = 0, wood6_wt_gt = 0, " +
+                    "wood6_val_dpa = 0, wood6_haul_cost_dpa = 0 " +
+                    "WHERE wood6_haul_cost_dpa IS NULL";
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
                 p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
@@ -6650,7 +6668,10 @@ namespace FIA_Biosum_Manager
                     " SET haul_costs_dpa = CASE WHEN usebiomass_yn = 'N' THEN merch_haul_cost_dpa + wood4_haul_cost_dpa + " +
                     "wood5_haul_cost_dpa + wood6_haul_cost_dpa ELSE merch_haul_cost_dpa + chip_haul_cost_dpa + " +
                     "wood4_haul_cost_dpa + wood5_haul_cost_dpa + wood6_haul_cost_dpa END, " +
-                    "max_nr_dpa = CASE WHEN usebiomass_yn = 'Y' THEN merch_chip_nr_dpa ELSE merch_nr_dpa END";
+                    "max_nr_dpa = CASE WHEN usebiomass_yn = 'Y' THEN merch_chip_nr_dpa ELSE merch_nr_dpa + " +
+                    "(CASE WHEN wood4_nr_dpa > 0 THEN wood4_nr_dpa ELSE 0 END) + " +
+                    "(CASE WHEN wood5_nr_dpa > 0 THEN wood5_nr_dpa ELSE 0 END) + " +
+                    "(CASE WHEN wood6_nr_dpa > 0 THEN wood6_nr_dpa ELSE 0 END) END";
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
                 p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
