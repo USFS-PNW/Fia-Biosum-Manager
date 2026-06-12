@@ -1181,6 +1181,7 @@ namespace FIA_Biosum_Manager
             double wood5Value = Convert.ToDouble(nextTree.DbhDollarValuesItem.Wood5DollarPerCubicFootValue);
             double wood6Pct = Convert.ToDouble(nextTree.DbhDollarValuesItem.Wood6Percent)/100;
             double wood6Value = Convert.ToDouble(nextTree.DbhDollarValuesItem.Wood6DollarPerCubicFootValue);
+            double chipPct = Convert.ToDouble(nextTree.DbhDollarValuesItem.ChipPercent) / 100;
 
             nextInput.TotalMerchVolCfPa = nextInput.TotalMerchVolCfPa + (nextTree.MerchVolCfPa * merchPct);
             nextInput.TotalMerchWtGtPa = nextInput.TotalMerchWtGtPa + (nextTree.MerchWtGtPa * merchPct);
@@ -1198,6 +1199,8 @@ namespace FIA_Biosum_Manager
             nextInput.TotalWood6WtGtPa = nextInput.TotalWood6WtGtPa + (nextTree.MerchWtGtPa * wood6Pct);
             nextInput.TotalWood6ValDpa = nextInput.TotalWood6ValDpa +
                 (nextTree.MerchVolCfPa * wood6Pct * wood6Value * merchWoodRevEscalator);
+            nextInput.ChipVolCfPa = nextInput.ChipVolCfPa + (nextTree.MerchVolCfPa * chipPct);
+            nextInput.ChipWtGtPa = nextInput.ChipWtGtPa + (nextTree.MerchWtGtPa * chipPct);
         }
 
         private System.Collections.Generic.List<treeDiamGroup> LoadTreeDiamGroups()
