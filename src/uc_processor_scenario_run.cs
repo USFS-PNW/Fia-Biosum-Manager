@@ -1924,11 +1924,15 @@ namespace FIA_Biosum_Manager
                     m_oDataMgr.m_strSQL = "INSERT INTO " + Tables.ProcessorScenarioRun.DefaultTreeVolValSpeciesDiamGroupsTableName + " (biosum_cond_id, rxpackage," +
                                            "rx, rxcycle, species_group, diam_group, chip_vol_cf, chip_wt_gt, " +
                                            "chip_val_dpa, chip_mkt_val_pgt, merch_vol_cf, merch_wt_gt, merch_val_dpa, " +
-                                           "bc_vol_cf, bc_wt_gt, stand_residue_wt_gt, biosum_harvest_method_category, place_holder, DateTimeCreated) " +
+                                           "bc_vol_cf, bc_wt_gt, stand_residue_wt_gt, wood4_vol_cf, wood4_wt_gt, wood4_val_dpa," +
+                                           "wood5_vol_cf, wood5_wt_gt, wood5_val_dpa, wood6_vol_cf, wood6_wt_gt, wood6_val_dpa, " +
+                                           "biosum_harvest_method_category, place_holder, DateTimeCreated) " +
                                            "SELECT biosum_cond_id, rxpackage, " +
                                            "rx, rxcycle, species_group, diam_group, chip_vol_cf, chip_wt_gt, " +
                                            "chip_val_dpa, chip_mkt_val_pgt, merch_vol_cf, merch_wt_gt, merch_val_dpa, " +
-                                           "bc_vol_cf, bc_wt_gt, stand_residue_wt_gt, biosum_harvest_method_category, place_holder, DateTimeCreated " +
+                                           "bc_vol_cf, bc_wt_gt, stand_residue_wt_gt, wood4_vol_cf, wood4_wt_gt, wood4_val_dpa, " +
+                                           "wood5_vol_cf, wood5_wt_gt, wood5_val_dpa, wood6_vol_cf, wood6_wt_gt, wood6_val_dpa, " + 
+                                           "biosum_harvest_method_category, place_holder, DateTimeCreated " +
                                            "FROM TreeVolValLowSlope";
                     if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                         frmMain.g_oUtils.WriteText(m_strDebugFile, m_oDataMgr.m_strSQL + " \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
