@@ -717,7 +717,7 @@ namespace FIA_Biosum_Manager
             this.uc_processor_scenario_spc_dbh_group_value1.Wood4Percent = "0";
             this.uc_processor_scenario_spc_dbh_group_value1.Wood5DollarValue = "$0.00";
             this.uc_processor_scenario_spc_dbh_group_value1.Wood5Percent = "0";
-            this.uc_processor_scenario_spc_dbh_group_value1.Wood4DollarValue = "$0.00";
+            this.uc_processor_scenario_spc_dbh_group_value1.Wood6DollarValue = "$0.00";
             this.uc_processor_scenario_spc_dbh_group_value1.Wood6Percent = "0";
             this.uc_processor_scenario_spc_dbh_group_value1.DbhGroup = "";
             this.uc_processor_scenario_spc_dbh_group_value1.EnergyWood = false;
