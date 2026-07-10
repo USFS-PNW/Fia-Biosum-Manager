@@ -784,20 +784,27 @@ namespace FIA_Biosum_Manager
                 SQLite.SqlNonQuery(conn, $@"attach '{strFvsOutTreeListDb}' as tree_list");
 
                 //append the multiple fvsout tree tables into a single fvsout tree table
-                List<string> strSqlCommandList = strSqlCommandList = Queries.Processor.AuditFvsOut_SelectIntoUnionOfFVSTreeTablesUsingListArray(
-                    SQLite,
-                    conn,
-                    "fvsouttreetemp2",
-                    "fvs_tree_id,fvs_species,FvsCreatedTree_YN,biosum_cond_id");
-
-                for (x = 0; x <= strSqlCommandList.Count - 1; x++)
-                {
-                    SQLite.SqlNonQuery(conn, strSqlCommandList[x]);
-                }
-
-                SQLite.m_strSQL = "CREATE TABLE fvsouttreetemp AS SELECT DISTINCT * FROM fvsouttreetemp2";
+                SQLite.m_strSQL = "CREATE TABLE fvsouttreetemp2"  +
+                            "(fvs_tree_id CHAR (10), " +
+                            "fvs_species CHAR (6), " +
+                            "FvsCreatedTree_YN CHAR (1), " +
+                            "biosum_cond_id CHAR (25))";
                 SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+
+                string strColumnList = "fvs_tree_id,fvs_species,FvsCreatedTree_YN,biosum_cond_id";
+                SQLite.m_strSQL = $@"INSERT INTO fvsouttreetemp2 ({strColumnList}) 
+                            SELECT DISTINCT {strColumnList} FROM {Tables.FVS.DefaultFVSCutTreeTvbcTableName}";
+                SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+
                 this.m_strFvsOutTreeTable = "fvsouttreetemp";
+                SQLite.m_strSQL = "CREATE TABLE " + this.m_strFvsOutTreeTable +
+                            "(fvs_tree_id CHAR (10), " +
+                            "fvs_species CHAR (6), " +
+                            "FvsCreatedTree_YN CHAR (1), " +
+                            "biosum_cond_id CHAR (25))";
+                SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
+                SQLite.m_strSQL = "INSERT INTO " + this.m_strFvsOutTreeTable + " (" + strColumnList + ") SELECT DISTINCT * FROM fvsouttreetemp2";
+                SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
 
                 //GET ALL TREE SPECIES COMMON NAME
                 /**********************************************************************************
@@ -831,7 +838,7 @@ namespace FIA_Biosum_Manager
                 SQLite.SqlNonQuery(conn, $@"attach '{this.m_oQueries.m_oDataSource.getFullPathAndFile(Datasource.TableTypes.Tree)}' as MASTER");
                 //SQLite.SqlNonQuery(conn, $@"attach '{strFvsOutTreeListDb}' as TREELIST");
                 SQLite.m_strSQL = $@"CREATE TABLE tree_spc_groups_temp AS SELECT DISTINCT spcd FROM {this.m_oQueries.m_oFIAPlot.m_strTreeTable} t, {this.m_strFvsOutTreeTable} f
-                    WHERE f.fvs_tree_id = t.fvs_tree_id AND f.biosum_cond_id = t.biosum_cond_id";
+                    WHERE f.fvs_tree_id = trim(t.fvs_tree_id) AND f.biosum_cond_id = t.biosum_cond_id";
                 SQLite.SqlNonQuery(conn, SQLite.m_strSQL);
                 SQLite.m_strSQL = "SELECT DISTINCT s.common_name " +
                     "FROM tree_spc_groups_temp t, " + m_oQueries.m_oReference.m_strFiaTreeSpeciesRefTable + " s " +
