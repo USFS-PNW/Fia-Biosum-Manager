@@ -2617,7 +2617,7 @@ namespace FIA_Biosum_Manager
                             if (dataMgr.m_DataReader["wood6_value"] != System.DBNull.Value &&
                                dataMgr.m_DataReader["wood6_value"].ToString().Trim().Length > 0)
                             {
-                                strWood4Value = String.Format("{0:0.00}", Convert.ToDouble(dataMgr.m_DataReader["wood6_value"]));
+                                strWood6Value = String.Format("{0:0.00}", Convert.ToDouble(dataMgr.m_DataReader["wood6_value"]));
                             }
                             if (dataMgr.m_DataReader["chip_pct"] != System.DBNull.Value &&
                                dataMgr.m_DataReader["chip_pct"].ToString().Trim().Length > 0)

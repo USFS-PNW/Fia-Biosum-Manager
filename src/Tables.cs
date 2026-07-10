@@ -455,6 +455,9 @@ namespace FIA_Biosum_Manager
                     "wood6_haul_cost_dpa DOUBLE," +
                     "merch_chip_nr_dpa DOUBLE," +
                     "merch_nr_dpa DOUBLE," +
+                    "wood4_nr_dpa DOUBLE," +
+                    "wood5_nr_dpa DOUBLE," +
+                    "wood6_nr_dpa DOUBLE," +
                     "usebiomass_yn CHAR(1)," +
                     "max_nr_dpa DOUBLE," +
                     "acres DOUBLE," +
@@ -498,6 +501,9 @@ namespace FIA_Biosum_Manager
                     "wood6_haul_cost_dpa DOUBLE," +
                     "merch_chip_nr_dpa DOUBLE," +
                     "merch_nr_dpa DOUBLE," +
+                    "wood4_nr_dpa DOUBLE," +
+                    "wood5_nr_dpa DOUBLE," +
+                    "wood6_nr_dpa DOUBLE," +
                     "max_nr_dpa DOUBLE," +
                     "acres DOUBLE," +
                     "treated_acres DOUBLE," +
@@ -669,6 +675,9 @@ namespace FIA_Biosum_Manager
                     "SPP_GRP CHAR(50)," +
                     "TO_CHIPS CHAR(1)," +
                     "MERCH_VAL_DpCF DOUBLE," +
+                    "WOOD4_VAL_DpCF DOUBLE," +
+                    "WOOD5_VAL_DpCF DOUBLE," +
+                    "WOOD6_VAL_DpCF DOUBLE," +
                     "VALUE_IF_CHIPPED_DpGT DOUBLE," +
                     "CONSTRAINT " + p_strTableName + "_pk PRIMARY KEY (DBH_CLASS_NUM, SPP_GRP_CODE))";
             }
@@ -2410,7 +2419,10 @@ namespace FIA_Biosum_Manager
                     "harvest_costs_yn CHAR(1), " +
                     "cond_too_far_steep_yn CHAR(1), " +
                     "psite_merch_yn CHAR(1), " +
-                    "psite_chip_yn CHAR(1)) ";
+                    "psite_chip_yn CHAR(1), " +
+                    "psite_wood4_yn CHAR(1), " +
+                    "psite_wood5_yn CHAR(1), " +
+                    "psite_wood6_yn CHAR(1)) ";
             }
             public void CreatePlotCondRxAuditTable(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
             {
