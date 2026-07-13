@@ -825,7 +825,6 @@ namespace FIA_Biosum_Manager
                         spc_common_name1.SpeciesGroupIndex = -1;
                         spc_common_name1.FVSOutput = false;
                         this.spc_common_name_collection1.Add(spc_common_name1);
-
                     }
                 }
                 SQLite.m_DataReader.Close();

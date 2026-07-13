@@ -336,7 +336,34 @@ namespace FIA_Biosum_Manager
                     oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
                 }
             }
-
+            // Delete and re-add Processor results tables with new schemas
+            string[] arrFolders = System.IO.Directory.GetDirectories(this.ReferenceProjectDirectory + "\\processor");
+            for (int i = 0; i < arrFolders.Length; i++)
+            {
+                string strScenario = System.IO.Path.GetFileName(arrFolders[i]);
+                if (!strScenario.Equals("db") && System.IO.File.Exists($@"{arrFolders[i]}\{Tables.ProcessorScenarioRun.DefaultSqliteResultsDbFile}"))
+                {
+                    using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString($@"{arrFolders[i]}\{Tables.ProcessorScenarioRun.DefaultSqliteResultsDbFile}")))
+                    {
+                        conn.Open();
+                        if (!oDataMgr.FieldExist(conn, $@"SELECT * FROM {Tables.ProcessorScenarioRun.DefaultTreeVolValSpeciesDiamGroupsTableName} limit 1", "wood6_val_dpa"))
+                        {
+                            oDataMgr.m_strSQL=$@"DROP TABLE {Tables.ProcessorScenarioRun.DefaultTreeVolValSpeciesDiamGroupsTableName}";
+                            oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+                            oDataMgr.m_strSQL = $@"DROP TABLE {Tables.ProcessorScenarioRun.DefaultHarvestCostsTableName}";
+                            oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+                            oDataMgr.m_strSQL = $@"DROP TABLE {Tables.ProcessorScenarioRun.DefaultAddKcpCpaTableName}";
+                            oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+                            frmMain.g_oTables.m_oProcessor.CreateHarvestCostsTable(oDataMgr,
+                                conn, Tables.ProcessorScenarioRun.DefaultHarvestCostsTableName);
+                            frmMain.g_oTables.m_oProcessor.CreateTreeVolValSpeciesDiamGroupsTable(oDataMgr,
+                                conn, Tables.ProcessorScenarioRun.DefaultTreeVolValSpeciesDiamGroupsTableName, true);
+                            frmMain.g_oTables.m_oProcessorScenarioRun.CreateAdditionalKcpCpaTable(oDataMgr,
+                                conn, Tables.ProcessorScenarioRun.DefaultAddKcpCpaTableName, false);
+                        }
+                    }
+                }
+            }
         }
 
         // Method to compare two versions.
