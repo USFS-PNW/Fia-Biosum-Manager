@@ -3091,50 +3091,50 @@ namespace FIA_Biosum_Manager
             static public string CreateOpcostInputTableSQL(string p_strTableName)
             {
                 return "CREATE TABLE " + p_strTableName + " " +
-                             "(Stand text (255)," +
-                             " [Percent Slope] short," +
+                             "(Stand CHAR (50)," +
+                             " [Percent Slope] INTEGER," +
                              " [One-way Yarding Distance] DOUBLE," +
                              " YearCostCalc INTEGER," +
-                             " [Project Elevation] short," +
-                             " [Harvesting System] text (50)," +
-                             " [Chip tree per acre] single," +
-                             " [Chip trees MerchAsPctOfTotal] single," +
-                             " [Chip trees average volume(ft3)] single," +
-                            " [CHIPS Average Density (lbs/ft3)] single," +
-                            " [CHIPS Hwd Percent] single," +
-                            " [Small log trees per acre] single," +
-                            " [Small log trees MerchAsPctOfTotal] single," +
-                            " [Small log trees ChipPct_Cat1_3] single," +
-                            " [Small log trees ChipPct_Cat2_4] single," +
-                            " [Small log trees ChipPct_Cat5] single," +
-                            " [Small log trees average volume(ft3)] single," +
-                            " [Small log trees average density(lbs/ft3)] single," +
-                            " [Small log trees hardwood percent] single," +
-                            " [Large log trees per acre] single," +
-                            " [Large log trees MerchAsPctOfTotal] single," +
-                            " [Large log trees ChipPct_Cat1_3_4] single," +
-                            " [Large log trees ChipPct_Cat2] single," +
-                            " [Large log trees ChipPct_Cat5] single," +
-                            " [Large log trees average vol(ft3)] single," +
-                            " [Large log trees average density(lbs/ft3)] single," +
-                            " [Large log trees hardwood percent] single," +
-                            " BrushCutTPA single," +
-                            " BrushCutAvgVol single," +
-                            " RxPackage_Rx_RxCycle text (255)," +
-                            " RxCycle text (255), " +
-                            " biosum_cond_id text (255)," +
-                            " RxPackage text (255)," +
-                            " Rx text (255)," +
-                            " Move_In_Hours single," +
-                            " Harvest_area_assumed_acres single," +
-                            " [Unadjusted One-way Yarding distance] double," +
-                            " [Unadjusted Small log trees per acre] single," +
-                            " [Unadjusted Small log trees average volume (ft3)] single," +
-                            " [Unadjusted Large log trees per acre] single," +
-                            " [Unadjusted Large log trees average vol(ft3)] single," +
-                            " ba_frac_cut single," +
-                            " QMD_SL single," +
-                            " QMD_LL single" +
+                             " [Project Elevation] INTEGER," +
+                             " [Harvesting System] CHAR (50)," +
+                             " [Chip tree per acre] DOUBLE," +
+                             " [Chip trees MerchAsPctOfTotal] DOUBLE," +
+                             " [Chip trees average volume(ft3)] DOUBLE," +
+                            " [CHIPS Average Density (lbs/ft3)] DOUBLE," +
+                            " [CHIPS Hwd Percent] DOUBLE," +
+                            " [Small log trees per acre] DOUBLE," +
+                            " [Small log trees MerchAsPctOfTotal] DOUBLE," +
+                            " [Small log trees ChipPct_Cat1_3] DOUBLE," +
+                            " [Small log trees ChipPct_Cat2_4] DOUBLE," +
+                            " [Small log trees ChipPct_Cat5] DOUBLE," +
+                            " [Small log trees average volume(ft3)] DOUBLE," +
+                            " [Small log trees average density(lbs/ft3)] DOUBLE," +
+                            " [Small log trees hardwood percent] DOUBLE," +
+                            " [Large log trees per acre] DOUBLE," +
+                            " [Large log trees MerchAsPctOfTotal] DOUBLE," +
+                            " [Large log trees ChipPct_Cat1_3_4] DOUBLE," +
+                            " [Large log trees ChipPct_Cat2] DOUBLE," +
+                            " [Large log trees ChipPct_Cat5] DOUBLE," +
+                            " [Large log trees average vol(ft3)] DOUBLE," +
+                            " [Large log trees average density(lbs/ft3)] DOUBLE," +
+                            " [Large log trees hardwood percent] DOUBLE," +
+                            " BrushCutTPA DOUBLE," +
+                            " BrushCutAvgVol DOUBLE," +
+                            " RxPackage_Rx_RxCycle CHAR (10)," +
+                            " RxCycle CHAR (2), " +
+                            " biosum_cond_id CHAR (50)," +
+                            " RxPackage CHAR (3)," +
+                            " Rx CHAR (3)," +
+                            " Move_In_Hours DOUBLE," +
+                            " Harvest_area_assumed_acres DOUBLE," +
+                            " [Unadjusted One-way Yarding distance] DOUBLE," +
+                            " [Unadjusted Small log trees per acre] DOUBLE," +
+                            " [Unadjusted Small log trees average volume (ft3)] DOUBLE," +
+                            " [Unadjusted Large log trees per acre] DOUBLE," +
+                            " [Unadjusted Large log trees average vol(ft3)] DOUBLE," +
+                            " ba_frac_cut DOUBLE," +
+                            " QMD_SL DOUBLE," +
+                            " QMD_LL DOUBLE" +
                             " )";
             }
 
