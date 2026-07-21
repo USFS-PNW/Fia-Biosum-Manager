@@ -3121,7 +3121,7 @@ namespace FIA_Biosum_Manager
                             " BrushCutTPA DOUBLE," +
                             " BrushCutAvgVol DOUBLE," +
                             " RxPackage_Rx_RxCycle CHAR (10)," +
-                            " RxCycle CHAR (2), " +
+                            " RxCycle CHAR (1), " +
                             " biosum_cond_id CHAR (50)," +
                             " RxPackage CHAR (3)," +
                             " Rx CHAR (3)," +
