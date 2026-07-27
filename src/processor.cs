@@ -1004,8 +1004,10 @@ namespace FIA_Biosum_Manager
                     if (nextTree.TreeType == OpCostTreeType.BC)
                     {
                         nextInput.TotalBrushCutWtGtPa = nextInput.TotalBrushCutWtGtPa + nextTree.BrushCutWtGtPa;
+                        nextInput.TotalBrushCutWtBdtPa = nextInput.TotalBrushCutWtBdtPa + nextTree.BrushCutWtBdtPa;
                         nextInput.TotalBrushCutVolCfPa = nextInput.TotalBrushCutVolCfPa + nextTree.BrushCutVolCfPa;
                         nextInput.StandResidueWtGtPa = nextInput.StandResidueWtGtPa + nextTree.BrushCutWtGtPa;
+                        nextInput.StandResidueWtBdtPa = nextInput.StandResidueWtBdtPa + nextTree.BrushCutWtBdtPa;
                     }
 
                     //metrics for chip trees
@@ -1016,13 +1018,16 @@ namespace FIA_Biosum_Manager
                             // Only bole is chipped; nonMerch goes to stand residue
                             nextInput.ChipVolCfPa = nextInput.ChipVolCfPa + nextTree.MerchVolCfPa;
                             nextInput.ChipWtGtPa = nextInput.ChipWtGtPa + nextTree.MerchWtGtPa;
+                            nextInput.ChipWtBdtPa = nextInput.ChipWtBdtPa + nextTree.MerchWtBdtPa;
                             nextInput.StandResidueWtGtPa = nextInput.StandResidueWtGtPa + nextTree.NonMerchWtGtPa;
+                            nextInput.StandResidueWtBdtPa = nextInput.StandResidueWtBdtPa + nextTree.NonMerchWtBdtPa;
                         }
                         else
                         {
                             // Whole tree is chipped
                             nextInput.ChipVolCfPa = nextInput.ChipVolCfPa + nextTree.TotalVolCfPa;
                             nextInput.ChipWtGtPa = nextInput.ChipWtGtPa + nextTree.TotalWtGtPa;
+                            nextInput.ChipWtBdtPa = nextInput.ChipWtBdtPa + nextTree.TotalWtBdtPa;
                         }
                     }
 
@@ -1051,13 +1056,16 @@ namespace FIA_Biosum_Manager
                                 // Only bole is chipped; nonMerch goes to stand residue
                                 nextInput.ChipVolCfPa = nextInput.ChipVolCfPa + nextTree.MerchVolCfPa;
                                 nextInput.ChipWtGtPa = nextInput.ChipWtGtPa + nextTree.MerchWtGtPa;
+                                nextInput.ChipWtBdtPa = nextInput.ChipWtBdtPa + nextTree.MerchWtBdtPa;
                                 nextInput.StandResidueWtGtPa = nextInput.StandResidueWtGtPa + nextTree.NonMerchWtGtPa;
+                                nextInput.StandResidueWtBdtPa = nextInput.StandResidueWtBdtPa + nextTree.NonMerchWtBdtPa;
                             }
                             else
                             {
                                 // Only bole is merch; nonMerch goes to stand residue
                                 this.CalculateMerchValues(ref nextInput, nextTree, merchWoodRevEscalator);
                                 nextInput.StandResidueWtGtPa = nextInput.StandResidueWtGtPa + nextTree.NonMerchWtGtPa;
+                                nextInput.StandResidueWtBdtPa = nextInput.StandResidueWtBdtPa + nextTree.NonMerchWtBdtPa;
                             }
                         }
                         else if (nextTree.BiosumCategory == 2 || nextTree.BiosumCategory == 4)
@@ -1069,6 +1077,7 @@ namespace FIA_Biosum_Manager
                                     // Entire tree is chipped
                                     nextInput.ChipVolCfPa = nextInput.ChipVolCfPa + nextTree.TotalVolCfPa;
                                     nextInput.ChipWtGtPa = nextInput.ChipWtGtPa + nextTree.TotalWtGtPa;
+                                    nextInput.ChipWtBdtPa = nextInput.ChipWtBdtPa + nextTree.TotalWtBdtPa;
                                 }
                                 else
                                 {
@@ -1076,6 +1085,7 @@ namespace FIA_Biosum_Manager
                                     this.CalculateMerchValues(ref nextInput, nextTree, merchWoodRevEscalator);
                                     nextInput.ChipVolCfPa = nextInput.ChipVolCfPa + nextTree.NonMerchVolCfPa;
                                     nextInput.ChipWtGtPa = nextInput.ChipWtGtPa + nextTree.NonMerchWtGtPa;
+                                    nextInput.ChipWtBdtPa = nextInput.ChipWtBdtPa + nextTree.NonMerchWtBdtPa;
                                 }
                             }
                             else if (nextTree.TreeType == OpCostTreeType.LL)
@@ -1085,13 +1095,16 @@ namespace FIA_Biosum_Manager
                                     // Only bole is chipped; nonMerch goes to stand residue
                                     nextInput.ChipVolCfPa = nextInput.ChipVolCfPa + nextTree.MerchVolCfPa;
                                     nextInput.ChipWtGtPa = nextInput.ChipWtGtPa + nextTree.MerchWtGtPa;
+                                    nextInput.ChipWtBdtPa = nextInput.ChipWtBdtPa + nextTree.MerchWtBdtPa;
                                     nextInput.StandResidueWtGtPa = nextInput.StandResidueWtGtPa + nextTree.NonMerchWtGtPa;
+                                    nextInput.StandResidueWtBdtPa = nextInput.StandResidueWtBdtPa + nextTree.NonMerchWtBdtPa;
                                 }
                                 else
                                 {
                                     // Bole is merch; nonMerch goes to stand residue
                                     this.CalculateMerchValues(ref nextInput, nextTree, merchWoodRevEscalator); 
                                     nextInput.StandResidueWtGtPa = nextInput.StandResidueWtGtPa + nextTree.NonMerchWtGtPa;
+                                    nextInput.StandResidueWtBdtPa = nextInput.StandResidueWtBdtPa + nextTree.NonMerchWtBdtPa;
                                 }
                             }
                         }
@@ -1102,12 +1115,14 @@ namespace FIA_Biosum_Manager
                                 // Entire tree is chipped
                                 nextInput.ChipVolCfPa = nextInput.ChipVolCfPa + nextTree.TotalVolCfPa;
                                 nextInput.ChipWtGtPa = nextInput.ChipWtGtPa + nextTree.TotalWtGtPa;
+                                nextInput.ChipWtBdtPa = nextInput.ChipWtBdtPa + nextTree.TotalWtBdtPa;
                             }
                             else
                             {
                                 // Only bole is merch; nonMerch goes to stand residue
                                 this.CalculateMerchValues(ref nextInput, nextTree, merchWoodRevEscalator); 
                                 nextInput.StandResidueWtGtPa = nextInput.StandResidueWtGtPa + nextTree.NonMerchWtGtPa;
+                                nextInput.StandResidueWtBdtPa = nextInput.StandResidueWtBdtPa + nextTree.NonMerchWtBdtPa;
                             }
                         }
                     }
@@ -1126,20 +1141,20 @@ namespace FIA_Biosum_Manager
                     treeVolValInput nextStand = dictTvvInput[key];
                     string strSQL = "INSERT INTO " + m_strTvvTableName + " " +
                     "(biosum_cond_id, rxpackage, rx, rxcycle, species_group, diam_group, " +
-                    "chip_vol_cf, chip_wt_gt, chip_val_dpa, chip_mkt_val_pgt," +
-                    "merch_vol_cf, merch_wt_gt, merch_val_dpa, " +
-                    "bc_vol_cf, bc_wt_gt, stand_residue_wt_gt, wood4_vol_cf, wood4_wt_gt, wood4_val_dpa," +
-                    "wood5_vol_cf, wood5_wt_gt, wood5_val_dpa, wood6_vol_cf, wood6_wt_gt, wood6_val_dpa," +
+                    "chip_vol_cf, chip_wt_gt, chip_wt_bdt, chip_val_dpa, chip_mkt_val_pgt," +
+                    "merch_vol_cf, merch_wt_gt, merch_wt_bdt, merch_val_dpa, " +
+                    "bc_vol_cf, bc_wt_gt, bc_wt_bdt, stand_residue_wt_gt, stand_residue_wt_bdt, wood4_vol_cf, wood4_wt_gt, wood4_wt_bdt, wood4_val_dpa," +
+                    "wood5_vol_cf, wood5_wt_gt, wood5_wt_bdt, wood5_val_dpa, wood6_vol_cf, wood6_wt_gt, wood6_wt_bdt, wood6_val_dpa," +
                     "biosum_harvest_method_category, DateTimeCreated, place_holder)" +
                     "VALUES ('" + nextStand.CondId + "', '" + nextStand.RxPackage + "', '" + nextStand.Rx + "', '" +
                     nextStand.RxCycle + "', " + nextStand.SpeciesGroup + ", " + nextStand.DiamGroup + ", " +
-                    nextStand.ChipVolCfPa + ", " + nextStand.ChipWtGtPa + ", " + (nextStand.ChipWtGtPa * nextStand.ChipMktValPgt) +
-                    ", " + nextStand.ChipMktValPgt + ", " + nextStand.TotalMerchVolCfPa + ", " + nextStand.TotalMerchWtGtPa + ", " + nextStand.TotalMerchValDpa +
-                    ", " + nextStand.TotalBrushCutVolCfPa + "," +
-                    nextStand.TotalBrushCutWtGtPa + ", " + nextStand.StandResidueWtGtPa + ", " + nextStand.TotalWood4VolCfPa + ", " +
-                    nextStand.TotalWood4WtGtPa + ", " + nextStand.TotalWood4ValDpa + ", " + +nextStand.TotalWood5VolCfPa + ", " + +nextStand.TotalWood5WtGtPa + ", " +
-                    nextStand.TotalWood5ValDpa + ", " + nextStand.TotalWood6VolCfPa + ", "  + nextStand.TotalWood6WtGtPa + ", "  + nextStand.TotalWood6ValDpa + ", " + 
-                    nextStand.HarvestMethodCategory + ", '" + strDateTimeCreated + "', 'N')";
+                    nextStand.ChipVolCfPa + ", " + nextStand.ChipWtGtPa + ", " + nextStand.ChipWtBdtPa + ", " + (nextStand.ChipWtGtPa * nextStand.ChipMktValPgt) +
+                    ", " + nextStand.ChipMktValPgt + ", " + nextStand.TotalMerchVolCfPa + ", " + nextStand.TotalMerchWtGtPa + ", " + nextStand.TotalMerchWtBdtPa + ", " + nextStand.TotalMerchValDpa +
+                    ", " + nextStand.TotalBrushCutVolCfPa + "," + nextStand.TotalBrushCutWtGtPa + ", " + nextStand.TotalBrushCutWtBdtPa + 
+                    ", " + nextStand.StandResidueWtGtPa + ", " + nextStand.StandResidueWtBdtPa + ", " + nextStand.TotalWood4VolCfPa + ", " +
+                    nextStand.TotalWood4WtGtPa + ", " + nextStand.TotalWood4WtBdtPa + ", "+ nextStand.TotalWood4ValDpa + ", " + +nextStand.TotalWood5VolCfPa + ", " + nextStand.TotalWood5WtGtPa + ", " +
+                    nextStand.TotalWood5WtBdtPa + ", " + nextStand.TotalWood5ValDpa + ", " + nextStand.TotalWood6VolCfPa + ", "  + nextStand.TotalWood6WtGtPa + ", "  + nextStand.TotalWood6WtBdtPa + ", " + 
+                    nextStand.TotalWood6ValDpa + ", " + nextStand.HarvestMethodCategory + ", '" + strDateTimeCreated + "', 'N')";
                     lstSql.Add(strSQL);
                 }
 
@@ -1185,22 +1200,27 @@ namespace FIA_Biosum_Manager
 
             nextInput.TotalMerchVolCfPa = nextInput.TotalMerchVolCfPa + (nextTree.MerchVolCfPa * merchPct);
             nextInput.TotalMerchWtGtPa = nextInput.TotalMerchWtGtPa + (nextTree.MerchWtGtPa * merchPct);
+            nextInput.TotalMerchWtBdtPa = nextInput.TotalMerchWtBdtPa + (nextTree.MerchWtBdtPa * merchPct);
             nextInput.TotalMerchValDpa = nextInput.TotalMerchValDpa +
                 (nextTree.MerchVolCfPa * merchPct * merchValue * merchWoodRevEscalator);
             nextInput.TotalWood4VolCfPa = nextInput.TotalWood4VolCfPa + (nextTree.MerchVolCfPa * wood4Pct);
             nextInput.TotalWood4WtGtPa = nextInput.TotalWood4WtGtPa + (nextTree.MerchWtGtPa * wood4Pct);
+            nextInput.TotalWood4WtBdtPa = nextInput.TotalWood4WtBdtPa + (nextTree.MerchWtBdtPa * wood4Pct);
             nextInput.TotalWood4ValDpa = nextInput.TotalWood4ValDpa +
                 (nextTree.MerchVolCfPa * wood4Pct * wood4Value * merchWoodRevEscalator);
             nextInput.TotalWood5VolCfPa = nextInput.TotalWood5VolCfPa + (nextTree.MerchVolCfPa * wood5Pct);
             nextInput.TotalWood5WtGtPa = nextInput.TotalWood5WtGtPa + (nextTree.MerchWtGtPa * wood5Pct);
+            nextInput.TotalWood5WtBdtPa = nextInput.TotalWood5WtBdtPa + (nextTree.MerchWtBdtPa * wood5Pct);
             nextInput.TotalWood5ValDpa = nextInput.TotalWood5ValDpa +
                 (nextTree.MerchVolCfPa * wood5Pct * wood5Value * merchWoodRevEscalator);
             nextInput.TotalWood6VolCfPa = nextInput.TotalWood6VolCfPa + (nextTree.MerchVolCfPa * wood6Pct);
             nextInput.TotalWood6WtGtPa = nextInput.TotalWood6WtGtPa + (nextTree.MerchWtGtPa * wood6Pct);
+            nextInput.TotalWood6WtBdtPa = nextInput.TotalWood6WtBdtPa + (nextTree.MerchWtBdtPa * wood6Pct);
             nextInput.TotalWood6ValDpa = nextInput.TotalWood6ValDpa +
                 (nextTree.MerchVolCfPa * wood6Pct * wood6Value * merchWoodRevEscalator);
             nextInput.ChipVolCfPa = nextInput.ChipVolCfPa + (nextTree.MerchVolCfPa * chipPct);
             nextInput.ChipWtGtPa = nextInput.ChipWtGtPa + (nextTree.MerchWtGtPa * chipPct);
+            nextInput.ChipWtBdtPa= nextInput.ChipWtBdtPa + (nextTree.MerchWtBdtPa * chipPct);
         }
 
         private System.Collections.Generic.List<treeDiamGroup> LoadTreeDiamGroups()
@@ -1532,6 +1552,7 @@ namespace FIA_Biosum_Manager
 
             //merchWtGtPa; Always calculate merchVolCfPa first because it's used in this equation
             p_tree.MerchWtGtPa = p_tree.MerchVolCfPa * p_tree.OdWgt / p_tree.DryToGreen / 2000;
+            p_tree.MerchWtBdtPa = p_tree.MerchVolCfPa * p_tree.OdWgt / 2000;
 
             //nonMerchVolCfPa
             if (p_tree.IsWoodlandSpecies)
@@ -1551,10 +1572,12 @@ namespace FIA_Biosum_Manager
 
             //nonMerchWtGtPa
             p_tree.NonMerchWtGtPa = p_tree.NonMerchVolCfPa * p_tree.OdWgt / p_tree.DryToGreen / 2000;
+            p_tree.NonMerchWtBdtPa = p_tree.NonMerchVolCfPa * p_tree.OdWgt / 2000;
 
             //brushcut
             p_tree.BrushCutVolCfPa = p_tree.DryBioAg * p_tree.Tpa / p_tree.OdWgt;
             p_tree.BrushCutWtGtPa = (p_tree.DryBioAg * p_tree.Tpa / p_tree.DryToGreen) / 2000;
+            p_tree.BrushCutWtBdtPa = (p_tree.DryBioAg * p_tree.Tpa) / 2000;
         }
 
         enum OpCostTreeType
@@ -1597,10 +1620,13 @@ namespace FIA_Biosum_Manager
             double _dblDryToGreen;
             double _dblMerchVolCfPa;
             double _dblMerchWtGtPa;
+            double _dblMerchWtBdtPa;
             double _dblBrushCutVolCfPa;
             double _dblBrushCutWtGtPa;
+            double _dblBrushCutWtBdtPa;
             double _dblNonMerchVolCfPa;
             double _dblNonMerchWtGtPa;
+            double _dblNonMerchWtBdtPa;
             bool _blnIsWoodlandSpecies;
             bool _blnIsCull;
             double _dblTravelTime;
@@ -1744,6 +1770,11 @@ namespace FIA_Biosum_Manager
                 get { return _dblMerchWtGtPa; }
                 set { _dblMerchWtGtPa = value; }
             }
+            public double MerchWtBdtPa
+            {
+                get { return _dblMerchWtBdtPa; }
+                set { _dblMerchWtBdtPa = value; }
+            }
             public double BrushCutVolCfPa
             {
                 get { return _dblBrushCutVolCfPa; }
@@ -1754,6 +1785,11 @@ namespace FIA_Biosum_Manager
                 get { return _dblBrushCutWtGtPa; }
                 set { _dblBrushCutWtGtPa = value; }
             }
+            public double BrushCutWtBdtPa
+            {
+                get { return _dblBrushCutWtBdtPa; }
+                set { _dblBrushCutWtBdtPa = value; }
+            }
             public double NonMerchVolCfPa
             {
                 get { return _dblNonMerchVolCfPa; }
@@ -1763,6 +1799,11 @@ namespace FIA_Biosum_Manager
             {
                 get { return _dblNonMerchWtGtPa; }
                 set { _dblNonMerchWtGtPa = value; }
+            }
+            public double NonMerchWtBdtPa
+            {
+                get { return _dblNonMerchWtBdtPa; }
+                set { _dblNonMerchWtBdtPa = value; }
             }
             public harvestMethod HarvestMethod
             {
@@ -1802,6 +1843,21 @@ namespace FIA_Biosum_Manager
                     }
                 }
             }
+            public double TotalWtBdtPa
+            {
+                get
+                {
+                    if (_opCostTreeType != OpCostTreeType.BC)
+                    {
+                        return _dblMerchWtBdtPa + _dblNonMerchWtBdtPa;
+                    }
+                    else
+                    {
+                        return _dblBrushCutWtBdtPa;
+                    }
+                }
+            }
+
             public bool IsWoodlandSpecies
             {
                 get { return _blnIsWoodlandSpecies; }
@@ -2446,20 +2502,27 @@ namespace FIA_Biosum_Manager
             double _dblChipMktValPgt;
             double _dblTotalBrushCutVolCfPa;
             double _dblTotalBrushCutWtGtPa;
+            double _dblTotalBrushCutWtBdtPa;
             double _dblStandResidueWtGtPa;
+            double _dblStandResidueWtBdtPa;
             double _dblChipVolCfPa;
             double _dblChipWtGtPa;
+            double _dblChipWtBdtPa;
             double _dblTotalMerchVolCfPa;
             double _dblTotalMerchWtGtPa;
+            double _dblTotalMerchWtBdtPa;
             double _dblTotalMerchValDpa;
             double _dblTotalWood4VolCfPa;
             double _dblTotalWood4WtGtPa;
+            double _dblTotalWood4WtBdtPa;
             double _dblTotalWood4ValDpa;
             double _dblTotalWood5VolCfPa;
             double _dblTotalWood5WtGtPa;
+            double _dblTotalWood5WtBdtPa;
             double _dblTotalWood5ValDpa;
             double _dblTotalWood6VolCfPa;
             double _dblTotalWood6WtGtPa;
+            double _dblTotalWood6WtBdtPa;
             double _dblTotalWood6ValDpa;
 
             public treeVolValInput(string condId, string rxCycle, string rxPackage, string rx,
@@ -2520,10 +2583,20 @@ namespace FIA_Biosum_Manager
                 get { return _dblTotalBrushCutWtGtPa; }
                 set { _dblTotalBrushCutWtGtPa = value; }
             }
+            public double TotalBrushCutWtBdtPa
+            {
+                get { return _dblTotalBrushCutWtBdtPa; }
+                set { _dblTotalBrushCutWtBdtPa = value; }
+            }
             public double StandResidueWtGtPa
             {
                 get { return _dblStandResidueWtGtPa; }
                 set { _dblStandResidueWtGtPa = value; }
+            }
+            public double StandResidueWtBdtPa
+            {
+                get { return _dblStandResidueWtBdtPa; }
+                set { _dblStandResidueWtBdtPa = value; }
             }
             public double ChipVolCfPa
             {
@@ -2535,6 +2608,11 @@ namespace FIA_Biosum_Manager
                 get { return _dblChipWtGtPa; }
                 set { _dblChipWtGtPa = value; }
             }
+            public double ChipWtBdtPa
+            {
+                get { return _dblChipWtBdtPa; }
+                set { _dblChipWtBdtPa = value; }
+            }
             public double TotalMerchVolCfPa
             {
                 get { return _dblTotalMerchVolCfPa; }
@@ -2544,6 +2622,11 @@ namespace FIA_Biosum_Manager
             {
                 get { return _dblTotalMerchWtGtPa; }
                 set { _dblTotalMerchWtGtPa = value; }
+            }
+            public double TotalMerchWtBdtPa
+            {
+                get { return _dblTotalMerchWtBdtPa; }
+                set { _dblTotalMerchWtBdtPa = value; }
             }
             public double TotalMerchValDpa
             {
@@ -2560,6 +2643,11 @@ namespace FIA_Biosum_Manager
                 get { return _dblTotalWood4WtGtPa; }
                 set { _dblTotalWood4WtGtPa = value; }
             }
+            public double TotalWood4WtBdtPa
+            {
+                get { return _dblTotalWood4WtBdtPa; }
+                set { _dblTotalWood4WtBdtPa = value; }
+            }
             public double TotalWood4ValDpa
             {
                 get { return _dblTotalWood4ValDpa; }
@@ -2575,6 +2663,11 @@ namespace FIA_Biosum_Manager
                 get { return _dblTotalWood5WtGtPa; }
                 set { _dblTotalWood5WtGtPa = value; }
             }
+            public double TotalWood5WtBdtPa
+            {
+                get { return _dblTotalWood5WtBdtPa; }
+                set { _dblTotalWood5WtBdtPa = value; }
+            }
             public double TotalWood5ValDpa
             {
                 get { return _dblTotalWood5ValDpa; }
@@ -2589,6 +2682,11 @@ namespace FIA_Biosum_Manager
             {
                 get { return _dblTotalWood6WtGtPa; }
                 set { _dblTotalWood6WtGtPa = value; }
+            }
+            public double TotalWood6WtBdtPa
+            {
+                get { return _dblTotalWood6WtBdtPa; }
+                set { _dblTotalWood6WtBdtPa = value; }
             }
             public double TotalWood6ValDpa
             {

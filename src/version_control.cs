@@ -346,7 +346,7 @@ namespace FIA_Biosum_Manager
                     using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString($@"{arrFolders[i]}\{Tables.ProcessorScenarioRun.DefaultSqliteResultsDbFile}")))
                     {
                         conn.Open();
-                        if (!oDataMgr.FieldExist(conn, $@"SELECT * FROM {Tables.ProcessorScenarioRun.DefaultTreeVolValSpeciesDiamGroupsTableName} limit 1", "wood6_val_dpa"))
+                        if (!oDataMgr.FieldExist(conn, $@"SELECT * FROM {Tables.ProcessorScenarioRun.DefaultTreeVolValSpeciesDiamGroupsTableName} limit 1", "wood6_wt_bdt"))
                         {
                             oDataMgr.m_strSQL=$@"DROP TABLE {Tables.ProcessorScenarioRun.DefaultTreeVolValSpeciesDiamGroupsTableName}";
                             oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
