@@ -29,9 +29,14 @@ namespace FIA_Biosum_Manager
 		private System.Windows.Forms.Label label6;
 		private System.Windows.Forms.TextBox txtRailMerchTransfer;
         private System.Windows.Forms.TextBox txtRailChipTransfer;
+        private System.Windows.Forms.GroupBox grpboxProfitability;
+        private System.Windows.Forms.Label lblUseWithoutProfit;
+        private System.Windows.Forms.CheckBox chkChipsUseWithoutProfit;
+        private System.Windows.Forms.CheckBox chkWood4UseWithoutProfit;
+        private System.Windows.Forms.CheckBox chkWood5UseWithoutProfit;
+        private System.Windows.Forms.CheckBox chkWood6UseWithoutProfit;
 		private env m_oEnv;
 		public System.Windows.Forms.Label lblTitle;
-        private System.Windows.Forms.Label lblRequired;
         private System.Windows.Forms.Panel panel1;
 		private FIA_Biosum_Manager.frmOptimizerScenario _frmScenario=null;
 
@@ -40,7 +45,10 @@ namespace FIA_Biosum_Manager
         private string m_strTextRailHaulCostSave = "";
         private string m_strTextRailMerchTransferSave = "";
         private string m_strTextRailChipTransferSave = "";
-
+        public bool m_bChipsUseWithoutProfit = false;
+        public bool m_bWood4UseWithoutProfit = false;
+        public bool m_bWood5UseWithoutProfit = false;
+        public bool m_bWood6UseWithoutProfit = false;
 
 
 		public uc_optimizer_scenario_costs()
@@ -96,8 +104,13 @@ namespace FIA_Biosum_Manager
             this.txtRailHaulCost = new System.Windows.Forms.TextBox();
             this.label2 = new System.Windows.Forms.Label();
             this.txtHaulCost = new System.Windows.Forms.TextBox();
-            this.lblRequired = new System.Windows.Forms.Label();
             this.lblTitle = new System.Windows.Forms.Label();
+            this.grpboxProfitability = new System.Windows.Forms.GroupBox();
+            this.lblUseWithoutProfit = new System.Windows.Forms.Label();
+            this.chkChipsUseWithoutProfit = new System.Windows.Forms.CheckBox();
+            this.chkWood4UseWithoutProfit = new System.Windows.Forms.CheckBox();
+            this.chkWood5UseWithoutProfit = new System.Windows.Forms.CheckBox();
+            this.chkWood6UseWithoutProfit = new System.Windows.Forms.CheckBox();
             this.groupBox1.SuspendLayout();
             this.panel1.SuspendLayout();
             this.grpboxCost.SuspendLayout();
@@ -127,7 +140,6 @@ namespace FIA_Biosum_Manager
             // 
             this.panel1.AutoScroll = true;
             this.panel1.Controls.Add(this.grpboxCost);
-            this.panel1.Controls.Add(this.lblRequired);
             this.panel1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.panel1.Location = new System.Drawing.Point(3, 48);
             this.panel1.Name = "panel1";
@@ -146,6 +158,7 @@ namespace FIA_Biosum_Manager
             this.grpboxCost.Controls.Add(this.txtRailHaulCost);
             this.grpboxCost.Controls.Add(this.label2);
             this.grpboxCost.Controls.Add(this.txtHaulCost);
+            this.grpboxCost.Controls.Add(this.grpboxProfitability);
             this.grpboxCost.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.grpboxCost.ForeColor = System.Drawing.Color.Black;
             this.grpboxCost.Location = new System.Drawing.Point(8, 8);
@@ -157,18 +170,18 @@ namespace FIA_Biosum_Manager
             // 
             // label6
             // 
-            this.label6.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label6.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label6.ForeColor = System.Drawing.Color.Black;
-            this.label6.Location = new System.Drawing.Point(6, 259);
+            this.label6.Location = new System.Drawing.Point(6, 156);
             this.label6.Name = "label6";
             this.label6.Size = new System.Drawing.Size(483, 24);
             this.label6.TabIndex = 30;
-            this.label6.Text = "* Truck To Rail Transfer Load Cost (Chips) $/gt :";
+            this.label6.Text = "Truck To Rail Transfer Load Cost (Hog Fuel) $/gt :";
             // 
             // txtRailChipTransfer
             // 
-            this.txtRailChipTransfer.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.txtRailChipTransfer.Location = new System.Drawing.Point(546, 259);
+            this.txtRailChipTransfer.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.txtRailChipTransfer.Location = new System.Drawing.Point(546, 156);
             this.txtRailChipTransfer.MaxLength = 10;
             this.txtRailChipTransfer.Name = "txtRailChipTransfer";
             this.txtRailChipTransfer.RightToLeft = System.Windows.Forms.RightToLeft.No;
@@ -180,18 +193,18 @@ namespace FIA_Biosum_Manager
             // 
             // label4
             // 
-            this.label4.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label4.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label4.ForeColor = System.Drawing.Color.Black;
-            this.label4.Location = new System.Drawing.Point(6, 190);
+            this.label4.Location = new System.Drawing.Point(6, 120);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(522, 24);
             this.label4.TabIndex = 28;
-            this.label4.Text = "* Truck To Rail Transfer Load Cost (Merch) $/gt :";
+            this.label4.Text = "Truck To Rail Transfer Load Cost (Merch) $/gt :";
             // 
             // txtRailMerchTransfer
             // 
-            this.txtRailMerchTransfer.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.txtRailMerchTransfer.Location = new System.Drawing.Point(546, 185);
+            this.txtRailMerchTransfer.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.txtRailMerchTransfer.Location = new System.Drawing.Point(546, 120);
             this.txtRailMerchTransfer.MaxLength = 10;
             this.txtRailMerchTransfer.Name = "txtRailMerchTransfer";
             this.txtRailMerchTransfer.RightToLeft = System.Windows.Forms.RightToLeft.No;
@@ -203,18 +216,18 @@ namespace FIA_Biosum_Manager
             // 
             // label3
             // 
-            this.label3.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label3.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label3.ForeColor = System.Drawing.Color.Black;
-            this.label3.Location = new System.Drawing.Point(6, 126);
+            this.label3.Location = new System.Drawing.Point(6, 84);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(512, 24);
             this.label3.TabIndex = 26;
-            this.label3.Text = "* Rail Haul Cost Per Green Ton Per Mile:";
+            this.label3.Text = "Rail Haul Cost Per Green Ton Per Mile:";
             // 
             // txtRailHaulCost
             // 
-            this.txtRailHaulCost.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.txtRailHaulCost.Location = new System.Drawing.Point(546, 121);
+            this.txtRailHaulCost.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.txtRailHaulCost.Location = new System.Drawing.Point(546, 84);
             this.txtRailHaulCost.MaxLength = 10;
             this.txtRailHaulCost.Name = "txtRailHaulCost";
             this.txtRailHaulCost.RightToLeft = System.Windows.Forms.RightToLeft.No;
@@ -226,17 +239,17 @@ namespace FIA_Biosum_Manager
             // 
             // label2
             // 
-            this.label2.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label2.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label2.ForeColor = System.Drawing.Color.Black;
             this.label2.Location = new System.Drawing.Point(6, 48);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(522, 24);
             this.label2.TabIndex = 20;
-            this.label2.Text = "* Round Trip Truck and Driver Haul Cost per Green Ton Hour:";
+            this.label2.Text = "Round Trip Truck and Driver Haul Cost per Green Ton Hour:";
             // 
             // txtHaulCost
             // 
-            this.txtHaulCost.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.txtHaulCost.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.txtHaulCost.Location = new System.Drawing.Point(546, 48);
             this.txtHaulCost.MaxLength = 10;
             this.txtHaulCost.Name = "txtHaulCost";
@@ -247,16 +260,70 @@ namespace FIA_Biosum_Manager
             this.txtHaulCost.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             this.txtHaulCost.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtHaulCost_KeyPress);
             this.txtHaulCost.Leave += new System.EventHandler(this.txtHaulCost_Leave);
-            // 
-            // lblRequired
-            // 
-            this.lblRequired.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblRequired.ForeColor = System.Drawing.Color.Black;
-            this.lblRequired.Location = new System.Drawing.Point(8, 325);
-            this.lblRequired.Name = "lblRequired";
-            this.lblRequired.Size = new System.Drawing.Size(169, 35);
-            this.lblRequired.TabIndex = 25;
-            this.lblRequired.Text = "* Required";
+            //
+            // grpboxProfitability
+            //
+            this.grpboxProfitability.BackColor = System.Drawing.SystemColors.Control;
+            this.grpboxProfitability.Controls.Add(this.lblUseWithoutProfit);
+            this.grpboxProfitability.Controls.Add(this.chkChipsUseWithoutProfit);
+            this.grpboxProfitability.Controls.Add(this.chkWood4UseWithoutProfit);
+            this.grpboxProfitability.Controls.Add(this.chkWood5UseWithoutProfit);
+            this.grpboxProfitability.Controls.Add(this.chkWood6UseWithoutProfit);
+            this.grpboxProfitability.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.grpboxProfitability.ForeColor = System.Drawing.Color.Black;
+            this.grpboxProfitability.Location = new System.Drawing.Point(6, 195);
+            this.grpboxProfitability.Name = "grpboxProfitability";
+            this.grpboxProfitability.Size = new System.Drawing.Size(420, 110);
+            this.grpboxProfitability.TabIndex = 0;
+            this.grpboxProfitability.TabStop = false;
+            this.grpboxProfitability.Text = "Force use of wood types when haul cost exceeds value";
+            //
+            // lblUseWithoutProfit
+            //
+            this.lblUseWithoutProfit.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.5F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblUseWithoutProfit.ForeColor = System.Drawing.Color.Black;
+            this.lblUseWithoutProfit.Location = new System.Drawing.Point(2, 18);
+            this.lblUseWithoutProfit.Name = "lblUseWithoutProfit";
+            this.lblUseWithoutProfit.Size = new System.Drawing.Size(280, 90);
+            this.lblUseWithoutProfit.TabIndex = 27;
+            this.lblUseWithoutProfit.Text = "Tick boxes for wood types to be used as specified, even if haul cost exceeds material value, if one or more facilities " +
+                "of that type are available. Otherwise, material will revert to hog fuel or in-forest residue. See help for details.";
+            //
+            // chkChipsUseWithoutProfit
+            //
+            this.chkChipsUseWithoutProfit.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.5F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.chkChipsUseWithoutProfit.Location = new System.Drawing.Point(320, 18);
+            this.chkChipsUseWithoutProfit.Name = "chkChipsUseWithoutProfit";
+            this.chkChipsUseWithoutProfit.Size = new System.Drawing.Size(80, 20);
+            this.chkChipsUseWithoutProfit.TabIndex = 5;
+            this.chkChipsUseWithoutProfit.Text = "Hog Fuel";
+            //
+            // chkWood4UseWithoutProfit
+            //
+            this.chkWood4UseWithoutProfit.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.5F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.chkWood4UseWithoutProfit.Location = new System.Drawing.Point(320, 40);
+            this.chkWood4UseWithoutProfit.Name = "chkWood4UseWithoutProfit";
+            this.chkWood4UseWithoutProfit.Size = new System.Drawing.Size(80, 20);
+            this.chkWood4UseWithoutProfit.TabIndex = 6;
+            this.chkWood4UseWithoutProfit.Text = "Wood 4";
+            //
+            // chkWood5UseWithoutProfit
+            //
+            this.chkWood5UseWithoutProfit.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.5F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.chkWood5UseWithoutProfit.Location = new System.Drawing.Point(320, 62);
+            this.chkWood5UseWithoutProfit.Name = "chkWood5UseWithoutProfit";
+            this.chkWood5UseWithoutProfit.Size = new System.Drawing.Size(80, 20);
+            this.chkWood5UseWithoutProfit.TabIndex = 7;
+            this.chkWood5UseWithoutProfit.Text = "Wood 5";
+            //
+            // chkWood6UseWithoutProfit
+            //
+            this.chkWood6UseWithoutProfit.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.5F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.chkWood6UseWithoutProfit.Location = new System.Drawing.Point(320, 84);
+            this.chkWood6UseWithoutProfit.Name = "chkWood6UseWithoutProfit";
+            this.chkWood6UseWithoutProfit.Size = new System.Drawing.Size(80, 20);
+            this.chkWood6UseWithoutProfit.TabIndex = 8;
+            this.chkWood6UseWithoutProfit.Text = "Wood 6";
             // 
             // lblTitle
             // 
@@ -501,7 +568,6 @@ namespace FIA_Biosum_Manager
 		private void panel1_Resize(object sender, System.EventArgs e)
 		{
 			this.grpboxCost.Left = (int)(panel1.ClientSize.Width * .5) - (int)(this.grpboxCost.Width * .5);
-			this.lblRequired.Left = this.grpboxCost.Left;
 
 		}
 	
