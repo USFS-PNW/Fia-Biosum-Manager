@@ -3022,6 +3022,7 @@ namespace FIA_Biosum_Manager
                     "complete_cpa DOUBLE DEFAULT 0," +
                     "chip_cpa DOUBLE ," +
                     "assumed_movein_cpa DOUBLE ," +
+                    "yarding_chip_cpa DOUBLE DEFAULT 0," +
                     "place_holder CHAR(1) DEFAULT 'N'," +
                     "override_YN CHAR(1) DEFAULT 'N'," +
                     "DateTimeCreated CHAR(22)," +
@@ -3060,22 +3061,29 @@ namespace FIA_Biosum_Manager
                     "biosum_harvest_method_category INTEGER DEFAULT 0," +
                     "chip_vol_cf DOUBLE," +
                     "chip_wt_gt DOUBLE," +
+                    "chip_wt_bdt DOUBLE," +
                     "chip_val_dpa DOUBLE," +
                     "chip_mkt_val_pgt DOUBLE DEFAULT 0," +
                     "merch_vol_cf DOUBLE," +
                     "merch_wt_gt DOUBLE," +
+                    "merch_wt_bdt DOUBLE," +
                     "merch_val_dpa DOUBLE," +                    
                     "bc_vol_cf DOUBLE," +
                     "bc_wt_gt DOUBLE," +
+                    "bc_wt_bdt DOUBLE," +
                     "stand_residue_wt_gt DOUBLE," +
+                    "stand_residue_wt_bdt DOUBLE," +
                     "wood4_vol_cf DOUBLE," +
                     "wood4_wt_gt DOUBLE," +
+                    "wood4_wt_bdt DOUBLE," +
                     "wood4_val_dpa DOUBLE," +
                     "wood5_vol_cf DOUBLE," +
                     "wood5_wt_gt DOUBLE," +
+                    "wood5_wt_bdt DOUBLE," +
                     "wood5_val_dpa DOUBLE," +
                     "wood6_vol_cf DOUBLE," +
                     "wood6_wt_gt DOUBLE," +
+                    "wood6_wt_bdt DOUBLE," +
                     "wood6_val_dpa DOUBLE," +
                     "place_holder CHAR(1) DEFAULT 'N'," +
                     "DateTimeCreated CHAR(22))";
@@ -3121,7 +3129,7 @@ namespace FIA_Biosum_Manager
                             " BrushCutTPA DOUBLE," +
                             " BrushCutAvgVol DOUBLE," +
                             " RxPackage_Rx_RxCycle CHAR (10)," +
-                            " RxCycle CHAR (2), " +
+                            " RxCycle CHAR (1), " +
                             " biosum_cond_id CHAR (50)," +
                             " RxPackage CHAR (3)," +
                             " Rx CHAR (3)," +
