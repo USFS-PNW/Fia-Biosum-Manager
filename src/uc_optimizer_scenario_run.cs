@@ -2486,7 +2486,17 @@ namespace FIA_Biosum_Manager
                 strTruckHaulCost = ReferenceUserControlScenarioRun.ReferenceOptimizerScenarioForm.uc_scenario_costs1.RoadHaulCostDollarsPerGreenTonPerHour.Replace("$", "").ToString();
                 strTruckHaulCost = strTruckHaulCost.Replace(",", "");
 
-                if (strTruckHaulCost.Trim().Length == 1) strTruckHaulCost = "0.00";
+                if (strTruckHaulCost.Trim().Length == 1)
+                {
+                    strTruckHaulCost = "0.00";
+                }
+                // Multiply truck haul cost by 2 to get roundtrip cost
+                else
+                {
+                    double dblTruckHaulCost = double.Parse(strTruckHaulCost);
+                    dblTruckHaulCost = dblTruckHaulCost * 2;
+                    strTruckHaulCost = dblTruckHaulCost.ToString();
+                }
 
                 strRailHaulCost = ReferenceUserControlScenarioRun.ReferenceOptimizerScenarioForm.uc_scenario_costs1.RailHaulCostDollarsPerGreenTonPerMile.Replace("$", "").ToString();
                 strRailHaulCost = strRailHaulCost.Replace(",", "");
