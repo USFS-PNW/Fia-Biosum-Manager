@@ -778,7 +778,16 @@ namespace FIA_Biosum_Manager
                     "road_haul_cost_pgt_per_hour DOUBLE DEFAULT 0, " +
                     "rail_haul_cost_pgt_per_mile DOUBLE DEFAULT 0, " +
                     "rail_chip_transfer_pgt DOUBLE DEFAULT 0, " +
-                    "rail_merch_transfer_pgt DOUBLE DEFAULT 0)";
+                    "rail_merch_transfer_pgt DOUBLE DEFAULT 0, " +
+                    "merch_prev_econDG_YN CHAR(1) DEFAULT 'N', " +
+                    "wood4_prev_econDG_YN CHAR(1) DEFAULT 'N', " +
+                    "wood5_prev_econDG_YN CHAR(1) DEFAULT 'N', " +
+                    "wood6_prev_econDG_YN CHAR(1) DEFAULT 'N', " +
+                    "chips_prev_econDG_YN CHAR(1) DEFAULT 'N', " +
+                    "merch_prev_nofacDG_YN CHAR(1) DEFAULT 'N', " +
+                    "wood4_prev_nofacDG_YN CHAR(1) DEFAULT 'N', " +
+                    "wood5_prev_nofacDG_YN CHAR(1) DEFAULT 'N', " +
+                    "wood6_prev_nofacDG_YN CHAR(1) DEFAULT 'N')";
             }
             public void CreateScenarioProcessorScenarioSelectTable(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
             {
