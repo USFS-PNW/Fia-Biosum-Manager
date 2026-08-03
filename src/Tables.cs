@@ -3178,6 +3178,15 @@ namespace FIA_Biosum_Manager
                        " species_group integer, " +
                        " diam_group integer, " +
                        " merch_value double, " +
+                       " merch_pct integer, " +
+                       " chip_value double, " +
+                       " chip_pct integer, " +
+                       " wood4_value double, " +
+                       " wood4_pct integer, " +
+                       " wood5_value double, " +
+                       " wood5_pct integer, " +
+                       " wood6_value double, " +
+                       " wood6_pct integer, " +
                        " opcost_type CHAR (5), " +
                        " biosum_category integer)";
             }

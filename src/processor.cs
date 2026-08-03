@@ -556,16 +556,30 @@ namespace FIA_Biosum_Manager
                                 strTempTree = treeList[idxTree];
                                 strTempCn = treeList[idxCn];
                             }
+                            double merchValue = Convert.ToDouble(nextTree.DbhDollarValuesItem.MerchDollarPerCubicFootValue);
+                            int merchPct = Convert.ToInt16(nextTree.DbhDollarValuesItem.MerchPercent);
+                            double chipValue = Convert.ToDouble(nextTree.DbhDollarValuesItem.ChipsDollarPerCubicFootValue);
+                            int chipPct = Convert.ToInt16(nextTree.DbhDollarValuesItem.ChipPercent);
+                            double wood4Value = Convert.ToDouble(nextTree.DbhDollarValuesItem.Wood4DollarPerCubicFootValue);
+                            int wood4Pct = Convert.ToInt16(nextTree.DbhDollarValuesItem.Wood4Percent);
+                            double wood5Value = Convert.ToDouble(nextTree.DbhDollarValuesItem.Wood5DollarPerCubicFootValue);
+                            int wood5Pct = Convert.ToInt16(nextTree.DbhDollarValuesItem.Wood5Percent);
+                            double wood6Value = Convert.ToDouble(nextTree.DbhDollarValuesItem.Wood6DollarPerCubicFootValue);
+                            int wood6Pct = Convert.ToInt16(nextTree.DbhDollarValuesItem.Wood6Percent);
+
                             SQLite.m_strSQL = "INSERT INTO " + strTableName + " " +
                             "(rxcycle, cn, fvs_tree_id, biosum_cond_id, biosum_plot_id, spcd, merchWtGt, nonMerchWtGt, drybio_bole, " +
                             "drybio_ag, volCfNet, volCfGrs, volTsGrs, odWgt, dryToGreen, tpa, dbh, species_group, " +
-                            "isSapling, isWoodland, isCull, diam_group, merch_value, opcost_type, biosum_category)" +
+                            "isSapling, isWoodland, isCull, diam_group, merch_value, merch_pct, chip_value, chip_pct, wood4_value, wood4_pct, " +
+                            "wood5_value, wood5_pct,  wood6_value, wood6_pct, opcost_type, biosum_category)" +
                             "VALUES ('" + nextTree.RxCycle + "','" + strTempCn + "', '" + strTempTree + "', '" + nextTree.CondId + "', '" + nextTree.PlotId + "', " +
                             nextTree.SpCd + ", " + nextTree.MerchWtGtPa + ", " + nextTree.NonMerchWtGtPa + ", " + nextTree.DryBioBole + ", " +
                             nextTree.DryBioAg + ", " + nextTree.VolCfNet + ", " + nextTree.VolCfGrs + ", " + nextTree.VolTsGrs + ", " + nextTree.OdWgt +
                             ", " + nextTree.DryToGreen + ", " + nextTree.Tpa + ", " + nextTree.Dbh + ", " + nextTree.SpeciesGroup + ", " +
                             nextTree.IsSapling + ", " + nextTree.IsWoodlandSpecies + ", " + nextTree.IsCull + ", " + nextTree.DiamGroup +
-                            ", " + nextTree.DbhDollarValuesItem.MerchDollarPerCubicFootValue + ", '" + nextTree.TreeType + "', " + nextTree.HarvestMethod.BiosumCategory + " )";
+                            ", " + merchValue + ", " + merchPct + ", " + chipValue + ", " + chipPct + ", " +
+                            wood4Value + ", " + wood4Pct + ", " + wood5Value + ", " + wood5Pct + ", " + wood6Value + ", " + wood6Pct + ", '" +
+                            nextTree.TreeType + "', " + nextTree.HarvestMethod.BiosumCategory + " )";
                             command.CommandText = SQLite.m_strSQL;
                             command.ExecuteNonQuery();
                         }
