@@ -30,7 +30,6 @@ namespace FIA_Biosum_Manager
         private System.Windows.Forms.Label lblWood6Pct;
         private System.Windows.Forms.Panel pnlMerchValues;
         private FIA_Biosum_Manager.uc_processor_scenario_spc_dbh_group_value_collection uc_processor_scenario_spc_dbh_group_value_collection1 = new uc_processor_scenario_spc_dbh_group_value_collection();
-		private System.Windows.Forms.Label lblChipValue;
 		private System.Windows.Forms.Label label1;
 		private System.Windows.Forms.Label label2;
         private System.Windows.Forms.TextBox txtChipValue;
@@ -597,7 +596,6 @@ namespace FIA_Biosum_Manager
             this.txtChipValue = new System.Windows.Forms.TextBox();
             this.label2 = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
-            this.lblChipValue = new System.Windows.Forms.Label();
             this.pnlMerchValues = new System.Windows.Forms.Panel();
             this.uc_processor_scenario_spc_dbh_group_value1 = new FIA_Biosum_Manager.uc_processor_scenario_spc_dbh_group_value();
             this.lblChipPct = new System.Windows.Forms.Label();
@@ -634,7 +632,6 @@ namespace FIA_Biosum_Manager
             this.panel1.Controls.Add(this.txtChipValue);
             this.panel1.Controls.Add(this.label2);
             this.panel1.Controls.Add(this.label1);
-            this.panel1.Controls.Add(this.lblChipValue);
             this.panel1.Controls.Add(this.pnlMerchValues);
             this.panel1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.panel1.Location = new System.Drawing.Point(3, 48);
@@ -644,7 +641,7 @@ namespace FIA_Biosum_Manager
             // 
             // txtChipValue
             // 
-            this.txtChipValue.Location = new System.Drawing.Point(408, 80);
+            this.txtChipValue.Location = new System.Drawing.Point(408, 8);
             this.txtChipValue.Name = "txtChipValue";
             this.txtChipValue.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.txtChipValue.Size = new System.Drawing.Size(72, 20);
@@ -658,32 +655,22 @@ namespace FIA_Biosum_Manager
             // 
             this.label2.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label2.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(64)))), ((int)(((byte)(0)))));
-            this.label2.Location = new System.Drawing.Point(15, 80);
+            this.label2.Location = new System.Drawing.Point(15, 8);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(400, 24);
             this.label2.TabIndex = 7;
-            this.label2.Text = " Hog fuel (chipped residues) value ($/green ton):";
+            this.label2.Text = "Hog fuel (chipped residues) value ($/green ton):";
             this.label2.Click += new System.EventHandler(this.label2_Click);
             // 
             // label1
             // 
             this.label1.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label1.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(64)))), ((int)(((byte)(0)))));
-            this.label1.Location = new System.Drawing.Point(15, 8);
+            this.label1.Location = new System.Drawing.Point(15, 40);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(675, 32);
             this.label1.TabIndex = 6;
-            this.label1.Text = "Enter % allocation and wood value  ($/ft3) per species group/diameter class and roundwood type";
-            // 
-            // lblChipValue
-            // 
-            this.lblChipValue.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))), System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblChipValue.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(64)))), ((int)(((byte)(0)))));
-            this.lblChipValue.Location = new System.Drawing.Point(15, 48);
-            this.lblChipValue.Name = "lblChipValue";
-            this.lblChipValue.Size = new System.Drawing.Size(203, 24);
-            this.lblChipValue.TabIndex = 5;
-            this.lblChipValue.Text = "Chip (Energy) Wood Values";
+            this.label1.Text = "Allocation (%) of bole and unit value ($/ft3) per species/DBH class combo per wood type";
             // 
             // pnlMerchValues
             // 
@@ -703,9 +690,9 @@ namespace FIA_Biosum_Manager
             this.pnlMerchValues.Controls.Add(this.lblWood5Pct);
             this.pnlMerchValues.Controls.Add(this.lblWood6Value);
             this.pnlMerchValues.Controls.Add(this.lblWood6Pct);
-            this.pnlMerchValues.Location = new System.Drawing.Point(8, 122);
+            this.pnlMerchValues.Location = new System.Drawing.Point(8, 80);
             this.pnlMerchValues.Name = "pnlMerchValues";
-            this.pnlMerchValues.Size = new System.Drawing.Size(676, 317);
+            this.pnlMerchValues.Size = new System.Drawing.Size(676, 359);
             this.pnlMerchValues.TabIndex = 3;
             // 
             // uc_processor_scenario_spc_dbh_group_value1
@@ -758,7 +745,7 @@ namespace FIA_Biosum_Manager
             this.lblChips.Name = "lblChips";
             this.lblChips.Size = new System.Drawing.Size(66, 65);
             this.lblChips.TabIndex = 3;
-            this.lblChips.Text = "Allocate All to Energy Wood";
+            this.lblChips.Text = "Allocate All to Hog Fuel";
             this.lblChips.TextAlign = System.Drawing.ContentAlignment.BottomCenter;
             //
             // lblChipPct
@@ -769,7 +756,7 @@ namespace FIA_Biosum_Manager
             this.lblChipPct.Name = "lblChipPct";
             this.lblChipPct.Size = new System.Drawing.Size(60, 65);
             this.lblChipPct.TabIndex = 4;
-            this.lblChipPct.Text = "Pct Energy";
+            this.lblChipPct.Text = "Pct Hog Fuel";
             this.lblChipPct.TextAlign = System.Drawing.ContentAlignment.BottomCenter;
             // 
             // lblMerchValue
@@ -869,7 +856,7 @@ namespace FIA_Biosum_Manager
             this.lblTitle.Name = "lblTitle";
             this.lblTitle.Size = new System.Drawing.Size(690, 32);
             this.lblTitle.TabIndex = 29;
-            this.lblTitle.Text = "Values Assumed for Delivered Wood at the Mill or Processing Site gate";
+            this.lblTitle.Text = "Prices paid for delivered wood at mill/facility gate";
             // 
             // uc_processor_scenario_merch_chip_value
             // 
