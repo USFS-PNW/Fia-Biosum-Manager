@@ -57,6 +57,15 @@ namespace FIA_Biosum_Manager
         private string m_strTextRailHaulCostSave = "";
         private string m_strTextRailMerchTransferSave = "";
         private string m_strTextRailChipTransferSave = "";
+        private bool m_bMerchPrevEconDG = false;
+        private bool m_bWood4PrevEconDG = false;
+        private bool m_bWood5PrevEconDG = false;
+        private bool m_bWood6PrevEconDG = false;
+        private bool m_bChipsPrevEconDG = false;
+        private bool m_bMerchPrevNoFacDG = false;
+        private bool m_bWood4PrevNoFacDG = false;
+        private bool m_bWood5PrevNoFacDG = false;
+        private bool m_bWood6PrevNoFacDG = false;
 
 
 		public uc_optimizer_scenario_costs()
@@ -390,6 +399,7 @@ namespace FIA_Biosum_Manager
             this.chkMerchPrevEconDG.Name = "chkMerchPrevEconDG";
             this.chkMerchPrevEconDG.Size = new System.Drawing.Size(14, 14);
             this.chkMerchPrevEconDG.TabIndex = 5;
+            this.chkMerchPrevEconDG.CheckedChanged += new System.EventHandler(this.chkMerchPrevEconDG_CheckedChanged);
             //
             // chkWood4PrevEconDG
             //
@@ -397,6 +407,7 @@ namespace FIA_Biosum_Manager
             this.chkWood4PrevEconDG.Name = "chkWood4PrevEconDG";
             this.chkWood4PrevEconDG.Size = new System.Drawing.Size(14, 14);
             this.chkWood4PrevEconDG.TabIndex = 6;
+            this.chkWood4PrevEconDG.CheckedChanged += new System.EventHandler(this.chkWood4PrevEconDG_CheckedChanged);
             //
             // chkWood5PrevEconDG
             //
@@ -404,6 +415,7 @@ namespace FIA_Biosum_Manager
             this.chkWood5PrevEconDG.Name = "chkWood5PrevEconDG";
             this.chkWood5PrevEconDG.Size = new System.Drawing.Size(14, 14);
             this.chkWood5PrevEconDG.TabIndex = 7;
+            this.chkWood5PrevEconDG.CheckedChanged += new System.EventHandler(this.chkWood5PrevEconDG_CheckedChanged);
             //
             // chkWood6PrevEconDG
             //
@@ -411,6 +423,7 @@ namespace FIA_Biosum_Manager
             this.chkWood6PrevEconDG.Name = "chkWood6PrevEconDG";
             this.chkWood6PrevEconDG.Size = new System.Drawing.Size(14, 14);
             this.chkWood6PrevEconDG.TabIndex = 8;
+            this.chkWood6PrevEconDG.CheckedChanged += new System.EventHandler(this.chkWood6PrevEconDG_CheckedChanged);
             //
             // chkChipsPrevEconDG
             //
@@ -418,6 +431,7 @@ namespace FIA_Biosum_Manager
             this.chkChipsPrevEconDG.Name = "chkChipsPrevEconDG";
             this.chkChipsPrevEconDG.Size = new System.Drawing.Size(14, 14);
             this.chkChipsPrevEconDG.TabIndex = 9;
+            this.chkChipsPrevEconDG.CheckedChanged += new System.EventHandler(this.chkChipsPrevEconDG_CheckedChanged);
             //
             // chkMerchPrevNoFacDG
             //
@@ -425,6 +439,7 @@ namespace FIA_Biosum_Manager
             this.chkMerchPrevNoFacDG.Name = "chkMerchPrevNoFacDG";
             this.chkMerchPrevNoFacDG.Size = new System.Drawing.Size(14, 14);
             this.chkMerchPrevNoFacDG.TabIndex = 10;
+            this.chkMerchPrevNoFacDG.CheckedChanged += new System.EventHandler(this.chkMerchPrevNoFacDG_CheckedChanged);
             //
             // chkWood4PrevNoFacDG
             //
@@ -432,6 +447,7 @@ namespace FIA_Biosum_Manager
             this.chkWood4PrevNoFacDG.Name = "chkWood4PrevNoFacDG";
             this.chkWood4PrevNoFacDG.Size = new System.Drawing.Size(14, 14);
             this.chkWood4PrevNoFacDG.TabIndex = 11;
+            this.chkWood4PrevNoFacDG.CheckedChanged += new System.EventHandler(this.chkWood4PrevNoFacDG_CheckedChanged);
             //
             // chkWood5PrevNoFacDG
             //
@@ -439,6 +455,7 @@ namespace FIA_Biosum_Manager
             this.chkWood5PrevNoFacDG.Name = "chkWood5PrevNoFacDG";
             this.chkWood5PrevNoFacDG.Size = new System.Drawing.Size(14, 14);
             this.chkWood5PrevNoFacDG.TabIndex = 12;
+            this.chkWood5PrevNoFacDG.CheckedChanged += new System.EventHandler(this.chkWood5PrevNoFacDG_CheckedChanged);
             //
             // chkWood6PrevNoFacDG
             //
@@ -446,6 +463,7 @@ namespace FIA_Biosum_Manager
             this.chkWood6PrevNoFacDG.Name = "chkWood6PrevNoFacDG";
             this.chkWood6PrevNoFacDG.Size = new System.Drawing.Size(14, 14);
             this.chkWood6PrevNoFacDG.TabIndex = 13;
+            this.chkWood6PrevNoFacDG.CheckedChanged += new System.EventHandler(this.chkWood6PrevNoFacDG_CheckedChanged);
             // 
             // lblTitle
             // 
@@ -610,47 +628,47 @@ namespace FIA_Biosum_Manager
                 // default value for all checkbox columns are 'N', so they only need to be updated if they are checked
                 if (chkMerchPrevEconDG.Checked)
                 {
-                    oDataMgr.m_strSQL = "UPDATE scenario_costs SET merch_prev_econDG_YN = 'Y'";
+                    oDataMgr.m_strSQL = "UPDATE scenario_costs SET merch_prev_econDG_YN = 'Y' WHERE scenario_id = '" + strScenarioId + "'";
                     oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
                 }
                 if (chkWood4PrevEconDG.Checked)
                 {
-                    oDataMgr.m_strSQL = "UPDATE scenario_costs SET wood4_prev_econDG_YN = 'Y'";
+                    oDataMgr.m_strSQL = "UPDATE scenario_costs SET wood4_prev_econDG_YN = 'Y' WHERE scenario_id = '" + strScenarioId + "'";
                     oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
                 }
                 if (chkWood5PrevEconDG.Checked)
                 {
-                    oDataMgr.m_strSQL = "UPDATE scenario_costs SET wood5_prev_econDG_YN = 'Y'";
+                    oDataMgr.m_strSQL = "UPDATE scenario_costs SET wood5_prev_econDG_YN = 'Y' WHERE scenario_id = '" + strScenarioId + "'";
                     oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
                 }
                 if (chkWood6PrevEconDG.Checked)
                 {
-                    oDataMgr.m_strSQL = "UPDATE scenario_costs SET wood6_prev_econDG_YN = 'Y'";
+                    oDataMgr.m_strSQL = "UPDATE scenario_costs SET wood6_prev_econDG_YN = 'Y' WHERE scenario_id = '" + strScenarioId + "'";
                     oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
                 }
                 if (chkChipsPrevEconDG.Checked)
                 {
-                    oDataMgr.m_strSQL = "UPDATE scenario_costs SET chips_prev_econDG_YN = 'Y'";
+                    oDataMgr.m_strSQL = "UPDATE scenario_costs SET chips_prev_econDG_YN = 'Y' WHERE scenario_id = '" + strScenarioId + "'";
                     oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
                 }
                 if (chkMerchPrevNoFacDG.Checked)
                 {
-                    oDataMgr.m_strSQL = "UPDATE scenario_costs SET merch_prev_nofacDG_YN = 'Y'";
+                    oDataMgr.m_strSQL = "UPDATE scenario_costs SET merch_prev_nofacDG_YN = 'Y' WHERE scenario_id = '" + strScenarioId + "'";
                     oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
                 }
                 if (chkWood4PrevNoFacDG.Checked)
                 {
-                    oDataMgr.m_strSQL = "UPDATE scenario_costs SET wood4_prev_nofacDG_YN = 'Y'";
+                    oDataMgr.m_strSQL = "UPDATE scenario_costs SET wood4_prev_nofacDG_YN = 'Y' WHERE scenario_id = '" + strScenarioId + "'";
                     oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
                 }
                 if (chkWood5PrevNoFacDG.Checked)
                 {
-                    oDataMgr.m_strSQL = "UPDATE scenario_costs SET wood5_prev_nofacDG_YN = 'Y'";
+                    oDataMgr.m_strSQL = "UPDATE scenario_costs SET wood5_prev_nofacDG_YN = 'Y' WHERE scenario_id = '" + strScenarioId + "'";
                     oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
                 }
                 if (chkWood6PrevNoFacDG.Checked)
                 {
-                    oDataMgr.m_strSQL = "UPDATE scenario_costs SET wood6_prev_nofacDG_YN = 'Y'";
+                    oDataMgr.m_strSQL = "UPDATE scenario_costs SET wood6_prev_nofacDG_YN = 'Y' WHERE scenario_id = '" + strScenarioId + "'";
                     oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
                 }
 			}
@@ -798,7 +816,51 @@ namespace FIA_Biosum_Manager
             set {this.txtRailChipTransfer.Text=value; this.m_strTextRailChipTransferSave=value;}
             get {return this.txtRailChipTransfer.Text.Trim();}
         }
-
+        public bool PreventMerchEconomicDowngrade
+        {
+            set { this.m_bMerchPrevEconDG = value; }
+            get { return this.m_bMerchPrevEconDG; }
+        }
+        public bool PreventWood4EconomicDowngrade
+        {
+            set { this.m_bWood4PrevEconDG = value; }
+            get { return this.m_bWood4PrevEconDG; }
+        }
+        public bool PreventWood5EconomicDowngrade
+        {
+            set { this.m_bWood5PrevEconDG = value; }
+            get { return this.m_bWood5PrevEconDG; }
+        }
+        public bool PreventWood6EconomicDowngrade
+        {
+            set { this.m_bWood6PrevEconDG = value; }
+            get { return this.m_bWood6PrevEconDG; }
+        }
+        public bool PreventChipsEconomicDowngrade
+        {
+            set { this.m_bChipsPrevEconDG = value; }
+            get { return this.m_bChipsPrevEconDG; }
+        }
+        public bool PreventMerchNoFacilityDowngrade
+        {
+            set { this.m_bMerchPrevNoFacDG = value; }
+            get { return this.m_bMerchPrevNoFacDG; }
+        }
+        public bool PreventWood4NoFacilityDowngrade
+        {
+            set { this.m_bWood4PrevNoFacDG = value; }
+            get { return this.m_bWood4PrevNoFacDG; }
+        }
+        public bool PreventWood5NoFacilityDowngrade
+        {
+            set { this.m_bWood5PrevNoFacDG = value; }
+            get { return this.m_bWood5PrevNoFacDG; }
+        }
+        public bool PreventWood6NoFacilityDowngrade
+        {
+            set { this.m_bWood6PrevNoFacDG = value; }
+            get { return this.m_bWood6PrevNoFacDG; }
+        }
 
 
         private void txtRailHaulCost_Leave(object sender, EventArgs e)
@@ -841,6 +903,105 @@ namespace FIA_Biosum_Manager
             }
         }
 
-		
+        private void chkMerchPrevEconDG_CheckedChanged(object sender, EventArgs e)
+        {
+            if (chkMerchPrevEconDG.Checked)
+            {
+                m_bMerchPrevEconDG = true;
+            }
+            else
+            {
+                m_bMerchPrevEconDG = false;
+            }
+        }
+        private void chkWood4PrevEconDG_CheckedChanged(object sender, EventArgs e)
+        {
+            if (chkWood4PrevEconDG.Checked)
+            {
+                m_bWood4PrevEconDG = true;
+            }
+            else
+            {
+                m_bWood4PrevEconDG = false;
+            }
+        }
+        private void chkWood5PrevEconDG_CheckedChanged(object sender, EventArgs e)
+        {
+            if (chkWood5PrevEconDG.Checked)
+            {
+                m_bWood5PrevEconDG = true;
+            }
+            else
+            {
+                m_bWood5PrevEconDG = false;
+            }
+        }
+        private void chkWood6PrevEconDG_CheckedChanged(object sender, EventArgs e)
+        {
+            if (chkWood6PrevEconDG.Checked)
+            {
+                m_bWood6PrevEconDG = true;
+            }
+            else
+            {
+                m_bWood6PrevEconDG = false;
+            }
+        }
+        private void chkChipsPrevEconDG_CheckedChanged(object sender, EventArgs e)
+        {
+            if (chkChipsPrevEconDG.Checked)
+            {
+                m_bChipsPrevEconDG = true;
+            }
+            else
+            {
+                m_bChipsPrevEconDG = false;
+            }
+        }
+        private void chkMerchPrevNoFacDG_CheckedChanged(object sender, EventArgs e)
+        {
+            if (chkMerchPrevNoFacDG.Checked)
+            {
+                m_bMerchPrevNoFacDG = true;
+            }
+            else
+            {
+                m_bMerchPrevNoFacDG = false;
+            }
+        }
+        private void chkWood4PrevNoFacDG_CheckedChanged(object sender, EventArgs e)
+        {
+            if (chkWood4PrevNoFacDG.Checked)
+            {
+                m_bWood4PrevNoFacDG = true;
+            }
+            else
+            {
+                m_bWood4PrevNoFacDG = false;
+            }
+        }
+        private void chkWood5PrevNoFacDG_CheckedChanged(object sender, EventArgs e)
+        {
+            if (chkWood5PrevNoFacDG.Checked)
+            {
+                m_bWood5PrevNoFacDG = true;
+            }
+            else
+            {
+                m_bWood5PrevNoFacDG = false;
+            }
+        }
+        private void chkWood6PrevNoFacDG_CheckedChanged(object sender, EventArgs e)
+        {
+            if (chkWood6PrevNoFacDG.Checked)
+            {
+                m_bWood6PrevNoFacDG = true;
+            }
+            else
+            {
+                m_bWood6PrevNoFacDG = false;
+            }
+        }
+
     }
 }

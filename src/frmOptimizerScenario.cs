@@ -3706,7 +3706,7 @@ namespace FIA_Biosum_Manager
                         {
                             p_oOptimizerScenarioItem.m_oRevenue.PreventMerchEconomicDowngrade = true;
                         }
-                        if (p_oDataMgr.m_DataReader["wood4_prev_econDG_YN"].ToString().ToUpper() == "N")
+                        if (p_oDataMgr.m_DataReader["wood4_prev_econDG_YN"].ToString().ToUpper() == "Y")
                         {
                             p_oOptimizerScenarioItem.m_oRevenue.PreventWood4EconomicDowngrade = true;
                         }
