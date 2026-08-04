@@ -58,16 +58,26 @@ namespace FIA_Biosum_Manager
         public const string PREFIX_WOOD5_VOLUME = "wood5_volume";
         public const string PREFIX_WOOD6_VOLUME = "wood6_volume";
         public const string PREFIX_TOTAL_VOLUME = "total_volume";
-        public const string PREFIX_NON_RESIDUE_VOLUME = "non_residue_wood_volume";
+        public const string PREFIX_TOTAL_BOLE_VOLUME = "total_bole_wood_volume";
+        public const string PREFIX_MERCH_DRY_WEIGHT = "merch_dry_weight";
+        public const string PREFIX_CHIP_DRY_WEIGHT = "chip_dry_weight";
+        public const string PREFIX_WOOD4_DRY_WEIGHT = "wood4_dry_weight";
+        public const string PREFIX_WOOD5_DRY_WEIGHT = "wood5_dry_weight";
+        public const string PREFIX_WOOD6_DRY_WEIGHT = "wood6_dry_weight";
+        public const string PREFIX_TOTAL_BOLE_DRY_WEIGHT = "total_bole_dry_weight";
         public const string PREFIX_NET_REVENUE = "net_revenue";
         public const string PREFIX_TREATMENT_HAUL_COSTS = "treatment_haul_costs";
         public const string PREFIX_ONSITE_TREATMENT_COSTS = "onsite_treatment_costs";
         //These parallel arrays must remain in the same order
-        static readonly string[] PREFIX_ECON_VALUE_ARRAY = { PREFIX_TOTAL_VOLUME, PREFIX_NON_RESIDUE_VOLUME, PREFIX_MERCH_VOLUME, PREFIX_CHIP_VOLUME,
-                                                             PREFIX_WOOD4_VOLUME, PREFIX_WOOD5_VOLUME, PREFIX_WOOD6_VOLUME,
+        static readonly string[] PREFIX_ECON_VALUE_ARRAY = { PREFIX_TOTAL_VOLUME, PREFIX_TOTAL_BOLE_VOLUME, PREFIX_MERCH_VOLUME, PREFIX_CHIP_VOLUME,
+                                                             PREFIX_WOOD4_VOLUME, PREFIX_WOOD5_VOLUME, PREFIX_WOOD6_VOLUME, PREFIX_MERCH_DRY_WEIGHT, 
+                                                             PREFIX_CHIP_DRY_WEIGHT, PREFIX_WOOD4_DRY_WEIGHT, PREFIX_WOOD5_DRY_WEIGHT, 
+                                                             PREFIX_WOOD6_DRY_WEIGHT, PREFIX_TOTAL_BOLE_DRY_WEIGHT,
                                                              PREFIX_NET_REVENUE, PREFIX_TREATMENT_HAUL_COSTS, PREFIX_ONSITE_TREATMENT_COSTS };
-        static readonly string[] PREFIX_ECON_NAME_ARRAY = { "Total Volume", "Non-Residue Wood Volume", "Merchantable Volume", "Chip Volume",
-                                                            "Wood4 Volume", "Wood5 Volume", "Wood6 Volume", 
+        static readonly string[] PREFIX_ECON_NAME_ARRAY = { "Total Volume", "Total Bole Wood Volume", "Merchantable Volume", "Hog Fuel Volume",
+                                                            "Wood4 Volume", "Wood5 Volume", "Wood6 Volume", "Merchantable Dry Weight",
+                                                            "Hog Fuel Dry Weight", "Wood4 Dry Weight", "Wood5 Dry Weight",
+                                                            "Wood6 Dry Weight", "Total Bole Dry Weight",
                                                             "Net Revenue","Treatment And Haul Costs", "OnSite Treatment Costs"};
         private bool b_FVSTableEnabled = false;
         private string m_strFvsViewTableName = "view_weights";
@@ -2548,6 +2558,46 @@ namespace FIA_Biosum_Manager
             else if (strName.Contains(PREFIX_ONSITE_TREATMENT_COSTS))
             {
                 return PREFIX_ONSITE_TREATMENT_COSTS;
+            }
+            else if (strName.Contains(PREFIX_WOOD4_VOLUME))
+            {
+                return PREFIX_WOOD4_VOLUME;
+            }
+            else if (strName.Contains(PREFIX_WOOD5_VOLUME))
+            {
+                return PREFIX_WOOD5_VOLUME;
+            }
+            else if (strName.Contains(PREFIX_WOOD6_VOLUME))
+            {
+                return PREFIX_WOOD6_VOLUME;
+            }
+            else if (strName.Contains(PREFIX_TOTAL_BOLE_VOLUME))
+            {
+                return PREFIX_TOTAL_BOLE_VOLUME;
+            }
+            else if (strName.Contains(PREFIX_MERCH_DRY_WEIGHT))
+            {
+                return PREFIX_MERCH_DRY_WEIGHT;
+            }
+            else if (strName.Contains(PREFIX_CHIP_DRY_WEIGHT))
+            {
+                return PREFIX_CHIP_DRY_WEIGHT;
+            }
+            else if (strName.Contains(PREFIX_WOOD4_DRY_WEIGHT))
+            {
+                return PREFIX_WOOD4_DRY_WEIGHT;
+            }
+            else if (strName.Contains(PREFIX_WOOD5_DRY_WEIGHT))
+            {
+                return PREFIX_WOOD5_DRY_WEIGHT;
+            }
+            else if (strName.Contains(PREFIX_WOOD6_DRY_WEIGHT))
+            {
+                return PREFIX_WOOD6_DRY_WEIGHT;
+            }
+            else if (strName.Contains(PREFIX_TOTAL_BOLE_DRY_WEIGHT))
+            {
+                return PREFIX_TOTAL_BOLE_DRY_WEIGHT;
             }
             else
             {

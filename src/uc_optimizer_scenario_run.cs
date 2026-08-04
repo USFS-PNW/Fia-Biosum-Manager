@@ -7151,7 +7151,7 @@ namespace FIA_Biosum_Manager
                                                                oSavedProductYields.TotalYieldCfCycle3() * lstWeights[2] +
                                                                oSavedProductYields.TotalYieldCfCycle4() * lstWeights[3]);
                                             break;
-                                        case uc_optimizer_scenario_calculated_variables.PREFIX_NON_RESIDUE_VOLUME:
+                                        case uc_optimizer_scenario_calculated_variables.PREFIX_TOTAL_BOLE_VOLUME:
                                             lstFieldValues.Add(oSavedProductYields.NonResidueYieldCfCycle1() * lstWeights[0]);
                                             lstFieldValues.Add(oSavedProductYields.NonResidueYieldCfCycle2() * lstWeights[1]);
                                             lstFieldValues.Add(oSavedProductYields.NonResidueYieldCfCycle3() * lstWeights[2]);

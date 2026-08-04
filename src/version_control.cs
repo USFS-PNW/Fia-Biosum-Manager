@@ -327,7 +327,7 @@ namespace FIA_Biosum_Manager
                         "'ECON', 'ECON_BY_RX_UTILIZED_SUM.wood6_vol_cf', 'omit'), ('total_bole_wood_volume_1', " +
                         "'Sum of merch, wood4, wood5, and wood6 volumes for 4 cycles. Each cycle is weighted at 1', 'ECON', 'CALCULATED', 'omit'), " +
                         "('merch_dry_weight_1', 'Sum of merch dry weight for 4 cycles. Each cycle is weighted at 1', 'ECON', 'ECON_BY_RX_UTILIZED_SUM.merch_wt_bdt', " +
-                        "'omit'), ('chips_dry_weight_1', 'Sum of chip dry weight for 4 cycles. Each cycle is weighted at 1', 'ECON', " +
+                        "'omit'), ('chip_dry_weight_1', 'Sum of chip dry weight for 4 cycles. Each cycle is weighted at 1', 'ECON', " +
                         "'ECON_BY_RX_UTILIZED_SUM.chip_wt_bdt', 'omit'), ('wood4_dry_weight_1', 'Sum of wood4 dry weight for 4 cycles. Each cycle is weighted at 1', " +
                         "'ECON', 'ECON_BY_RX_UTILIZED_SUM.wood4_wt_bdt', 'omit'), ('wood5_dry_weight_1', 'Sum of wood5 dry weight for 4 cycles. Each cycle is weighted at 1', " +
                         "'ECON', 'ECON_BY_RX_UTILIZED_SUM.wood5_wt_bdt', 'omit'), ('wood6_dry_weight_1', 'Sum of wood6 dry weight for 4 cycles. Each cycle is weighted at 1', " +
