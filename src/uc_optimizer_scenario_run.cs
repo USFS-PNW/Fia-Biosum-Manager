@@ -1902,6 +1902,7 @@ namespace FIA_Biosum_Manager
                 frmMain.g_oTables.m_oOptimizerScenarioResults.CreateHaulCostTable(oDataMgr, conn, Tables.OptimizerScenarioResults.DefaultScenarioResultsHaulCostsTableName);
                 frmMain.g_oTables.m_oOptimizerScenarioResults.CreateCondPsiteTable(oDataMgr, conn, Tables.OptimizerScenarioResults.DefaultScenarioResultsCondPsiteTableName);
                 frmMain.g_oTables.m_oOptimizerScenarioResults.CreateVersionTable(oDataMgr, conn, Tables.OptimizerScenarioResults.DefaultScenarioResultsVersionTableName);
+                frmMain.g_oTables.m_oOptimizerScenarioResults.CreateTreeVolValBySpeciesDiamGroupsAdjTable(oDataMgr, conn, Tables.OptimizerScenarioResults.DefaultScenarioResultsTreeVolValBySpeciesDiamGroupsAdjTableName);
 
             }
         }
