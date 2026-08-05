@@ -1853,6 +1853,7 @@ namespace FIA_Biosum_Manager
         public LastTieBreakRankItem_Collection m_oLastTieBreakRankItem_Collection = new LastTieBreakRankItem_Collection();
         public ProcessingSiteItem_Collection m_oProcessingSiteItem_Collection = new ProcessingSiteItem_Collection();
         public TransportationCosts m_oTranCosts = new TransportationCosts();
+        public Revenue m_oRevenue = new Revenue();
         public ProcessorScenarioItem_Collection m_oProcessorScenarioItem_Collection = new ProcessorScenarioItem_Collection();
         public ConditionTableSQLFilter m_oCondTableSQLFilter = new ConditionTableSQLFilter();
 
@@ -1937,6 +1938,8 @@ namespace FIA_Biosum_Manager
             p_oDest.m_oTranCosts.Copy(
                 p_oSource.m_oTranCosts,
                 p_oDest.m_oTranCosts);
+            p_oDest.m_oRevenue.Copy(p_oSource.m_oRevenue,
+                p_oDest.m_oRevenue);
             p_oDest.m_oCondTableSQLFilter = p_oSource.m_oCondTableSQLFilter;
             p_oDest.m_oProcessorScenarioItem_Collection.Copy(
                 p_oSource.m_oProcessorScenarioItem_Collection,
@@ -1963,6 +1966,32 @@ namespace FIA_Biosum_Manager
                 p_oDest.RoadHaulCostPerGreenTonPerHour = p_oSource.RoadHaulCostPerGreenTonPerHour;
             }
             
+        }
+
+        public class Revenue
+        {
+            public bool PreventMerchEconomicDowngrade = false;
+            public bool PreventWood4EconomicDowngrade = false;
+            public bool PreventWood5EconomicDowngrade = false;
+            public bool PreventWood6EconomicDowngrade = false;
+            public bool PreventChipsEconomicDowngrade = false;
+            public bool PreventMerchNoFacilityDowngrade = false;
+            public bool PreventWood4NoFacilityDowngrade = false;
+            public bool PreventWood5NoFacilityDowngrade = false;
+            public bool PreventWood6NoFacilityDowngrade = false;
+
+            public void Copy(Revenue p_oSource, Revenue p_oDest)
+            {
+                p_oDest.PreventMerchEconomicDowngrade = p_oSource.PreventMerchEconomicDowngrade;
+                p_oDest.PreventWood4EconomicDowngrade = p_oSource.PreventWood4EconomicDowngrade;
+                p_oDest.PreventWood5EconomicDowngrade = p_oSource.PreventWood5EconomicDowngrade;
+                p_oDest.PreventWood6EconomicDowngrade = p_oSource.PreventWood6EconomicDowngrade;
+                p_oDest.PreventChipsEconomicDowngrade = p_oSource.PreventChipsEconomicDowngrade;
+                p_oDest.PreventMerchNoFacilityDowngrade = p_oSource.PreventMerchNoFacilityDowngrade;
+                p_oDest.PreventWood4NoFacilityDowngrade = p_oSource.PreventWood4NoFacilityDowngrade;
+                p_oDest.PreventWood5NoFacilityDowngrade = p_oSource.PreventWood5NoFacilityDowngrade;
+                p_oDest.PreventWood6NoFacilityDowngrade = p_oSource.PreventWood6NoFacilityDowngrade;
+            }
         }
         
         public class EffectiveVariablesItem
@@ -3672,6 +3701,42 @@ namespace FIA_Biosum_Manager
                         {
                             p_oOptimizerScenarioItem.m_oTranCosts.RailMerchTransferPerGreenTon =
                                Convert.ToString(p_oDataMgr.m_DataReader["rail_merch_transfer_pgt"]).Trim();
+                        }
+                        if (p_oDataMgr.m_DataReader["merch_prev_econDG_YN"].ToString().ToUpper() == "Y")
+                        {
+                            p_oOptimizerScenarioItem.m_oRevenue.PreventMerchEconomicDowngrade = true;
+                        }
+                        if (p_oDataMgr.m_DataReader["wood4_prev_econDG_YN"].ToString().ToUpper() == "Y")
+                        {
+                            p_oOptimizerScenarioItem.m_oRevenue.PreventWood4EconomicDowngrade = true;
+                        }
+                        if (p_oDataMgr.m_DataReader["wood5_prev_econDG_YN"].ToString().ToUpper() == "Y")
+                        {
+                            p_oOptimizerScenarioItem.m_oRevenue.PreventWood5EconomicDowngrade = true;
+                        }
+                        if (p_oDataMgr.m_DataReader["wood6_prev_econDG_YN"].ToString().ToUpper() == "Y")
+                        {
+                            p_oOptimizerScenarioItem.m_oRevenue.PreventWood6EconomicDowngrade = true;
+                        }
+                        if (p_oDataMgr.m_DataReader["chips_prev_econDG_YN"].ToString().ToUpper() == "Y")
+                        {
+                            p_oOptimizerScenarioItem.m_oRevenue.PreventChipsEconomicDowngrade = true;
+                        }
+                        if (p_oDataMgr.m_DataReader["merch_prev_nofacDG_YN"].ToString().ToUpper() == "Y")
+                        {
+                            p_oOptimizerScenarioItem.m_oRevenue.PreventMerchNoFacilityDowngrade = true;
+                        }
+                        if (p_oDataMgr.m_DataReader["wood4_prev_nofacDG_YN"].ToString().ToUpper() == "Y")
+                        {
+                            p_oOptimizerScenarioItem.m_oRevenue.PreventWood4NoFacilityDowngrade = true;
+                        }
+                        if (p_oDataMgr.m_DataReader["wood5_prev_nofacDG_YN"].ToString().ToUpper() == "Y")
+                        {
+                            p_oOptimizerScenarioItem.m_oRevenue.PreventWood5NoFacilityDowngrade = true;
+                        }
+                        if (p_oDataMgr.m_DataReader["wood6_prev_nofacDG_YN"].ToString().ToUpper() == "Y")
+                        {
+                            p_oOptimizerScenarioItem.m_oRevenue.PreventWood6NoFacilityDowngrade = true;
                         }
                     }
                 }

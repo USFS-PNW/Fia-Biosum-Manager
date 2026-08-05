@@ -267,6 +267,7 @@ namespace FIA_Biosum_Manager
                 ReferenceCurrentScenarioItem.m_oLastTieBreakRankItem_Collection.Copy(m_oOptimizerScenarioItem.m_oLastTieBreakRankItem_Collection, ref ReferenceCurrentScenarioItem.m_oLastTieBreakRankItem_Collection, true);
                 ReferenceCurrentScenarioItem.m_oTieBreaker_Collection.Copy(m_oOptimizerScenarioItem.m_oTieBreaker_Collection, ref ReferenceCurrentScenarioItem.m_oTieBreaker_Collection, true);
                 ReferenceCurrentScenarioItem.m_oTranCosts.Copy(m_oOptimizerScenarioItem.m_oTranCosts, ReferenceCurrentScenarioItem.m_oTranCosts);
+                ReferenceCurrentScenarioItem.m_oRevenue.Copy(m_oOptimizerScenarioItem.m_oRevenue, ReferenceCurrentScenarioItem.m_oRevenue);
                 ReferenceCurrentScenarioItem.m_oProcessorScenarioItem_Collection.Copy(m_oOptimizerScenarioItem.m_oProcessorScenarioItem_Collection, ref ReferenceCurrentScenarioItem.m_oProcessorScenarioItem_Collection, true);
                 ReferenceCurrentScenarioItem.OwnerGroupCodeList = m_oOptimizerScenarioItem.OwnerGroupCodeList;
                 ReferenceCurrentScenarioItem.PlotTableSQLFilter = m_oOptimizerScenarioItem.PlotTableSQLFilter;

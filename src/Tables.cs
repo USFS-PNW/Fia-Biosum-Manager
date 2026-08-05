@@ -401,18 +401,23 @@ namespace FIA_Biosum_Manager
                     "rxcycle CHAR(1)," +
                     "chip_vol_cf DOUBLE," +
                     "chip_wt_gt DOUBLE," +
+                    "chip_wt_bdt DOUBLE," +
                     "chip_val_dpa DOUBLE," +
                     "merch_vol_cf DOUBLE," +
                     "merch_wt_gt DOUBLE," +
+                    "merch_wt_bdt DOUBLE," +
                     "merch_val_dpa DOUBLE," +
                     "wood4_vol_cf DOUBLE," +
                     "wood4_wt_gt DOUBLE," +
+                    "wood4_wt_bdt DOUBLE," +
                     "wood4_val_dpa DOUBLE," +
                     "wood5_vol_cf DOUBLE," +
                     "wood5_wt_gt DOUBLE," +
+                    "wood5_wt_bdt DOUBLE," +
                     "wood5_val_dpa DOUBLE," +
                     "wood6_vol_cf DOUBLE," +
                     "wood6_wt_gt DOUBLE," +
+                    "wood6_wt_bdt DOUBLE," +
                     "wood6_val_dpa DOUBLE," +
                     "place_holder CHAR(1) DEFAULT 'N'," +
                     "PRIMARY KEY (biosum_cond_id,rxpackage,rx,rxcycle))";
@@ -442,6 +447,11 @@ namespace FIA_Biosum_Manager
                     "wood4_wt_gt DOUBLE," +
                     "wood5_wt_gt DOUBLE," +
                     "wood6_wt_gt DOUBLE," +
+                    "chip_wt_bdt DOUBLE," +
+                    "merch_wt_bdt DOUBLE," +
+                    "wood4_wt_bdt DOUBLE," +
+                    "wood5_wt_bdt DOUBLE," +
+                    "wood6_wt_bdt DOUBLE," +
                     "chip_val_dpa DOUBLE," +
                     "merch_val_dpa DOUBLE," +
                     "wood4_val_dpa DOUBLE," +
@@ -453,13 +463,17 @@ namespace FIA_Biosum_Manager
                     "wood4_haul_cost_dpa DOUBLE," +
                     "wood5_haul_cost_dpa DOUBLE," +
                     "wood6_haul_cost_dpa DOUBLE," +
-                    "merch_chip_nr_dpa DOUBLE," +
-                    "merch_nr_dpa DOUBLE," +
-                    "wood4_nr_dpa DOUBLE," +
-                    "wood5_nr_dpa DOUBLE," +
-                    "wood6_nr_dpa DOUBLE," +
-                    "usebiomass_yn CHAR(1)," +
-                    "max_nr_dpa DOUBLE," +
+                    "chip_hcr_dpa DOUBLE," +
+                    "merch_hcr_dpa DOUBLE," +
+                    "wood4_hcr_dpa DOUBLE," +
+                    "wood5_hcr_dpa DOUBLE," +
+                    "wood6_hcr_dpa DOUBLE," +
+                    "usebiomass CHAR(1)," +
+                    "usemerch CHAR(1)," +
+                    "usewood4 CHAR(1)," +
+                    "usewood5 CHAR(1)," +
+                    "usewood6 CHAR(1)," +
+                    "total_nr_dpa DOUBLE," +
                     "acres DOUBLE," +
                     "owngrpcd INTEGER," +
                     "haul_costs_dpa CHAR(255)," +
@@ -488,6 +502,11 @@ namespace FIA_Biosum_Manager
                     "wood4_wt_gt DOUBLE," +
                     "wood5_wt_gt DOUBLE," +
                     "wood6_wt_gt DOUBLE," +
+                    "chip_wt_bdt DOUBLE," +
+                    "merch_wt_bdt DOUBLE," +
+                    "wood4_wt_bdt DOUBLE," +
+                    "wood5_wt_bdt DOUBLE," +
+                    "wood6_wt_bdt DOUBLE," +
                     "chip_val_dpa_utilized DOUBLE," +
                     "merch_val_dpa DOUBLE," +
                     "wood4_val_dpa DOUBLE," +
@@ -499,12 +518,12 @@ namespace FIA_Biosum_Manager
                     "wood4_haul_cost_dpa DOUBLE," +
                     "wood5_haul_cost_dpa DOUBLE," +
                     "wood6_haul_cost_dpa DOUBLE," +
-                    "merch_chip_nr_dpa DOUBLE," +
-                    "merch_nr_dpa DOUBLE," +
-                    "wood4_nr_dpa DOUBLE," +
-                    "wood5_nr_dpa DOUBLE," +
-                    "wood6_nr_dpa DOUBLE," +
-                    "max_nr_dpa DOUBLE," +
+                    "chip_hcr_dpa DOUBLE," +
+                    "merch_hcr_dpa DOUBLE," +
+                    "wood4_hcr_dpa DOUBLE," +
+                    "wood5_hcr_dpa DOUBLE," +
+                    "wood6_hcr_dpa DOUBLE," +
+                    "total_nr_dpa DOUBLE," +
                     "acres DOUBLE," +
                     "treated_acres DOUBLE," +
                     "owngrpcd INTEGER," +
@@ -778,7 +797,16 @@ namespace FIA_Biosum_Manager
                     "road_haul_cost_pgt_per_hour DOUBLE DEFAULT 0, " +
                     "rail_haul_cost_pgt_per_mile DOUBLE DEFAULT 0, " +
                     "rail_chip_transfer_pgt DOUBLE DEFAULT 0, " +
-                    "rail_merch_transfer_pgt DOUBLE DEFAULT 0)";
+                    "rail_merch_transfer_pgt DOUBLE DEFAULT 0, " +
+                    "merch_prev_econDG_YN CHAR(1) DEFAULT 'N', " +
+                    "wood4_prev_econDG_YN CHAR(1) DEFAULT 'N', " +
+                    "wood5_prev_econDG_YN CHAR(1) DEFAULT 'N', " +
+                    "wood6_prev_econDG_YN CHAR(1) DEFAULT 'N', " +
+                    "chips_prev_econDG_YN CHAR(1) DEFAULT 'N', " +
+                    "merch_prev_nofacDG_YN CHAR(1) DEFAULT 'N', " +
+                    "wood4_prev_nofacDG_YN CHAR(1) DEFAULT 'N', " +
+                    "wood5_prev_nofacDG_YN CHAR(1) DEFAULT 'N', " +
+                    "wood6_prev_nofacDG_YN CHAR(1) DEFAULT 'N')";
             }
             public void CreateScenarioProcessorScenarioSelectTable(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
             {

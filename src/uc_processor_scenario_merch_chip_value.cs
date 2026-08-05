@@ -659,7 +659,7 @@ namespace FIA_Biosum_Manager
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(400, 24);
             this.label2.TabIndex = 7;
-            this.label2.Text = "Hog fuel (chipped residues) value ($/green ton):";
+            this.label2.Text = "Hog fuel (chipped logging residues) value ($/green ton):";
             this.label2.Click += new System.EventHandler(this.label2_Click);
             // 
             // label1
@@ -668,9 +668,9 @@ namespace FIA_Biosum_Manager
             this.label1.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(64)))), ((int)(((byte)(0)))));
             this.label1.Location = new System.Drawing.Point(15, 40);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(675, 32);
+            this.label1.Size = new System.Drawing.Size(550, 32);
             this.label1.TabIndex = 6;
-            this.label1.Text = "Allocation (%) of bole and unit value ($/ft3) per species/DBH class combo per wood type";
+            this.label1.Text = "Allocation (%) of bole to merch, hog fuel, and other wood types and unit value ($/ft3) per species/DBH class combo";
             // 
             // pnlMerchValues
             // 

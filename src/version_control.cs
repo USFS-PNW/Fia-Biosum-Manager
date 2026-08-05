@@ -306,6 +306,7 @@ namespace FIA_Biosum_Manager
                 }
             }
 
+            frmMain.g_sbpInfo.Text = "Version Update: Updating Optimizer Variables for Carbon Metrics ...Stand by";
             string strOptimizerDefinitionsDb = this.ReferenceProjectDirectory + "\\" + Tables.OptimizerDefinitions.DefaultDbFile;
             using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(strOptimizerDefinitionsDb)))
             {
@@ -323,8 +324,15 @@ namespace FIA_Biosum_Manager
                         " VALUES ('wood4_volume_1', 'Sum of wood4 volume for 4 cycles. Each cycle is weighted at 1', 'ECON', " +
                         "'ECON_BY_RX_UTILIZED_SUM.wood4_vol_cf', 'omit'), ('wood5_volume_1', 'Sum of wood5 volume for 4 cycles. Each cycle is weighted at 1', " +
                         "'ECON', 'ECON_BY_RX_UTILIZED_SUM.wood5_vol_cf', 'omit'), ('wood6_volume_1', 'Sum of wood6 volume for 4 cycles. Each cycle is weighted at 1', " +
-                        "'ECON', 'ECON_BY_RX_UTILIZED_SUM.wood6_vol_cf', 'omit'), ('non_residue_wood_volume_1', " +
-                        "'Sum of merch, wood4, wood5, and wood6 volumes for 4 cycles. Each cycle is weighted at 1', 'ECON', 'CALCULATED', 'omit')";
+                        "'ECON', 'ECON_BY_RX_UTILIZED_SUM.wood6_vol_cf', 'omit'), ('total_bole_wood_volume_1', " +
+                        "'Sum of merch, wood4, wood5, and wood6 volumes for 4 cycles. Each cycle is weighted at 1', 'ECON', 'CALCULATED', 'omit'), " +
+                        "('merch_dry_weight_1', 'Sum of merch dry weight for 4 cycles. Each cycle is weighted at 1', 'ECON', 'ECON_BY_RX_UTILIZED_SUM.merch_wt_bdt', " +
+                        "'omit'), ('chip_dry_weight_1', 'Sum of chip dry weight for 4 cycles. Each cycle is weighted at 1', 'ECON', " +
+                        "'ECON_BY_RX_UTILIZED_SUM.chip_wt_bdt', 'omit'), ('wood4_dry_weight_1', 'Sum of wood4 dry weight for 4 cycles. Each cycle is weighted at 1', " +
+                        "'ECON', 'ECON_BY_RX_UTILIZED_SUM.wood4_wt_bdt', 'omit'), ('wood5_dry_weight_1', 'Sum of wood5 dry weight for 4 cycles. Each cycle is weighted at 1', " +
+                        "'ECON', 'ECON_BY_RX_UTILIZED_SUM.wood5_wt_bdt', 'omit'), ('wood6_dry_weight_1', 'Sum of wood6 dry weight for 4 cycles. Each cycle is weighted at 1', " +
+                        "'ECON', 'ECON_BY_RX_UTILIZED_SUM.wood6_wt_bdt', 'omit'), ('total_bole_wood_dry_weight_1', 'Sum of merch, wood4, wood5, and wood6 dry weights " +
+                        "for 4 cycles. Each cycle is weighted at 1', 'ECON', 'CALCULATED', 'omit')";
                     oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
 
                     oDataMgr.m_strSQL = "INSERT INTO " + Tables.OptimizerDefinitions.DefaultCalculatedEconVariablesTableName +
@@ -332,10 +340,38 @@ namespace FIA_Biosum_Manager
                         "(" + (intVariables + 1) + ", '1', 1), (" + (intVariables + 1) + ", '2', 1), (" + (intVariables + 1) + ", '3', 1), (" + (intVariables + 1) + ", '4', 1), " +
                         "(" + (intVariables + 2) + ", '1', 1), (" + (intVariables + 2) + ", '2', 1), (" + (intVariables + 2) + ", '3', 1), (" + (intVariables + 2) + ", '4', 1), " +
                         "(" + (intVariables + 3) + ", '1', 1), (" + (intVariables + 3) + ", '2', 1), (" + (intVariables + 3) + ", '3', 1), (" + (intVariables + 3) + ", '4', 1), " +
-                        "(" + (intVariables + 4) + ", '1', 1), (" + (intVariables + 4) + ", '2', 1), (" + (intVariables + 4) + ", '3', 1), (" + (intVariables + 4) + ", '4', 1)";
+                        "(" + (intVariables + 4) + ", '1', 1), (" + (intVariables + 4) + ", '2', 1), (" + (intVariables + 4) + ", '3', 1), (" + (intVariables + 4) + ", '4', 1), " +
+                        "(" + (intVariables + 5) + ", '1', 1), (" + (intVariables + 5) + ", '2', 1), (" + (intVariables + 5) + ", '3', 1), (" + (intVariables + 5) + ", '4', 1), " +
+                        "(" + (intVariables + 6) + ", '1', 1), (" + (intVariables + 6) + ", '2', 1), (" + (intVariables + 6) + ", '3', 1), (" + (intVariables + 6) + ", '4', 1), " +
+                        "(" + (intVariables + 7) + ", '1', 1), (" + (intVariables + 7) + ", '2', 1), (" + (intVariables + 7) + ", '3', 1), (" + (intVariables + 7) + ", '4', 1), " +
+                        "(" + (intVariables + 8) + ", '1', 1), (" + (intVariables + 8) + ", '2', 1), (" + (intVariables + 8) + ", '3', 1), (" + (intVariables + 8) + ", '4', 1), " +
+                        "(" + (intVariables + 9) + ", '1', 1), (" + (intVariables + 9) + ", '2', 1), (" + (intVariables + 9) + ", '3', 1), (" + (intVariables + 9) + ", '4', 1), " +
+                        "(" + (intVariables + 10) + ", '1', 1), (" + (intVariables + 10) + ", '2', 1), (" + (intVariables + 10) + ", '3', 1), (" + (intVariables + 10) + ", '4', 1)";
                     oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
                 }
             }
+
+
+            frmMain.g_sbpInfo.Text = "Version Update: Updating Optimizer Rule Definitions for Carbon Metrics ...Stand by";
+            string strOptimizerRuleDefsDb = this.ReferenceProjectDirectory + "\\" + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioTableDbFile;
+            using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(oDataMgr.GetConnectionString(strOptimizerRuleDefsDb)))
+            {
+                conn.Open();
+
+                if (!oDataMgr.ColumnExist(conn, Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioCostsTableName, "merch_prev_econDG_YN"))
+                {
+                    string[] arrNewColumns = {"merch_prev_econDG_YN", "wood4_prev_econDG_YN", "wood5_prev_econDG_YN", "wood6_prev_econDG_YN",
+                    "chips_prev_econDG_YN", "merch_prev_nofacDG_YN", "wood4_prev_nofacDG_YN", "wood5_prev_nofacDG_YN", "wood6_prev_nofacDG_YN"};
+                    
+                    foreach (string strColumn in arrNewColumns)
+                    {
+                        oDataMgr.m_strSQL = "ALTER TABLE " + Tables.OptimizerScenarioRuleDefinitions.DefaultScenarioCostsTableName +
+                            " ADD COLUMN " + strColumn + " CHAR(1) DEFAULT 'N'";
+                        oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+                    }
+                }
+            }
+
             // Delete and re-add Processor results tables with new schemas
             string[] arrFolders = System.IO.Directory.GetDirectories(this.ReferenceProjectDirectory + "\\processor");
             for (int i = 0; i < arrFolders.Length; i++)

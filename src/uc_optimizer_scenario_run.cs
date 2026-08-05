@@ -2486,7 +2486,17 @@ namespace FIA_Biosum_Manager
                 strTruckHaulCost = ReferenceUserControlScenarioRun.ReferenceOptimizerScenarioForm.uc_scenario_costs1.RoadHaulCostDollarsPerGreenTonPerHour.Replace("$", "").ToString();
                 strTruckHaulCost = strTruckHaulCost.Replace(",", "");
 
-                if (strTruckHaulCost.Trim().Length == 1) strTruckHaulCost = "0.00";
+                if (strTruckHaulCost.Trim().Length == 1)
+                {
+                    strTruckHaulCost = "0.00";
+                }
+                // Multiply truck haul cost by 2 to get roundtrip cost
+                else
+                {
+                    double dblTruckHaulCost = double.Parse(strTruckHaulCost);
+                    dblTruckHaulCost = dblTruckHaulCost * 2;
+                    strTruckHaulCost = dblTruckHaulCost.ToString();
+                }
 
                 strRailHaulCost = ReferenceUserControlScenarioRun.ReferenceOptimizerScenarioForm.uc_scenario_costs1.RailHaulCostDollarsPerGreenTonPerMile.Replace("$", "").ToString();
                 strRailHaulCost = strRailHaulCost.Replace(",", "");
@@ -7141,7 +7151,7 @@ namespace FIA_Biosum_Manager
                                                                oSavedProductYields.TotalYieldCfCycle3() * lstWeights[2] +
                                                                oSavedProductYields.TotalYieldCfCycle4() * lstWeights[3]);
                                             break;
-                                        case uc_optimizer_scenario_calculated_variables.PREFIX_NON_RESIDUE_VOLUME:
+                                        case uc_optimizer_scenario_calculated_variables.PREFIX_TOTAL_BOLE_VOLUME:
                                             lstFieldValues.Add(oSavedProductYields.NonResidueYieldCfCycle1() * lstWeights[0]);
                                             lstFieldValues.Add(oSavedProductYields.NonResidueYieldCfCycle2() * lstWeights[1]);
                                             lstFieldValues.Add(oSavedProductYields.NonResidueYieldCfCycle3() * lstWeights[2]);
