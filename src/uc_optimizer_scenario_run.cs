@@ -1588,6 +1588,14 @@ namespace FIA_Biosum_Manager
                         econ_by_rx_utilized_sum();
                     }
 
+                    /*******************************************************************************
+                     **update wood type values based on how they end up being used 
+                     *******************************************************************************/
+                    if (m_intError == 0 && ReferenceUserControlScenarioRun.m_bUserCancel == false)
+                    {
+                        update_tree_vol_val_by_species_diam_groups_values();
+                    }
+
                     /**********************************************************************
                      **Calculate custom economic variables if needed
                      **********************************************************************/
@@ -4549,26 +4557,31 @@ namespace FIA_Biosum_Manager
 
                 p_dataMgr.m_strSQL = "INSERT INTO " + m_strTreeVolValSumTable +
                     " (biosum_cond_id,rxpackage,rx,rxcycle,chip_vol_cf," +
-                    "chip_wt_gt,chip_val_dpa,merch_vol_cf," +
-                    "merch_wt_gt,merch_val_dpa,wood4_vol_cf,wood4_wt_gt," +
-                    "wood4_val_dpa,wood5_vol_cf,wood5_wt_gt,wood5_val_dpa," +
-                    "wood6_vol_cf,wood6_wt_gt,wood6_val_dpa,place_holder) " +
+                    "chip_wt_gt,chip_wt_bdt,chip_val_dpa,merch_vol_cf," +
+                    "merch_wt_gt,merch_wt_bdt,merch_val_dpa,wood4_vol_cf,wood4_wt_gt," +
+                    "wood5_wt_bdt,wood4_val_dpa,wood5_vol_cf,wood5_wt_gt,wood5_wt_bdt,wood5_val_dpa," +
+                    "wood6_vol_cf,wood6_wt_gt,wood6_wt_dbt,wood6_val_dpa,place_holder) " +
                     "SELECT s.biosum_cond_id, " +
                     "s.rxpackage,s.rx,s.rxcycle," +
                     "SUM(s.chip_vol_cf) AS chip_vol_cf," +
                     "SUM(s.chip_wt_gt) AS chip_wt_gt," +
+                    "SUM(s.chip_wt_bdt) AS chip_wt_bdt," +
                     "SUM(s.chip_val_dpa) AS chip_val_dpa," +
                     "SUM(s.merch_vol_cf) AS merch_vol_cf," +
                     "SUM(s.merch_wt_gt) AS merch_wt_gt," +
+                    "SUM(s.merch_wt_bdt) AS merch_wt_bdt," +
                     "SUM(s.merch_val_dpa) AS merch_val_dpa, " +
                     "SUM(s.wood4_vol_cf) AS wood4_vol_cf, " +
-                    "SUM(s.wood4_wt_gt) AS wood4_wt_gt, " +
+                    "SUM(s.wood4_wt_gt) AS wood4_wt_gt," +
+                    "SUM(s.wood4_wt_bdt) AS wood4_wt_bdt," +
                     "SUM(s.wood4_val_dpa) AS wood4_val_dpa, " +
                     "SUM(s.wood5_vol_cf) AS wood5_vol_cf, " +
-                    "SUM(s.wood5_wt_gt) AS wood5_wt_gt, " +
+                    "SUM(s.wood5_wt_gt) AS wood5_wt_gt," +
+                    "SUM(s.wood5_wt_bdt) AS wood5_wt_bdt," +
                     "SUM(s.wood5_val_dpa) AS wood5_val_dpa, " +
                     "SUM(s.wood6_vol_cf) AS wood6_vol_cf, " +
-                    "SUM(s.wood6_wt_gt) AS wood6_wt_gt, " +
+                    "SUM(s.wood6_wt_gt) AS wood6_wt_gt," +
+                    "SUM(s.wood6_wt_bdt) AS wood6_wt_bdt," +
                     "SUM(s.wood6_val_dpa) AS wood6_val_dpa, " +
                     "s.place_holder " +
                     "FROM " + m_strTreeVolValBySpcDiamGroupsTable.Trim() + " AS s " + 
@@ -6857,6 +6870,11 @@ namespace FIA_Biosum_Manager
             }
 
             p_dataMgr = null;
+        }
+
+        private void update_tree_vol_val_by_species_diam_groups_values()
+        {
+
         }
 
 

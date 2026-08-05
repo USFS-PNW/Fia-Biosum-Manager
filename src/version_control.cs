@@ -135,6 +135,8 @@ namespace FIA_Biosum_Manager
                 }
             }
 
+            //UpdateDatasources_5_13_1(this.ReferenceProjectDirectory);
+
             //UpdateDatasources_5_13_1(frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory);
             frmMain.g_oFrmMain.DeactivateStandByAnimation();
 
