@@ -1708,12 +1708,6 @@ namespace FIA_Biosum_Manager
                 get { return _strDbhGroup; }
                 set { _strDbhGroup = value; }
             }
-            private bool _bUseAsEnergyWood = false;
-            public bool UseAsEnergyWood
-            {
-                get { return _bUseAsEnergyWood; }
-                set { _bUseAsEnergyWood = value; }
-            }
             private string _strChipsDollarPerCubicFootValue = "0.00";
             public string ChipsDollarPerCubicFootValue
             {
@@ -1790,13 +1784,20 @@ namespace FIA_Biosum_Manager
                              TreeSpeciesAndDbhDollarValuesItem p_oDest)
             {
                 p_oDest.ChipsDollarPerCubicFootValue = p_oSource.ChipsDollarPerCubicFootValue;
+                p_oDest.ChipPercent = p_oSource.ChipPercent;
                 p_oDest.DbhGroup = p_oSource.DbhGroup;
                 p_oDest.MerchDollarPerCubicFootValue = p_oSource.MerchDollarPerCubicFootValue;
+                p_oDest.MerchPercent = p_oSource.MerchPercent;
                 p_oDest.SpeciesGroup = p_oSource.SpeciesGroup;
                 p_oDest.DiameterGroupId = p_oSource.DiameterGroupId;
                 p_oDest.SpeciesGroupId = p_oSource.SpeciesGroupId;
-                p_oDest.UseAsEnergyWood = p_oSource.UseAsEnergyWood;
-   
+                p_oDest.Wood4DollarPerCubicFootValue= p_oSource.Wood4DollarPerCubicFootValue;
+                p_oDest.Wood4Percent = p_oSource.Wood4Percent;
+                p_oDest.Wood5DollarPerCubicFootValue = p_oSource.Wood5DollarPerCubicFootValue;
+                p_oDest.Wood5Percent = p_oSource.Wood5Percent;
+                p_oDest.Wood6DollarPerCubicFootValue = p_oSource.Wood6DollarPerCubicFootValue;
+                p_oDest.Wood6Percent = p_oSource.Wood6Percent;
+
             }
 
         }
@@ -2666,14 +2667,6 @@ namespace FIA_Biosum_Manager
                                         p_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).Wood4Percent = strWood4Pct;
                                         p_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).Wood5Percent = strWood5Pct;
                                         p_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).Wood6Percent = strWood6Pct;
-                                        if (strChipPct == "100")
-                                        {
-                                            p_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).UseAsEnergyWood = true;
-                                        }
-                                        else
-                                        {
-                                            p_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).UseAsEnergyWood = false;
-                                        }
                                     }
                                 }
                             }
@@ -3116,30 +3109,18 @@ namespace FIA_Biosum_Manager
             strLine = strLine + "\r\nTree Species And Diameter Group Market Value Assignment\r\n";
             strLine = strLine + "------------------------------------------------------------\r\n";
             strLine = strLine + "Chip Market Value (Dollars Per Green Ton): " + strChipMarketValue + "\r\n\r\n";
-            strLine = strLine + "--Species--              --Dia--         --EnergyWood-- --*MerchValue-- --ChipValue--\r\n";
+            strLine = strLine + "--Species--              --Dia--         --*ChipValue-- --ChipPct-- --MerchValue-- --MerchPct--\r\n";
             for (x = 0; x <= p_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Count - 1; x++)
             {
-                string strEnergyWood = "";
-                string strMerchValue = "";
-                string strChipValue = "";
-                if (p_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).UseAsEnergyWood)
-                {
-                    strEnergyWood = "Yes";
-                    strMerchValue = "NA";
-                    strChipValue = p_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).ChipsDollarPerCubicFootValue;
-                }
-                else
-                {
-                    strEnergyWood = "No";
-                    strChipValue = "NA";
-                    strMerchValue = p_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).MerchDollarPerCubicFootValue;
-                }
-                strLine = strLine + String.Format("{0,-25}{1,-11}{2, 15}{3,13}{4,14}",
+                string strMerchValue = p_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).MerchDollarPerCubicFootValue;
+                string strChipValue = p_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).ChipsDollarPerCubicFootValue;
+                strLine = strLine + String.Format("{0,-25}{1,-11}{2,13}{3,13}{4,16}{5,13}",
                                 p_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).SpeciesGroup,
                                 p_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).DbhGroup,
-                                strEnergyWood,
+                                strChipValue,
+                                p_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).ChipPercent,
                                 strMerchValue,
-                                strChipValue);
+                                p_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).MerchPercent);
                 strLine = strLine + "\r\n";
 
             }

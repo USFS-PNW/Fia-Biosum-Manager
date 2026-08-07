@@ -175,12 +175,6 @@ namespace FIA_Biosum_Manager
                             //WOOD6 PERCENT
                             //
                             this.uc_processor_scenario_spc_dbh_group_value1.Wood6Percent = ReferenceProcessorScenarioForm.m_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).Wood6Percent;
-                            //
-                            //USE AS ENERGY WOOD
-                            //
-                            this.uc_processor_scenario_spc_dbh_group_value1.EnergyWood =
-                                  ReferenceProcessorScenarioForm.m_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).UseAsEnergyWood;
-
                             this.uc_processor_scenario_spc_dbh_group_value1.ReferenceProcessorScenarioForm = ReferenceProcessorScenarioForm;
 
                             this.uc_processor_scenario_spc_dbh_group_value_collection1.Add(this.uc_processor_scenario_spc_dbh_group_value1);
@@ -246,9 +240,7 @@ namespace FIA_Biosum_Manager
                             oItem.Wood6Percent = ReferenceProcessorScenarioForm.m_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).Wood6Percent;
                             //
                             //USE AS ENERGY WOOD
-                            oItem.EnergyWood =
-                                  ReferenceProcessorScenarioForm.m_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).UseAsEnergyWood;
-                            oItem.Name = "uc_processor_scenario_spc_dbh_group_value" + Convert.ToString(uc_processor_scenario_spc_dbh_group_value_collection1.Count + 1).Trim();
+                             oItem.Name = "uc_processor_scenario_spc_dbh_group_value" + Convert.ToString(uc_processor_scenario_spc_dbh_group_value_collection1.Count + 1).Trim();
                             this.pnlMerchValues.Controls.Add(oItem);
                             oItem.Top = uc_processor_scenario_spc_dbh_group_value_collection1.Item(uc_processor_scenario_spc_dbh_group_value_collection1.Count - 1).Top +
                                 uc_processor_scenario_spc_dbh_group_value_collection1.Item(uc_processor_scenario_spc_dbh_group_value_collection1.Count - 1).Height;
@@ -345,12 +337,6 @@ namespace FIA_Biosum_Manager
                             //WOOD6 PERCENT
                             //
                             this.uc_processor_scenario_spc_dbh_group_value1.Wood6Percent = ReferenceProcessorScenarioForm.m_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).Wood6Percent;
-                            //
-                            //USE AS ENERGY WOOD
-                            //
-                            this.uc_processor_scenario_spc_dbh_group_value1.EnergyWood =
-                                  ReferenceProcessorScenarioForm.m_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).UseAsEnergyWood;
-
                             this.uc_processor_scenario_spc_dbh_group_value1.ReferenceProcessorScenarioForm = ReferenceProcessorScenarioForm;
 
                             this.uc_processor_scenario_spc_dbh_group_value_collection1.Add(this.uc_processor_scenario_spc_dbh_group_value1);
@@ -414,11 +400,6 @@ namespace FIA_Biosum_Manager
                             //WOOD6 PERCENT
                             //
                             oItem.Wood6Percent = ReferenceProcessorScenarioForm.m_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).Wood6Percent;
-                            //
-                            //USE AS ENERGY WOOD
-                            //
-                            oItem.EnergyWood =
-                                  ReferenceProcessorScenarioForm.m_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).UseAsEnergyWood;
                             oItem.Name = "uc_processor_scenario_spc_dbh_group_value" + Convert.ToString(uc_processor_scenario_spc_dbh_group_value_collection1.Count + 1).Trim();
                             this.pnlMerchValues.Controls.Add(oItem);
                             oItem.Top = uc_processor_scenario_spc_dbh_group_value_collection1.Item(uc_processor_scenario_spc_dbh_group_value_collection1.Count - 1).Top +
@@ -707,7 +688,6 @@ namespace FIA_Biosum_Manager
             this.uc_processor_scenario_spc_dbh_group_value1.Wood6DollarValue = "$0.00";
             this.uc_processor_scenario_spc_dbh_group_value1.Wood6Percent = "0";
             this.uc_processor_scenario_spc_dbh_group_value1.DbhGroup = "";
-            this.uc_processor_scenario_spc_dbh_group_value1.EnergyWood = false;
             this.uc_processor_scenario_spc_dbh_group_value1.Location = new System.Drawing.Point(-2, 70);
             this.uc_processor_scenario_spc_dbh_group_value1.Name = "uc_processor_scenario_spc_dbh_group_value1";
             this.uc_processor_scenario_spc_dbh_group_value1.ReferenceProcessorScenarioForm = null;
