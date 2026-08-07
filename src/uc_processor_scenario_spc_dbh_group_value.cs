@@ -120,25 +120,6 @@ namespace FIA_Biosum_Manager
 			get {return this.txtSpeciesGroup.Text.Trim();}
 			set {this.txtSpeciesGroup.Text = value;}
 		}
-        public string GetWoodBin()
-        {
-            if (chkChips.Checked) return "C";
-            else return "M";
-        }
-        public bool EnergyWood
-        {
-            get { return chkChips.Checked; }
-            set { chkChips.Checked = value; }
-        }
-        public void SetWoodBin(string p_strWoodBin)
-        {
-            if (p_strWoodBin.Trim() == "C")
-            {
-                chkChips.Checked = true;
-            }
-            else
-                chkChips.Checked = false;
-        }
         public frmProcessorScenario ReferenceProcessorScenarioForm
         {
             get { return _oFrmProcessorScenario; }

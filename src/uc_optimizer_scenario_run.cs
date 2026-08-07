@@ -8931,20 +8931,12 @@ namespace FIA_Biosum_Manager
 
                 foreach (ProcessorScenarioItem.TreeSpeciesAndDbhDollarValuesItem oItem in this.m_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection)
                 {
-                    bool bEnergyWood = Convert.ToBoolean(oItem.UseAsEnergyWood);
                     double dblChippedValue = Convert.ToDouble(oItem.ChipsDollarPerCubicFootValue);
-                    string strEnergyWood = "Y";
-                    if (bEnergyWood == false)
-                    {
-                        strEnergyWood = "N";
-                        dblChippedValue = 0.0F;
-                    }
-
                     p_dataMgr.m_strSQL = "INSERT INTO " + Tables.OptimizerScenarioResults.DefaultScenarioResultsDiameterSpeciesGroupRefTableName +
-                                    " (dbh_class_num, dbh_range_inches, spp_grp_code, spp_grp, to_chips, merch_val_dpcf, " +
+                                    " (dbh_class_num, dbh_range_inches, spp_grp_code, spp_grp,merch_val_dpcf, " +
                                     "wood4_val_dpcf, wood5_val_dpcf, wood5_val_dpcf, value_if_chipped_dpgt)" +
-                                    " VALUES (" + oItem.DiameterGroupId + ", '" + oItem.DbhGroup + "'," + oItem.SpeciesGroupId + ",'" + oItem.SpeciesGroup + "','" +
-                                    strEnergyWood + "', " + oItem.MerchDollarPerCubicFootValue + ", " + oItem.Wood4DollarPerCubicFootValue + ", " +
+                                    " VALUES (" + oItem.DiameterGroupId + ", '" + oItem.DbhGroup + "'," + oItem.SpeciesGroupId + ",'" + oItem.SpeciesGroup + "'," +
+                                    oItem.MerchDollarPerCubicFootValue + ", " + oItem.Wood4DollarPerCubicFootValue + ", " +
                                     oItem.Wood5DollarPerCubicFootValue + ", " + oItem.Wood6DollarPerCubicFootValue + ", " + dblChippedValue + ")";
 
                     if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)

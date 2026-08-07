@@ -3384,16 +3384,7 @@ namespace FIA_Biosum_Manager
                 p_oDataMgr.SqlNonQuery(p_oConn, CreateScenarioTreeSpeciesDollarValuesTableSQL(p_strTableName));
                 // This table didn't have any indexes in the MS AccessVersion
             }
-            static public string CreateScenarioTreeSpeciesDollarValuesTableOldSQL(string p_strTableName)
-            {
-                return "CREATE TABLE " + p_strTableName + " (" +
-                    "scenario_id CHAR(20)," +
-                    "species_group INTEGER," +
-                    "diam_group INTEGER," +
-                    "wood_bin CHAR(1) DEFAULT 'M'," +
-                    "merch_value DOUBLE DEFAULT 0," +
-                    "chip_value DOUBLE DEFAULT 0)";
-            }
+
             static public string CreateScenarioTreeSpeciesDollarValuesTableSQL(string p_strTableName)
             {
                 return "CREATE TABLE " + p_strTableName + " (" +
