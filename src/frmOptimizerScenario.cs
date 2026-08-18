@@ -3979,10 +3979,10 @@ namespace FIA_Biosum_Manager
 
         public string ScenarioProperties(OptimizerScenarioItem p_oScenarioItem)
         {
-            int x,y;
-            bool bUseRxIntensity=false;
-            string strTranDef="";
-            string strBioDef="";
+            int x, y;
+            bool bUseRxIntensity = false;
+            string strTranDef = "";
+            string strBioDef = "";
             string strLine = "";
             FIA_Biosum_Manager.ValidateNumericValues oValidate = new ValidateNumericValues();
             strLine = "***TREATMENT OPTIMIZER SCENARIO***\r\n\r\n";
@@ -3994,7 +3994,7 @@ namespace FIA_Biosum_Manager
             strLine = strLine + p_oScenarioItem.Description + "\r\n\r\n";
             strLine = strLine + "FVS Analysis Cycle 1\r\n";
             strLine = strLine + "-------------------------------\r\n";
-           
+
             strLine = strLine + "//\r\n";
             strLine = strLine + "//EFFECTIVE TREATMENT EVALUATION\r\n";
             strLine = strLine + "//\r\n";
@@ -4031,29 +4031,29 @@ namespace FIA_Biosum_Manager
                 if (p_oScenarioItem.m_oOptimizationVariableItem_Collection.Item(x).RxCycle == "1" &&
                     p_oScenarioItem.m_oOptimizationVariableItem_Collection.Item(x).bSelected)
                 {
-                    
-                        
-                        strLine = strLine + "Optimization Variable Name: " +
-                            p_oScenarioItem.m_oOptimizationVariableItem_Collection.Item(x).strOptimizedVariable + "\r\n";
-                        strLine = strLine + "FVS Variable Name: " +
-                            p_oScenarioItem.m_oOptimizationVariableItem_Collection.Item(x).strFVSVariableName + "\r\n";
-                        strLine = strLine + "Value Source: " +
-                            p_oScenarioItem.m_oOptimizationVariableItem_Collection.Item(x).strValueSource + "\r\n";
-                        strLine = strLine + "Aggregate Search: ";
-                        if (p_oScenarioItem.m_oOptimizationVariableItem_Collection.Item(x).strMaxYN=="Y")
-                              strLine = strLine + "Maximum\r\n";
-                        else 
-                              strLine = strLine + "Minimum\r\n";
-                        if (p_oScenarioItem.m_oOptimizationVariableItem_Collection.Item(x).bUseFilter)
-                        {
-                            strLine = strLine + "Net Revenue Filter: ";
-                            strLine = strLine + p_oScenarioItem.m_oOptimizationVariableItem_Collection.Item(x).strFilterOperator + " " + 
-                                p_oScenarioItem.m_oOptimizationVariableItem_Collection.Item(x).dblFilterValue.ToString().Trim();
-                        }
-                         
-                       
 
-                        strLine = strLine + "\r\n";
+
+                    strLine = strLine + "Optimization Variable Name: " +
+                        p_oScenarioItem.m_oOptimizationVariableItem_Collection.Item(x).strOptimizedVariable + "\r\n";
+                    strLine = strLine + "FVS Variable Name: " +
+                        p_oScenarioItem.m_oOptimizationVariableItem_Collection.Item(x).strFVSVariableName + "\r\n";
+                    strLine = strLine + "Value Source: " +
+                        p_oScenarioItem.m_oOptimizationVariableItem_Collection.Item(x).strValueSource + "\r\n";
+                    strLine = strLine + "Aggregate Search: ";
+                    if (p_oScenarioItem.m_oOptimizationVariableItem_Collection.Item(x).strMaxYN == "Y")
+                        strLine = strLine + "Maximum\r\n";
+                    else
+                        strLine = strLine + "Minimum\r\n";
+                    if (p_oScenarioItem.m_oOptimizationVariableItem_Collection.Item(x).bUseFilter)
+                    {
+                        strLine = strLine + "Net Revenue Filter: ";
+                        strLine = strLine + p_oScenarioItem.m_oOptimizationVariableItem_Collection.Item(x).strFilterOperator + " " +
+                            p_oScenarioItem.m_oOptimizationVariableItem_Collection.Item(x).dblFilterValue.ToString().Trim();
+                    }
+
+
+
+                    strLine = strLine + "\r\n";
 
                 }
             }
@@ -4065,28 +4065,28 @@ namespace FIA_Biosum_Manager
                 if (p_oScenarioItem.m_oTieBreaker_Collection.Item(x).RxCycle == "1" &&
                     p_oScenarioItem.m_oTieBreaker_Collection.Item(x).bSelected)
                 {
-                     strLine = strLine + "Method: " +
-                       p_oScenarioItem.m_oTieBreaker_Collection.Item(x).strMethod + "\r\n";
+                    strLine = strLine + "Method: " +
+                      p_oScenarioItem.m_oTieBreaker_Collection.Item(x).strMethod + "\r\n";
 
-                     if (p_oScenarioItem.m_oTieBreaker_Collection.Item(x).strMethod.Trim().ToUpper() ==
-                          "LAST TIE-BREAK RANK")
-                     {
-                         bUseRxIntensity = true;
-                     }
-                     else
-                     {
-                         strLine = strLine + "FVS Variable Name: " +
-                             p_oScenarioItem.m_oTieBreaker_Collection.Item(x).strFVSVariableName + "\r\n";
-                         strLine = strLine + "Value Source: " +
-                             p_oScenarioItem.m_oTieBreaker_Collection.Item(x).strValueSource + "\r\n";
-                     }
-                     strLine = strLine + "Aggregate Search: ";
-                     if (p_oScenarioItem.m_oTieBreaker_Collection.Item(x).strMaxYN == "Y")
-                         strLine = strLine + "Maximum\r\n";
-                     else
-                         strLine = strLine + "Minimum\r\n";
+                    if (p_oScenarioItem.m_oTieBreaker_Collection.Item(x).strMethod.Trim().ToUpper() ==
+                         "LAST TIE-BREAK RANK")
+                    {
+                        bUseRxIntensity = true;
+                    }
+                    else
+                    {
+                        strLine = strLine + "FVS Variable Name: " +
+                            p_oScenarioItem.m_oTieBreaker_Collection.Item(x).strFVSVariableName + "\r\n";
+                        strLine = strLine + "Value Source: " +
+                            p_oScenarioItem.m_oTieBreaker_Collection.Item(x).strValueSource + "\r\n";
+                    }
+                    strLine = strLine + "Aggregate Search: ";
+                    if (p_oScenarioItem.m_oTieBreaker_Collection.Item(x).strMaxYN == "Y")
+                        strLine = strLine + "Maximum\r\n";
+                    else
+                        strLine = strLine + "Minimum\r\n";
 
-                     
+
                     strLine = strLine + "\r\n\r\n";
 
                 }
@@ -4096,7 +4096,7 @@ namespace FIA_Biosum_Manager
                 strLine = strLine + "\r\nLast Tie-Break Rank Assignments\r\n";
                 strLine = strLine + "------------------------------------\r\n";
                 strLine = strLine + "--RxPackage-- --Last_TieBreak_Rank--\r\n";
-                
+
                 for (x = 0; x <= p_oScenarioItem.m_oLastTieBreakRankItem_Collection.Count - 1; x++)
                 {
                     strLine = strLine + String.Format("{0,-3}{1,11}",
@@ -4131,7 +4131,7 @@ namespace FIA_Biosum_Manager
             oValidate.RoundDecimalLength = 2;
             oValidate.ValidateDecimal(p_oScenarioItem.m_oTranCosts.RoadHaulCostPerGreenTonPerHour);
             if (oValidate.m_intError == 0)
-                strLine=strLine + oValidate.ReturnValue + "\r\n";
+                strLine = strLine + oValidate.ReturnValue + "\r\n";
             else
             {
                 strLine = strLine + "NA\r\n";
@@ -4160,6 +4160,17 @@ namespace FIA_Biosum_Manager
             {
                 strLine = strLine + "NA\r\n";
             }
+            strLine = strLine + "Prevent Economic Downgrade: \r\n";
+            strLine = strLine + "Merch: " + p_oScenarioItem.m_oRevenue.PreventMerchEconomicDowngrade.ToString() + "\r\n";
+            strLine = strLine + "Wood 4: " + p_oScenarioItem.m_oRevenue.PreventWood4EconomicDowngrade.ToString() + "\r\n";
+            strLine = strLine + "Wood 5: " + p_oScenarioItem.m_oRevenue.PreventWood5EconomicDowngrade.ToString() + "\r\n";
+            strLine = strLine + "Wood 6: " + p_oScenarioItem.m_oRevenue.PreventWood6EconomicDowngrade.ToString() + "\r\n";
+            strLine = strLine + "Hog Fuel: " + p_oScenarioItem.m_oRevenue.PreventChipsEconomicDowngrade.ToString() + "\r\n";
+            strLine = strLine + "Prevent Downgrade When No Facility Exists: \r\n";
+            strLine = strLine + "Merch: " + p_oScenarioItem.m_oRevenue.PreventMerchNoFacilityDowngrade.ToString() + "\r\n";
+            strLine = strLine + "Wood 4: " + p_oScenarioItem.m_oRevenue.PreventWood4NoFacilityDowngrade.ToString() + "\r\n";
+            strLine = strLine + "Wood 5: " + p_oScenarioItem.m_oRevenue.PreventWood5NoFacilityDowngrade.ToString() + "\r\n";
+            strLine = strLine + "Wood 6: " + p_oScenarioItem.m_oRevenue.PreventWood6NoFacilityDowngrade.ToString() + "\r\n";
 
             strLine = strLine + "\r\n";
             strLine = strLine + "Land Ownership Groups Filter\r\n";
