@@ -334,7 +334,8 @@ namespace FIA_Biosum_Manager
                         "'ECON', 'ECON_BY_RX_UTILIZED_SUM.wood4_wt_bdt', 'omit'), ('wood5_dry_weight_1', 'Sum of wood5 dry weight for 4 cycles. Each cycle is weighted at 1', " +
                         "'ECON', 'ECON_BY_RX_UTILIZED_SUM.wood5_wt_bdt', 'omit'), ('wood6_dry_weight_1', 'Sum of wood6 dry weight for 4 cycles. Each cycle is weighted at 1', " +
                         "'ECON', 'ECON_BY_RX_UTILIZED_SUM.wood6_wt_bdt', 'omit'), ('total_bole_wood_dry_weight_1', 'Sum of merch, wood4, wood5, and wood6 dry weights " +
-                        "for 4 cycles. Each cycle is weighted at 1', 'ECON', 'CALCULATED', 'omit')";
+                        "for 4 cycles. Each cycle is weighted at 1', 'ECON', 'CALCULATED', 'omit'), ('total_dry_weight_1', 'Sum of chips, merch, wood4, wood5, and wood6 " +
+                        "dry weights for 4 cycles. Each cycle is weighted at 1', 'ECON', 'CALCULATED', 'omit')";
                     oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
 
                     oDataMgr.m_strSQL = "INSERT INTO " + Tables.OptimizerDefinitions.DefaultCalculatedEconVariablesTableName +
@@ -348,7 +349,8 @@ namespace FIA_Biosum_Manager
                         "(" + (intVariables + 7) + ", '1', 1), (" + (intVariables + 7) + ", '2', 1), (" + (intVariables + 7) + ", '3', 1), (" + (intVariables + 7) + ", '4', 1), " +
                         "(" + (intVariables + 8) + ", '1', 1), (" + (intVariables + 8) + ", '2', 1), (" + (intVariables + 8) + ", '3', 1), (" + (intVariables + 8) + ", '4', 1), " +
                         "(" + (intVariables + 9) + ", '1', 1), (" + (intVariables + 9) + ", '2', 1), (" + (intVariables + 9) + ", '3', 1), (" + (intVariables + 9) + ", '4', 1), " +
-                        "(" + (intVariables + 10) + ", '1', 1), (" + (intVariables + 10) + ", '2', 1), (" + (intVariables + 10) + ", '3', 1), (" + (intVariables + 10) + ", '4', 1)";
+                        "(" + (intVariables + 10) + ", '1', 1), (" + (intVariables + 10) + ", '2', 1), (" + (intVariables + 10) + ", '3', 1), (" + (intVariables + 10) + ", '4', 1), " +
+                        "(" + (intVariables + 11) + ", '1', 1), (" + (intVariables + 11) + ", '2', 1), (" + (intVariables + 11) + ", '3', 1), (" + (intVariables + 11) + ", '4', 1)";
                     oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
                 }
             }

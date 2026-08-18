@@ -64,7 +64,7 @@ namespace FIA_Biosum_Manager
         public const string PREFIX_WOOD4_DRY_WEIGHT = "wood4_dry_weight";
         public const string PREFIX_WOOD5_DRY_WEIGHT = "wood5_dry_weight";
         public const string PREFIX_WOOD6_DRY_WEIGHT = "wood6_dry_weight";
-        public const string PREFIX_TOTAL_BOLE_DRY_WEIGHT = "total_bole_dry_weight";
+        public const string PREFIX_TOTAL_BOLE_DRY_WEIGHT = "total_bole_wood_dry_weight";
         public const string PREFIX_TOTAL_DRY_WEIGHT = "total_dry_weight";
         public const string PREFIX_NET_REVENUE = "net_revenue";
         public const string PREFIX_TREATMENT_HAUL_COSTS = "treatment_haul_costs";
