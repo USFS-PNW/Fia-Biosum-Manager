@@ -3970,7 +3970,94 @@ namespace FIA_Biosum_Manager
                                 ELSE harvest_cpa END WHERE additional_cpa = 0 and harvest_cpa IS NOT NULL AND harvest_cpa > 0";
                 return strSql;
             }
-        }        
+        } 
+        public class Optimizer
+        {
+            public static string UpdateFieldsFromResidueFlag(string p_strEconByRxCycleWorkTable, string p_strWoodType)
+            {
+                string strSql = $@"UPDATE {p_strEconByRxCycleWorkTable} 
+                                SET {p_strWoodType}_vol_cf = 0, {p_strWoodType}_merch_wt_gt, {p_strWoodType}_wt_bdt = 0, 
+                                {p_strWoodType}_val_dpa = 0, {p_strWoodType}_haul_cost_dpa = 0, {p_strWoodType}_hcr_dpa = 0 
+                                WHERE use{p_strWoodType} = 'R'";
+                return strSql;
+            }
+
+            public static string UpdateChipFieldsFromHogFuelFlag(string p_strEconByRxCycleWorkTable, 
+                string p_strWoodType, string p_strChipValue)
+            {
+                string strSql = $@"UPDATE {p_strEconByRxCycleWorkTable} 
+                                SET chip_vol_cf = chip_vol_cf + {p_strWoodType}_vol_cf, chip_wt_gt = chip_wt_gt + {p_strWoodType}_wt_gt, 
+                                chip_wt_bdt = chip_wt_bdt + {p_strWoodType}_wt_bdt, 
+                                chip_val_dpa = chip_val_dpa + ({p_strChipValue} * {p_strWoodType}_wt_gt) 
+                                WHERE use{p_strWoodType} = 'H'";
+                return strSql;
+            }
+
+            public static string UpdateChipHaulCostCycle1(string p_strEconByRxCycleWorkTable, string p_strWoodType)
+            {
+                string strSql = $@"UPDATE {p_strEconByRxCycleWorkTable} 
+                                SET chip_haul_cost_dpa = chip_haul_cost_dpa + ({p_strWoodType}_wt_gt * 
+                                {Tables.OptimizerScenarioResults.DefaultScenarioResultsPSiteAccessibleWorkTableName}.chip_haul_cost_dpgt)  
+                                FROM {Tables.OptimizerScenarioResults.DefaultScenarioResultsPSiteAccessibleWorkTableName} 
+                                WHERE use{p_strWoodType} = 'H' AND rxcycle = '1'";
+                return strSql;
+            }
+
+            public static string UpdateChipHaulCostCycle2(string p_strEconByRxCycleWorkTable, 
+                string p_strWoodType, string p_strOperatingEscalator)
+            {
+                string strSql = $@"UPDATE {p_strEconByRxCycleWorkTable} 
+                                SET chip_haul_cost_dpa = chip_haul_cost_dpa + ({p_strWoodType}_wt_gt * 
+                                {Tables.OptimizerScenarioResults.DefaultScenarioResultsPSiteAccessibleWorkTableName}.chip_haul_cost_dpgt *
+                                {p_strOperatingEscalator}) 
+                                FROM {Tables.OptimizerScenarioResults.DefaultScenarioResultsPSiteAccessibleWorkTableName} 
+                                WHERE use{p_strWoodType} = 'H' AND rxcycle = '2'";
+                return strSql;
+            }
+
+            public static string UpdateChipHaulCostCycle3(string p_strEconByRxCycleWorkTable,
+                string p_strWoodType, string p_strOperatingEscalator)
+            {
+                string strSql = $@"UPDATE {p_strEconByRxCycleWorkTable} 
+                                SET chip_haul_cost_dpa = chip_haul_cost_dpa + ({p_strWoodType}_wt_gt * 
+                                {Tables.OptimizerScenarioResults.DefaultScenarioResultsPSiteAccessibleWorkTableName}.chip_haul_cost_dpgt *
+                                {p_strOperatingEscalator}) 
+                                FROM {Tables.OptimizerScenarioResults.DefaultScenarioResultsPSiteAccessibleWorkTableName} 
+                                WHERE use{p_strWoodType} = 'H' AND rxcycle = '3'";
+                return strSql;
+            }
+
+            public static string UpdateChipHaulCostCycle4(string p_strEconByRxCycleWorkTable,
+                string p_strWoodType, string p_strOperatingEscalator)
+            {
+                string strSql = $@"UPDATE {p_strEconByRxCycleWorkTable} 
+                                SET chip_haul_cost_dpa = chip_haul_cost_dpa + ({p_strWoodType}_wt_gt * 
+                                {Tables.OptimizerScenarioResults.DefaultScenarioResultsPSiteAccessibleWorkTableName}.chip_haul_cost_dpgt *
+                                {p_strOperatingEscalator}) 
+                                FROM {Tables.OptimizerScenarioResults.DefaultScenarioResultsPSiteAccessibleWorkTableName} 
+                                WHERE use{p_strWoodType} = 'H' AND rxcycle = '4'";
+                return strSql;
+            }
+
+            public static string AddChippingCosts(string p_strEconByRxCycleWorkTable, 
+                string p_strWoodType, string p_strOpcostCostsTable)
+            {
+                string strSql = $@"UPDATE {p_strEconByRxCycleWorkTable} 
+                                SET harvest_onsite_cost_dpa = harvest_onsite_cost_dpa + (((0.0015 * 
+                                {p_strWoodType}_wt_gt * 2000) / 60) * {p_strOpcostCostsTable}.DefaultCPH) 
+                                FROM opcost_ref.{p_strOpcostCostsTable} WHERE use{p_strWoodType} = 'H'";
+                return strSql;
+            }
+
+            public static string ZeroOutFieldsFromHogFuelFlag(string p_strEconByRxCycleWorkTable, string p_strWoodType)
+            {
+                string strSql = $@"UPDATE {p_strEconByRxCycleWorkTable} 
+                                SET {p_strWoodType}_vol_cf = 0, {p_strWoodType}_merch_wt_gt, {p_strWoodType}_wt_bdt = 0, 
+                                {p_strWoodType}_val_dpa = 0, {p_strWoodType}_haul_cost_dpa = 0, {p_strWoodType}_hcr_dpa = 0 
+                                WHERE use{p_strWoodType} = 'H'";
+                return strSql;
+            }
+        }
 		public class Reference
 		{
 			

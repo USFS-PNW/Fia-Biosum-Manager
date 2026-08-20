@@ -7448,6 +7448,12 @@ namespace FIA_Biosum_Manager
                 p_dataMgr.m_strSQL = "ATTACH DATABASE '" + m_strSystemResultsDbPathAndFile + "' AS results";
                 p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
 
+                p_dataMgr.m_strSQL = "ATTACH DATABASE '" + m_strProcessorResultsPathAndFile + "' AS processor_results";
+                p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
+
+                p_dataMgr.m_strSQL = "ATTACH DATABASE '" + Tables.Reference.DefaultOpCostReferenceDbFile + "' AS opcost_ref";
+                p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
+
                 /********************************************
                  **delete all records in the table
                  ********************************************/
@@ -7465,16 +7471,232 @@ namespace FIA_Biosum_Manager
                 }
                 FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
 
-                // We manipulate econ_by_rx_worktable to zero out some chip fields if use_biomass_yn='N'
-                // Then we sum from the worktable to get the correct numbers in the summary fields
-                p_dataMgr.m_strSQL = "UPDATE " + m_strEconByRxWorkTableName +
-                    " SET chip_vol_cf = CASE WHEN usebiomass_yn = 'N' THEN 0 ELSE chip_vol_cf END, " +
-                    "chip_wt_gt = CASE WHEN usebiomass_yn = 'N' THEN 0 ELSE chip_wt_gt END, " +
-                    "chip_val_dpa = CASE WHEN usebiomass_yn = 'N' THEN 0 ELSE chip_val_dpa END, " +
-                    "chip_haul_cost_dpa = CASE WHEN usebiomass_yn = 'N' THEN 0 ELSE chip_haul_cost_dpa END";
+                // Manipulate the econ_by_rx_worktable to update values based on use fields
+                // and then sum from the work table
 
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\nUpdate " + m_strEconByRxWorkTableName + " based on use_biomass_yn values\r\n");
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\nUpdate " + m_strEconByRxWorkTableName + " based on use wood values\r\n");
+
+                // Update fields where use flag is R (residue)
+                p_dataMgr.m_strSQL = Queries.Optimizer.UpdateFieldsFromResidueFlag(m_strEconByRxWorkTableName, "merch");
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
+                p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
+
+                p_dataMgr.m_strSQL = Queries.Optimizer.UpdateFieldsFromResidueFlag(m_strEconByRxWorkTableName, "wood4");
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
+                p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
+
+                p_dataMgr.m_strSQL = Queries.Optimizer.UpdateFieldsFromResidueFlag(m_strEconByRxWorkTableName, "wood5");
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
+                p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
+
+                p_dataMgr.m_strSQL = Queries.Optimizer.UpdateFieldsFromResidueFlag(m_strEconByRxWorkTableName, "wood6");
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
+                p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
+
+                p_dataMgr.m_strSQL = Queries.Optimizer.UpdateFieldsFromResidueFlag(m_strEconByRxWorkTableName, "chip");
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
+                p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
+
+                p_dataMgr.m_strSQL = "UPDATE " + m_strEconByRxWorkTableName +
+                    " SET harvest_onsite_cost_dpa = harvest_onsite_cost_dpa - hc.chip_cpa - hc.yarding_chip_cpa " +
+                    "FROM processor_results.harvest_costs AS hc WHERE usebiomass = 'R'";
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
+                p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
+
+                // Update fields where use flag is 'H' (send to hog fuel/chips)         
+                string strChipValue = "-1";
+                for (int x = 0; x < this.m_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Count - 1; x++)
+                {
+                    ProcessorScenarioItem.TreeSpeciesAndDbhDollarValuesItem oItem =
+                      this.m_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x);
+                    if (Convert.ToDouble(strChipValue) < Convert.ToDouble(oItem.ChipsDollarPerCubicFootValue.Trim()))
+                    {
+                        strChipValue = oItem.ChipsDollarPerCubicFootValue.Trim();
+                    }
+                }
+
+                // merch
+                p_dataMgr.m_strSQL = Queries.Optimizer.UpdateChipFieldsFromHogFuelFlag(m_strEconByRxWorkTableName, "merch", strChipValue);
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
+                p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
+
+                p_dataMgr.m_strSQL = Queries.Optimizer.UpdateChipHaulCostCycle1(m_strEconByRxWorkTableName, "merch");
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
+                p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
+
+                p_dataMgr.m_strSQL = Queries.Optimizer.UpdateChipHaulCostCycle2(m_strEconByRxWorkTableName, "merch", 
+                    m_oProcessorScenarioItem.m_oEscalators.OperatingCostsCycle2);
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
+                p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
+
+                p_dataMgr.m_strSQL = Queries.Optimizer.UpdateChipHaulCostCycle3(m_strEconByRxWorkTableName, "merch",
+                    m_oProcessorScenarioItem.m_oEscalators.OperatingCostsCycle3);
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
+                p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
+
+                p_dataMgr.m_strSQL = Queries.Optimizer.UpdateChipHaulCostCycle4(m_strEconByRxWorkTableName, "merch",
+                    m_oProcessorScenarioItem.m_oEscalators.OperatingCostsCycle4);
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
+                p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
+
+                p_dataMgr.m_strSQL = Queries.Optimizer.AddChippingCosts(m_strEconByRxWorkTableName, "merch", "opcost_cost_ref");
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
+                p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
+
+                p_dataMgr.m_strSQL = Queries.Optimizer.ZeroOutFieldsFromHogFuelFlag(m_strEconByRxWorkTableName, "merch");
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
+                p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
+
+                // wood4
+                p_dataMgr.m_strSQL = Queries.Optimizer.UpdateChipFieldsFromHogFuelFlag(m_strEconByRxWorkTableName, "wood4", strChipValue);
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
+                p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
+
+                p_dataMgr.m_strSQL = Queries.Optimizer.UpdateChipHaulCostCycle1(m_strEconByRxWorkTableName, "wood4");
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
+                p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
+
+                p_dataMgr.m_strSQL = Queries.Optimizer.UpdateChipHaulCostCycle2(m_strEconByRxWorkTableName, "wood4",
+                    m_oProcessorScenarioItem.m_oEscalators.OperatingCostsCycle2);
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
+                p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
+
+                p_dataMgr.m_strSQL = Queries.Optimizer.UpdateChipHaulCostCycle3(m_strEconByRxWorkTableName, "wood4",
+                    m_oProcessorScenarioItem.m_oEscalators.OperatingCostsCycle3);
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
+                p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
+
+                p_dataMgr.m_strSQL = Queries.Optimizer.UpdateChipHaulCostCycle4(m_strEconByRxWorkTableName, "wood4",
+                    m_oProcessorScenarioItem.m_oEscalators.OperatingCostsCycle4);
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
+                p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
+
+                p_dataMgr.m_strSQL = Queries.Optimizer.AddChippingCosts(m_strEconByRxWorkTableName, "wood4", "opcost_cost_ref");
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
+                p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
+
+                p_dataMgr.m_strSQL = Queries.Optimizer.ZeroOutFieldsFromHogFuelFlag(m_strEconByRxWorkTableName, "wood4");
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
+                p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
+
+                // wood5
+                p_dataMgr.m_strSQL = Queries.Optimizer.UpdateChipFieldsFromHogFuelFlag(m_strEconByRxWorkTableName, "wood5", strChipValue);
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
+                p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
+
+                p_dataMgr.m_strSQL = Queries.Optimizer.UpdateChipHaulCostCycle1(m_strEconByRxWorkTableName, "wood5");
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
+                p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
+
+                p_dataMgr.m_strSQL = Queries.Optimizer.UpdateChipHaulCostCycle2(m_strEconByRxWorkTableName, "wood5",
+                    m_oProcessorScenarioItem.m_oEscalators.OperatingCostsCycle2);
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
+                p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
+
+                p_dataMgr.m_strSQL = Queries.Optimizer.UpdateChipHaulCostCycle3(m_strEconByRxWorkTableName, "wood5",
+                    m_oProcessorScenarioItem.m_oEscalators.OperatingCostsCycle3);
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
+                p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
+
+                p_dataMgr.m_strSQL = Queries.Optimizer.UpdateChipHaulCostCycle4(m_strEconByRxWorkTableName, "wood5",
+                    m_oProcessorScenarioItem.m_oEscalators.OperatingCostsCycle4);
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
+                p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
+
+                p_dataMgr.m_strSQL = Queries.Optimizer.AddChippingCosts(m_strEconByRxWorkTableName, "wood5", "opcost_cost_ref");
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
+                p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
+
+                p_dataMgr.m_strSQL = Queries.Optimizer.ZeroOutFieldsFromHogFuelFlag(m_strEconByRxWorkTableName, "wood5");
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
+                p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
+
+                // wood6
+                p_dataMgr.m_strSQL = Queries.Optimizer.UpdateChipFieldsFromHogFuelFlag(m_strEconByRxWorkTableName, "wood6", strChipValue);
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
+                p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
+
+                p_dataMgr.m_strSQL = Queries.Optimizer.UpdateChipHaulCostCycle1(m_strEconByRxWorkTableName, "wood6");
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
+                p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
+
+                p_dataMgr.m_strSQL = Queries.Optimizer.UpdateChipHaulCostCycle2(m_strEconByRxWorkTableName, "wood6",
+                    m_oProcessorScenarioItem.m_oEscalators.OperatingCostsCycle2);
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
+                p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
+
+                p_dataMgr.m_strSQL = Queries.Optimizer.UpdateChipHaulCostCycle3(m_strEconByRxWorkTableName, "wood6",
+                    m_oProcessorScenarioItem.m_oEscalators.OperatingCostsCycle3);
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
+                p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
+
+                p_dataMgr.m_strSQL = Queries.Optimizer.UpdateChipHaulCostCycle4(m_strEconByRxWorkTableName, "wood6",
+                    m_oProcessorScenarioItem.m_oEscalators.OperatingCostsCycle4);
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
+                p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
+
+                p_dataMgr.m_strSQL = Queries.Optimizer.AddChippingCosts(m_strEconByRxWorkTableName, "wood6", "opcost_cost_ref");
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
+                p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
+
+                p_dataMgr.m_strSQL = Queries.Optimizer.ZeroOutFieldsFromHogFuelFlag(m_strEconByRxWorkTableName, "wood6");
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
+                p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
+
+                // Recalculate chip_hcr_dpa
+                p_dataMgr.m_strSQL = "UPDATE " + m_strEconByRxWorkTableName +
+                    " SET chip_hcr_dpa = chip_val_dpa - chip_haul_cost_dpa";
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
+                p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
+
+                // Recalculate haul_cost_dpa
+                p_dataMgr.m_strSQL = "UPDATE " + m_strEconByRxWorkTableName +
+                    " SET haul_cost_dpa = IFNULL(chip_haul_cost_dpa, 0) + IFNULL(merch_haul_cost_dpa, 0) + " +
+                    "IFNULL(wood4_haul_cost_dpa, 0) + IFNULL(wood5_haul_cost_dpa, 0) + IFNULL(wood6_haul_cost_dpa, 0)";
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
+                p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
+
+                // Recalculate total_nr_dpa
+                p_dataMgr.m_strSQL = "UPDATE " + m_strEconByRxWorkTableName +
+                    " SET total_nr_dpa = IFNULL(chip_hcr_dpa, 0) + IFNULL(merch_hcr_dpa, 0) + " +
+                    "IFNULL(wood4_hcr_dpa, 0) + IFNULL(wood5_hcr_dpa, 0) + IFNULL(wood6_hcr_dpa, 0) - harvest_onsite_cost_dpa";
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
                 p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
