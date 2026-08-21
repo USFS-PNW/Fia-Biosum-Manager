@@ -503,7 +503,7 @@ namespace FIA_Biosum_Manager
                     "wood4_wt_gt DOUBLE," +
                     "wood5_wt_gt DOUBLE," +
                     "wood6_wt_gt DOUBLE," +
-                    "chip_wt_bdt DOUBLE," +
+                    "chip_wt_bdt_utilized DOUBLE," +
                     "merch_wt_bdt DOUBLE," +
                     "wood4_wt_bdt DOUBLE," +
                     "wood5_wt_bdt DOUBLE," +

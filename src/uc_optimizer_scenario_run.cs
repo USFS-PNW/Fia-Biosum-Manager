@@ -7719,30 +7719,34 @@ namespace FIA_Biosum_Manager
 
                 p_dataMgr.m_strSQL = "INSERT INTO " + Tables.OptimizerScenarioResults.DefaultScenarioResultsEconByRxUtilSumTableName +
                     " (biosum_cond_id, rxpackage, chip_vol_cf_utilized, merch_vol_cf, wood4_vol_cf, wood5_vol_cf, wood6_vol_cf, chip_wt_gt_utilized, merch_wt_gt, " +
-                    "wood4_wt_gt, wood5_wt_gt, wood6_wt_gt, chip_val_dpa_utilized, " +
+                    "wood4_wt_gt, wood5_wt_gt, wood6_wt_gt, chip_wt_bdt_utilized, merch_wt_bdt, wood4_wt_bdt, wood5_wt_bdt, wood6_wt_bdt, chip_val_dpa_utilized, " +
                     "merch_val_dpa, wood4_val_dpa, wood5_val_dpa, wood6_val_dpa,  harvest_onsite_cost_dpa, chip_haul_cost_dpa_utilized, merch_haul_cost_dpa, " +
-                    "wood4_haul_cost_dpa, wood5_haul_cost_dpa, wood6_haul_cost_dpa, merch_chip_nr_dpa, " +
-                    "merch_nr_dpa, wood4_nr_dpa, wood5_nr_dpa, wood6_nr_dpa, max_nr_dpa, haul_costs_dpa, treated_acres,acres, owngrpcd) " +
+                    "wood4_haul_cost_dpa, wood5_haul_cost_dpa, wood6_haul_cost_dpa, chip_hcr_dpa, " +
+                    "merch_hcr_dpa, wood4_hcr_dpa, wood5_hcr_dpa, wood6_hcr_dpa, total_nr_dpa, haul_costs_dpa, treated_acres,acres, owngrpcd) " +
                     "SELECT a.biosum_cond_id, a.rxpackage, a.sum_chip_yield_cf AS chip_vol_cf_utilized, a.sum_merch_yield_cf AS merch_vol_cf, " +
                     "a.sum_wood4_yield_cf AS wood4_vol_cf, a.sum_wood5_yield_cf AS wood5_vol_cf, a.sum_wood6_yield_cf AS wood6_vol_cf, " +
                     "a.sum_chip_yield_gt AS chip_wt_gt_utilized, a.sum_merch_yield_gt AS merch_wt_gt, a.sum_wood4_yield_gt AS wood4_wt_gt, " +
-                    "a.sum_wood5_yield_gt AS wood5_wt_gt, a.sum_wood6_yield_gt AS wood6_wt_gt, a.sum_chip_val_dpa AS chip_val_dpa_utilized, " +
+                    "a.sum_wood5_yield_gt AS wood5_wt_gt, a.sum_wood6_yield_gt AS wood6_wt_gt, a.sum_chip_yield_bdt AS chip_wt_bdt_utilized, " +
+                    "a.sum_merch_yield_bdt AS merch_wt_bdt, a.sum_wood4_yield_bdt AS wood4_wt_bdt, " +
+                    "a.sum_wood5_yield_bdt AS wood5_wt_bdt, a.sum_wood6_yield_bdt AS wood6_wt_bdt, a.sum_chip_val_dpa AS chip_val_dpa_utilized, " +
                     "a.sum_merch_val_dpa AS merch_val_dpa, a.sum_wood4_val_dpa AS wood4_val_dpa, a.sum_wood5_val_dpa AS wood5_val_dpa, a.sum_wood6_val_dpa AS wood6_val_dpa, " +
                     "a.sum_harvest_onsite_dpa AS harvest_onsite_cost_dpa, a.sum_haul_chip_dpa AS chip_haul_cost_dpa_utilized, " +
                     "a.sum_haul_merch_dpa AS merch_haul_cost_dpa, a.sum_haul_wood4_dpa AS wood4_haul_cost_dpa, a.sum_haul_wood5_dpa AS wood5_haul_cost_dpa, a.sum_haul_wood6_dpa AS wood6_haul_cost_dpa, " +
-                    "a.sum_merch_chip_nr_dpa AS merch_chip_nr_dpa, a.sum_merch_nr_dpa AS merch_nr_dpa, a.sum_wood4_nr_dpa AS wood4_nr_dpa, a.sum_wood5_nr_dpa AS wood5_nr_dpa, a.sum_wood6_nr_dpa AS wood6_nr_dpa, " +
-                    "a.sum_max_nr_dpa AS max_nr_dpa, a.sum_haul_costs_dpa AS haul_costs_dpa, a.sum_treated_acres AS treated_acres, a.acres, a.owngrpcd " +
+                    "a.sum_chip_hcr_dpa AS chip_hcr_dpa, a.sum_merch_hcr_dpa AS merch_hcr_dpa, a.sum_wood4_hcr_dpa AS wood4_hcr_dpa, a.sum_wood5_hcr_dpa AS wood5_hcr_dpa, a.sum_wood6_hcr_dpa AS wood6_hcr_dpa, " +
+                    "a.sum_total_nr_dpa AS total_nr_dpa, a.sum_haul_costs_dpa AS haul_costs_dpa, a.sum_treated_acres AS treated_acres, a.acres, a.owngrpcd " +
                     "FROM (SELECT biosum_cond_id, rxpackage, SUM(IFNULL(chip_vol_cf, 0)) AS sum_chip_yield_cf, SUM(IFNULL(merch_vol_cf, 0)) AS sum_merch_yield_cf, " +
                     "SUM(IFNULL(wood4_vol_cf, 0)) AS sum_wood4_yield_cf, SUM(IFNULL(wood5_vol_cf, 0)) AS sum_wood5_yield_cf, SUM(IFNULL(wood6_vol_cf, 0)) AS sum_wood6_yield_cf, " +
                     "SUM(IFNULL(chip_wt_gt, 0)) AS sum_chip_yield_gt, SUM(IFNULL(merch_wt_gt, 0)) AS sum_merch_yield_gt, SUM(IFNULL(wood4_wt_gt, 0)) AS sum_wood4_yield_gt, " +
-                    "SUM(IFNULL(wood5_wt_gt, 0)) AS sum_wood5_yield_gt, SUM(IFNULL(wood6_wt_gt, 0)) AS sum_wood6_yield_gt, SUM(IFNULL(chip_val_dpa, 0)) AS sum_chip_val_dpa, " +
+                    "SUM(IFNULL(wood5_wt_gt, 0)) AS sum_wood5_yield_gt, SUM(IFNULL(wood6_wt_gt, 0)) AS sum_wood6_yield_gt, SUM(IFNULL(chip_wt_bdt, 0)) AS sum_chip_yield_bdt, " +
+                    "SUM(IFNULL(merch_wt_bdt, 0)) AS sum_merch_yield_bdt, SUM(IFNULL(wood4_wt_bdt, 0)) AS sum_wood4_yield_bdt, SUM(IFNULL(wood5_wt_bdt, 0)) AS sum_wood5_yield_bdt, " +
+                    "SUM(IFNULL(wood6_wt_bdt, 0)) AS sum_wood6_yield_bdt, SUM(IFNULL(chip_val_dpa, 0)) AS sum_chip_val_dpa, " +
                     "SUM(IFNULL(merch_val_dpa, 0)) AS sum_merch_val_dpa, SUM(IFNULL(wood4_val_dpa, 0)) AS sum_wood4_val_dpa, SUM(IFNULL(wood5_val_dpa, 0)) AS sum_wood5_val_dpa, " +
                     "SUM(IFNULL(wood6_val_dpa, 0)) AS sum_wood6_val_dpa, " +
                     "SUM(IFNULL(harvest_onsite_cost_dpa, 0)) AS sum_harvest_onsite_dpa, SUM(IFNULL(chip_haul_cost_dpa, 0)) AS sum_haul_chip_dpa, " +
                     "SUM(IFNULL(merch_haul_cost_dpa, 0)) AS sum_haul_merch_dpa, SUM(IFNULL(wood4_haul_cost_dpa, 0)) AS sum_haul_wood4_dpa, SUM(IFNULL(wood5_haul_cost_dpa, 0)) AS sum_haul_wood5_dpa, " +
-                    "SUM(IFNULL(wood6_haul_cost_dpa, 0)) AS sum_haul_wood6_dpa, SUM(IFNULL(merch_chip_nr_dpa, 0)) AS sum_merch_chip_nr_dpa, SUM(IFNULL(merch_nr_dpa, 0)) AS sum_merch_nr_dpa, " +
-                    "SUM(IFNULL(wood4_nr_dpa, 0)) AS sum_wood4_nr_dpa, SUM(IFNULL(wood5_nr_dpa, 0)) AS sum_wood5_nr_dpa, SUM(IFNULL(wood6_nr_dpa, 0)) AS sum_wood6_nr_dpa, " +
-                    "SUM(IFNULL(max_nr_dpa, 0)) AS sum_max_nr_dpa, SUM(IFNULL(haul_costs_dpa, 0)) AS sum_haul_costs_dpa, SUM(IFNULL(acres, 0)) AS sum_treated_acres, acres, owngrpcd " +
+                    "SUM(IFNULL(wood6_haul_cost_dpa, 0)) AS sum_haul_wood6_dpa, SUM(IFNULL(chip_hcr_dpa, 0)) AS sum_chip_hcr_dpa, SUM(IFNULL(merch_hcr_dpa, 0)) AS sum_merch_hcr_dpa, " +
+                    "SUM(IFNULL(wood4_hcr_dpa, 0)) AS sum_wood4_hcr_dpa, SUM(IFNULL(wood5_hcr_dpa, 0)) AS sum_wood5_hcr_dpa, SUM(IFNULL(wood6_hcr_dpa, 0)) AS sum_wood6_hcr_dpa, " +
+                    "SUM(IFNULL(total_nr_dpa, 0)) AS sum_total_nr_dpa, SUM(IFNULL(haul_costs_dpa, 0)) AS sum_haul_costs_dpa, SUM(IFNULL(acres, 0)) AS sum_treated_acres, acres, owngrpcd " +
                     "FROM " + m_strEconByRxWorkTableName + " GROUP BY biosum_cond_id, rxpackage, acres, owngrpcd) AS a";
 
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
