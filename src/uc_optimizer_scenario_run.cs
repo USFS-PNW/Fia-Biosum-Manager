@@ -1097,6 +1097,7 @@ namespace FIA_Biosum_Manager
         public string m_strPSitePathAndFile;
         public string m_strProcessorResultsPathAndFile;
         private string m_strEconByRxWorkTableName = Tables.OptimizerScenarioResults.DefaultScenarioResultsEconByRxCycleTableName + "_work_table";
+        private string m_strTreeVolValBySpeciesDiamGroupsAdjWorkTableName = Tables.OptimizerScenarioResults.DefaultScenarioResultsTreeVolValBySpeciesDiamGroupsAdjTableName + "_work_table";
         
 		
 		private string m_strLine;
@@ -1582,14 +1583,6 @@ namespace FIA_Biosum_Manager
                     if (m_intError == 0 && ReferenceUserControlScenarioRun.m_bUserCancel == false)
                     {
                         econ_by_rx_utilized_sum();
-                    }
-
-                    /*******************************************************************************
-                     **update wood type values based on how they end up being used 
-                     *******************************************************************************/
-                    if (m_intError == 0 && ReferenceUserControlScenarioRun.m_bUserCancel == false)
-                    {
-                        update_tree_vol_val_by_species_diam_groups_values();
                     }
 
                     /**********************************************************************
@@ -6466,7 +6459,7 @@ namespace FIA_Biosum_Manager
                     "escalator_wood5_haul_cpa_pt DOUBLE, wood5_haul_cost_dpa DOUBLE, " +
                     "escalator_wood6_haul_cpa_pt DOUBLE, wood6_haul_cost_dpa DOUBLE, " +
                     "merch_hcr_dpa DOUBLE, chip_chr_dpa DOUBLE, wood4_hcr_dpa DOUBLE, wood5_hcr_dpa DOUBLE, wood6_hcr_dpa DOUBLE, " +
-                    "usebiomass CHAR(1), usemerch CHAR(1), usewood4 CHAR(1), usewood5 CHAR(1), usewood6 CHAR(1), total_nr_dpa DOUBLE, ";
+                    "usechip CHAR(1), usemerch CHAR(1), usewood4 CHAR(1), usewood5 CHAR(1), usewood6 CHAR(1), total_nr_dpa DOUBLE, ";
 
                 string[] columnsFromCondTable = { "acres", "owngrpcd" };
                 foreach (string column in columnsFromCondTable)
@@ -6490,7 +6483,7 @@ namespace FIA_Biosum_Manager
                     "wood4_wt_gt, wood5_wt_gt, wood6_wt_gt, merch_wt_bdt, chip_wt_bdt, wood4_wt_bdt, wood5_wt_bdt, wood6_wt_bdt, " +
                     "merch_val_dpa, chip_val_dpa, wood4_val_dpa, wood5_val_dpa, wood6_val_dpa, " +
                     "harvest_onsite_cost_dpa, escalator_merch_haul_cpa_pt, usemerch, " +
-                    "escalator_chip_haul_cpa_pt, usebiomass, escalator_wood4_haul_cpa_pt, usewood4, escalator_wood5_haul_cpa_pt, usewood5, escalator_wood6_haul_cpa_pt, usewood6, " +
+                    "escalator_chip_haul_cpa_pt, usechip, escalator_wood4_haul_cpa_pt, usewood4, escalator_wood5_haul_cpa_pt, usewood5, escalator_wood6_haul_cpa_pt, usewood6, " +
                     "merch_hcr_dpa, chip_hcr_dpa, wood4_hcr_dpa, wood5_hcr_dpa, wood6_hcr_dpa, total_nr_dpa, acres, owngrpcd) " +
                     "SELECT vc.biosum_cond_id, vc.rxpackage, vc.rx, vc.rxcycle, " +
                     "tvvs.merch_vol_cf, tvvs.chip_vol_cf, tvvs.wood4_vol_cf, tvvs.wood5_vol_cf, tvvs.wood6_vol_cf, tvvs.merch_wt_gt, tvvs.chip_wt_gt, tvvs.wood4_wt_gt, tvvs.wood5_wt_gt, tvvs.wood6_wt_gt, " +
@@ -6507,7 +6500,7 @@ namespace FIA_Biosum_Manager
                     "CASE WHEN tvvs.rxcycle = '3' THEN psa.chip_haul_cost_dpgt * " + m_oProcessorScenarioItem.m_oEscalators.OperatingCostsCycle3 + " ELSE " +
                     "CASE WHEN tvvs.rxcycle = '4' THEN psa.chip_haul_cost_dpgt * " + m_oProcessorScenarioItem.m_oEscalators.OperatingCostsCycle4 + " ELSE " +
                     "psa.chip_haul_cost_dpgt END END END ELSE 0 END AS escalator_chip_haul_cpa_pt, " +
-                    "CASE WHEN psa.chip_haul_psite IS NULL THEN 'R' ELSE 'U' END AS usebiomass, " +
+                    "CASE WHEN psa.chip_haul_psite IS NULL THEN 'R' ELSE 'U' END AS usechip, " +
                     "CASE WHEN psa.wood4_haul_cost_dpgt IS NOT NULL THEN " +
                     "CASE WHEN tvvs.rxcycle = '2' THEN psa.wood4_haul_cost_dpgt * " + m_oProcessorScenarioItem.m_oEscalators.OperatingCostsCycle2 + " ELSE " +
                     "CASE WHEN tvvs.rxcycle = '3' THEN psa.wood4_haul_cost_dpgt * " + m_oProcessorScenarioItem.m_oEscalators.OperatingCostsCycle3 + " ELSE " +
@@ -6549,12 +6542,12 @@ namespace FIA_Biosum_Manager
 
                 p_dataMgr.m_strSQL = "UPDATE " + m_strEconByRxWorkTableName +
                     " SET merch_hcr_dpa = CASE WHEN usemerch = 'U' THEN merch_val_dpa - merch_haul_cost_dpa ELSE NULL END, " +
-                    "chip_hcr_dpa = CASE WHEN usebiomass = 'U' THEN chip_val_dpa - chip_haul_cost_dpa ELSE NULL END, " +
+                    "chip_hcr_dpa = CASE WHEN usechip = 'U' THEN chip_val_dpa - chip_haul_cost_dpa ELSE NULL END, " +
                     "wood4_hcr_dpa = CASE WHEN usewood4 = 'U' THEN wood4_val_dpa - wood4_haul_cost_dpa ELSE NULL END, " +
                     "wood5_hcr_dpa = CASE WHEN usewood5 = 'U' THEN wood5_val_dpa - wood5_haul_cost_dpa ELSE NULL END, " +
                     "wood6_hcr_dpa = CASE WHEN usewood6 = 'U' THEN wood6_val_dpa - wood6_haul_cost_dpa ELSE NULL END, " +
                     "haul_costs_dpa = CASE WHEN usemerch = 'U' THEN IFNULL(merch_haul_cost_dpa, 0) ELSE 0 END + " +
-                    "CASE WHEN usebiomass = 'U' THEN IFNULL(chip_haul_cost_dpa, 0) ELSE 0 END + " +
+                    "CASE WHEN usechip = 'U' THEN IFNULL(chip_haul_cost_dpa, 0) ELSE 0 END + " +
                     "CASE WHEN usewood4 = 'U' THEN IFNULL(wood4_haul_cost_dpa, 0) ELSE 0 END + " +
                     "CASE WHEN usewood5 = 'U' THEN IFNULL(wood5_haul_cost_dpa, 0) ELSE 0 END + " +
                     "CASE WHEN usewood6 = 'U' THEN IFNULL(wood6_haul_cost_dpa, 0) ELSE 0 END";
@@ -6650,9 +6643,9 @@ namespace FIA_Biosum_Manager
                 {
                     // Only use Biomass if chip revenue is higher than the cost of hauling them
                     p_dataMgr.m_strSQL = "UPDATE " + m_strEconByRxWorkTableName + " AS w " +
-                        "SET usebiomass = CASE WHEN " + strChipValue + " < psa.chip_haul_cost_dpgt THEN 'R' ELSE 'U' END " +
+                        "SET usechip = CASE WHEN " + strChipValue + " < psa.chip_haul_cost_dpgt THEN 'R' ELSE 'U' END " +
                         "FROM " + Tables.OptimizerScenarioResults.DefaultScenarioResultsPSiteAccessibleWorkTableName + " AS psa " +
-                        "WHERE w.biosum_cond_id = psa.biosum_cond_id AND usebiomass = 'U' AND rxcycle = '1'";
+                        "WHERE w.biosum_cond_id = psa.biosum_cond_id AND usechip = 'U' AND rxcycle = '1'";
                     if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                         frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
                     p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
@@ -6667,11 +6660,11 @@ namespace FIA_Biosum_Manager
                     }
 
                     p_dataMgr.m_strSQL = "UPDATE " + m_strEconByRxWorkTableName + " AS w " +
-                        "SET usebiomass = CASE WHEN " + strChipValue + " * " + m_oProcessorScenarioItem.m_oEscalators.EnergyWoodRevenueCycle2 +
+                        "SET usechip = CASE WHEN " + strChipValue + " * " + m_oProcessorScenarioItem.m_oEscalators.EnergyWoodRevenueCycle2 +
                         " < psa.chip_haul_cost_dpgt * " + m_oProcessorScenarioItem.m_oEscalators.OperatingCostsCycle2 +
                         " THEN 'R' ELSE 'U' END " +
                         "FROM " + Tables.OptimizerScenarioResults.DefaultScenarioResultsPSiteAccessibleWorkTableName + " AS psa " +
-                        "WHERE w.biosum_cond_id = psa.biosum_cond_id AND usebiomass = 'U' AND rxcycle = '2'";
+                        "WHERE w.biosum_cond_id = psa.biosum_cond_id AND usechip = 'U' AND rxcycle = '2'";
                     if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                         frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
                     p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
@@ -6686,11 +6679,11 @@ namespace FIA_Biosum_Manager
                     }
 
                     p_dataMgr.m_strSQL = "UPDATE " + m_strEconByRxWorkTableName + " AS w " +
-                        "SET usebiomass = CASE WHEN " + strChipValue + " * " + m_oProcessorScenarioItem.m_oEscalators.EnergyWoodRevenueCycle3 +
+                        "SET usechip = CASE WHEN " + strChipValue + " * " + m_oProcessorScenarioItem.m_oEscalators.EnergyWoodRevenueCycle3 +
                         " < psa.chip_haul_cost_dpgt * " + m_oProcessorScenarioItem.m_oEscalators.OperatingCostsCycle3 +
                         " THEN 'R' ELSE 'U' END " +
                         "FROM " + Tables.OptimizerScenarioResults.DefaultScenarioResultsPSiteAccessibleWorkTableName + " AS psa " +
-                        "WHERE w.biosum_cond_id = psa.biosum_cond_id AND usebiomass = 'U' AND rxcycle = '3'";
+                        "WHERE w.biosum_cond_id = psa.biosum_cond_id AND usechip = 'U' AND rxcycle = '3'";
                     if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                         frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
                     p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
@@ -6705,11 +6698,11 @@ namespace FIA_Biosum_Manager
                     }
 
                     p_dataMgr.m_strSQL = "UPDATE " + m_strEconByRxWorkTableName + " AS w " +
-                        "SET usebiomass = CASE WHEN " + strChipValue + " * " + m_oProcessorScenarioItem.m_oEscalators.EnergyWoodRevenueCycle4 +
+                        "SET usechip = CASE WHEN " + strChipValue + " * " + m_oProcessorScenarioItem.m_oEscalators.EnergyWoodRevenueCycle4 +
                         " < psa.chip_haul_cost_dpgt * " + m_oProcessorScenarioItem.m_oEscalators.OperatingCostsCycle4 +
                         " THEN 'R' ELSE 'U' END " +
                         "FROM " + Tables.OptimizerScenarioResults.DefaultScenarioResultsPSiteAccessibleWorkTableName + " AS psa " +
-                        "WHERE w.biosum_cond_id = psa.biosum_cond_id AND usebiomass = 'U' AND rxcycle = '4'";
+                        "WHERE w.biosum_cond_id = psa.biosum_cond_id AND usechip = 'U' AND rxcycle = '4'";
                     if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                         frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
                     p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
@@ -6727,10 +6720,10 @@ namespace FIA_Biosum_Manager
 
                 // Update merch and middle wood use flags based on biomass use flag
                 p_dataMgr.m_strSQL = "UPDATE " + m_strEconByRxWorkTableName +
-                    " SET usemerch = 'R' WHERE usemerch = 'H' and usebiomass = 'R', " +
-                    "usewood4 = 'R' WHERE usewood4 = 'H' AND usebiomass = 'R', " +
-                    "usewood5 = 'R' WHERE usewood5 = 'H' AND usebiomass = 'R', " +
-                    "usewood6 = 'R' WHERE usewood6 = 'H' AND usebioamss = 'R'";
+                    " SET usemerch = 'R' WHERE usemerch = 'H' and usechip = 'R', " +
+                    "usewood4 = 'R' WHERE usewood4 = 'H' AND usechip = 'R', " +
+                    "usewood5 = 'R' WHERE usewood5 = 'H' AND usechip = 'R', " +
+                    "usewood6 = 'R' WHERE usewood6 = 'H' AND usechip = 'R'";
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
                 p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
@@ -6847,7 +6840,7 @@ namespace FIA_Biosum_Manager
                     "isw.wood4_haul_cost_dpa, isw.wood5_haul_cost_dpa, isw.wood6_haul_cost_dpa, " +
                     "isw.escalator_chip_haul_cpa_pt, isw.chip_haul_cost_dpa, isw.merch_hcr_dpa, " +
                     "isw.chip_hcr_dpa, isw.wood4_hcr_dpa, isw.wood5_hcr_dpa, isw.wood6_hcr_dpa, " +
-                    "'R' AS usebiomass, 'R' AS usemerch, 'R' AS usewood4, 'R' AS usewood5, 'R' AS usewood6, " +
+                    "'R' AS usechip, 'R' AS usemerch, 'R' AS usewood4, 'R' AS usewood5, 'R' AS usewood6, " +
                     "isw.total_nr_dpa, isw.acres, isw.owngrpcd, isw.haul_costs_dpa " +
                     "FROM " + strInactiveStandsWorkTable + " AS isw " +
                     "LEFT OUTER JOIN " + m_strEconByRxWorkTableName + " AS w " +
@@ -6883,7 +6876,7 @@ namespace FIA_Biosum_Manager
                                     "wood5_haul_cost_dpa, wood6_haul_cost_dpa, " +
                                     "chip_haul_cost_dpa, merch_hcr_dpa, " +
                                     "chip_hcr_dpa, wood4_hcr_dpa, wood5_hcr_dpa, wood6_hcr_dpa, " +
-                                    "usebiomass, usemerch, usewood4, usewood5, usewood6, " +
+                                    "usechip, usemerch, usewood4, usewood5, usewood6, " +
                                     "totl_nr_dpa, acres, owngrpcd, haul_costs_dpa) " +
                                 "SELECT biosum_cond_id, rxpackage, rx, rxcycle, " +
                                     "merch_vol_cf, chip_vol_cf, " +
@@ -6897,7 +6890,7 @@ namespace FIA_Biosum_Manager
                                     "wood5_haul_cost_dpa, wood6_haul_cost_dpa, " +
                                     "chip_haul_cost_dpa, merch_hcr_dpa, " +
                                     "chip_hcr_dpa, wood4_hcr_dpa, wood5_hcr_dpa, wood6_hcr_dpa, " +
-                                    "usebiomass, usemerch, usewood4, usewood5, usewood6, " +
+                                    "usechip, usemerch, usewood4, usewood5, usewood6, " +
                                     "total_nr_dpa, acres, owngrpcd, haul_costs_dpa " +
                                 "FROM " + m_strEconByRxWorkTableName;
 
@@ -6915,6 +6908,185 @@ namespace FIA_Biosum_Manager
                 }
 
                 FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
+
+                // Create tree_vol_val_by_species_diam_groups_adj table and update 
+                // values based on use flags in econ_by_rx_cycle_work_table
+                p_dataMgr.m_strSQL = "CREATE TABLE " + m_strTreeVolValBySpeciesDiamGroupsAdjWorkTableName +
+                    " AS SELECT ID, biosum_cond_id, rxpackage, rx, rxcycle, species_group, diam_group, " +
+                    "merch_vol_cf, merch_wt_gt, merch_wt_bdt, merch_val_dpa, chip_vol_cf, chip_wt_gt, chip_wt_bdt, " +
+                    "chip_val_dpa, stand_residue_wt_gt, stand_residue_wt_bdt, wood4_vol_cf, wood4_wt_gt, wood4_wt_bdt, " +
+                    "wood4_val_dpa, wood5_vol_cf, wood5_wt_gt, wood5_wt_bdt, wood5_val_dpa, wood6_vol_cf, wood6_wt_gt, " +
+                    "wood6_wt_bdt, wood6_val_dpa " +
+                    "FROM processor_results." + Tables.ProcessorScenarioRun.DefaultTreeVolValSpeciesDiamGroupsTableName +
+                    " WHERE place_holder = 'N'";
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
+                p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
+                if (p_dataMgr.m_intError != 0)
+                {
+                    if (frmMain.g_bDebug)
+                        frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n!!!Error Executing SQL!!!\r\n");
+                    this.m_intError = p_dataMgr.m_intError;
+                    FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic.TextColor = Color.Red;
+                    FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermText(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic, "!!Error!!");
+                    return;
+                }
+
+                p_dataMgr.AddColumn(workConn, m_strTreeVolValBySpeciesDiamGroupsAdjWorkTableName, "adj_YN", "CHAR", "1");
+
+                // Update where useflag = R (residue)
+                p_dataMgr.m_strSQL = Queries.Optimizer.AdjustTreeVolValFromResidueFlag(m_strTreeVolValBySpeciesDiamGroupsAdjWorkTableName,
+                    "chip", m_strEconByRxWorkTableName);
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
+                p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
+
+                p_dataMgr.m_strSQL = Queries.Optimizer.ZeroTreeVolValFromUseFlag(m_strTreeVolValBySpeciesDiamGroupsAdjWorkTableName,
+                    "chip", m_strEconByRxWorkTableName, "R");
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
+                p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
+
+                p_dataMgr.m_strSQL = Queries.Optimizer.AdjustTreeVolValFromResidueFlag(m_strTreeVolValBySpeciesDiamGroupsAdjWorkTableName,
+                    "merch", m_strEconByRxWorkTableName);
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
+                p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
+
+                p_dataMgr.m_strSQL = Queries.Optimizer.ZeroTreeVolValFromUseFlag(m_strTreeVolValBySpeciesDiamGroupsAdjWorkTableName,
+                    "merch", m_strEconByRxWorkTableName, "R");
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
+                p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
+
+                p_dataMgr.m_strSQL = Queries.Optimizer.AdjustTreeVolValFromResidueFlag(m_strTreeVolValBySpeciesDiamGroupsAdjWorkTableName,
+                    "wood4", m_strEconByRxWorkTableName);
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
+                p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
+
+                p_dataMgr.m_strSQL = Queries.Optimizer.ZeroTreeVolValFromUseFlag(m_strTreeVolValBySpeciesDiamGroupsAdjWorkTableName,
+                    "wood4", m_strEconByRxWorkTableName, "R");
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
+                p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
+
+                p_dataMgr.m_strSQL = Queries.Optimizer.AdjustTreeVolValFromResidueFlag(m_strTreeVolValBySpeciesDiamGroupsAdjWorkTableName,
+                    "wood5", m_strEconByRxWorkTableName);
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
+                p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
+
+                p_dataMgr.m_strSQL = Queries.Optimizer.ZeroTreeVolValFromUseFlag(m_strTreeVolValBySpeciesDiamGroupsAdjWorkTableName,
+                    "wood5", m_strEconByRxWorkTableName, "R");
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
+                p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
+
+                p_dataMgr.m_strSQL = Queries.Optimizer.AdjustTreeVolValFromResidueFlag(m_strTreeVolValBySpeciesDiamGroupsAdjWorkTableName,
+                    "wood6", m_strEconByRxWorkTableName);
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
+                p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
+
+                p_dataMgr.m_strSQL = Queries.Optimizer.ZeroTreeVolValFromUseFlag(m_strTreeVolValBySpeciesDiamGroupsAdjWorkTableName,
+                    "wood6", m_strEconByRxWorkTableName, "R");
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
+                p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
+                if (p_dataMgr.m_intError != 0)
+                {
+                    if (frmMain.g_bDebug)
+                        frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n!!!Error Executing SQL!!!\r\n");
+                    this.m_intError = p_dataMgr.m_intError;
+                    FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic.TextColor = Color.Red;
+                    FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermText(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic, "!!Error!!");
+                    return;
+                }
+
+                // update where useflag = H (hog fuel/chips)
+                p_dataMgr.m_strSQL = Queries.Optimizer.AdjustTreeVolValFromHogFuelFlag(m_strTreeVolValBySpeciesDiamGroupsAdjWorkTableName,
+                    "merch", strChipValue, m_strEconByRxWorkTableName);
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
+                p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
+
+                p_dataMgr.m_strSQL = Queries.Optimizer.ZeroTreeVolValFromUseFlag(m_strTreeVolValBySpeciesDiamGroupsAdjWorkTableName,
+                    "merch", m_strEconByRxWorkTableName, "H");
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
+                p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
+
+                p_dataMgr.m_strSQL = Queries.Optimizer.AdjustTreeVolValFromHogFuelFlag(m_strTreeVolValBySpeciesDiamGroupsAdjWorkTableName,
+                    "wood4", strChipValue, m_strEconByRxWorkTableName);
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
+                p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
+
+                p_dataMgr.m_strSQL = Queries.Optimizer.ZeroTreeVolValFromUseFlag(m_strTreeVolValBySpeciesDiamGroupsAdjWorkTableName,
+                    "wood4", m_strEconByRxWorkTableName, "H");
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
+                p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
+
+                p_dataMgr.m_strSQL = Queries.Optimizer.AdjustTreeVolValFromHogFuelFlag(m_strTreeVolValBySpeciesDiamGroupsAdjWorkTableName,
+                    "wood5", strChipValue, m_strEconByRxWorkTableName);
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
+                p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
+
+                p_dataMgr.m_strSQL = Queries.Optimizer.ZeroTreeVolValFromUseFlag(m_strTreeVolValBySpeciesDiamGroupsAdjWorkTableName,
+                    "wood5", m_strEconByRxWorkTableName, "H");
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
+                p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
+
+                p_dataMgr.m_strSQL = Queries.Optimizer.AdjustTreeVolValFromHogFuelFlag(m_strTreeVolValBySpeciesDiamGroupsAdjWorkTableName,
+                    "wood6", strChipValue, m_strEconByRxWorkTableName);
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
+                p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
+
+                p_dataMgr.m_strSQL = Queries.Optimizer.ZeroTreeVolValFromUseFlag(m_strTreeVolValBySpeciesDiamGroupsAdjWorkTableName,
+                    "wood6", m_strEconByRxWorkTableName, "H");
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
+                p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
+                if (p_dataMgr.m_intError != 0)
+                {
+                    if (frmMain.g_bDebug)
+                        frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n!!!Error Executing SQL!!!\r\n");
+                    this.m_intError = p_dataMgr.m_intError;
+                    FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic.TextColor = Color.Red;
+                    FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermText(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic, "!!Error!!");
+                    return;
+                }
+
+                p_dataMgr.m_strSQL = "UPDATE " + m_strTreeVolValBySpeciesDiamGroupsAdjWorkTableName +
+                    " SET adj_YN = 'N' WHERE adj_YN IS NULL";
+                p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
+                if (p_dataMgr.m_intError != 0)
+                {
+                    if (frmMain.g_bDebug)
+                        frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n!!!Error Executing SQL!!!\r\n");
+                    this.m_intError = p_dataMgr.m_intError;
+                    FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic.TextColor = Color.Red;
+                    FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermText(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic, "!!Error!!");
+                    return;
+                }
+
+                p_dataMgr.m_strSQL = "INSERT INTO " + Tables.OptimizerScenarioResults.DefaultScenarioResultsTreeVolValBySpeciesDiamGroupsAdjTableName +
+                    " SELECT * FROM " + m_strTreeVolValBySpeciesDiamGroupsAdjWorkTableName;
+                p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
+                if (p_dataMgr.m_intError != 0)
+                {
+                    if (frmMain.g_bDebug)
+                        frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n!!!Error Executing SQL!!!\r\n");
+                    this.m_intError = p_dataMgr.m_intError;
+                    FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic.TextColor = Color.Red;
+                    FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermText(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic, "!!Error!!");
+                    return;
+                }
             }
 
             if (this.UserCancel(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic) == true) return;
@@ -6925,11 +7097,6 @@ namespace FIA_Biosum_Manager
             }
 
             p_dataMgr = null;
-        }
-
-        private void update_tree_vol_val_by_species_diam_groups_values()
-        {
-
         }
 
 
@@ -7478,34 +7645,34 @@ namespace FIA_Biosum_Manager
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\nUpdate " + m_strEconByRxWorkTableName + " based on use wood values\r\n");
 
                 // Update fields where use flag is R (residue)
-                p_dataMgr.m_strSQL = Queries.Optimizer.UpdateFieldsFromResidueFlag(m_strEconByRxWorkTableName, "merch");
+                p_dataMgr.m_strSQL = Queries.Optimizer.ZeroEconFieldsFromUseFlag(m_strEconByRxWorkTableName, "merch", "R");
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
                 p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
 
-                p_dataMgr.m_strSQL = Queries.Optimizer.UpdateFieldsFromResidueFlag(m_strEconByRxWorkTableName, "wood4");
+                p_dataMgr.m_strSQL = Queries.Optimizer.ZeroEconFieldsFromUseFlag(m_strEconByRxWorkTableName, "wood4", "R");
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
                 p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
 
-                p_dataMgr.m_strSQL = Queries.Optimizer.UpdateFieldsFromResidueFlag(m_strEconByRxWorkTableName, "wood5");
+                p_dataMgr.m_strSQL = Queries.Optimizer.ZeroEconFieldsFromUseFlag(m_strEconByRxWorkTableName, "wood5", "R");
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
                 p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
 
-                p_dataMgr.m_strSQL = Queries.Optimizer.UpdateFieldsFromResidueFlag(m_strEconByRxWorkTableName, "wood6");
+                p_dataMgr.m_strSQL = Queries.Optimizer.ZeroEconFieldsFromUseFlag(m_strEconByRxWorkTableName, "wood6", "R");
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
                 p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
 
-                p_dataMgr.m_strSQL = Queries.Optimizer.UpdateFieldsFromResidueFlag(m_strEconByRxWorkTableName, "chip");
+                p_dataMgr.m_strSQL = Queries.Optimizer.ZeroEconFieldsFromUseFlag(m_strEconByRxWorkTableName, "chip", "R");
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
                 p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
 
                 p_dataMgr.m_strSQL = "UPDATE " + m_strEconByRxWorkTableName +
                     " SET harvest_onsite_cost_dpa = harvest_onsite_cost_dpa - hc.chip_cpa - hc.yarding_chip_cpa " +
-                    "FROM processor_results.harvest_costs AS hc WHERE usebiomass = 'R'";
+                    "FROM processor_results.harvest_costs AS hc WHERE usechip = 'R'";
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
                 p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
@@ -7556,7 +7723,7 @@ namespace FIA_Biosum_Manager
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
                 p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
 
-                p_dataMgr.m_strSQL = Queries.Optimizer.ZeroOutFieldsFromHogFuelFlag(m_strEconByRxWorkTableName, "merch");
+                p_dataMgr.m_strSQL = Queries.Optimizer.ZeroEconFieldsFromUseFlag(m_strEconByRxWorkTableName, "merch", "H");
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
                 p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
@@ -7595,7 +7762,7 @@ namespace FIA_Biosum_Manager
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
                 p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
 
-                p_dataMgr.m_strSQL = Queries.Optimizer.ZeroOutFieldsFromHogFuelFlag(m_strEconByRxWorkTableName, "wood4");
+                p_dataMgr.m_strSQL = Queries.Optimizer.ZeroEconFieldsFromUseFlag(m_strEconByRxWorkTableName, "wood4", "H");
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
                 p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
@@ -7634,7 +7801,7 @@ namespace FIA_Biosum_Manager
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
                 p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
 
-                p_dataMgr.m_strSQL = Queries.Optimizer.ZeroOutFieldsFromHogFuelFlag(m_strEconByRxWorkTableName, "wood5");
+                p_dataMgr.m_strSQL = Queries.Optimizer.ZeroEconFieldsFromUseFlag(m_strEconByRxWorkTableName, "wood5", "H");
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
                 p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
@@ -7673,7 +7840,7 @@ namespace FIA_Biosum_Manager
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
                 p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
 
-                p_dataMgr.m_strSQL = Queries.Optimizer.ZeroOutFieldsFromHogFuelFlag(m_strEconByRxWorkTableName, "wood6");
+                p_dataMgr.m_strSQL = Queries.Optimizer.ZeroEconFieldsFromUseFlag(m_strEconByRxWorkTableName, "wood6", "H");
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
                 p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);

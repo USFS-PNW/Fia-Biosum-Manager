@@ -3973,12 +3973,12 @@ namespace FIA_Biosum_Manager
         } 
         public class Optimizer
         {
-            public static string UpdateFieldsFromResidueFlag(string p_strEconByRxCycleWorkTable, string p_strWoodType)
+            public static string ZeroEconFieldsFromUseFlag(string p_strEconByRxCycleWorkTable, string p_strWoodType, string p_strUseFlag)
             {
                 string strSql = $@"UPDATE {p_strEconByRxCycleWorkTable} 
                                 SET {p_strWoodType}_vol_cf = 0, {p_strWoodType}_merch_wt_gt, {p_strWoodType}_wt_bdt = 0, 
                                 {p_strWoodType}_val_dpa = 0, {p_strWoodType}_haul_cost_dpa = 0, {p_strWoodType}_hcr_dpa = 0 
-                                WHERE use{p_strWoodType} = 'R'";
+                                WHERE use{p_strWoodType} = '{p_strUseFlag}'";
                 return strSql;
             }
 
@@ -4049,12 +4049,39 @@ namespace FIA_Biosum_Manager
                 return strSql;
             }
 
-            public static string ZeroOutFieldsFromHogFuelFlag(string p_strEconByRxCycleWorkTable, string p_strWoodType)
+            public static string AdjustTreeVolValFromResidueFlag(string p_strTreeVolValBySpeciesDiamGroupsAdjWorkTable,
+                string p_strWoodType, string p_strEconByRxCycleWorkTable)
             {
-                string strSql = $@"UPDATE {p_strEconByRxCycleWorkTable} 
-                                SET {p_strWoodType}_vol_cf = 0, {p_strWoodType}_merch_wt_gt, {p_strWoodType}_wt_bdt = 0, 
-                                {p_strWoodType}_val_dpa = 0, {p_strWoodType}_haul_cost_dpa = 0, {p_strWoodType}_hcr_dpa = 0 
-                                WHERE use{p_strWoodType} = 'H'";
+                string strSql = $@"UPDATE {p_strTreeVolValBySpeciesDiamGroupsAdjWorkTable} AS t
+                                SET stand_residue_wt_gt = stand_residue_wt_gt + {p_strWoodType}_wt_gt, 
+                                stand_residue_wt_bdt = stand_residue_wt_bdt + {p_strWoodType}_wt_bdt 
+                                FROM {p_strEconByRxCycleWorkTable} AS e WHERE t.biosum_cond_id = e.biosum_cond_id 
+                                AND t.rx = e.rx AND t.rxcycle = e.rxcycle AND e.use{p_strWoodType} = 'R'";
+                return strSql;
+            }
+
+            public static string AdjustTreeVolValFromHogFuelFlag(string p_strTreeVolValBySpeciesDiamGroupsAdjWorkTable, 
+                string p_strWoodType, string p_strChipValue, string p_strEconByRxCycleWorkTable)
+            {
+                string strSql = $@"UPDATE {p_strTreeVolValBySpeciesDiamGroupsAdjWorkTable} AS t 
+                                SET chip_vol_cf = chip_vol_cf + {p_strWoodType}_vol_cf, 
+                                chip_wt_gt = chip_wt_gt + {p_strWoodType}_wt_gt, 
+                                chip_wt_bdt = chip_wt_bdt + {p_strWoodType}_wt_bdt, 
+                                chip_val_dpa = chip_val_dpa + ({p_strChipValue} * {p_strWoodType}_wt_gt) 
+                                FROM {p_strEconByRxCycleWorkTable} AS e WHERE t.biosum_cond_id = e.biosum_cond_id 
+                                AND t.rx = e.rx AND t.rxcycle = e.rxcycle AND e.use{p_strWoodType} = 'H'";
+                return strSql;
+            }
+
+            public static string ZeroTreeVolValFromUseFlag(string p_strTreeVolValBySpeciesDiamGroupsAdjWorkTable, 
+                string p_strWoodType, string p_strEconByRxCycleWorkTable, string p_strUseFlag)
+            {
+                string strSql = $@"UPATE {p_strTreeVolValBySpeciesDiamGroupsAdjWorkTable} AS t 
+                                SET {p_strWoodType}_vol_cf = 0, {p_strWoodType}_wt_gt = 0, 
+                                {p_strWoodType}_wt_bdt = 0, {p_strWoodType}_val_dpa = 0, 
+                                adj_YN = 'Y' FROM {p_strEconByRxCycleWorkTable} AS e 
+                                WHERE t.biosum_cond_id = e.biosum_cond_id AND t.rx = e.rx AND 
+                                t.rxcycle = e.rxcycle AND e.use{p_strWoodType} = '{p_strUseFlag}'";
                 return strSql;
             }
         }

@@ -469,7 +469,7 @@ namespace FIA_Biosum_Manager
                     "wood4_hcr_dpa DOUBLE," +
                     "wood5_hcr_dpa DOUBLE," +
                     "wood6_hcr_dpa DOUBLE," +
-                    "usebiomass CHAR(1)," +
+                    "usechip CHAR(1)," +
                     "usemerch CHAR(1)," +
                     "usewood4 CHAR(1)," +
                     "usewood5 CHAR(1)," +
