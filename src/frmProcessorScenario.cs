@@ -3109,18 +3109,27 @@ namespace FIA_Biosum_Manager
             strLine = strLine + "\r\nTree Species And Diameter Group Market Value Assignment\r\n";
             strLine = strLine + "------------------------------------------------------------\r\n";
             strLine = strLine + "Chip Market Value (Dollars Per Green Ton): " + strChipMarketValue + "\r\n\r\n";
-            strLine = strLine + "--Species--              --Dia--         --*ChipValue-- --ChipPct-- --MerchValue-- --MerchPct--\r\n";
+            strLine = strLine + "--Species--              --Dia--         --*ChipValue-- --ChipPct-- --MerchValue-- --MerchPct-- --Wood4Value-- --Wood4Pct-- --Wood5Value-- --Wood5Pct-- --Wood6Value-- --Wood6Pct--\r\n";
             for (x = 0; x <= p_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Count - 1; x++)
             {
                 string strMerchValue = p_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).MerchDollarPerCubicFootValue;
                 string strChipValue = p_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).ChipsDollarPerCubicFootValue;
-                strLine = strLine + String.Format("{0,-25}{1,-11}{2,13}{3,13}{4,16}{5,13}",
+                string strWood4Value = p_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).Wood4DollarPerCubicFootValue;
+                string strWood5Value = p_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).Wood5DollarPerCubicFootValue;
+                string strWood6Value = p_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).Wood6DollarPerCubicFootValue;
+                strLine = strLine + String.Format("{0,-25}{1,-11}{2,13}{3,13}{4,16}{5,12}{6,15}{7,12}{8,16}{9,13}{10,16}{11,13}",
                                 p_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).SpeciesGroup,
                                 p_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).DbhGroup,
                                 strChipValue,
                                 p_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).ChipPercent,
                                 strMerchValue,
-                                p_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).MerchPercent);
+                                p_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).MerchPercent,
+                                strWood4Value,
+                                p_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).Wood4Percent,
+                                strWood5Value,
+                                p_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).Wood5Percent,
+                                strWood6Value,
+                                p_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).Wood6Percent);
                 strLine = strLine + "\r\n";
 
             }
