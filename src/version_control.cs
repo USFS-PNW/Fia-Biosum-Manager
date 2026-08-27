@@ -136,7 +136,7 @@ namespace FIA_Biosum_Manager
             }
 
 
-            UpdateDatasources_5_13_1(frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory);
+            //UpdateDatasources_5_13_1(frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory);
             frmMain.g_oFrmMain.DeactivateStandByAnimation();
 
             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
@@ -352,6 +352,12 @@ namespace FIA_Biosum_Manager
                         "(" + (intVariables + 11) + ", '1', 1), (" + (intVariables + 11) + ", '2', 1), (" + (intVariables + 11) + ", '3', 1), (" + (intVariables + 11) + ", '4', 1)";
                     oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
                 }
+
+                // find any instances with net_revenue variable and replace MAX_NR_DPA in source with TOTAL_NR_DPA
+                oDataMgr.m_strSQL = "UPDATE " + Tables.OptimizerDefinitions.DefaultCalculatedOptimizerVariablesTableName +
+                    " SET VARIABLE_SOURCE = 'ECON_BY_RX_UTILIZED_SUM.TOTAL_NR_DPA' " +
+                    "WHERE INSTR(VARIABLE_NAME, 'net_revenue') > 0";
+                oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
             }
 
 
