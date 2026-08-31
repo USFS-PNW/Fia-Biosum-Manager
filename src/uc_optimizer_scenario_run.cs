@@ -6596,6 +6596,12 @@ namespace FIA_Biosum_Manager
                     }
                     p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
                 }
+                else if (ReferenceUserControlScenarioRun.ReferenceOptimizerScenarioForm.uc_scenario_costs1.PreventMerchNoFacilityDowngrade)
+                {
+                    p_dataMgr.m_strSQL = "UPDATE " + m_strEconByRxWorkTableName +
+                        " SET usemerch = 'R' WHERE usemerch = 'H'";
+                    p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
+                }
                 if (ReferenceUserControlScenarioRun.ReferenceOptimizerScenarioForm.uc_scenario_costs1.PreventWood4EconomicDowngrade == false)
                 {
                     if (ReferenceUserControlScenarioRun.ReferenceOptimizerScenarioForm.uc_scenario_costs1.PreventWood4NoFacilityDowngrade)
@@ -6608,6 +6614,12 @@ namespace FIA_Biosum_Manager
                         p_dataMgr.m_strSQL = "UPDATE " + m_strEconByRxWorkTableName +
                             " SET usewood4 = 'H' WHERE usewood4 = 'U' AND wood4_hcr_dpa < 0";
                     }
+                    p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
+                }
+                else if (ReferenceUserControlScenarioRun.ReferenceOptimizerScenarioForm.uc_scenario_costs1.PreventWood4NoFacilityDowngrade)
+                {
+                    p_dataMgr.m_strSQL = "UPDATE " + m_strEconByRxWorkTableName +
+                        " SET usewood4 = 'R' WHERE usewood4 = 'H'";
                     p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
                 }
                 if (ReferenceUserControlScenarioRun.ReferenceOptimizerScenarioForm.uc_scenario_costs1.PreventWood5EconomicDowngrade == false)
@@ -6624,6 +6636,12 @@ namespace FIA_Biosum_Manager
                     }
                     p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
                 }
+                else if (ReferenceUserControlScenarioRun.ReferenceOptimizerScenarioForm.uc_scenario_costs1.PreventWood5NoFacilityDowngrade)
+                {
+                    p_dataMgr.m_strSQL = "UPDATE " + m_strEconByRxWorkTableName +
+                        " SET usewood5 = 'R' WHERE usewood5 = 'H'";
+                    p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
+                }
                 if (ReferenceUserControlScenarioRun.ReferenceOptimizerScenarioForm.uc_scenario_costs1.PreventWood6EconomicDowngrade == false)
                 {
                     if (ReferenceUserControlScenarioRun.ReferenceOptimizerScenarioForm.uc_scenario_costs1.PreventWood6NoFacilityDowngrade)
@@ -6636,6 +6654,12 @@ namespace FIA_Biosum_Manager
                         p_dataMgr.m_strSQL = "UPDATE " + m_strEconByRxWorkTableName +
                             " SET usewood6 = 'H' WHERE usewood6 = 'U' AND wood6_hcr_dpa < 0";
                     }
+                    p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
+                }
+                else if (ReferenceUserControlScenarioRun.ReferenceOptimizerScenarioForm.uc_scenario_costs1.PreventWood6NoFacilityDowngrade)
+                {
+                    p_dataMgr.m_strSQL = "UPDATE " + m_strEconByRxWorkTableName +
+                        " SET usewood6 = 'R' WHERE usewood6 = 'H'";
                     p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
                 }
 
