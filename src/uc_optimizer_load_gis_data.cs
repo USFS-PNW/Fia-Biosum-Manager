@@ -69,18 +69,6 @@ namespace FIA_Biosum_Manager
                     return;
                 }
             }
-            // Check for existence of MoveDist_ft_REPLACEMENT field
-            m_strSourceField = "MoveDist_ft_REPLACEMENT";
-            if (m_oGisTools.CheckPlotGisTable(m_strMasterDb, m_strSourceField))
-            {
-                ckUpdateYardingDistance.Visible = true;
-                ckUpdateYardingDistance.Checked = false;
-            }
-            else
-            {
-                ckUpdateYardingDistance.Visible = false;
-                ckUpdateYardingDistance.Checked = false;
-            }
         }
 
         private void BtnLoad_Click(object sender, EventArgs e)
@@ -95,7 +83,17 @@ namespace FIA_Biosum_Manager
                 txtMaxOneWayHours.Focus();
                 return;
             }
-
+            // Ensure MoveDist_ft_REPLACEMENT field exists in plot_gis if updating yarding distance
+            if (ckUpdateYardingDistance.Checked)
+            {
+                m_strSourceField = "MoveDist_ft_REPLACEMENT";
+                if (m_oGisTools.CheckPlotGisTable(m_strMasterDb, m_strSourceField) == false)
+                {
+                    MessageBox.Show($@"The yarding distance cannot be updated from the plot_gis table because the {m_strSourceField} is missing from that table. Load cancelled!", "FIA BioSum");
+                    return;
+                }
+            }
+ 
             frmMain.g_oFrmMain.ActivateStandByAnimation(
                 frmMain.g_oFrmMain.WindowState,
                 frmMain.g_oFrmMain.Left,
