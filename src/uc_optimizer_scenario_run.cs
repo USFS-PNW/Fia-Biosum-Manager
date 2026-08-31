@@ -6720,10 +6720,10 @@ namespace FIA_Biosum_Manager
 
                 // Update merch and middle wood use flags based on biomass use flag
                 p_dataMgr.m_strSQL = "UPDATE " + m_strEconByRxWorkTableName +
-                    " SET usemerch = CASE WHEN usemerch = 'H' AND usechip = 'R' THEN 'R' ELSE 'H' END, " +
-                    "usewood4 = CASE WHEN usewood4 = 'H' AND usechip = 'R' THEN 'R' ELSE 'H' END, " +
-                    "usewood5 = CASE WHEN usewood5 = 'H' AND usechip = 'R' THEN 'R' ELSE 'H' END, " +
-                    "usewood6 = CASE WHEN usewood6 = 'H' AND usechip = 'R' THEN 'R' ELSE 'H' END";
+                    " SET usemerch = CASE WHEN usemerch = 'H' AND usechip = 'R' THEN 'R' ELSE usemerch END, " +
+                    "usewood4 = CASE WHEN usewood4 = 'H' AND usechip = 'R' THEN 'R' ELSE usewood4 END, " +
+                    "usewood5 = CASE WHEN usewood5 = 'H' AND usechip = 'R' THEN 'R' ELSE usewood5 END, " +
+                    "usewood6 = CASE WHEN usewood6 = 'H' AND usechip = 'R' THEN 'R' ELSE usewood6 END";
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
                 p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
