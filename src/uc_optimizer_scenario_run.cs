@@ -6956,6 +6956,21 @@ namespace FIA_Biosum_Manager
                     return;
                 }
 
+                p_dataMgr.m_strSQL = "DELETE FROM " + m_strTreeVolValBySpeciesDiamGroupsAdjWorkTableName +
+                    " WHERE biosum_cond_id NOT IN SELECT biosum_cond_id FROM " + m_strEconByRxWorkTableName;
+                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
+                p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
+                if (p_dataMgr.m_intError != 0)
+                {
+                    if (frmMain.g_bDebug)
+                        frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n!!!Error Executing SQL!!!\r\n");
+                    this.m_intError = p_dataMgr.m_intError;
+                    FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic.TextColor = Color.Red;
+                    FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermText(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic, "!!Error!!");
+                    return;
+                }
+
                 p_dataMgr.AddColumn(workConn, m_strTreeVolValBySpeciesDiamGroupsAdjWorkTableName, "adj_YN", "CHAR", "1");
 
                 // Update where useflag = R (residue)
