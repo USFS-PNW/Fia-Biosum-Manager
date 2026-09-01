@@ -6957,7 +6957,7 @@ namespace FIA_Biosum_Manager
                 }
 
                 p_dataMgr.m_strSQL = "DELETE FROM " + m_strTreeVolValBySpeciesDiamGroupsAdjWorkTableName +
-                    " WHERE biosum_cond_id NOT IN SELECT biosum_cond_id FROM " + m_strEconByRxWorkTableName;
+                    " WHERE biosum_cond_id NOT IN (SELECT biosum_cond_id FROM " + m_strEconByRxWorkTableName + ")";
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
                 p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);

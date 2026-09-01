@@ -132,11 +132,22 @@ namespace FIA_Biosum_Manager
                         UpdateProjectVersionFile(strProjVersionFile);
                         bPerformCheck = false;
                     }
+
+                    // Upgraded from 5.13.0 to 5.13.1 (additional wood types)
+                    if ((Convert.ToInt16(m_strAppVerArray[APP_VERSION_MAJOR]) == 5 &&
+                        Convert.ToInt16(m_strAppVerArray[APP_VERSION_MINOR1]) == 13 && 
+                        Convert.ToInt16(m_strAppVerArray[APP_VERSION_MINOR2]) == 1) && 
+                        (Convert.ToInt16(m_strProjectVersionArray[APP_VERSION_MAJOR]) == 5 && 
+                        Convert.ToInt16(m_strProjectVersionArray[APP_VERSION_MINOR1]) == 13 && 
+                        Convert.ToInt16(m_strProjectVersionArray[APP_VERSION_MINOR2]) == 0))
+                    {
+                        UpdateDatasources_5_13_1(frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory);
+                        UpdateProjectVersionFile(strProjVersionFile);
+                        bPerformCheck = false;
+                    }
                 }
             }
 
-
-            //UpdateDatasources_5_13_1(frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory);
             frmMain.g_oFrmMain.DeactivateStandByAnimation();
 
             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
