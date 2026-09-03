@@ -7676,9 +7676,6 @@ namespace FIA_Biosum_Manager
                 p_dataMgr.m_strSQL = "ATTACH DATABASE '" + m_strSystemResultsDbPathAndFile + "' AS results";
                 p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
 
-                p_dataMgr.m_strSQL = "ATTACH DATABASE '" + m_strProcessorResultsPathAndFile + "' AS processor_results";
-                p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
-
                 p_dataMgr.m_strSQL = "ATTACH DATABASE '" + Tables.Reference.DefaultOpCostReferenceDbFile + "' AS opcost_ref";
                 p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
 
@@ -7727,13 +7724,6 @@ namespace FIA_Biosum_Manager
                 p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
 
                 p_dataMgr.m_strSQL = Queries.Optimizer.ZeroEconFieldsFromUseFlag(m_strEconByRxWorkTableName, "chip", "R");
-                if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
-                    frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
-                p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
-
-                p_dataMgr.m_strSQL = "UPDATE " + m_strEconByRxWorkTableName +
-                    " SET harvest_onsite_cost_dpa = harvest_onsite_cost_dpa - hc.chip_cpa - hc.yarding_chip_cpa " +
-                    "FROM processor_results.harvest_costs AS hc WHERE usechip = 'R'";
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
                 p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
