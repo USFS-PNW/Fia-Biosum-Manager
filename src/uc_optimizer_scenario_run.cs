@@ -2439,7 +2439,7 @@ namespace FIA_Biosum_Manager
             string strTransferMerchCost;
             string strTransferChipCost;
 
-            FIA_Biosum_Manager.RunOptimizer.g_intCurrentProgressBarBasicMaximumSteps = 27;
+            FIA_Biosum_Manager.RunOptimizer.g_intCurrentProgressBarBasicMaximumSteps = 60;
             FIA_Biosum_Manager.RunOptimizer.g_intCurrentProgressBarBasicMinimumSteps = 1;
             FIA_Biosum_Manager.RunOptimizer.g_intCurrentProgressBarBasicCurrentStep = 1;
 
@@ -6365,7 +6365,7 @@ namespace FIA_Biosum_Manager
                         ReferenceUserControlScenarioRun.listViewEx1, "Summarize Wood Product Volume Yields, Costs, And Net Revenue For A Stand And Treatment");
 
             FIA_Biosum_Manager.RunOptimizer.g_intCurrentListViewItem = intListViewIndex;
-            FIA_Biosum_Manager.RunOptimizer.g_intCurrentProgressBarBasicMaximumSteps = 5;
+            FIA_Biosum_Manager.RunOptimizer.g_intCurrentProgressBarBasicMaximumSteps = 14;
             FIA_Biosum_Manager.RunOptimizer.g_intCurrentProgressBarBasicMinimumSteps = 1;
             FIA_Biosum_Manager.RunOptimizer.g_intCurrentProgressBarBasicCurrentStep = 1;
             FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic = (ProgressBarBasic.ProgressBarBasic)ReferenceUserControlScenarioRun.listViewEx1.GetEmbeddedControl(1, FIA_Biosum_Manager.RunOptimizer.g_intCurrentListViewItem);
@@ -6530,6 +6530,8 @@ namespace FIA_Biosum_Manager
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
                 p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
 
+                FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
+
                 p_dataMgr.m_strSQL = "UPDATE " + m_strEconByRxWorkTableName +
                     " SET merch_haul_cost_dpa = escalator_merch_haul_cpa_pt * merch_wt_gt, " +
                     "chip_haul_cost_dpa = escalator_chip_haul_cpa_pt * chip_wt_gt, " +
@@ -6565,6 +6567,8 @@ namespace FIA_Biosum_Manager
                     FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermText(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic, "!!Error!!");
                     return;
                 }
+
+                FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
 
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\nUpdates to " + m_strEconByRxWorkTableName + "\r\n");
@@ -6683,6 +6687,8 @@ namespace FIA_Biosum_Manager
                         return;
                     }
 
+                    FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
+
                     p_dataMgr.m_strSQL = "UPDATE " + m_strEconByRxWorkTableName + " AS w " +
                         "SET usechip = CASE WHEN " + strChipValue + " * " + m_oProcessorScenarioItem.m_oEscalators.EnergyWoodRevenueCycle2 +
                         " < psa.chip_haul_cost_dpgt * " + m_oProcessorScenarioItem.m_oEscalators.OperatingCostsCycle2 +
@@ -6740,6 +6746,8 @@ namespace FIA_Biosum_Manager
 
                         return;
                     }
+
+                    FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
                 }
 
                 // Update merch and middle wood use flags based on biomass use flag
@@ -6760,6 +6768,8 @@ namespace FIA_Biosum_Manager
                     FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermText(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic, "!!Error!!");
                     return;
                 }
+
+                FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
 
                 // Set total_nr_dpa
                 p_dataMgr.m_strSQL = "UPDATE " + m_strEconByRxWorkTableName +
@@ -6852,6 +6862,8 @@ namespace FIA_Biosum_Manager
                     FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermText(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic, "!!Error!!");
                     return;
                 }
+
+                FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
 
                 p_dataMgr.m_strSQL = "INSERT INTO " + m_strEconByRxWorkTableName +
                     " SELECT isw.biosum_cond_id, isw.rxpackage, isw.rx, isw.rxcycle, isw.merch_vol_cf, " +
@@ -6956,6 +6968,8 @@ namespace FIA_Biosum_Manager
                     return;
                 }
 
+                FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
+
                 p_dataMgr.m_strSQL = "DELETE FROM " + m_strTreeVolValBySpeciesDiamGroupsAdjWorkTableName +
                     " WHERE biosum_cond_id NOT IN (SELECT biosum_cond_id FROM " + m_strEconByRxWorkTableName + ")";
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
@@ -6970,6 +6984,8 @@ namespace FIA_Biosum_Manager
                     FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermText(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic, "!!Error!!");
                     return;
                 }
+
+                FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
 
                 p_dataMgr.AddColumn(workConn, m_strTreeVolValBySpeciesDiamGroupsAdjWorkTableName, "adj_YN", "CHAR", "1");
 
@@ -7043,6 +7059,8 @@ namespace FIA_Biosum_Manager
                     return;
                 }
 
+                FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
+
                 // update where useflag = H (hog fuel/chips)
                 p_dataMgr.m_strSQL = Queries.Optimizer.AdjustTreeVolValFromHogFuelFlag(m_strTreeVolValBySpeciesDiamGroupsAdjWorkTableName,
                     "merch", strChipValue, m_strEconByRxWorkTableName);
@@ -7101,6 +7119,8 @@ namespace FIA_Biosum_Manager
                     return;
                 }
 
+                FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
+
                 p_dataMgr.m_strSQL = "UPDATE " + m_strTreeVolValBySpeciesDiamGroupsAdjWorkTableName +
                     " SET adj_YN = 'N' WHERE adj_YN IS NULL";
                 p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
@@ -7113,6 +7133,8 @@ namespace FIA_Biosum_Manager
                     FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermText(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic, "!!Error!!");
                     return;
                 }
+
+                FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
 
                 p_dataMgr.m_strSQL = "INSERT INTO " + Tables.OptimizerScenarioResults.DefaultScenarioResultsTreeVolValBySpeciesDiamGroupsAdjTableName +
                     " SELECT * FROM " + m_strTreeVolValBySpeciesDiamGroupsAdjWorkTableName;
@@ -7637,7 +7659,7 @@ namespace FIA_Biosum_Manager
                       ReferenceUserControlScenarioRun.listViewEx1, "Summarize Wood Product Volume Yields, Costs, And Net Revenue For A Stand And Treatment Package");
 
             FIA_Biosum_Manager.RunOptimizer.g_intCurrentListViewItem = intListViewIndex;
-            FIA_Biosum_Manager.RunOptimizer.g_intCurrentProgressBarBasicMaximumSteps = 6;
+            FIA_Biosum_Manager.RunOptimizer.g_intCurrentProgressBarBasicMaximumSteps = 10;
             FIA_Biosum_Manager.RunOptimizer.g_intCurrentProgressBarBasicMinimumSteps = 1;
             FIA_Biosum_Manager.RunOptimizer.g_intCurrentProgressBarBasicCurrentStep = 1;
             FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic = (ProgressBarBasic.ProgressBarBasic)ReferenceUserControlScenarioRun.listViewEx1.GetEmbeddedControl(1, FIA_Biosum_Manager.RunOptimizer.g_intCurrentListViewItem);
@@ -7715,6 +7737,8 @@ namespace FIA_Biosum_Manager
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
                 p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
+
+                FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
 
                 // Update fields where use flag is 'H' (send to hog fuel/chips)         
                 string strChipValue = "-1";
@@ -7884,12 +7908,16 @@ namespace FIA_Biosum_Manager
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
                 p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
 
+                FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
+
                 // Recalculate chip_hcr_dpa
                 p_dataMgr.m_strSQL = "UPDATE " + m_strEconByRxWorkTableName +
                     " SET chip_hcr_dpa = chip_val_dpa - chip_haul_cost_dpa";
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
                 p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
+
+                FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
 
                 // Recalculate haul_cost_dpa
                 p_dataMgr.m_strSQL = "UPDATE " + m_strEconByRxWorkTableName +
@@ -7898,6 +7926,8 @@ namespace FIA_Biosum_Manager
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
                 p_dataMgr.SqlNonQuery(workConn, p_dataMgr.m_strSQL);
+
+                FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
 
                 // Recalculate total_nr_dpa
                 p_dataMgr.m_strSQL = "UPDATE " + m_strEconByRxWorkTableName +
