@@ -102,6 +102,7 @@ namespace FIA_Biosum_Manager
             static public string DefaultScenarioResultsFvsWeightedVariablesRefTableName { get { return @"fvs_weighted_variables_ref_C"; } }
             static public string DefaultScenarioResultsEconWeightedVariablesRefTableName { get { return @"econ_weighted_variables_ref_C"; } }
             static public string DefaultScenarioResultsVersionTableName { get { return @"version"; } }
+            static public string DefaultScenarioResultsTreeVolValBySpeciesDiamGroupsAdjTableName { get { return @"tree_vol_val_by_species_diam_groups_adj"; } }
 
             public OptimizerScenarioResults()
             {
@@ -468,7 +469,7 @@ namespace FIA_Biosum_Manager
                     "wood4_hcr_dpa DOUBLE," +
                     "wood5_hcr_dpa DOUBLE," +
                     "wood6_hcr_dpa DOUBLE," +
-                    "usebiomass CHAR(1)," +
+                    "usechip CHAR(1)," +
                     "usemerch CHAR(1)," +
                     "usewood4 CHAR(1)," +
                     "usewood5 CHAR(1)," +
@@ -502,7 +503,7 @@ namespace FIA_Biosum_Manager
                     "wood4_wt_gt DOUBLE," +
                     "wood5_wt_gt DOUBLE," +
                     "wood6_wt_gt DOUBLE," +
-                    "chip_wt_bdt DOUBLE," +
+                    "chip_wt_bdt_utilized DOUBLE," +
                     "merch_wt_bdt DOUBLE," +
                     "wood4_wt_bdt DOUBLE," +
                     "wood5_wt_bdt DOUBLE," +
@@ -621,6 +622,47 @@ namespace FIA_Biosum_Manager
                 p_oDataMgr.SqlNonQuery(p_oConn, CreateVersionTableSQL(p_strTableName));
             }
 
+            //
+            // TREE_VOL_VAL_BY_SPECIES_DIAM_GROUPS_ADJ
+            //
+            public void CreateTreeVolValBySpeciesDiamGroupsAdjTable(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)
+            {
+                p_oDataMgr.SqlNonQuery(p_oConn, CreateTreeVolValBySpeciesDiamGroupsAdjTableSQL(p_strTableName));
+            }
+            static public string CreateTreeVolValBySpeciesDiamGroupsAdjTableSQL(string p_strTableName)
+            {
+                return "CREATE TABLE " + p_strTableName + " (" +
+                    "ID INTEGER PRIMARY KEY," +
+                    "biosum_cond_id CHAR(25)," +
+                    "rxpackage CHAR(3)," +
+                    "rx CHAR(3)," +
+                    "rxcycle CHAR(1)," +
+                    "species_group INTEGER," +
+                    "diam_group INTEGER," +
+                    "merch_vol_cf DOUBLE," +
+                    "merch_wt_gt DOUBLE," +
+                    "merch_wt_bdt DOUBLE," +
+                    "merch_val_dpa DOUBLE," +
+                    "chip_vol_cf DOUBLE," +
+                    "chip_wt_gt DOUBLE," +
+                    "chip_wt_bdt DOUBLE," +
+                    "chip_val_dpa DOUBLE," +
+                    "stand_residue_wt_gt DOUBLE," +
+                    "stand_residue_wt_bdt DOUBLE," +
+                    "wood4_vol_cf DOUBLE," +
+                    "wood4_wt_gt DOUBLE," +
+                    "wood4_wt_bdt DOUBLE," +
+                    "wood4_val_dpa DOUBLE," +
+                    "wood5_vol_cf DOUBLE," +
+                    "wood5_wt_gt DOUBLE," +
+                    "wood5_wt_bdt DOUBLE," +
+                    "wood5_val_dpa DOUBLE," +
+                    "wood6_vol_cf DOUBLE," +
+                    "wood6_wt_gt DOUBLE," +
+                    "wood6_wt_bdt DOUBLE," +
+                    "wood6_val_dpa DOUBLE," +
+                    "adj_YN CHAR(1))";
+            }
             //
             //HARVEST_METHOD_REF TABLE
             //
