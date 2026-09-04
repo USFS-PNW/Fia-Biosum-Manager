@@ -3092,7 +3092,6 @@ namespace FIA_Biosum_Manager
                     "complete_cpa DOUBLE DEFAULT 0," +
                     "chip_cpa DOUBLE ," +
                     "assumed_movein_cpa DOUBLE ," +
-                    "yarding_chip_cpa DOUBLE DEFAULT 0," +
                     "place_holder CHAR(1) DEFAULT 'N'," +
                     "override_YN CHAR(1) DEFAULT 'N'," +
                     "DateTimeCreated CHAR(22)," +
