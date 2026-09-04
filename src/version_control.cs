@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Data.OleDb;
 using System.Linq;
+using System.Windows.Forms;
 
 namespace FIA_Biosum_Manager
 {
@@ -18,6 +19,7 @@ namespace FIA_Biosum_Manager
 		private string m_strProjectVersion="1.0.0";
 		private string[] m_strProjectVersionArray=null;
 		private string _strProjDir="";
+        private int m_intError = 0;
 		public version_control()
 		{
 			//
@@ -129,7 +131,10 @@ namespace FIA_Biosum_Manager
                         Convert.ToInt16(m_strProjectVersionArray[APP_VERSION_MINOR2]) == 1))
                     {
                         UpdateDatasources_5_13_0();
-                        UpdateProjectVersionFile(strProjVersionFile);
+                        if (m_intError == 0)
+                        {
+                            UpdateProjectVersionFile(strProjVersionFile);
+                        }
                         bPerformCheck = false;
                     }
 
@@ -195,6 +200,15 @@ namespace FIA_Biosum_Manager
 
                 string strTreeTable = frmMain.g_oTables.m_oFIAPlot.DefaultTreeTableName;
                 string strPlotTable = frmMain.g_oTables.m_oFIAPlot.DefaultPlotTableName;
+
+                if (oDataMgr.getRecordCount(conn, "SELECT COUNT(*) FROM " + strPlotTable + " WHERE ecosubcd IS NULL", strPlotTable) > 0)
+                {
+                    MessageBox.Show("!!Project cannot be upgraded due to NULL ecosubcd values in the master.db " + strPlotTable +
+                        " table. Close BioSum and manually populate ecosubcd if you wish to upgrade this project!!",
+                        "FIA Biosum", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                    m_intError = -1;
+                    return;
+                }
 
                 if (oDataMgr.ColumnExist(conn, strPlotTable, "precipitation"))
                 {
