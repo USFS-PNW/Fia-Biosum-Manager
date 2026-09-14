@@ -6035,9 +6035,9 @@ namespace FIA_Biosum_Manager
                         strSql = "UPDATE " + strOptimizationTableName + " AS e " +
                             "SET pre_variable_name = '" + oItem.strVariableName + "', " +
                             "post_variable_name = '" + oItem.strVariableName + "', " +
-                            "pre_variable_value = IFNULL(p.chip_wt_bdt, 0) + IFNULL(p.merch_wt_bdt, 0) + " +
+                            "pre_variable_value = IFNULL(p.chip_wt_bdt_utilized, 0) + IFNULL(p.merch_wt_bdt, 0) + " +
                             "IFNULL(p.wood4_wt_bdt, 0) + IFNULL(p.wood5_wt_bdt, 0) + IFNULL(p.wood6_wt_bdt, 0), " +
-                            "post_variable_value = IFNULL(p.chip_wt_bdt, 0) + IFNULL(p.merch_wt_bdt, 0) + " +
+                            "post_variable_value = IFNULL(p.chip_wt_bdt_utilized, 0) + IFNULL(p.merch_wt_bdt, 0) + " +
                             "IFNULL(p.wood4_wt_bdt, 0) + IFNULL(p.wood5_wt_bdt, 0) + IFNULL(p.wood6_wt_bdt, 0), " +
                             "change_value = 0 " +
                             "FROM " + Tables.OptimizerScenarioResults.DefaultScenarioResultsEconByRxUtilSumTableName + " AS p WHERE e.biosum_cond_id = p.biosum_cond_id AND e.rxpackage = p.rxpackage";
@@ -6255,26 +6255,51 @@ namespace FIA_Biosum_Manager
                                 p_dataMgr.m_strSQL = "UPDATE tiebreaker AS e " +
                                     "SET pre_variable1_name = '" + oItem.strFVSVariableName + "', " +
                                     "post_variable1_name = '" + oItem.strFVSVariableName + "', " +
-                                    "pre_variable1_value = CASE WHEN p.chip_vol_cf_utilized + p.merch_vol_cf + p.wood4_vol_cf + " +
-                                    "p.wood5_vol_cf + p.wood6_vol_cf IS NOT NULL THEN p.chip_vol_cf_utilized + p.merch_vol_cf + " +
-                                    "p.wood4_vol_cf + p.wood5_vol_cf + p.wood6_vol_cf ELSE 0 END, " +
-                                    "post_variable1_value = CASE WHEN p.chip_vol_cf_utilized + p.merch_vol_cf + p.wood4_vol_cf + " +
-                                    "p.wood5_vol_cf + p.wood6_vol_cf IS NOT NULL THEN p.chip_vol_cf_utilized + p.merch_vol_cf + " +
-                                    "p.wood4_vol_cf + p.wood5_vol_cf + p.wood6_vol_cf ELSE 0 END, " +
+                                    "pre_variable1_value = IFNULL(p.chip_vol_cf_utilized, 0) + IFNULL(p.merch_vol_cf, 0) + " +
+                                    "IFNULL(p.wood4_vol_cf, 0) + IFNULL(p.wood5_vol_cf, 0) + IFNULL(p.wood6_vol_cf, 0), " +
+                                    "post_variable1_value = IFNULL(p.chip_vol_cf_utilized, 0) + IFNULLL(p.merch_vol_cf, 0) + " +
+                                    "IFNULL(p.wood4_vol_cf, 0) + IFNULL(p.wood5_vol_cf, 0) + IFNULL(p.wood6_vol_cf, 0), " +
                                     "variable1_change = 0 " +
                                     "FROM " + Tables.OptimizerScenarioResults.DefaultScenarioResultsEconByRxUtilSumTableName + " AS p " +
                                     "WHERE e.biosum_cond_id = p.biosum_cond_id AND e.rxpackage = p.rxpackage";
                             }
-                            else if (oItem.strFVSVariableName.Equals("non_residue_wood_volume_1"))
+                            else if (oItem.strFVSVariableName.Equals("total_bole_wood_volume_1"))
                             {
                                 p_dataMgr.m_strSQL = "UPDATE tiebreaker AS e " +
                                     "SET pre_variable1_name = '" + oItem.strFVSVariableName + "', " +
                                     "post_variable1_name = '" + oItem.strFVSVariableName + "', " +
-                                    "pre_variable1_value = p.merch_vol_cf + p.wood4_vol_cf + p.wood5_vol_cf + p.wood6_vol_cf, " +
-                                    "post_variable1_value = p.merch_vol_cf + p.wood4_vol_cf + p.wood5_vol_cf + p.wood6_vol_cf, " +
+                                    "pre_variable1_value = IFNULL(p.merch_vol_cf, 0) + IFNULL(p.wood4_vol_cf, 0) + " +
+                                    "IFNULL(p.wood5_vol_cf, 0) + IFNULL(p.wood6_vol_cf, 0), " +
+                                    "post_variable1_value = IFNULL(p.merch_vol_cf, 0) + IFNULL(p.wood4_vol_cf, 0) + " +
+                                    "IFNULL(p.wood5_vol_cf, 0) + IFNULL(p.wood6_vol_cf, 0), " +
                                     "variable1_change = 0 " +
                                     "FROM " + Tables.OptimizerScenarioResults.DefaultScenarioResultsEconByRxUtilSumTableName + " AS p " +
                                     "WHERE e.biosum_cond_id = p.biosum_cond_id AND e.rxpackage = p.rxpackage";
+                            }
+                            else if (oItem.strFVSVariableName.Equals("total_dry_weight_1"))
+                            {
+                                p_dataMgr.m_strSQL = "UPDATE tiebreaker AS e " +
+                                    "SET pre_variable1_name = '" + oItem.strFVSVariableName + "', " +
+                                    "post_variable1_name = '" + oItem.strFVSVariableName + "', " +
+                                    "pre_variable1_value = IFNULL(p.chip_wt_bdt_utilized, 0) + IFNULL(p.merch_wt_bdt, 0) + " +
+                                    "IFNULL(p.wood4_wt_bdt, 0) + IFNULL(p.wood5_wt_bdt, 0) + IFNULL(p.wood6_wt_bdt, 0), " +
+                                    "post_variable1_value = IFNULL(p.chip_wt_bdt_utilized, 0) + IFNULL(p.merch_wt_bdt, 0) + " +
+                                    "IFNULL(p.wood4_wt_bdt, 0) + IFNULL(p.wood5_wt_bdt, 0) + IFNULL(p.wood6_wt_bdt, 0), " +
+                                    "variable1_change = 0 " +
+                                    "FROM " + Tables.OptimizerScenarioResults.DefaultScenarioResultsEconByRxUtilSumTableName + " AS p " +
+                                    "WHERE e.biosum_cond_id = p.biosum_cond_id AND e.rxpackage = p.rxpackage";
+                            }
+                            else if (oItem.strFVSVariableName.Equals("total_bole_dry_weight_1"))
+                            {
+                                p_dataMgr.m_strSQL = "UPDATE tiebreaker AS e " +
+                                    "SET pre_variable1_name = '" + oItem.strFVSVariableName + "', " +
+                                    "post_variable1_name = '" + oItem.strFVSVariableName + "', " +
+                                    "pre_variable1_value = IFNULL(p.merch_wt_bdt, 0) + IFNULL(p.wood4_wt_bdt, 0) + " +
+                                    "IFNULL(p.wood5_wt_bdt, 0) + IFNULL(p.wood6_wt_bdt, 0), " +
+                                    "post_variable1_value = IFNULL(p.merch_wt_bdt, 0) + IFNULL(p.wood4_wt_bdt, 0) + " +
+                                    "IFNULL(p.wood5_wt_bdt, 0) + IFNULL(p.wood6_wt_bdt, 0), " +
+                                    "variable1_change = 0 " +
+                                    "FROM " + Tables.OptimizerScenarioResults.DefaultScenarioResultsEconByRxUtilSumTableName + " AS p WHERE e.biosum_cond_id = p.biosum_cond_id AND e.rxpackage = p.rxpackage";
                             }
                             else if (oItem.strFVSVariableName.Equals("treatment_haul_costs_1"))
                             {
