@@ -670,6 +670,7 @@ namespace FIA_Biosum_Manager
                         nextInput.TpaCT = nextInput.TpaCT + nextTree.Tpa;
                         nextInput.ChipMerchVolCfPa = nextInput.ChipMerchVolCfPa + nextTree.MerchVolCfPa;
                         nextInput.ChipWtGtPa = nextInput.ChipWtGtPa + nextTree.TotalWtGtPa;
+                        nextInput.TotalCTQmdPa = nextInput.TotalCTQmdPa + nextTree.QmdPa;
                     }
 
                     // Metrics for small log trees
@@ -743,25 +744,10 @@ namespace FIA_Biosum_Manager
                             {
                                 if (nextStand.TpaSL < nextStand.HarvestMethod.MinTpa)
                                 {
-                                    nextStand.TotalSmLogTpaUnadj = nextStand.TpaSL;
+                                    nextStand.TotalUnadjTpaSL = nextStand.TpaSL;
                                     nextStand.TpaSL = nextStand.HarvestMethod.MinTpa;
                                 }
                             }
-
-                    // *** LARGE LOGS ***
-                    double dblLgLogAvgVolume = 0;
-                    double dblLgLogAvgVolumeAdj = 0;
-                    if (nextStand.TotalLgLogTpa > 0)
-                        { dblLgLogAvgVolume = nextStand.LgLogVolCfPa / nextStand.TotalLgLogTpa; }
-                    // Apply OpCost value limits
-                    if (nextStand.TotalLgLogTpa > 0)
-                    {
-                        if (dblLgLogAvgVolume < nextStand.HarvestMethod.MinAvgTreeVolCf)
-                        {
-                            dblLgLogAvgVolumeAdj = dblLgLogAvgVolume;
-                            dblLgLogAvgVolume = nextStand.HarvestMethod.MinAvgTreeVolCf;
-                        }
-                    }
 
                     // ** BA FRAC CUT (INTENSITY) **
                     if (dictFvsPreBasalArea.ContainsKey(nextStand.OpCostStand))
@@ -799,26 +785,22 @@ namespace FIA_Biosum_Manager
                     }
 
                     SQLite.m_strSQL = "INSERT INTO " + m_strOpcostTableName + " " +
-                    "(Stand, [Percent Slope], [One-way Yarding Distance], YearCostCalc, " +
-                    "[Project Elevation], [Harvesting System], [Chip tree per acre], " +
-                    "[Small log trees per acre], [Large log trees per acre]," +
-                    "[Large log trees average vol(ft3)]," +
-                    "BrushCutTPA, [BrushCutAvgVol], RxPackage_Rx_RxCycle, biosum_cond_id, RxPackage, Rx, RxCycle, Move_In_Hours, " +
-                    "Harvest_Area_Assumed_Acres, [Unadjusted One-way Yarding distance], " +
-                    "[Unadjusted Small log trees per acre], " +
-                    "[Unadjusted Large log trees per acre], [Unadjusted Large log trees average vol(ft3)], " +
-                    "ba_frac_cut, QMD_SL, QMD_LL )" +
+                    "(Stand, PercentSlope, OneWayYardingDistance, YearCostCalc, " +
+                    "ProjectElevation, HarvestingSystem, ChipTPA, " +
+                    "SmallLogTPA, LargeLogTPA," +
+                    "BrushCutTPA, BrushCutAvgVol, RxPackage_Rx_RxCycle, biosum_cond_id, RxPackage, Rx, RxCycle, Move_In_Hours, " +
+                    "Harvest_area, UnadjustedOneWayYardingDistance, UnadjustedSmallLogTPA,UnadjustedLargeLogTPA, " +
+                    "ba_frac_cut, QMDin_SL, QMDin_LL, QMDin_CT )" +
                     "VALUES ('" + nextStand.OpCostStand + "', " + nextStand.PercentSlope + ", " + nextStand.YardDist + ", '" + nextStand.RxYear + "', " +
                     nextStand.ProjectElev + ", '" + nextStand.HarvestMethod.Method + "', " + nextStand.TpaCT + ", " +
-                    nextStand.TpaSL + ", " + nextStand.TotalLgLogTpa + ", " + dblLgLogAvgVolume + ", " +
+                    nextStand.TpaSL + ", " + nextStand.TotalLgLogTpa + ", " + 
                     nextStand.TotalBcTpa + ", " + dblBcAvgVolume +
                     ",'" + nextStand.RxPackageRxRxCycle + "', '" + nextStand.CondId + "', '" + nextStand.RxPackage + "', '" +
                     nextStand.Rx + "', '" + nextStand.RxCycle + "', " + nextStand.MoveInHours + ", " +
-                    nextStand.HarvestAreaAssumedAc + ", " + nextStand.YardingDistanceUnadj + ", " +
-                    nextStand.TotalSmLogTpaUnadj + ", " + 
-                    nextStand.TotalLgLogTpaUnadj + ", " + dblLgLogAvgVolumeAdj + ", " + nextStand.BaFracCut + ", " +
-                    nextStand.QMD_SL + ", " + nextStand.QMD_LL +
-                    " )";
+                    nextStand.HarvestArea + ", " + nextStand.UnadjYardingDistance + ", " +
+                    nextStand.TotalUnadjTpaSL + ", " + 
+                    nextStand.TotalUnadjTpaLL + ", " +  nextStand.BaFracCut + ", " +
+                    nextStand.QMD_SL + ", " + nextStand.QMD_LL + "," + nextStand.QMD_CT + " )";
 
                             command.CommandText = SQLite.m_strSQL;
                             command.ExecuteNonQuery();
@@ -2059,19 +2041,20 @@ namespace FIA_Biosum_Manager
             double _dblTpaSL;
             double _dblSmLogMerchVolCfPa;
             double _dblSmLogWtGtPa;
-            double _dblTotalLgLogTpa;
+            double _dblTpaLL;
             double _dblLgLogMerchVolCfPa;
             double _dblLgLogVolCfPa;
             double _dblLgLogWtGtPa;
             double _dblMoveInHours;
-            double _dblHarvestAreaAssumedAc;
-            double _dblYardingDistanceUnadj;
-            double _dblTotalSmLogTpaUnadj;
-            double _dblTotalLgLogTpaUnadj;
+            double _dblHarvestArea;
+            double _dblUnadjYardDist;
+            double _dblUnadjTpaSL;
+            double _dblUnadjTpaLL;
             double _dblTotalBaFracCutNumerator;
             double _dblBaFracCut = -1;
             double _dblSmLogQmdPa;
             double _dblLgLogQmdPa;
+            double _dblCTQmdPa;
 
             public opcostInput(string condId, int percentSlope, string rxCycle, string rxPackage, string rx,
                                string rxYear, double yardingDistance, int elev, harvestMethod harvestMethod, double moveInHours,
@@ -2087,7 +2070,7 @@ namespace FIA_Biosum_Manager
                 _intElev = elev;
                 _objHarvestMethod = harvestMethod;
                 _dblMoveInHours = moveInHours;
-                _dblHarvestAreaAssumedAc = scenarioMoveInCost.AssumedHarvestAreaAc;
+                _dblHarvestArea = scenarioMoveInCost.AssumedHarvestAreaAc;
                 _objScenarioMoveInCost = scenarioMoveInCost;
 
                 // Apply move-in costs yarding threshold; Note that this implementation doesn't record the
@@ -2099,7 +2082,7 @@ namespace FIA_Biosum_Manager
                 //Apply yarding distance minimum
                 if (_dblYardDist < _objHarvestMethod.MinYardDistanceFt)
                 {
-                    _dblYardingDistanceUnadj = _dblYardDist;
+                    _dblUnadjYardDist = _dblYardDist;
                     _dblYardDist = _objHarvestMethod.MinYardDistanceFt;
                 }
             }
@@ -2177,8 +2160,8 @@ namespace FIA_Biosum_Manager
 
             public double TotalLgLogTpa
             {
-                set { _dblTotalLgLogTpa = value; }
-                get { return _dblTotalLgLogTpa; }
+                set { _dblTpaLL = value; }
+                get { return _dblTpaLL; }
             }
 
             public double LgLogMerchVolCfPa
@@ -2219,23 +2202,23 @@ namespace FIA_Biosum_Manager
             {
                 get { return _dblMoveInHours; }
             }
-            public double HarvestAreaAssumedAc
+            public double HarvestArea
             {
-                get { return _dblHarvestAreaAssumedAc; }
+                get { return _dblHarvestArea; }
             }
-            public double YardingDistanceUnadj
+            public double UnadjYardingDistance
             {
-                get { return _dblYardingDistanceUnadj; }
+                get { return _dblUnadjYardDist; }
             }
-            public double TotalSmLogTpaUnadj
+            public double TotalUnadjTpaSL
             {
-                set { _dblTotalSmLogTpaUnadj = value; }
-                get { return _dblTotalSmLogTpaUnadj; }
+                set { _dblUnadjTpaSL = value; }
+                get { return _dblUnadjTpaSL; }
             }
-            public double TotalLgLogTpaUnadj
+            public double TotalUnadjTpaLL
             {
-                set { _dblTotalLgLogTpaUnadj = value; }
-                get { return _dblTotalLgLogTpaUnadj; }
+                set { _dblUnadjTpaLL = value; }
+                get { return _dblUnadjTpaLL; }
             }
             public double TotalBaFracCutNumerator
             {
@@ -2257,6 +2240,12 @@ namespace FIA_Biosum_Manager
                 set { _dblLgLogQmdPa = value; }
                 get { return _dblLgLogQmdPa; }
             }
+            public double TotalCTQmdPa
+            {
+                set { _dblCTQmdPa = value; }
+                get { return _dblCTQmdPa; }
+            }
+
             public double QMD_SL
             {
                 get 
@@ -2264,9 +2253,9 @@ namespace FIA_Biosum_Manager
                     // We may have overwritten the actual tpa value with the adjusted tpa value so we have to
                     // check before using it
                     double dblTotalTpa = _dblTpaSL;
-                    if (_dblTotalSmLogTpaUnadj > 0)
+                    if (_dblUnadjTpaSL> 0)
                     {
-                        dblTotalTpa = _dblTotalSmLogTpaUnadj;
+                        dblTotalTpa = _dblUnadjTpaSL;
                     }
                     if (_dblSmLogQmdPa == 0 || dblTotalTpa == 0)
                     {
@@ -2282,10 +2271,10 @@ namespace FIA_Biosum_Manager
             {
                 get
                 {
-                    double dblTotalTpa = _dblTotalLgLogTpa;
-                    if (_dblTotalLgLogTpaUnadj > 0)
+                    double dblTotalTpa = _dblTpaLL;
+                    if (_dblUnadjTpaLL > 0)
                     {
-                        dblTotalTpa = _dblTotalLgLogTpaUnadj;
+                        dblTotalTpa = _dblUnadjTpaLL;
                     }
                     if (_dblLgLogQmdPa == 0 || dblTotalTpa == 0)
                     {
@@ -2295,6 +2284,20 @@ namespace FIA_Biosum_Manager
                     {
                         return Math.Sqrt(_dblLgLogQmdPa / dblTotalTpa);
                     }
+                }
+            }
+            public double QMD_CT
+            {
+                get
+                {
+                    if (_dblCTQmdPa == 0 || TpaCT == 0)
+                    {
+                        return 0;
+                    }
+                    else
+                    {
+                        return Math.Sqrt(_dblCTQmdPa / TpaCT);
+                    }                   
                 }
             }
 

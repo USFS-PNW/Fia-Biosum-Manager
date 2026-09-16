@@ -2822,6 +2822,35 @@ namespace FIA_Biosum_Manager
                     m_intError = ReferenceProcessorScenarioForm.m_intError;
                 }
 
+                // Ensure we have the correct version of OpCost and Opcost_ref.db        
+                string selectedOpcost = System.IO.Path.GetFileName(frmMain.g_strOPCOSTDirectory);
+                if (!selectedOpcost.ToUpper().Equals(System.IO.Path.GetFileName(frmMain.g_strOpCostVer.ToUpper())))
+                {
+                    MessageBox.Show($@"This version of BioSum requires OpCost version {System.IO.Path.GetFileName(frmMain.g_strOpCostVer)}. The OpCost .R file name should be pointed to this version on the settings page. Processor stopped!", "FIABiosum");
+                    m_intError = -1;
+                }
+                bool bOpCostRefOk = false;
+                string opcostRefDbPath = frmMain.g_oFrmMain.getProjectDirectory() + "\\" + Tables.Reference.DefaultOpCostReferenceDbFile;
+                SQLite.ADO.DataMgr dataMgr = new SQLite.ADO.DataMgr();
+                if (System.IO.File.Exists(opcostRefDbPath))
+                {
+                    using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(dataMgr.GetConnectionString(opcostRefDbPath)))
+                    {
+                        conn.Open();
+                        string version = dataMgr.getSingleStringValueFromSQLQuery(conn, "SELECT OpCostVersionNum FROM opcost_ref_version", "opcost_ref_version");
+                        if (version.Trim().Equals(frmMain.g_strOpCostRefVer))
+                        {
+                            bOpCostRefOk = true;
+                        }
+                    }
+                }
+                if (!bOpCostRefOk)
+                {
+                    MessageBox.Show($@"This project has an incorrect version of the opcost_ref.db in {System.IO.Path.GetDirectoryName(opcostRefDbPath)}. The most current version can be found in {frmMain.g_oEnv.strAppDir + "\\" + Tables.Reference.DefaultOpCostReferenceDbFile}. Processor stopped!", "FIABiosum");
+                    m_intError = -1;
+                }
+
+
                 if (this.m_intError == 0 && (frmMain.g_oDelegate.m_oThread == null ||
                                              frmMain.g_oDelegate.m_oThread.IsAlive == false))
                 {

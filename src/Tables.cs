@@ -3165,7 +3165,7 @@ namespace FIA_Biosum_Manager
                 // No indexes currently on OpCost input table
             }
 
-            static public string CreateOpcostInputTableSQL(string p_strTableName)
+            static public string CreateOpcostInputTableOldSQL(string p_strTableName)
             {
                 return "CREATE TABLE " + p_strTableName + " " +
                              "(Stand CHAR (50)," +
@@ -3213,6 +3213,50 @@ namespace FIA_Biosum_Manager
                             " QMD_SL DOUBLE," +
                             " QMD_LL DOUBLE" +
                             " )";
+            }
+            static public string CreateOpcostInputTableSQL(string p_strTableName)
+            {
+                return "CREATE TABLE " + p_strTableName + " " +
+                    "(Stand                     CHAR(50)," +
+                    "PercentSlope               INTEGER," +
+                    "OneWayYardingDistance      DOUBLE," +
+                    "YearCostCalc               INTEGER, " +
+                    "ProjectElevation           INTEGER," +
+                    "HarvestingSystem           CHAR(50)," +
+                    "ChipTPA                    DOUBLE," +
+                    "SmallLogTPA                DOUBLE," +
+                    "LargeLogTPA                DOUBLE," +
+                    "BrushCutTPA                DOUBLE," +
+                    "BrushCutAvgVol             DOUBLE, " +
+                    "RxPackage_Rx_RxCycle       CHAR(10), " +
+                    "RxCycle                    CHAR(1)," +
+                    "biosum_cond_id             CHAR(50)," +
+                    "RxPackage                  CHAR(3), " +
+                    "Rx                         CHAR(3), " +
+                    "Move_In_Hours              DOUBLE, " +
+                    "Harvest_area               DOUBLE," +
+                    "UnadjustedOneWayYardingDistance DOUBLE," +
+                    "UnadjustedSmallLogTPA      DOUBLE," +
+                    "UnadjustedLargeLogTPA      DOUBLE," +
+                    "ba_frac_cut                DOUBLE," +
+                    "QMDin_SL                   DOUBLE," +
+                    "QMDin_LL                   DOUBLE," +
+                    "QMDin_CT                   DOUBLE," +
+                    "MeanMerchVol_ft3_CT        DOUBLE," +
+                    "TotalMerchWtLbs_CT         DOUBLE," +
+                    "TotalTreeWtLbs_CT          DOUBLE," +
+                    "MeanMerchVol_ft3_SL        DOUBLE," +
+                    "TotalMerchWtLbs_SL         DOUBLE," +
+                    "TotalTreeWtLbs_SL          DOUBLE," +
+                    "MeanMerchVol_ft3_LL        DOUBLE," +
+                    "TotalMerchWtLbs_LL         DOUBLE," +
+                    "TotalTreeWtLbs_LL          DOUBLE," +
+                    "UnadjustedSmallLogTreesMeanMerchVol_ft3 DOUBLE," +
+                    "UnadjustedLargeLogTreesMeanMerchVol_ft3 DOUBLE," +
+                    "chipFeedstockWeightLbsCT   DOUBLE," +
+                    "chipFeedstockWeightLbsSL   DOUBLE," +
+                    "chipFeedstockWeightLbsLL DOUBLE" +
+                    " )";
             }
 
             public void CreateTreeReconcilationTable(SQLite.ADO.DataMgr p_oDataMgr, System.Data.SQLite.SQLiteConnection p_oConn, string p_strTableName)

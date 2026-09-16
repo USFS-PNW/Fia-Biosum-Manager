@@ -190,6 +190,8 @@ namespace FIA_Biosum_Manager
         public static string g_strAppVer = "5.13.1";
         public static string g_strBiosumDataDir = "\\FIABiosum";
         public static int g_intRefSqliteDbVer = 17;
+        public static string g_strOpCostVer = "Opcost_10_2.R";
+        public static string g_strOpCostRefVer = "10.2";
 
         private System.Windows.Forms.MenuItem mnuSettings;
         private MenuItem mnuTools;
