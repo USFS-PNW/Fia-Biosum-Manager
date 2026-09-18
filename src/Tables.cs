@@ -3253,9 +3253,9 @@ namespace FIA_Biosum_Manager
                     "TotalTreeWtLbs_LL          DOUBLE," +
                     "UnadjustedSmallLogTreesMeanMerchVol_ft3 DOUBLE," +
                     "UnadjustedLargeLogTreesMeanMerchVol_ft3 DOUBLE," +
-                    "chipFeedstockWeightLbsCT   DOUBLE," +
-                    "chipFeedstockWeightLbsSL   DOUBLE," +
-                    "chipFeedstockWeightLbsLL DOUBLE" +
+                    "ChipFeedstockWeightLbs_CT   DOUBLE," +
+                    "ChipFeedstockWeightLbs_SL   DOUBLE," +
+                    "ChipFeedstockWeightLbs_LL DOUBLE" +
                     " )";
             }
 
