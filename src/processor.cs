@@ -697,8 +697,12 @@ namespace FIA_Biosum_Manager
                         nextInput.LgLogMerchWtLbsPa = nextInput.LgLogMerchWtLbsPa + (nextTree.MerchWtGtPa * 2000);
                         nextInput.TotalLgLogQmdPa = nextInput.TotalLgLogQmdPa + nextTree.QmdPa;
                     }
+
+                    // NEW OPCost 10.2 Chip Feedstock Weight
+                    CalculateChipFeedstockValues(ref nextInput, nextTree);
                 }
-                //System.Windows.MessageBox.Show(dictOpcostInput.Keys.Count + " lines in file");
+
+
 
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                     frmMain.g_oUtils.WriteText(m_strDebugFile, "createOpcostInput: Finished reading trees - " + System.DateTime.Now.ToString() + "\r\n");
@@ -828,7 +832,8 @@ namespace FIA_Biosum_Manager
                     "Harvest_area, UnadjustedOneWayYardingDistance, UnadjustedSmallLogTPA,UnadjustedLargeLogTPA, " +
                     "ba_frac_cut, QMDin_SL, QMDin_LL, QMDin_CT, MeanMerchVol_ft3_CT, TotalMerchWtLbs_CT, TotalTreeWtLbs_CT," +
                     "MeanMerchVol_ft3_SL, TotalMerchWtLbs_SL, TotalTreeWtLbs_SL, MeanMerchVol_ft3_LL, TotalMerchWtLbs_LL, TotalTreeWtLbs_LL," +
-                    "UnadjustedSmallLogTreesMeanMerchVol_ft3, UnadjustedLargeLogTreesMeanMerchVol_ft3)" +
+                    "UnadjustedSmallLogTreesMeanMerchVol_ft3, UnadjustedLargeLogTreesMeanMerchVol_ft3, ChipFeedstockWeightLbs_CT, ChipFeedstockWeightLbs_SL," +
+                    "ChipFeedstockWeightLbs_LL)" +
                     "VALUES ('" + nextStand.OpCostStand + "', " + nextStand.PercentSlope + ", " + nextStand.YardDist + ", '" + nextStand.RxYear + "', " +
                     nextStand.ProjectElev + ", '" + nextStand.HarvestMethod.Method + "', " + nextStand.TpaCT + ", " +
                     nextStand.TpaSL + ", " + nextStand.TpaLL + ", " + 
@@ -842,7 +847,8 @@ namespace FIA_Biosum_Manager
                     "," + nextStand.ChipMerchWtLbsPa + "," + nextStand.ChipWtLbsPa +
                     "," + nextStand.SLMeanMerchVol + "," + nextStand.SmLogMerchWtLbsPa + "," + nextStand.SmLogWtLbsPa +
                     "," + nextStand.LLMeanMerchVol + "," + nextStand.LgLogMerchWtLbsPa + "," + nextStand.LgLogWtLbsPa +
-                    "," + nextStand.UnadjSLMeanMerchVol + "," + nextStand.UnadjLLMeanMerchVol + " )";
+                    "," + nextStand.UnadjSLMeanMerchVol + "," + nextStand.UnadjLLMeanMerchVol + "," + nextStand.ChipFeedWtLbsCT +
+                    "," + nextStand.ChipFeedWtLbsSL + "," + nextStand.ChipFeedWtLbsLL + " )";
                             command.CommandText = SQLite.m_strSQL;
                             command.ExecuteNonQuery();
                             lngCount++;
@@ -996,7 +1002,7 @@ namespace FIA_Biosum_Manager
                             default:
                                 break;
                         }
-                        if (nextTree.BiosumCategory == 1 || nextTree.BiosumCategory == 3)
+                        if (nextTree.BiosumCategory == 1 || nextTree.BiosumCategory == 3 || nextTree.BiosumCategory == 5)
                         {
                             if (nextTree.IsCull)
                             {
@@ -1015,7 +1021,25 @@ namespace FIA_Biosum_Manager
                                 nextInput.StandResidueWtBdtPa = nextInput.StandResidueWtBdtPa + nextTree.NonMerchWtBdtPa;
                             }
                         }
-                        else if (nextTree.BiosumCategory == 2 || nextTree.BiosumCategory == 4)
+                        else if (nextTree.BiosumCategory == 2)
+                        {
+                            if (nextTree.IsCull)
+                            {
+                                // Whole tree is chipped
+                                nextInput.ChipVolCfPa = nextInput.ChipVolCfPa + nextTree.TotalVolCfPa;
+                                nextInput.ChipWtGtPa = nextInput.ChipWtGtPa + nextTree.TotalWtGtPa;
+                                nextInput.ChipWtBdtPa = nextInput.ChipWtBdtPa + nextTree.TotalWtBdtPa;
+                            }
+                            else
+                            {
+                                // Bole is merch; nonMerch goes to chips
+                                this.CalculateMerchValues(ref nextInput, nextTree, merchWoodRevEscalator);
+                                nextInput.ChipVolCfPa = nextInput.ChipVolCfPa + nextTree.NonMerchVolCfPa;
+                                nextInput.ChipWtGtPa = nextInput.ChipWtGtPa + nextTree.NonMerchWtGtPa;
+                                nextInput.ChipWtBdtPa = nextInput.ChipWtBdtPa + nextTree.NonMerchWtBdtPa;
+                            }
+                        }
+                        else if (nextTree.BiosumCategory == 4)
                         {
                             if (nextTree.TreeType == OpCostTreeType.SL)
                             {
@@ -1053,23 +1077,6 @@ namespace FIA_Biosum_Manager
                                     nextInput.StandResidueWtGtPa = nextInput.StandResidueWtGtPa + nextTree.NonMerchWtGtPa;
                                     nextInput.StandResidueWtBdtPa = nextInput.StandResidueWtBdtPa + nextTree.NonMerchWtBdtPa;
                                 }
-                            }
-                        }
-                        else if (nextTree.BiosumCategory == 5)
-                        {
-                            if (nextTree.IsCull)
-                            {
-                                // Entire tree is chipped
-                                nextInput.ChipVolCfPa = nextInput.ChipVolCfPa + nextTree.TotalVolCfPa;
-                                nextInput.ChipWtGtPa = nextInput.ChipWtGtPa + nextTree.TotalWtGtPa;
-                                nextInput.ChipWtBdtPa = nextInput.ChipWtBdtPa + nextTree.TotalWtBdtPa;
-                            }
-                            else
-                            {
-                                // Only bole is merch; nonMerch goes to stand residue
-                                this.CalculateMerchValues(ref nextInput, nextTree, merchWoodRevEscalator); 
-                                nextInput.StandResidueWtGtPa = nextInput.StandResidueWtGtPa + nextTree.NonMerchWtGtPa;
-                                nextInput.StandResidueWtBdtPa = nextInput.StandResidueWtBdtPa + nextTree.NonMerchWtBdtPa;
                             }
                         }
                     }
@@ -1167,8 +1174,81 @@ namespace FIA_Biosum_Manager
                 (nextTree.MerchVolCfPa * wood6Pct * wood6Value * merchWoodRevEscalator);
             nextInput.ChipVolCfPa = nextInput.ChipVolCfPa + (nextTree.MerchVolCfPa * chipPct);
             nextInput.ChipWtGtPa = nextInput.ChipWtGtPa + (nextTree.MerchWtGtPa * chipPct);
-
             nextInput.ChipWtBdtPa= nextInput.ChipWtBdtPa + (nextTree.MerchWtBdtPa * chipPct);
+        }
+        private void CalculateChipFeedstockValues(ref opcostInput nextInput, tree nextTree)
+        {
+            double chipPct = Convert.ToDouble(nextTree.DbhDollarValuesItem.ChipPercent) / 100;
+            if (nextTree.TreeType == OpCostTreeType.CT)
+            {
+                if (nextTree.HarvestMethod.BiosumCategory == 1 || nextTree.HarvestMethod.BiosumCategory == 3)
+                {
+                    // Only bole is chipped
+                    nextInput.ChipFeedWtLbsCT = nextInput.ChipFeedWtLbsCT + (nextTree.MerchWtGtPa * 2000);
+                }
+                else if (nextTree.HarvestMethod.BiosumCategory == 2 || nextTree.HarvestMethod.BiosumCategory == 4 ||
+                    nextTree.HarvestMethod.BiosumCategory == 5)
+                {
+                    // Bole + T&Ls are chipped
+                    nextInput.ChipFeedWtLbsCT = nextInput.ChipFeedWtLbsCT + (nextTree.TotalWtGtPa * 2000);
+                }
+            }
+            else if (nextTree.TreeType == OpCostTreeType.SL)
+            {
+                if (nextTree.HarvestMethod.BiosumCategory == 1 || nextTree.HarvestMethod.BiosumCategory == 3 ||
+                    nextTree.HarvestMethod.BiosumCategory == 5)
+                {
+                    // Only bole is chipped
+                    if (nextTree.IsCull)
+                    {
+                        nextInput.ChipFeedWtLbsSL = nextInput.ChipFeedWtLbsSL + (nextTree.MerchWtGtPa * 2000);
+                    }
+                    else
+                    {
+                        nextInput.ChipFeedWtLbsSL = nextInput.ChipFeedWtLbsSL + (nextTree.MerchWtGtPa * 2000 * chipPct);
+                    }
+                }
+                else if (nextTree.HarvestMethod.BiosumCategory == 2 || nextTree.HarvestMethod.BiosumCategory == 4)
+                {
+                    // Bole + T&Ls are chipped
+                    if (nextTree.IsCull)
+                    {
+                        nextInput.ChipFeedWtLbsSL = nextInput.ChipFeedWtLbsSL + (nextTree.TotalWtGtPa * 2000);
+                    }
+                    else
+                    {
+                        nextInput.ChipFeedWtLbsSL = nextInput.ChipFeedWtLbsSL + (nextTree.MerchWtGtPa * 2000 * chipPct) + (nextTree.NonMerchWtGtPa * 2000);
+                    }
+                }
+            }
+            else if (nextTree.TreeType == OpCostTreeType.LL)
+            {
+                if (nextTree.HarvestMethod.BiosumCategory == 1 || nextTree.HarvestMethod.BiosumCategory == 3 ||
+                    nextTree.HarvestMethod.BiosumCategory == 4 || nextTree.HarvestMethod.BiosumCategory == 5)
+                {
+                    // Only bole is chipped
+                    if (nextTree.IsCull)
+                    {
+                        nextInput.ChipFeedWtLbsLL = nextInput.ChipFeedWtLbsLL + (nextTree.MerchWtGtPa * 2000);
+                    }
+                    else
+                    {
+                        nextInput.ChipFeedWtLbsLL = nextInput.ChipFeedWtLbsLL + (nextTree.MerchWtGtPa * 2000 * chipPct);
+                    }
+                }
+                else if (nextTree.HarvestMethod.BiosumCategory == 2 )
+                {
+                    // Bole + T&Ls are chipped
+                    if (nextTree.IsCull)
+                    {
+                        nextInput.ChipFeedWtLbsLL = nextInput.ChipFeedWtLbsLL + (nextTree.TotalWtGtPa * 2000);
+                    }
+                    else
+                    {
+                        nextInput.ChipFeedWtLbsLL = nextInput.ChipFeedWtLbsLL + (nextTree.MerchWtGtPa * 2000 * chipPct) + (nextTree.NonMerchWtGtPa * 2000);
+                    }
+                }
+            }
         }
 
         private System.Collections.Generic.List<treeDiamGroup> LoadTreeDiamGroups()
@@ -2108,6 +2188,9 @@ namespace FIA_Biosum_Manager
             double _dblLLMeanMerchVol;
             double _dblUnadjSLMeanMerchVol;
             double _dblUnadjLLMeanMerchVol;
+            double _dblChipFeedWtLbsCT;
+            double _dblChipFeedWtLbsSL;
+            double _dblChipFeedWtLbsLL;
 
             public opcostInput(string condId, int percentSlope, string rxCycle, string rxPackage, string rx,
                                string rxYear, double yardingDistance, int elev, harvestMethod harvestMethod, double moveInHours,
@@ -2346,7 +2429,21 @@ namespace FIA_Biosum_Manager
                 set { _dblLLMeanMerchVol = value; }
                 get { return _dblLLMeanMerchVol; }
             }
-
+            public double ChipFeedWtLbsCT
+            {
+                set { _dblChipFeedWtLbsCT = value; }
+                get { return _dblChipFeedWtLbsCT; }
+            }
+            public double ChipFeedWtLbsSL
+            {
+                set { _dblChipFeedWtLbsSL = value; }
+                get { return _dblChipFeedWtLbsSL; }
+            }
+            public double ChipFeedWtLbsLL
+            {
+                set { _dblChipFeedWtLbsLL = value; }
+                get { return _dblChipFeedWtLbsLL; }
+            }
 
             public double QMD_SL
             {
