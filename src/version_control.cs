@@ -150,6 +150,20 @@ namespace FIA_Biosum_Manager
                         UpdateProjectVersionFile(strProjVersionFile);
                         bPerformCheck = false;
                     }
+
+                    // Option to jump directly from 5.12.1 to 5.13.1
+                    if ((Convert.ToInt16(m_strAppVerArray[APP_VERSION_MAJOR]) == 5 &&
+                        Convert.ToInt16(m_strAppVerArray[APP_VERSION_MINOR1]) == 13 &&
+                        Convert.ToInt16(m_strAppVerArray[APP_VERSION_MINOR2]) == 1) &&
+                        (Convert.ToInt16(m_strProjectVersionArray[APP_VERSION_MAJOR]) == 5 &&
+                        Convert.ToInt16(m_strProjectVersionArray[APP_VERSION_MINOR1]) == 12 &&
+                        Convert.ToInt16(m_strProjectVersionArray[APP_VERSION_MINOR2]) == 1))
+                    {
+                        UpdateDatasources_5_13_0();
+                        UpdateDatasources_5_13_1(frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory);
+                        UpdateProjectVersionFile(strProjVersionFile);
+                        bPerformCheck = false;
+                    }
                 }
             }
 
