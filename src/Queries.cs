@@ -3905,9 +3905,9 @@ namespace FIA_Biosum_Manager
                         assumed_movein_cpa, override_YN, DateTimeCreated)
                         SELECT o.biosum_cond_id, o.RxPackage,o.RX,o.RXCycle, CASE WHEN trim(cast(o.harvest_cpa as text)) = '1.#INF' THEN 0 ELSE o.harvest_cpa END,
                         o.chip_cpa, o.assumed_movein_cpa, 
-                        CASE WHEN n.[Unadjusted One-way Yarding distance] > 0 OR n.[Unadjusted Small log trees per acre] > 0 
-                        OR n.[Unadjusted Small log trees average volume (ft3)] > 0 OR n.[Unadjusted Large log trees per acre] > 0 
-                        OR n.[Unadjusted Large log trees average vol(ft3)] > 0 THEN 'Y' ELSE 'N' END,
+                        CASE WHEN n.UnadjustedOneWayYardingDistance > 0 OR n.UnadjustedSmallLogTPA > 0 
+                        OR n.UnadjustedLargeLogTPA > 0 OR UnadjustedSmallLogTreesMeanMerchVol_ft3
+                        OR n.UnadjustedLargeLogTreesMeanMerchVol_ft3 > 0 THEN 'Y' ELSE 'N' END,
                         '{p_strDateTimeCreated}' AS DateTimeCreated from ({p_strOPCOSTOutputTableName} o 
                         INNER JOIN {p_strOPCOSTInputTableName} n ON (o.biosum_cond_id = n.biosum_cond_id) 
                         AND (o.rxPackage = n.rxPackage) AND (o.RX = n.RX) AND (o.RXCycle = n.rxCycle)) ";

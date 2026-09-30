@@ -2086,14 +2086,20 @@ namespace FIA_Biosum_Manager
                             //Insert a placeholder row with default values
                             m_oDataMgr.m_strSQL = "INSERT INTO " + Tables.ProcessorScenarioRun.DefaultTreeVolValSpeciesDiamGroupsTableName + " " +
                                 "(biosum_cond_id, rxpackage, rx, rxcycle, species_group, diam_group, " +
-                                "merch_wt_gt, merch_val_dpa, merch_vol_cf," +
-                                "chip_wt_gt, chip_val_dpa, chip_vol_cf, bc_vol_cf, bc_wt_gt, " +
-                                "DateTimeCreated, place_holder) " +
+                                "merch_wt_gt, merch_wt_bdt, merch_val_dpa, merch_vol_cf," +
+                                "chip_wt_gt, chip_wt_bdt, chip_val_dpa, chip_vol_cf, bc_vol_cf, bc_wt_gt, " +
+                                "bc_wt_bdt, stand_residue_wt_gt, stand_residue_wt_bdt, wood4_vol_cf, wood4_wt_gt, wood4_wt_bdt, wood4_val_dpa," +
+                                "wood5_vol_cf, wood5_wt_gt, wood5_wt_bdt, wood5_val_dpa,wood6_vol_cf, wood6_wt_gt, wood6_wt_bdt, wood6_val_dpa,"
+                                + "DateTimeCreated, place_holder) " +
                                 "VALUES ('" + cond_id + "', '" + rxpackage + "', '" + rx + "', '" + strRxCycle + "', " +
                                 intGroupPlaceholder + ", " + intGroupPlaceholder + ", " +
+                                intValuePlaceholder + ", " + intValuePlaceholder + ", " + intValuePlaceholder + ", " + intValuePlaceholder + ", " +
+                                intValuePlaceholder + ", " + intValuePlaceholder + ", " + intValuePlaceholder + ", " + intValuePlaceholder + ", " +
+                                intValuePlaceholder + ", " + intValuePlaceholder + ", " + intValuePlaceholder + ", " + intValuePlaceholder + ", " +
+                                intValuePlaceholder + ", " + intValuePlaceholder + ", " + intValuePlaceholder + ", " + intValuePlaceholder + ", " +
+                                intValuePlaceholder + ", " + intValuePlaceholder + ", " + intValuePlaceholder + ", " + intValuePlaceholder + ", " +
                                 intValuePlaceholder + ", " + intValuePlaceholder + ", " + intValuePlaceholder + ", " +
-                                intValuePlaceholder + ", " + intValuePlaceholder + ", " + intValuePlaceholder + ", " + intValuePlaceholder + ", " + intValuePlaceholder +
-                                ", '" + m_strDateTimeCreated + "', 'Y')";
+                                intValuePlaceholder + ", " + intValuePlaceholder + ", '" + m_strDateTimeCreated + "', 'Y')";
 
                             if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                                 frmMain.g_oUtils.WriteText(m_strDebugFile, m_oDataMgr.m_strSQL + " \r\n INSERT RECORD: " + System.DateTime.Now.ToString() + "\r\n");
