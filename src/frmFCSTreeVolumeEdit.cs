@@ -36,23 +36,16 @@ namespace FIA_Biosum_Manager
         const int COL_CULL_FLD = 23;
         const int COL_CULLFORM = 24;
         const int COL_CULLMSTOP = 25;
+        const int COL_DIAHTCD = 26;
+        const int COL_HTDMP = 27;
+        const int COL_STANDING_DEAD_CD = 28;
+        const int COL_UPPER_DIA = 29;
+        const int COL_UPPER_DIA_HT = 30;
+        const int COL_WDLDSTEM = 31;
+        const int COL_STDORGCD = 32;
+        const int COL_SAWHT = 33;
+        const int COL_ECOSUBCD = 34;
 
-        const int COL_UPPER_DIA = 33;
-      const int COL_UPPER_DIA_HT = 34;
-        const int COL_WDLDSTEM = 20;
-      const int COL_SAWHT = 37;
-      const int COL_HTDMP = 38;
-      const int COL_BOLEHT = 39;
-      const int COL_CULLCF = 40;
-
-      const int COL_CULLDEAD = 42;
-      const int COL_CFSND = 45;
-      const int COL_BFSND = 46;
-      const int COL_PRECIPITATION = 47;
-      const int COL_DIAHTCD = 49;
-      const int COL_STANDING_DEAD_CD = 50;
-      const int COL_ECOSUBCD = 51;
-        const int COL_STDORGCD = 52;
         private Dictionary<int, string> selectedRow = new Dictionary<int, string>();
 
     private System.Windows.Forms.Button btnTreeVolBatch;
@@ -85,9 +78,9 @@ namespace FIA_Biosum_Manager
     private System.Windows.Forms.Label label11;
     private System.Windows.Forms.TextBox txtStatusCd;
     private System.Windows.Forms.GroupBox groupBox3;
-    private System.Windows.Forms.Label lblDRYBIOM;
+    private System.Windows.Forms.Label lblDryBioAg;
     private System.Windows.Forms.Label label20;
-    private System.Windows.Forms.Label lblDRYBIOT;
+    private System.Windows.Forms.Label lbldryBioBole;
     private System.Windows.Forms.Label label19;
     private System.Windows.Forms.Label lblVOLCFNET;
     private System.Windows.Forms.Label label18;
@@ -253,9 +246,9 @@ namespace FIA_Biosum_Manager
             this.groupBox3 = new System.Windows.Forms.GroupBox();
             this.lblVOLTSGRS = new System.Windows.Forms.Label();
             this.label21 = new System.Windows.Forms.Label();
-            this.lblDRYBIOM = new System.Windows.Forms.Label();
+            this.lblDryBioAg = new System.Windows.Forms.Label();
             this.label20 = new System.Windows.Forms.Label();
-            this.lblDRYBIOT = new System.Windows.Forms.Label();
+            this.lbldryBioBole = new System.Windows.Forms.Label();
             this.lblVOLCFNET = new System.Windows.Forms.Label();
             this.label18 = new System.Windows.Forms.Label();
             this.label19 = new System.Windows.Forms.Label();
@@ -429,10 +422,10 @@ namespace FIA_Biosum_Manager
             // 
             this.groupBox3.Controls.Add(this.lblVOLTSGRS);
             this.groupBox3.Controls.Add(this.label21);
-            this.groupBox3.Controls.Add(this.lblDRYBIOM);
-            this.groupBox3.Controls.Add(this.label20);
-            this.groupBox3.Controls.Add(this.lblDRYBIOT);
+            this.groupBox3.Controls.Add(this.lblDryBioAg);
+            this.groupBox3.Controls.Add(this.lbldryBioBole);
             this.groupBox3.Controls.Add(this.lblVOLCFNET);
+            this.groupBox3.Controls.Add(this.label20);
             this.groupBox3.Controls.Add(this.label18);
             this.groupBox3.Controls.Add(this.label19);
             this.groupBox3.Controls.Add(this.lblVOLCSGRS);
@@ -450,7 +443,7 @@ namespace FIA_Biosum_Manager
             // 
             this.lblVOLTSGRS.BackColor = System.Drawing.Color.Beige;
             this.lblVOLTSGRS.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblVOLTSGRS.Location = new System.Drawing.Point(152, 156);
+            this.lblVOLTSGRS.Location = new System.Drawing.Point(154, 93);
             this.lblVOLTSGRS.Name = "lblVOLTSGRS";
             this.lblVOLTSGRS.Size = new System.Drawing.Size(142, 30);
             this.lblVOLTSGRS.TabIndex = 22;
@@ -460,42 +453,42 @@ namespace FIA_Biosum_Manager
             // label21
             // 
             this.label21.AutoSize = true;
-            this.label21.Location = new System.Drawing.Point(192, 135);
+            this.label21.Location = new System.Drawing.Point(185, 75);
             this.label21.Name = "label21";
             this.label21.Size = new System.Drawing.Size(84, 17);
             this.label21.TabIndex = 21;
             this.label21.Text = "VOLTSGRS";
             // 
-            // lblDRYBIOM
+            // lblDryBioAg
             // 
-            this.lblDRYBIOM.BackColor = System.Drawing.Color.Beige;
-            this.lblDRYBIOM.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblDRYBIOM.Location = new System.Drawing.Point(154, 93);
-            this.lblDRYBIOM.Name = "lblDRYBIOM";
-            this.lblDRYBIOM.Size = new System.Drawing.Size(142, 30);
-            this.lblDRYBIOM.TabIndex = 20;
-            this.lblDRYBIOM.Text = "0";
-            this.lblDRYBIOM.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.lblDryBioAg.BackColor = System.Drawing.Color.Beige;
+            this.lblDryBioAg.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblDryBioAg.Location = new System.Drawing.Point(154, 156);
+            this.lblDryBioAg.Name = "lblDryBioAg";
+            this.lblDryBioAg.Size = new System.Drawing.Size(142, 30);
+            this.lblDryBioAg.TabIndex = 20;
+            this.lblDryBioAg.Text = "0";
+            this.lblDryBioAg.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
             // label20
             // 
             this.label20.AutoSize = true;
-            this.label20.Location = new System.Drawing.Point(185, 75);
+            this.label20.Location = new System.Drawing.Point(185, 133);
             this.label20.Name = "label20";
-            this.label20.Size = new System.Drawing.Size(71, 17);
+            this.label20.Size = new System.Drawing.Size(88, 17);
             this.label20.TabIndex = 19;
-            this.label20.Text = "DRYBIOM";
+            this.label20.Text = "DRYBIO_AG";
             // 
-            // lblDRYBIOT
+            // lbldryBioBole
             // 
-            this.lblDRYBIOT.BackColor = System.Drawing.Color.Beige;
-            this.lblDRYBIOT.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblDRYBIOT.Location = new System.Drawing.Point(4, 156);
-            this.lblDRYBIOT.Name = "lblDRYBIOT";
-            this.lblDRYBIOT.Size = new System.Drawing.Size(142, 30);
-            this.lblDRYBIOT.TabIndex = 18;
-            this.lblDRYBIOT.Text = "0";
-            this.lblDRYBIOT.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.lbldryBioBole.BackColor = System.Drawing.Color.Beige;
+            this.lbldryBioBole.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lbldryBioBole.Location = new System.Drawing.Point(4, 156);
+            this.lbldryBioBole.Name = "lbldryBioBole";
+            this.lbldryBioBole.Size = new System.Drawing.Size(142, 30);
+            this.lbldryBioBole.TabIndex = 18;
+            this.lbldryBioBole.Text = "0";
+            this.lbldryBioBole.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
             // lblVOLCFNET
             // 
@@ -520,11 +513,11 @@ namespace FIA_Biosum_Manager
             // label19
             // 
             this.label19.AutoSize = true;
-            this.label19.Location = new System.Drawing.Point(49, 133);
+            this.label19.Location = new System.Drawing.Point(33, 133);
             this.label19.Name = "label19";
-            this.label19.Size = new System.Drawing.Size(69, 17);
+            this.label19.Size = new System.Drawing.Size(105, 17);
             this.label19.TabIndex = 17;
-            this.label19.Text = "DRYBIOT";
+            this.label19.Text = "DRYBIO_BOLE";
             // 
             // lblVOLCSGRS
             // 
@@ -935,8 +928,8 @@ namespace FIA_Biosum_Manager
 
     private void btnTreeVolSingle_Click( object sender, EventArgs e )
     {
-        lblDRYBIOM.Text = "0";
-        lblDRYBIOT.Text = "0";
+        lblDryBioAg.Text = "0";
+        lbldryBioBole.Text = "0";
         lblVOLCFGRS.Text = "0";
         lblVOLCFNET.Text = "0";
         lblVOLCSGRS.Text = "0";
@@ -991,15 +984,9 @@ namespace FIA_Biosum_Manager
                         Tuple.Create("CENTROID_DIA_HT_ACTUAL", selectedRow[COL_CENTROID_DIA_HT_ACTUAL]),
                         Tuple.Create("SAWHT", selectedRow[COL_SAWHT]),
                         Tuple.Create("HTDMP", selectedRow[COL_HTDMP]),
-                        Tuple.Create("BOLEHT", selectedRow[COL_BOLEHT]),
-                        Tuple.Create("CULLCF", selectedRow[COL_CULLCF]),
                         Tuple.Create("CULL_FLD", selectedRow[COL_CULL_FLD]),
-                        Tuple.Create("CULLDEAD", selectedRow[COL_CULLDEAD]),
                         Tuple.Create("CULLFORM", selectedRow[COL_CULLFORM]),
                         Tuple.Create("CULLMSTOP", selectedRow[COL_CULLMSTOP]),
-                        Tuple.Create("CFSND", selectedRow[COL_CFSND]),
-                        Tuple.Create("BFSND", selectedRow[COL_BFSND]),
-                        Tuple.Create("PRECIPITATION", selectedRow[COL_PRECIPITATION]),
                         Tuple.Create("BALIVE", selectedRow[COL_BALIVE]),
                         Tuple.Create("DIAHTCD", cboDiaHtCd.Text.Trim()),
                         Tuple.Create("STANDING_DEAD_CD", selectedRow[COL_STANDING_DEAD_CD]),
@@ -1229,10 +1216,10 @@ namespace FIA_Biosum_Manager
                     {
                         while (m_oDataMgr.m_DataReader.Read())
                         {
-                            lblDRYBIOM.Text = m_oDataMgr.m_DataReader["DRYBIOM_CALC"] != DBNull.Value
+                            lblDryBioAg.Text = m_oDataMgr.m_DataReader["DRYBIOM_CALC"] != DBNull.Value
                                 ? m_oDataMgr.m_DataReader["DRYBIOM_CALC"].ToString()
                                 : "NULL";
-                            lblDRYBIOT.Text = m_oDataMgr.m_DataReader["DRYBIOT_CALC"] != DBNull.Value
+                            lbldryBioBole.Text = m_oDataMgr.m_DataReader["DRYBIOT_CALC"] != DBNull.Value
                                 ? m_oDataMgr.m_DataReader["DRYBIOT_CALC"].ToString()
                                 : "NULL";
                             lblVOLCFGRS.Text = m_oDataMgr.m_DataReader["VOLCFGRS_CALC"] != DBNull.Value
@@ -1254,8 +1241,8 @@ namespace FIA_Biosum_Manager
                 }
                 else
                 {
-                    lblDRYBIOM.Text = "ERROR";
-                    lblDRYBIOT.Text = "ERROR";
+                    lblDryBioAg.Text = "ERROR";
+                    lbldryBioBole.Text = "ERROR";
                     lblVOLCFGRS.Text = "ERROR";
                     lblVOLCSGRS.Text = "ERROR";
                     lblVOLCFNET.Text = "ERROR";
@@ -1807,29 +1794,22 @@ namespace FIA_Biosum_Manager
             selectedRow.Add(COL_DECAYCD, gridValueOrNull(uc_gridview1.m_dg[uc_gridview1.m_intCurrRow - 1, COL_DECAYCD].ToString().Trim()));
             selectedRow.Add(COL_WDLDSTEM, gridValueOrNull(uc_gridview1.m_dg[uc_gridview1.m_intCurrRow - 1, COL_WDLDSTEM].ToString().Trim()));
             selectedRow.Add(COL_BALIVE, gridValueOrNull(uc_gridview1.m_dg[uc_gridview1.m_intCurrRow - 1, COL_BALIVE].ToString().Trim()));
-
             selectedRow.Add(COL_UPPER_DIA, gridValueOrNull(uc_gridview1.m_dg[uc_gridview1.m_intCurrRow - 1, COL_UPPER_DIA].ToString().Trim()));
         selectedRow.Add(COL_UPPER_DIA_HT, gridValueOrNull(uc_gridview1.m_dg[uc_gridview1.m_intCurrRow - 1, COL_UPPER_DIA_HT].ToString().Trim()));
         selectedRow.Add(COL_CENTROID_DIA, gridValueOrNull(uc_gridview1.m_dg[uc_gridview1.m_intCurrRow - 1, COL_CENTROID_DIA].ToString().Trim()));
         selectedRow.Add(COL_CENTROID_DIA_HT_ACTUAL, gridValueOrNull(uc_gridview1.m_dg[uc_gridview1.m_intCurrRow - 1, COL_CENTROID_DIA_HT_ACTUAL].ToString().Trim()));
         selectedRow.Add(COL_SAWHT, gridValueOrNull(uc_gridview1.m_dg[uc_gridview1.m_intCurrRow - 1, COL_SAWHT].ToString().Trim()));
         selectedRow.Add(COL_HTDMP, gridValueOrNull(uc_gridview1.m_dg[uc_gridview1.m_intCurrRow - 1, COL_HTDMP].ToString().Trim()));
-        selectedRow.Add(COL_BOLEHT, gridValueOrNull(uc_gridview1.m_dg[uc_gridview1.m_intCurrRow - 1, COL_BOLEHT].ToString().Trim()));
-        selectedRow.Add(COL_CULLCF, gridValueOrNull(uc_gridview1.m_dg[uc_gridview1.m_intCurrRow - 1, COL_CULLCF].ToString().Trim()));
         selectedRow.Add(COL_CULL_FLD, gridValueOrNull(uc_gridview1.m_dg[uc_gridview1.m_intCurrRow - 1, COL_CULL_FLD].ToString().Trim()));
-        selectedRow.Add(COL_CULLDEAD, gridValueOrNull(uc_gridview1.m_dg[uc_gridview1.m_intCurrRow - 1, COL_CULLDEAD].ToString().Trim()));
         selectedRow.Add(COL_CULLFORM, gridValueOrNull(uc_gridview1.m_dg[uc_gridview1.m_intCurrRow - 1, COL_CULLFORM].ToString().Trim()));
         selectedRow.Add(COL_CULLMSTOP, gridValueOrNull(uc_gridview1.m_dg[uc_gridview1.m_intCurrRow - 1, COL_CULLMSTOP].ToString().Trim()));
-        selectedRow.Add(COL_CFSND, gridValueOrNull(uc_gridview1.m_dg[uc_gridview1.m_intCurrRow - 1, COL_CFSND].ToString().Trim()));
-        selectedRow.Add(COL_BFSND, gridValueOrNull(uc_gridview1.m_dg[uc_gridview1.m_intCurrRow - 1, COL_BFSND].ToString().Trim()));
-        selectedRow.Add(COL_PRECIPITATION, gridValueOrNull(uc_gridview1.m_dg[uc_gridview1.m_intCurrRow - 1, COL_PRECIPITATION].ToString().Trim()));
         selectedRow.Add(COL_DIAHTCD, gridValueOrNull(uc_gridview1.m_dg[uc_gridview1.m_intCurrRow - 1, COL_DIAHTCD].ToString().Trim()));
         selectedRow.Add(COL_STANDING_DEAD_CD, gridValueOrNull(uc_gridview1.m_dg[uc_gridview1.m_intCurrRow - 1, COL_STANDING_DEAD_CD].ToString().Trim()));
-            selectedRow.Add(COL_ECOSUBCD, gridValueOrNull(uc_gridview1.m_dg[uc_gridview1.m_intCurrRow - 1, COL_ECOSUBCD].ToString().Trim()));
-            selectedRow.Add(COL_STDORGCD, gridValueOrNull(uc_gridview1.m_dg[uc_gridview1.m_intCurrRow - 1, COL_STDORGCD].ToString().Trim()));
+        selectedRow.Add(COL_ECOSUBCD, gridValueOrNull(uc_gridview1.m_dg[uc_gridview1.m_intCurrRow - 1, COL_ECOSUBCD].ToString().Trim()));
+        selectedRow.Add(COL_STDORGCD, gridValueOrNull(uc_gridview1.m_dg[uc_gridview1.m_intCurrRow - 1, COL_STDORGCD].ToString().Trim()));
 
-            //Update textboxes
-            this.txtActualHt.Text = gridValueOrNull(uc_gridview1.m_dg[uc_gridview1.m_intCurrRow - 1, COL_ACTUALHT].ToString().Trim());
+        //Update textboxes
+        this.txtActualHt.Text = gridValueOrNull(uc_gridview1.m_dg[uc_gridview1.m_intCurrRow - 1, COL_ACTUALHT].ToString().Trim());
         this.txtCountyCd.Text = gridValueOrNull(uc_gridview1.m_dg[uc_gridview1.m_intCurrRow - 1, COL_COUNTY].ToString().Trim());
         this.txtCR.Text = gridValueOrNull(uc_gridview1.m_dg[uc_gridview1.m_intCurrRow - 1, COL_CR].ToString().Trim());
         this.txtCull.Text = gridValueOrNull(uc_gridview1.m_dg[uc_gridview1.m_intCurrRow - 1, COL_CULL].ToString().Trim());
@@ -1843,7 +1823,7 @@ namespace FIA_Biosum_Manager
         this.txtStatusCd.Text = gridValueOrNull(uc_gridview1.m_dg[uc_gridview1.m_intCurrRow - 1, COL_STATUSCD].ToString().Trim());
         this.txtTreeClCd.Text = gridValueOrNull(uc_gridview1.m_dg[uc_gridview1.m_intCurrRow - 1, COL_TREECLCD].ToString().Trim());
         this.txtVolLocGrp.Text = gridValueOrNull(uc_gridview1.m_dg[uc_gridview1.m_intCurrRow - 1, COL_VOLLOCGRP].ToString().Trim());
-            this.cboDiaHtCd.Text = gridValueOrNull(uc_gridview1.m_dg[uc_gridview1.m_intCurrRow - 1, COL_DIAHTCD].ToString().Trim());
+        this.cboDiaHtCd.Text = gridValueOrNull(uc_gridview1.m_dg[uc_gridview1.m_intCurrRow - 1, COL_DIAHTCD].ToString().Trim());
         }
 
     private void frmFCSTreeVolumeEdit_Resize(object sender, EventArgs e)
