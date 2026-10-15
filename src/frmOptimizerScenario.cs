@@ -4552,6 +4552,18 @@ namespace FIA_Biosum_Manager
                     intRecordCount = (int)oDataMgr.getRecordCount(conn, oDataMgr.m_strSQL, strPSitesTableName);
                 }
 
+                if (oDataMgr.m_intError == 0 && intRecordCount > 0)
+                {
+                    // Delete orphan records in the travel_time table that aren't associated with any psites
+                    oDataMgr.m_strSQL = $@"DELETE FROM {strTravelTimesTableName} WHERE NOT EXISTS
+                        (SELECT 1 FROM {strPSitesTableName} WHERE {strTravelTimesTableName}.psite_id = {strPSitesTableName}.psite_id)";
+                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                        frmMain.g_oUtils.WriteText(strDebugFile, "START: " + System.DateTime.Now.ToString() + "\r\n" + oDataMgr.m_strSQL + "\r\n");
+                    oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                        frmMain.g_oUtils.WriteText(strDebugFile, "DONE: " + System.DateTime.Now.ToString() + "\r\n");
+                }
+
                 if (oDataMgr.m_intError == 0 && !String.IsNullOrEmpty(strSourceYardingDistField))
                 {
                     if (bPlotRecords)
