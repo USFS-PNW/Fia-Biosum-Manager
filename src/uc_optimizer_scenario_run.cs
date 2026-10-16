@@ -6162,9 +6162,12 @@ namespace FIA_Biosum_Manager
                 p_dataMgr.SqlNonQuery(resultsConn, p_dataMgr.m_strSQL);
 
                 //attach FVS out database
-                p_dataMgr.m_strSQL = "ATTACH DATABASE '" + frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() + Tables.FVS.DefaultFVSOutPrePostDbFile + "' AS prepost_fvsout";
-                p_dataMgr.SqlNonQuery(resultsConn, p_dataMgr.m_strSQL);
-
+                if (!p_dataMgr.DatabaseAttached(resultsConn, Tables.FVS.DefaultFVSOutPrePostDbFile))
+                {
+                    p_dataMgr.m_strSQL = "ATTACH DATABASE '" + frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() + Tables.FVS.DefaultFVSOutPrePostDbFile + "' AS prepost_fvsout";
+                    p_dataMgr.SqlNonQuery(resultsConn, p_dataMgr.m_strSQL);
+                }
+                
                 //populate the variable table.column name and its value to the tiebreaker table
                 oItem = oTieBreakerCollection.Item(0);  // STAND ATTRIBUTE
                 if (oItem.bSelected)
