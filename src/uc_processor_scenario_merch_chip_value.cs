@@ -684,6 +684,7 @@ namespace FIA_Biosum_Manager
             // pnlMerchValues
             // 
             this.pnlMerchValues.AutoScroll = true;
+            this.pnlMerchValues.HorizontalScroll.Enabled = false;
             this.pnlMerchValues.BackColor = System.Drawing.SystemColors.Control;
             this.pnlMerchValues.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
             this.pnlMerchValues.Controls.Add(this.uc_processor_scenario_spc_dbh_group_value1);
