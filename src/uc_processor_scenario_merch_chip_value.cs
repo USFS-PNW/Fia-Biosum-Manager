@@ -17,6 +17,7 @@ namespace FIA_Biosum_Manager
 		private System.Windows.Forms.GroupBox groupBox1;
 		public System.Windows.Forms.Label lblTitle;
 		private System.Windows.Forms.Panel panel1;
+        private System.Windows.Forms.Panel pnlMerchHeader;
 		private System.Windows.Forms.Label lblSpcGrp;
 		private System.Windows.Forms.Label lblDbhClass;
         private System.Windows.Forms.Label lblChipPct;
@@ -581,6 +582,7 @@ namespace FIA_Biosum_Manager
             this.txtChipValue = new System.Windows.Forms.TextBox();
             this.label2 = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
+            this.pnlMerchHeader = new System.Windows.Forms.Panel();
             this.pnlMerchValues = new System.Windows.Forms.Panel();
             this.uc_processor_scenario_spc_dbh_group_value1 = new FIA_Biosum_Manager.uc_processor_scenario_spc_dbh_group_value();
             this.lblChipPct = new System.Windows.Forms.Label();
@@ -597,6 +599,7 @@ namespace FIA_Biosum_Manager
             this.lblTitle = new System.Windows.Forms.Label();
             this.groupBox1.SuspendLayout();
             this.panel1.SuspendLayout();
+            this.pnlMerchHeader.SuspendLayout();
             this.pnlMerchValues.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -617,6 +620,7 @@ namespace FIA_Biosum_Manager
             this.panel1.Controls.Add(this.txtChipValue);
             this.panel1.Controls.Add(this.label2);
             this.panel1.Controls.Add(this.label1);
+            this.panel1.Controls.Add(this.pnlMerchHeader);
             this.panel1.Controls.Add(this.pnlMerchValues);
             this.panel1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.panel1.Location = new System.Drawing.Point(3, 48);
@@ -656,6 +660,26 @@ namespace FIA_Biosum_Manager
             this.label1.Size = new System.Drawing.Size(550, 32);
             this.label1.TabIndex = 6;
             this.label1.Text = "Allocation (%) of bole to merch, hog fuel, and other wood types and unit value ($/ft3) per species/DBH class combo";
+            //
+            // pnlMerchHeader
+            //
+            this.pnlMerchHeader.BackColor = System.Drawing.SystemColors.Control;
+            this.pnlMerchHeader.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
+            this.pnlMerchHeader.Controls.Add(this.lblSpcGrp);
+            this.pnlMerchHeader.Controls.Add(this.lblDbhClass);
+            this.pnlMerchHeader.Controls.Add(this.lblChips);
+            this.pnlMerchHeader.Controls.Add(this.lblChipPct);
+            this.pnlMerchHeader.Controls.Add(this.lblMerchValue);
+            this.pnlMerchHeader.Controls.Add(this.lblMerchPct);
+            this.pnlMerchHeader.Controls.Add(this.lblWood4Value);
+            this.pnlMerchHeader.Controls.Add(this.lblWood4Pct);
+            this.pnlMerchHeader.Controls.Add(this.lblWood5Value);
+            this.pnlMerchHeader.Controls.Add(this.lblWood5Pct);
+            this.pnlMerchHeader.Controls.Add(this.lblWood6Value);
+            this.pnlMerchHeader.Controls.Add(this.lblWood6Pct);
+            this.pnlMerchHeader.Location = new System.Drawing.Point(8, 80);
+            this.pnlMerchHeader.Name = "pnlMerchHeader";
+            this.pnlMerchHeader.Size = new System.Drawing.Size(676, 70);
             // 
             // pnlMerchValues
             // 
@@ -663,21 +687,9 @@ namespace FIA_Biosum_Manager
             this.pnlMerchValues.BackColor = System.Drawing.SystemColors.Control;
             this.pnlMerchValues.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
             this.pnlMerchValues.Controls.Add(this.uc_processor_scenario_spc_dbh_group_value1);
-            this.pnlMerchValues.Controls.Add(this.lblSpcGrp);
-            this.pnlMerchValues.Controls.Add(this.lblDbhClass);
-            this.pnlMerchValues.Controls.Add(this.lblChips);
-            this.pnlMerchValues.Controls.Add(this.lblChipPct);
-            this.pnlMerchValues.Controls.Add(this.lblMerchValue);
-            this.pnlMerchValues.Controls.Add(this.lblMerchPct);
-            this.pnlMerchValues.Controls.Add(this.lblWood4Value);
-            this.pnlMerchValues.Controls.Add(this.lblWood4Pct);
-            this.pnlMerchValues.Controls.Add(this.lblWood5Value);
-            this.pnlMerchValues.Controls.Add(this.lblWood5Pct);
-            this.pnlMerchValues.Controls.Add(this.lblWood6Value);
-            this.pnlMerchValues.Controls.Add(this.lblWood6Pct);
-            this.pnlMerchValues.Location = new System.Drawing.Point(8, 80);
+            this.pnlMerchValues.Location = new System.Drawing.Point(8, 150);
             this.pnlMerchValues.Name = "pnlMerchValues";
-            this.pnlMerchValues.Size = new System.Drawing.Size(676, 359);
+            this.pnlMerchValues.Size = new System.Drawing.Size(676, 289);
             this.pnlMerchValues.TabIndex = 3;
             // 
             // uc_processor_scenario_spc_dbh_group_value1
@@ -692,7 +704,7 @@ namespace FIA_Biosum_Manager
             this.uc_processor_scenario_spc_dbh_group_value1.Wood6DollarValue = "$0.00";
             this.uc_processor_scenario_spc_dbh_group_value1.Wood6Percent = "0";
             this.uc_processor_scenario_spc_dbh_group_value1.DbhGroup = "";
-            this.uc_processor_scenario_spc_dbh_group_value1.Location = new System.Drawing.Point(-2, 70);
+            this.uc_processor_scenario_spc_dbh_group_value1.Location = new System.Drawing.Point(-2, 3);
             this.uc_processor_scenario_spc_dbh_group_value1.Name = "uc_processor_scenario_spc_dbh_group_value1";
             this.uc_processor_scenario_spc_dbh_group_value1.ReferenceProcessorScenarioForm = null;
             this.uc_processor_scenario_spc_dbh_group_value1.Size = new System.Drawing.Size(915, 30);
@@ -703,7 +715,7 @@ namespace FIA_Biosum_Manager
             // 
             this.lblDbhClass.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblDbhClass.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(64)))), ((int)(((byte)(0)))));
-            this.lblDbhClass.Location = new System.Drawing.Point(164, 4);
+            this.lblDbhClass.Location = new System.Drawing.Point(164, 0);
             this.lblDbhClass.Name = "lblDbhClass";
             this.lblDbhClass.Size = new System.Drawing.Size(66, 65);
             this.lblDbhClass.TabIndex = 2;
@@ -714,7 +726,7 @@ namespace FIA_Biosum_Manager
             // 
             this.lblSpcGrp.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblSpcGrp.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(64)))), ((int)(((byte)(0)))));
-            this.lblSpcGrp.Location = new System.Drawing.Point(29, 4);
+            this.lblSpcGrp.Location = new System.Drawing.Point(29, 0);
             this.lblSpcGrp.Name = "lblSpcGrp";
             this.lblSpcGrp.Size = new System.Drawing.Size(104, 65);
             this.lblSpcGrp.TabIndex = 1;
@@ -725,7 +737,7 @@ namespace FIA_Biosum_Manager
             // 
             this.lblChips.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblChips.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(64)))), ((int)(((byte)(0)))));
-            this.lblChips.Location = new System.Drawing.Point(238, 4);
+            this.lblChips.Location = new System.Drawing.Point(238, 0);
             this.lblChips.Name = "lblChips";
             this.lblChips.Size = new System.Drawing.Size(66, 65);
             this.lblChips.TabIndex = 3;
@@ -736,7 +748,7 @@ namespace FIA_Biosum_Manager
             //
             this.lblChipPct.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblChipPct.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(64)))), ((int)(((byte)(0)))));
-            this.lblChipPct.Location = new System.Drawing.Point(311, 4);
+            this.lblChipPct.Location = new System.Drawing.Point(311, 0);
             this.lblChipPct.Name = "lblChipPct";
             this.lblChipPct.Size = new System.Drawing.Size(60, 65);
             this.lblChipPct.TabIndex = 4;
@@ -747,7 +759,7 @@ namespace FIA_Biosum_Manager
             // 
             this.lblMerchValue.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblMerchValue.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(64)))), ((int)(((byte)(0)))));
-            this.lblMerchValue.Location = new System.Drawing.Point(379, 4);
+            this.lblMerchValue.Location = new System.Drawing.Point(379, 0);
             this.lblMerchValue.Name = "lblMerchValue";
             this.lblMerchValue.Size = new System.Drawing.Size(60, 65);
             this.lblMerchValue.TabIndex = 5;
@@ -758,7 +770,7 @@ namespace FIA_Biosum_Manager
             //
             this.lblMerchPct.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblMerchPct.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(64)))), ((int)(((byte)(0)))));
-            this.lblMerchPct.Location = new System.Drawing.Point(447, 4);
+            this.lblMerchPct.Location = new System.Drawing.Point(447, 0);
             this.lblMerchPct.Name = "lblMerchPct";
             this.lblMerchPct.Size = new System.Drawing.Size(60, 65);
             this.lblMerchPct.TabIndex = 6;
@@ -769,7 +781,7 @@ namespace FIA_Biosum_Manager
             //
             this.lblWood4Value.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblWood4Value.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(64)))), ((int)(((byte)(0)))));
-            this.lblWood4Value.Location = new System.Drawing.Point(515, 4);
+            this.lblWood4Value.Location = new System.Drawing.Point(515, 0);
             this.lblWood4Value.Name = "lblWood4Value";
             this.lblWood4Value.Size = new System.Drawing.Size(60, 65);
             this.lblWood4Value.TabIndex = 7;
@@ -780,7 +792,7 @@ namespace FIA_Biosum_Manager
             //
             this.lblWood4Pct.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblWood4Pct.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(64)))), ((int)(((byte)(0)))));
-            this.lblWood4Pct.Location = new System.Drawing.Point(583, 4);
+            this.lblWood4Pct.Location = new System.Drawing.Point(583, 0);
             this.lblWood4Pct.Name = "lblWood4Pct";
             this.lblWood4Pct.Size = new System.Drawing.Size(60, 65);
             this.lblWood4Pct.TabIndex = 8;
@@ -791,7 +803,7 @@ namespace FIA_Biosum_Manager
             //
             this.lblWood5Value.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblWood5Value.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(64)))), ((int)(((byte)(0)))));
-            this.lblWood5Value.Location = new System.Drawing.Point(651, 4);
+            this.lblWood5Value.Location = new System.Drawing.Point(651, 0);
             this.lblWood5Value.Name = "lblWood5Value";
             this.lblWood5Value.Size = new System.Drawing.Size(60, 65);
             this.lblWood5Value.TabIndex = 9;
@@ -802,7 +814,7 @@ namespace FIA_Biosum_Manager
             //
             this.lblWood5Pct.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblWood5Pct.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(64)))), ((int)(((byte)(0)))));
-            this.lblWood5Pct.Location = new System.Drawing.Point(719, 4);
+            this.lblWood5Pct.Location = new System.Drawing.Point(719, 0);
             this.lblWood5Pct.Name = "lblWood5Pct";
             this.lblWood5Pct.Size = new System.Drawing.Size(60, 65);
             this.lblWood5Pct.TabIndex = 10;
@@ -813,7 +825,7 @@ namespace FIA_Biosum_Manager
             //
             this.lblWood6Value.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblWood6Value.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(64)))), ((int)(((byte)(0)))));
-            this.lblWood6Value.Location = new System.Drawing.Point(787, 4);
+            this.lblWood6Value.Location = new System.Drawing.Point(787, 0);
             this.lblWood6Value.Name = "lblWood6Value";
             this.lblWood6Value.Size = new System.Drawing.Size(60, 65);
             this.lblWood6Value.TabIndex = 11;
@@ -824,7 +836,7 @@ namespace FIA_Biosum_Manager
             //
             this.lblWood6Pct.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblWood6Pct.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(64)))), ((int)(((byte)(0)))));
-            this.lblWood6Pct.Location = new System.Drawing.Point(855, 4);
+            this.lblWood6Pct.Location = new System.Drawing.Point(855, 0);
             this.lblWood6Pct.Name = "lblWood6Pct";
             this.lblWood6Pct.Size = new System.Drawing.Size(60, 65);
             this.lblWood6Pct.TabIndex = 12;
@@ -850,6 +862,7 @@ namespace FIA_Biosum_Manager
             this.groupBox1.ResumeLayout(false);
             this.panel1.ResumeLayout(false);
             this.panel1.PerformLayout();
+            this.pnlMerchHeader.ResumeLayout(false);
             this.pnlMerchValues.ResumeLayout(false);
             this.ResumeLayout(false);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
@@ -897,6 +910,21 @@ namespace FIA_Biosum_Manager
             if (this.pnlMerchValues.Width > 950)
             {
                 this.pnlMerchValues.Width = 950;
+            }
+
+            if (this.panel1.Height - this.pnlMerchValues.Height > 215)
+            {
+                this.pnlMerchValues.Height = this.panel1.Height - 215;
+            }
+
+            if (this.panel1.Width - this.pnlMerchHeader.Width > 16)
+            {
+                this.pnlMerchHeader.Width = this.panel1.Width - 16;
+            }
+
+            if (this.pnlMerchHeader.Width > 950)
+            {
+                this.pnlMerchHeader.Width = 950;
             }
         }
 	}

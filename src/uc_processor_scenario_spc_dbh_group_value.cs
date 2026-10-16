@@ -412,6 +412,10 @@ namespace FIA_Biosum_Manager
             {
 				int intChipPct = 100 - int.Parse(txtMerchPct.Text) - int.Parse(txtWood4Pct.Text) - int.Parse(txtWood5Pct.Text) - int.Parse(txtWood6Pct.Text);
 				txtChipPct.Text = intChipPct.ToString();
+				if (intChipPct < 0)
+                {
+					txtChipPct.BackColor = Color.LightSalmon;
+                }
 			}
             else
             {
@@ -427,6 +431,10 @@ namespace FIA_Biosum_Manager
 			{
 				int intChipPct = 100 - int.Parse(txtMerchPct.Text) - int.Parse(txtWood4Pct.Text) - int.Parse(txtWood5Pct.Text) - int.Parse(txtWood6Pct.Text);
 				txtChipPct.Text = intChipPct.ToString();
+				if (intChipPct < 0)
+				{
+					txtChipPct.BackColor = Color.LightSalmon;
+				}
 			}
             else
             {
@@ -442,6 +450,10 @@ namespace FIA_Biosum_Manager
 			{
 				int intChipPct = 100 - int.Parse(txtMerchPct.Text) - int.Parse(txtWood4Pct.Text) - int.Parse(txtWood5Pct.Text) - int.Parse(txtWood6Pct.Text);
 				txtChipPct.Text = intChipPct.ToString();
+				if (intChipPct < 0)
+				{
+					txtChipPct.BackColor = Color.LightSalmon;
+				}
 			}
             else
             {
@@ -458,6 +470,10 @@ namespace FIA_Biosum_Manager
 			{
 				int intChipPct = 100 - int.Parse(txtMerchPct.Text) - int.Parse(txtWood4Pct.Text) - int.Parse(txtWood5Pct.Text) - int.Parse(txtWood6Pct.Text);
 				txtChipPct.Text = intChipPct.ToString();
+				if (intChipPct < 0)
+				{
+					txtChipPct.BackColor = Color.LightSalmon;
+				}
 			}
             else
             {
@@ -473,6 +489,10 @@ namespace FIA_Biosum_Manager
 			if (m_oValidate.m_intError != 0)
             {
 				this.txtChipPct.Text = this.m_strChipPctSave;
+				if (int.Parse(txtChipPct.Text) < 0)
+                {
+					txtChipPct.BackColor = Color.LightSalmon;
+				}
             }
 		}
 
