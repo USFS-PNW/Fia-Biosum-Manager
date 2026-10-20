@@ -186,6 +186,7 @@ namespace FIA_Biosum_Manager
 			this.txtChipPct.Text = "0";
 			this.txtChipPct.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
 			this.txtChipPct.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtValueOrPct_KeyPress);
+			this.txtChipPct.Leave += new System.EventHandler(this.txtChipPct_Leave);
 			// 
 			// txtMerchValue
 			// 
@@ -371,7 +372,6 @@ namespace FIA_Biosum_Manager
 			m_oValidate.TestForMaxMin = false;
 			m_oValidate.TestForMin = true;
 			m_oValidate.MinValue = 0;
-			m_oValidate.ValidateDecimal(txtWood4Value.Text);
 			m_oValidate.ValidateDecimal(txtWood5Value.Text);
 			if (m_oValidate.m_intError == 0)
 			{
@@ -406,24 +406,94 @@ namespace FIA_Biosum_Manager
 
 		private void txtMerchPct_Leave(object sender, System.EventArgs e)
 		{
-			int intChipPct = 100 - int.Parse(txtMerchPct.Text) - int.Parse(txtWood4Pct.Text) - int.Parse(txtWood5Pct.Text) - int.Parse(txtWood6Pct.Text);
-			txtChipPct.Text = intChipPct.ToString();
+			m_oValidate.NullsAllowed = false;
+			m_oValidate.ValidateInteger(txtMerchPct.Text);
+			if (m_oValidate.m_intError == 0)
+            {
+				int intChipPct = 100 - int.Parse(txtMerchPct.Text) - int.Parse(txtWood4Pct.Text) - int.Parse(txtWood5Pct.Text) - int.Parse(txtWood6Pct.Text);
+				txtChipPct.Text = intChipPct.ToString();
+				if (intChipPct < 0)
+                {
+					txtChipPct.BackColor = Color.LightSalmon;
+                }
+			}
+            else
+            {
+				this.txtMerchPct.Text = this.m_strMerchPctSave;
+				this.txtMerchPct.Focus();
+            }
 		}
 		private void txtWood4Pct_Leave(object sender, System.EventArgs e)
 		{
-			int intChipPct = 100 - int.Parse(txtMerchPct.Text) - int.Parse(txtWood4Pct.Text) - int.Parse(txtWood5Pct.Text) - int.Parse(txtWood6Pct.Text);
-			txtChipPct.Text = intChipPct.ToString();
+			m_oValidate.NullsAllowed = false;
+			m_oValidate.ValidateInteger(txtWood4Pct.Text);
+			if (m_oValidate.m_intError == 0)
+			{
+				int intChipPct = 100 - int.Parse(txtMerchPct.Text) - int.Parse(txtWood4Pct.Text) - int.Parse(txtWood5Pct.Text) - int.Parse(txtWood6Pct.Text);
+				txtChipPct.Text = intChipPct.ToString();
+				if (intChipPct < 0)
+				{
+					txtChipPct.BackColor = Color.LightSalmon;
+				}
+			}
+            else
+            {
+				this.txtWood4Pct.Text = this.m_strWood4PctSave;
+				this.txtWood4Pct.Focus();
+			}
 		}
 		private void txtWood5Pct_Leave(object sender, System.EventArgs e)
 		{
-			int intChipPct = 100 - int.Parse(txtMerchPct.Text) - int.Parse(txtWood4Pct.Text) - int.Parse(txtWood5Pct.Text) - int.Parse(txtWood6Pct.Text);
-			txtChipPct.Text = intChipPct.ToString();
+			m_oValidate.NullsAllowed = false;
+			m_oValidate.ValidateInteger(txtWood5Pct.Text);
+			if (m_oValidate.m_intError == 0)
+			{
+				int intChipPct = 100 - int.Parse(txtMerchPct.Text) - int.Parse(txtWood4Pct.Text) - int.Parse(txtWood5Pct.Text) - int.Parse(txtWood6Pct.Text);
+				txtChipPct.Text = intChipPct.ToString();
+				if (intChipPct < 0)
+				{
+					txtChipPct.BackColor = Color.LightSalmon;
+				}
+			}
+            else
+            {
+				this.txtWood5Pct.Text = this.m_strWood5PctSave;
+				this.txtWood5Pct.Focus();
+			}
 		}
 
 		private void txtWood6Pct_Leave(object sender, System.EventArgs e)
 		{
-			int intChipPct = 100 - int.Parse(txtMerchPct.Text) - int.Parse(txtWood4Pct.Text) - int.Parse(txtWood5Pct.Text) - int.Parse(txtWood6Pct.Text);
-			txtChipPct.Text = intChipPct.ToString();
+			m_oValidate.NullsAllowed = false;
+			m_oValidate.ValidateInteger(txtWood6Pct.Text);
+			if (m_oValidate.m_intError == 0)
+			{
+				int intChipPct = 100 - int.Parse(txtMerchPct.Text) - int.Parse(txtWood4Pct.Text) - int.Parse(txtWood5Pct.Text) - int.Parse(txtWood6Pct.Text);
+				txtChipPct.Text = intChipPct.ToString();
+				if (intChipPct < 0)
+				{
+					txtChipPct.BackColor = Color.LightSalmon;
+				}
+			}
+            else
+            {
+				this.txtWood6Pct.Text = this.m_strWood6PctSave;
+				this.txtWood6Pct.Focus();
+			}
+		}
+
+		private void txtChipPct_Leave(object sender, System.EventArgs e)
+        {
+			m_oValidate.NullsAllowed = false;
+			m_oValidate.ValidateInteger(txtChipPct.Text);
+			if (m_oValidate.m_intError != 0)
+            {
+				this.txtChipPct.Text = this.m_strChipPctSave;
+				if (int.Parse(txtChipPct.Text) < 0)
+                {
+					txtChipPct.BackColor = Color.LightSalmon;
+				}
+            }
 		}
 
 		public void SaveValues()
