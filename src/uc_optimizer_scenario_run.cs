@@ -6063,10 +6063,10 @@ namespace FIA_Biosum_Manager
                         strSql = "UPDATE " + strOptimizationTableName + " AS e " +
                            "SET pre_variable_name = '" + oItem.strVariableName + "', " +
                            "post_variable_name = '" + oItem.strVariableName + "', " +
-                           "pre_variable_name = HARVEST_ONSITE_COST_DPA + MERCH_HAUL_COST_DPA + WOOD4_HAUL_COST_DPA + " +
-                           "WOOD5_HAUL_COST_DPA + WOOD6_HAUL_COST_DPA + CASE WHEN MERCH_CHIP_NR_DPA < TOTAL_NR_DPA THEN 0 ELSE CHIP_HAUL_COST_DPA_utilized, " +
-                           "post_variable_name = HARVEST_ONSITE_COST_DPA + MERCH_HAUL_COST_DPA + WOOD4_HAUL_COST_DPA + " +
-                           "WOOD5_HAUL_COST_DPA + WOOD6_HAUL_COST_DPA + CASE WHEN MERCH_CHIP_NR_DPA < TOTAL_NR_DPA THEN 0 ELSE CHIP_HAUL_COST_DPA_utilized, " +
+                           "pre_variable_value = HARVEST_ONSITE_COST_DPA + MERCH_HAUL_COST_DPA + WOOD4_HAUL_COST_DPA + " +
+                           "WOOD5_HAUL_COST_DPA + WOOD6_HAUL_COST_DPA + CHIP_HAUL_COST_DPA_utilized, " +
+                           "post_variable_value = HARVEST_ONSITE_COST_DPA + MERCH_HAUL_COST_DPA + WOOD4_HAUL_COST_DPA + " +
+                           "WOOD5_HAUL_COST_DPA + WOOD6_HAUL_COST_DPA + CHIP_HAUL_COST_DPA_utilized, " +
                            "change_value = 0 " +
                            "FROM " + Tables.OptimizerScenarioResults.DefaultScenarioResultsEconByRxUtilSumTableName + " AS p WHERE e.biosum_cond_id = p.biosum_cond_id AND e.rxpackage = p.rxpackage";
                     }
@@ -7306,7 +7306,12 @@ namespace FIA_Biosum_Manager
 
                         System.Collections.Generic.IDictionary<string, ProductYields> dictProductYields =
                         new System.Collections.Generic.Dictionary<string, ProductYields>();
-                        p_dataMgr.m_strSQL = "select * from " + Tables.OptimizerScenarioResults.DefaultScenarioResultsEconByRxCycleTableName;
+                        if (!p_dataMgr.DatabaseAttached(econConn, m_strWorkTablesDb))
+                        {
+                            p_dataMgr.m_strSQL = "ATTACH DATABASE '" + m_strWorkTablesDb + "' AS work";
+                            p_dataMgr.SqlNonQuery(econConn, p_dataMgr.m_strSQL);
+                        }
+                        p_dataMgr.m_strSQL = "select * from " + m_strEconByRxWorkTableName;
 
                         if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                             frmMain.g_oUtils.WriteText(m_strDebugFile, "Execute SQL: " + p_dataMgr.m_strSQL + "\r\n");
@@ -7340,8 +7345,10 @@ namespace FIA_Biosum_Manager
                             double dblWood5WtBdt = Convert.ToDouble(p_dataMgr.m_DataReader["wood5_wt_bdt"]);
                             double dblWood6WtBdt = Convert.ToDouble(p_dataMgr.m_DataReader["wood6_wt_bdt"]);
                             double dblHaulMerchCpa = Convert.ToDouble(p_dataMgr.m_DataReader["merch_haul_cost_dpa"]);
-                            double dblMerchChipNrDpa = Convert.ToDouble(p_dataMgr.m_DataReader["merch_chip_nr_dpa"]);
                             double dblHaulChipCpa = Convert.ToDouble(p_dataMgr.m_DataReader["chip_haul_cost_dpa"]);
+                            double dblHaulWood4Cpa = Convert.ToDouble(p_dataMgr.m_DataReader["wood4_haul_cost_dpa"]);
+                            double dblHaulWood5Cpa = Convert.ToDouble(p_dataMgr.m_DataReader["wood5_haul_cost_dpa"]);
+                            double dblHaulWood6Cpa = Convert.ToDouble(p_dataMgr.m_DataReader["wood6_haul_cost_dpa"]);
 
                             switch (strRxCycle)
                             {
@@ -7349,25 +7356,29 @@ namespace FIA_Biosum_Manager
                                     oProductYields.UpdateCycle1Yields(dblChipYieldCf, dblMerchYieldCf, dblWood4YieldCf,
                                         dblWood5YieldCf, dblWood6YieldCf, dblHarvestOnsiteCpa,
                                         dblTotalNrDpa, dblChipWtBdt, dblMerchWtBdt, dblWood4WtBdt, dblWood5WtBdt,
-                                        dblWood6WtBdt, dblHaulMerchCpa, dblMerchChipNrDpa, dblHaulChipCpa);
+                                        dblWood6WtBdt, dblHaulMerchCpa, dblHaulChipCpa,
+                                        dblHaulWood4Cpa, dblHaulWood5Cpa, dblHaulWood6Cpa);
                                     break;
                                 case "2":
                                     oProductYields.UpdateCycle2Yields(dblChipYieldCf, dblMerchYieldCf, dblWood4YieldCf,
                                         dblWood5YieldCf, dblWood6YieldCf, dblHarvestOnsiteCpa,
                                         dblTotalNrDpa, dblChipWtBdt, dblMerchWtBdt, dblWood4WtBdt, dblWood5WtBdt,
-                                        dblWood6WtBdt, dblHaulMerchCpa, dblMerchChipNrDpa, dblHaulChipCpa);
+                                        dblWood6WtBdt, dblHaulMerchCpa, dblHaulChipCpa,
+                                        dblHaulWood4Cpa, dblHaulWood5Cpa, dblHaulWood6Cpa);
                                     break;
                                 case "3":
                                     oProductYields.UpdateCycle3Yields(dblChipYieldCf, dblMerchYieldCf, dblWood4YieldCf,
                                         dblWood5YieldCf, dblWood6YieldCf, dblHarvestOnsiteCpa,
                                         dblTotalNrDpa, dblChipWtBdt, dblMerchWtBdt, dblWood4WtBdt, dblWood5WtBdt,
-                                        dblWood6WtBdt, dblHaulMerchCpa, dblMerchChipNrDpa, dblHaulChipCpa);
+                                        dblWood6WtBdt, dblHaulMerchCpa, dblHaulChipCpa,
+                                        dblHaulWood4Cpa, dblHaulWood5Cpa, dblHaulWood6Cpa);
                                     break;
                                 case "4":
                                     oProductYields.UpdateCycle4Yields(dblChipYieldCf, dblMerchYieldCf, dblWood4YieldCf,
                                         dblWood5YieldCf, dblWood6YieldCf, dblHarvestOnsiteCpa,
                                         dblTotalNrDpa, dblChipWtBdt, dblMerchWtBdt, dblWood4WtBdt, dblWood5WtBdt,
-                                        dblWood6WtBdt, dblHaulMerchCpa, dblMerchChipNrDpa, dblHaulChipCpa);
+                                        dblWood6WtBdt, dblHaulMerchCpa, dblHaulChipCpa,
+                                        dblHaulWood4Cpa, dblHaulWood5Cpa, dblHaulWood6Cpa);
                                     break;
                             }
                             dictProductYields[strKey] = oProductYields;
@@ -7473,14 +7484,14 @@ namespace FIA_Biosum_Manager
                                                                oSavedProductYields.TotalBoleYieldCfCycle4() * lstWeights[3]);
                                             break;
                                         case uc_optimizer_scenario_calculated_variables.PREFIX_NET_REVENUE:
-                                            lstFieldValues.Add(oSavedProductYields.MaxNrDpaCycle1() * lstWeights[0]);
-                                            lstFieldValues.Add(oSavedProductYields.MaxNrDpaCycle2() * lstWeights[1]);
-                                            lstFieldValues.Add(oSavedProductYields.MaxNrDpaCycle3() * lstWeights[2]);
-                                            lstFieldValues.Add(oSavedProductYields.MaxNrDpaCycle4() * lstWeights[3]);
-                                            lstFieldValues.Add(oSavedProductYields.MaxNrDpaCycle1() * lstWeights[0] +
-                                                               oSavedProductYields.MaxNrDpaCycle2() * lstWeights[1] +
-                                                               oSavedProductYields.MaxNrDpaCycle3() * lstWeights[2] +
-                                                               oSavedProductYields.MaxNrDpaCycle4() * lstWeights[3]);
+                                            lstFieldValues.Add(oSavedProductYields.TotalNrDpaCycle1() * lstWeights[0]);
+                                            lstFieldValues.Add(oSavedProductYields.TotalNrDpaCycle2() * lstWeights[1]);
+                                            lstFieldValues.Add(oSavedProductYields.TotalNrDpaCycle3() * lstWeights[2]);
+                                            lstFieldValues.Add(oSavedProductYields.TotalNrDpaCycle4() * lstWeights[3]);
+                                            lstFieldValues.Add(oSavedProductYields.TotalNrDpaCycle1() * lstWeights[0] +
+                                                               oSavedProductYields.TotalNrDpaCycle2() * lstWeights[1] +
+                                                               oSavedProductYields.TotalNrDpaCycle3() * lstWeights[2] +
+                                                               oSavedProductYields.TotalNrDpaCycle4() * lstWeights[3]);
                                             break;
                                         case uc_optimizer_scenario_calculated_variables.PREFIX_MERCH_DRY_WEIGHT:
                                             lstFieldValues.Add(oSavedProductYields.MerchWtBdtCycle1() * lstWeights[0]);
@@ -9684,8 +9695,10 @@ namespace FIA_Biosum_Manager
         double _dblWood6WtBdtCycle1 = 0;
         double _dblHarvestOnsiteCpaCycle1 = 0;
         double _dblHaulMerchCpaCycle1 = 0;
-        double _dblMerchChipNrDpaCycle1 = 0;
         double _dblHaulChipCpaCycle1 = 0;
+        double _dblHaulWood4CpaCycle1 = 0;
+        double _dblHaulWood5CpaCycle1 = 0;
+        double _dblHaulWood6CpaCycle1 = 0;
         double _dblChipYieldCfCycle2 = 0;
         double _dblMerchYieldCfCycle2 = 0;
         double _dblWood4YieldCfCycle2 = 0;
@@ -9699,8 +9712,10 @@ namespace FIA_Biosum_Manager
         double _dblWood6WtBdtCycle2 = 0;
         double _dblHarvestOnsiteCpaCycle2 = 0;
         double _dblHaulMerchCpaCycle2 = 0;
-        double _dblMerchChipNrDpaCycle2 = 0;
         double _dblHaulChipCpaCycle2 = 0;
+        double _dblHaulWood4CpaCycle2 = 0;
+        double _dblHaulWood5CpaCycle2 = 0;
+        double _dblHaulWood6CpaCycle2 = 0;
         double _dblChipYieldCfCycle3 = 0;
         double _dblMerchYieldCfCycle3 = 0;
         double _dblWood4YieldCfCycle3 = 0;
@@ -9714,8 +9729,10 @@ namespace FIA_Biosum_Manager
         double _dblWood6WtBdtCycle3 = 0;
         double _dblHarvestOnsiteCpaCycle3 = 0;
         double _dblHaulMerchCpaCycle3 = 0;
-        double _dblMerchChipNrDpaCycle3 = 0;
         double _dblHaulChipCpaCycle3 = 0;
+        double _dblHaulWood4CpaCycle3 = 0;
+        double _dblHaulWood5CpaCycle3 = 0;
+        double _dblHaulWood6CpaCycle3 = 0;
         double _dblChipYieldCfCycle4 = 0;
         double _dblMerchYieldCfCycle4 = 0;
         double _dblWood4YieldCfCycle4 = 0;
@@ -9729,8 +9746,10 @@ namespace FIA_Biosum_Manager
         double _dblWood6WtBdtCycle4 = 0;
         double _dblHarvestOnsiteCpaCycle4 = 0;
         double _dblHaulMerchCpaCycle4 = 0;
-        double _dblMerchChipNrDpaCycle4 = 0;
         double _dblHaulChipCpaCycle4 = 0;
+        double _dblHaulWood4CpaCycle4 = 0;
+        double _dblHaulWood5CpaCycle4 = 0;
+        double _dblHaulWood6CpaCycle4 = 0;
 
         public ProductYields(string strCondId, string strRxPackage)
         {
@@ -9741,7 +9760,8 @@ namespace FIA_Biosum_Manager
         public void UpdateCycle1Yields(double dblChipYieldCf, double dblMerchYieldCf, double dblWood4YieldCf,
             double dblWood5YieldCf, double dblWood6YieldCf, double dblHarvestOnsiteCpa,
             double dblTotalNrDpaCycle, double dblChipWtBdt, double dblMerchWtBdt, double dblWood4WtBdt, 
-            double dblWood5WtBdt, double dblWood6WtBdt, double dblHaulMerchCpa, double dblMerchChipNrDpa, double dblHaulChipCpa)
+            double dblWood5WtBdt, double dblWood6WtBdt, double dblHaulMerchCpa, double dblHaulChipCpa,
+            double dblHaulWood4Cpa, double dblHaulWood5Cpa, double dblHaulWood6Cpa)
         {
             _dblChipYieldCfCycle1 = dblChipYieldCf;
             _dblMerchYieldCfCycle1 = dblMerchYieldCf;
@@ -9756,14 +9776,17 @@ namespace FIA_Biosum_Manager
             _dblWood5WtBdtCycle1 = dblWood5WtBdt;
             _dblWood6WtBdtCycle1 = dblWood6WtBdt;
             _dblHaulMerchCpaCycle1 = dblHaulMerchCpa;
-            _dblMerchChipNrDpaCycle1 = dblMerchChipNrDpa;
             _dblHaulChipCpaCycle1 = dblHaulChipCpa;
+            _dblHaulWood4CpaCycle1 = dblHaulWood4Cpa;
+            _dblHaulWood5CpaCycle1 = dblHaulWood5Cpa;
+            _dblHaulWood6CpaCycle1 = dblHaulWood6Cpa;
         }
 
         public void UpdateCycle2Yields(double dblChipYieldCf, double dblMerchYieldCf, double dblWood4YieldCf,
             double dblWood5YieldCf, double dblWood6YieldCf, double dblHarvestOnsiteCpa,
             double dblTotalNrDpaCycle, double dblChipWtBdt, double dblMerchWtBdt, double dblWood4WtBdt,
-            double dblWood5WtBdt, double dblWood6WtBdt, double dblHaulMerchCpa, double dblMerchChipNrDpa, double dblHaulChipCpa)
+            double dblWood5WtBdt, double dblWood6WtBdt, double dblHaulMerchCpa, double dblHaulChipCpa,
+            double dblHaulWood4Cpa, double dblHaulWood5Cpa, double dblHaulWood6Cpa)
         {
             _dblChipYieldCfCycle2 = dblChipYieldCf;
             _dblMerchYieldCfCycle2 = dblMerchYieldCf;
@@ -9778,14 +9801,17 @@ namespace FIA_Biosum_Manager
             _dblWood5WtBdtCycle2 = dblWood5WtBdt;
             _dblWood6WtBdtCycle2 = dblWood6WtBdt;
             _dblHaulMerchCpaCycle2 = dblHaulMerchCpa;
-            _dblMerchChipNrDpaCycle2 = dblMerchChipNrDpa;
             _dblHaulChipCpaCycle2 = dblHaulChipCpa;
+            _dblHaulWood4CpaCycle2 = dblHaulWood4Cpa;
+            _dblHaulWood5CpaCycle2 = dblHaulWood5Cpa;
+            _dblHaulWood6CpaCycle2 = dblHaulWood6Cpa;
         }
 
         public void UpdateCycle3Yields(double dblChipYieldCf, double dblMerchYieldCf, double dblWood4YieldCf,
             double dblWood5YieldCf, double dblWood6YieldCf, double dblHarvestOnsiteCpa,
             double dblTotalNrDpaCycle, double dblChipWtBdt, double dblMerchWtBdt, double dblWood4WtBdt,
-            double dblWood5WtBdt, double dblWood6WtBdt, double dblHaulMerchCpa, double dblMerchChipNrDpa, double dblHaulChipCpa)
+            double dblWood5WtBdt, double dblWood6WtBdt, double dblHaulMerchCpa, double dblHaulChipCpa,
+            double dblHaulWood4Cpa, double dblHaulWood5Cpa, double dblHaulWood6Cpa)
         {
             _dblChipYieldCfCycle3 = dblChipYieldCf;
             _dblMerchYieldCfCycle3 = dblMerchYieldCf;
@@ -9795,20 +9821,23 @@ namespace FIA_Biosum_Manager
             _dblHarvestOnsiteCpaCycle3 = dblHarvestOnsiteCpa;
             _dblTotalNrDpaCycle3 = dblTotalNrDpaCycle;
             _dblChipWtBdtCycle3 = dblChipWtBdt;
-            _dblMerchChipNrDpaCycle3 = dblMerchWtBdt;
+            _dblMerchWtBdtCycle3 = dblMerchWtBdt;
             _dblWood4WtBdtCycle3 = dblWood4WtBdt;
             _dblWood5WtBdtCycle3 = dblWood5WtBdt;
             _dblWood6WtBdtCycle3 = dblWood6WtBdt;
             _dblHaulMerchCpaCycle3 = dblHaulMerchCpa;
-            _dblMerchChipNrDpaCycle3 = dblMerchChipNrDpa;
             _dblHaulChipCpaCycle3 = dblHaulChipCpa;
+            _dblHaulWood4CpaCycle3 = dblHaulWood4Cpa;
+            _dblHaulWood5CpaCycle3 = dblHaulWood5Cpa;
+            _dblHaulWood6CpaCycle3 = dblHaulWood6Cpa;
         }
 
         public void UpdateCycle4Yields(double dblChipYieldCf, double dblMerchYieldCf, double dblWood4YieldCf,
             double dblWood5YieldCf, double dblWood6YieldCd, double dblHarvestOnsiteCpa,
             double dblTotalNrDpaCycle
             , double dblChipWtBdt, double dblMerchWtBdt, double dblWood4WtBdt,
-            double dblWood5WtBdt, double dblWood6WtBdt, double dblHaulMerchCpa, double dblMerchChipNrDpa, double dblHaulChipCpa)
+            double dblWood5WtBdt, double dblWood6WtBdt, double dblHaulMerchCpa, double dblHaulChipCpa,
+            double dblHaulWood4Cpa, double dblHaulWood5Cpa, double dblHaulWood6Cpa)
         {
             _dblChipYieldCfCycle4 = dblChipYieldCf;
             _dblMerchYieldCfCycle4 = dblMerchYieldCf;
@@ -9823,8 +9852,10 @@ namespace FIA_Biosum_Manager
             _dblWood5WtBdtCycle4 = dblWood5WtBdt;
             _dblWood6WtBdtCycle4 = dblWood6WtBdt;
             _dblHaulMerchCpaCycle4 = dblHaulMerchCpa;
-            _dblMerchChipNrDpaCycle4 = dblMerchChipNrDpa;
             _dblHaulChipCpaCycle4 = dblHaulChipCpa;
+            _dblHaulWood4CpaCycle4 = dblHaulWood4Cpa;
+            _dblHaulWood5CpaCycle4 = dblHaulWood5Cpa;
+            _dblHaulWood6CpaCycle4 = dblHaulWood6Cpa;
         }
 
         public string CondId()
@@ -10089,58 +10120,42 @@ namespace FIA_Biosum_Manager
             return _dblHarvestOnsiteCpaCycle4;
         }
 
-        public double MaxNrDpaCycle1()
+        public double TotalNrDpaCycle1()
         {
             return _dblTotalNrDpaCycle1;
         }
-        public double MaxNrDpaCycle2()
+        public double TotalNrDpaCycle2()
         {
             return _dblTotalNrDpaCycle2;
         }
-        public double MaxNrDpaCycle3()
+        public double TotalNrDpaCycle3()
         {
             return _dblTotalNrDpaCycle3;
         }
-        public double MaxNrDpaCycle4()
+        public double TotalNrDpaCycle4()
         {
             return _dblTotalNrDpaCycle4;
         }
 
         public double TreatmentHaulCostsCycle1()
         {
-            double dblAddedChipCost = 0;
-            if (_dblMerchChipNrDpaCycle1 >= _dblTotalNrDpaCycle1)
-            {
-                dblAddedChipCost = _dblHaulChipCpaCycle1;
-            }
-            return _dblHarvestOnsiteCpaCycle1 + _dblHaulMerchCpaCycle1 + dblAddedChipCost;
+            return _dblHarvestOnsiteCpaCycle1 + +_dblHaulChipCpaCycle1 + _dblHaulMerchCpaCycle1 +
+                _dblHaulWood4CpaCycle1 + _dblHaulWood5CpaCycle1 + _dblHaulWood6CpaCycle1;
         }
         public double TreatmentHaulCostsCycle2()
         {
-            double dblAddedChipCost = 0;
-            if (_dblMerchChipNrDpaCycle2 >= _dblTotalNrDpaCycle2)
-            {
-                dblAddedChipCost = _dblHaulChipCpaCycle2;
-            }
-            return _dblHarvestOnsiteCpaCycle2 + _dblHaulMerchCpaCycle2 + dblAddedChipCost;
+            return _dblHarvestOnsiteCpaCycle2 + +_dblHaulChipCpaCycle2 + _dblHaulMerchCpaCycle2 +
+                _dblHaulWood4CpaCycle2 + _dblHaulWood5CpaCycle2 + _dblHaulWood6CpaCycle2;
         }
         public double TreatmentHaulCostsCycle3()
         {
-            double dblAddedChipCost = 0;
-            if (_dblMerchChipNrDpaCycle3 >= _dblTotalNrDpaCycle3)
-            {
-                dblAddedChipCost = _dblHaulChipCpaCycle3;
-            }
-            return _dblHarvestOnsiteCpaCycle3 + _dblHaulMerchCpaCycle3 + dblAddedChipCost;
+            return _dblHarvestOnsiteCpaCycle3 + +_dblHaulChipCpaCycle3 + _dblHaulMerchCpaCycle3 +
+                _dblHaulWood4CpaCycle3 + _dblHaulWood5CpaCycle3 + _dblHaulWood6CpaCycle3;
         }
         public double TreatmentHaulCostsCycle4()
         {
-            double dblAddedChipCost = 0;
-            if (_dblMerchChipNrDpaCycle4 >= _dblTotalNrDpaCycle4)
-            {
-                dblAddedChipCost = _dblHaulChipCpaCycle4;
-            }
-            return _dblHarvestOnsiteCpaCycle4 + _dblHaulMerchCpaCycle4 + dblAddedChipCost;
+            return _dblHarvestOnsiteCpaCycle4 + +_dblHaulChipCpaCycle4 + _dblHaulMerchCpaCycle4 +
+                _dblHaulWood4CpaCycle4 + _dblHaulWood5CpaCycle4 + _dblHaulWood6CpaCycle4;
         }
 
     }
