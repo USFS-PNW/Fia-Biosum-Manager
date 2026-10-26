@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Drawing;
 using System.Data;
 using System.Windows.Forms;
+using System.Collections.Generic;
 
 namespace FIA_Biosum_Manager
 {
@@ -434,6 +435,38 @@ namespace FIA_Biosum_Manager
             string strWood6Value = "";
             string strWood6Pct = "";
             string strSql = "";
+
+            List<string> lstPctErrors = new List<string>();
+            bool bPctErrors = false;
+            for (x = 0; x <= this.uc_processor_scenario_spc_dbh_group_value_collection1.Count - 1; x++)
+            {
+                strChipPct = uc_processor_scenario_spc_dbh_group_value_collection1.Item(x).ChipPercent.Trim();
+                strMerchPct = uc_processor_scenario_spc_dbh_group_value_collection1.Item(x).MerchPercent.Trim();
+                strWood4Pct = uc_processor_scenario_spc_dbh_group_value_collection1.Item(x).Wood4Percent.Trim();
+                strWood5Pct = uc_processor_scenario_spc_dbh_group_value_collection1.Item(x).Wood5Percent.Trim();
+                strWood6Pct = uc_processor_scenario_spc_dbh_group_value_collection1.Item(x).Wood6Percent.Trim();
+                strSpcGrp = uc_processor_scenario_spc_dbh_group_value_collection1.Item(x).SpeciesGroup.Trim();
+                strDbhGrp = uc_processor_scenario_spc_dbh_group_value_collection1.Item(x).DbhGroup.Trim();
+
+                if (int.Parse(strChipPct) + int.Parse(strMerchPct) + int.Parse(strWood4Pct) + int.Parse(strWood5Pct)
+                    + int.Parse(strWood6Pct) != 100)
+                {
+                    bPctErrors = true;
+                    lstPctErrors.Add(strSpcGrp + ", " + strDbhGrp);
+                }
+            }
+            if (bPctErrors)
+            {
+                string strError = "The following species/diameter group combinations have percentages that do not add up to 100%:\n\n";
+                foreach (string strCombo in lstPctErrors)
+                {
+                    strError += strCombo + "\n";
+                }
+                strError += "\nPercentages for a species/diameter group combination must add up to 100% before saving or running a scenario.";
+                MessageBox.Show(strError, "FIA BioSum", MessageBoxButtons.OK,MessageBoxIcon.Error);
+                m_intError = -1;
+                return;
+            }
 
             SQLite.ADO.DataMgr oDataMgr = new SQLite.ADO.DataMgr();
             string strScenarioDB =
