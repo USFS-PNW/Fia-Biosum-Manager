@@ -6046,7 +6046,7 @@ namespace FIA_Biosum_Manager
                             "change_value = 0 " +
                             "FROM " + Tables.OptimizerScenarioResults.DefaultScenarioResultsEconByRxUtilSumTableName + " AS p WHERE e.biosum_cond_id = p.biosum_cond_id AND e.rxpackage = p.rxpackage";
                     }
-                    else if (oItem.strVariableName.Equals("total_bole_dry_weight_1"))
+                    else if (oItem.strVariableName.Equals("total_bole_wood_dry_weight_1"))
                     {
                         strSql = "UPDATE " + strOptimizationTableName + " AS e " +
                             "SET pre_variable_name = '" + oItem.strVariableName + "', " +
