@@ -1,10 +1,11 @@
 using System;
 using System.Collections;
-using System.ComponentModel;
-using System.Drawing;
-using System.Data;
-using System.Windows.Forms;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Data.SqlClient;
+using System.Drawing;
+using System.Windows.Forms;
 
 namespace FIA_Biosum_Manager
 {
@@ -437,7 +438,10 @@ namespace FIA_Biosum_Manager
             string strSql = "";
 
             List<string> lstPctErrors = new List<string>();
+            List<string> lstNegErrors = new List<string>();
             bool bPctErrors = false;
+            bool bNegErrors = false;
+            string strError = "";
             for (x = 0; x <= this.uc_processor_scenario_spc_dbh_group_value_collection1.Count - 1; x++)
             {
                 strChipPct = uc_processor_scenario_spc_dbh_group_value_collection1.Item(x).ChipPercent.Trim();
@@ -454,16 +458,33 @@ namespace FIA_Biosum_Manager
                     bPctErrors = true;
                     lstPctErrors.Add(strSpcGrp + ", " + strDbhGrp);
                 }
+
+                if (int.Parse(strChipPct) < 0)
+                {
+                    bNegErrors = true;
+                    lstNegErrors.Add(strSpcGrp + ", " + strDbhGrp);
+                }
             }
             if (bPctErrors)
             {
-                string strError = "The following species/diameter group combinations have percentages that do not add up to 100%:\n\n";
+                strError = "The following species/diameter group combinations have percentages that do not add up to 100%:\n\n";
                 foreach (string strCombo in lstPctErrors)
                 {
                     strError += strCombo + "\n";
                 }
-                strError += "\nPercentages for a species/diameter group combination must add up to 100% before saving or running a scenario.";
-                MessageBox.Show(strError, "FIA BioSum", MessageBoxButtons.OK,MessageBoxIcon.Error);
+                strError += "\nPercentages for a species/diameter group combination must add up to 100% before saving or running a scenario.\n\n";
+                
+            }
+            if (bNegErrors) {
+                strError += "The following species/diameter group combinations have negative Hog Fuel percentages:\n\n";
+                foreach (string strCombo in lstNegErrors)
+                {
+                    strError += strCombo + "\n";
+                }
+                strError += "\nAll Hog Fuel percentages must be 0 or positive before saving or running a scenario.";
+            }
+            if (bPctErrors || bNegErrors) {
+                MessageBox.Show(strError, "FIA BioSum", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 m_intError = -1;
                 return;
             }

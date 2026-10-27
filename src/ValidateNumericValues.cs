@@ -194,8 +194,18 @@ namespace FIA_Biosum_Manager
 				try
 				{
 					int intInteger = Convert.ToInt32(strTestValue);
-					
-				}
+
+                    if (TestForMin == true)
+                    {
+                        if ((double)intInteger < (double)MinValue)
+                        {
+                            m_intError = -1;
+                            m_strError = "Value is less than the allowed minimum value of " + MinValue.ToString();
+                            MessageBox.Show(m_strError, "FIA Biosum");
+                        }
+                    }
+
+                }
 				catch (Exception e)
 				{
 					m_intError=-1;
