@@ -6296,7 +6296,7 @@ namespace FIA_Biosum_Manager
                                     "FROM " + Tables.OptimizerScenarioResults.DefaultScenarioResultsEconByRxUtilSumTableName + " AS p " +
                                     "WHERE e.biosum_cond_id = p.biosum_cond_id AND e.rxpackage = p.rxpackage";
                             }
-                            else if (oItem.strFVSVariableName.Equals("total_bole_dry_weight_1"))
+                            else if (oItem.strFVSVariableName.Equals("total_bole_wood_dry_weight_1"))
                             {
                                 p_dataMgr.m_strSQL = "UPDATE tiebreaker AS e " +
                                     "SET pre_variable1_name = '" + oItem.strFVSVariableName + "', " +
@@ -6314,9 +6314,9 @@ namespace FIA_Biosum_Manager
                                     "SET pre_variable1_name = '" + oItem.strFVSVariableName + "', " +
                                     "post_variable1_name = '" + oItem.strFVSVariableName + "', " +
                                     "pre_variable1_value = HARVEST_ONSITE_COST_DPA + MERCH_HAUL_COST_DPA + WOOD4_HAUL_COST_DPA + " +
-                                    "WOOD5_HAUL_COST_DPA + WOOD6_HAUL_COST_DPA + CASE WHEN MERCH_CHIP_NR_DPA < TOTAL_NR_DPA THEN 0 ELSE CHIP_HAUL_COST_DPA_utilized END, " +
+                                    "WOOD5_HAUL_COST_DPA + WOOD6_HAUL_COST_DPA + CHIP_HAUL_COST_DPA_utilized, " +
                                     "post_variable1_value = HARVEST_ONSITE_COST_DPA + MERCH_HAUL_COST_DPA + WOOD4_HAUL_COST_DPA + " +
-                                    "WOOD5_HAUL_COST_DPA + WOOD6_HAUL_COST_DPA + CASE WHEN MERCH_CHIP_NR_DPA < TOTAL_NR_DPA THEN 0 ELSE CHIP_HAUL_COST_DPA_utilized END, " +
+                                    "WOOD5_HAUL_COST_DPA + WOOD6_HAUL_COST_DPA + CHIP_HAUL_COST_DPA_utilized, " +
                                     "variable1_change = 0 " +
                                     "FROM " + Tables.OptimizerScenarioResults.DefaultScenarioResultsEconByRxUtilSumTableName + " AS p " +
                                     "WHERE e.biosum_cond_id = p.biosum_cond_id AND e.rxpackage = p.rxpackage";
