@@ -22,8 +22,7 @@ namespace FIA_Biosum_Manager
 		private System.Windows.Forms.Label lblID;
 		private System.Windows.Forms.TextBox txtMin;
 		private System.Windows.Forms.TextBox txtMax;
-		private FIA_Biosum_Manager.txtNumeric m_txtMinDiam;
-		private FIA_Biosum_Manager.txtNumeric m_txtMaxDiam;
+
 		private int m_intError=0;
 		/// <summary> 
 		/// Required designer variable.
@@ -37,36 +36,8 @@ namespace FIA_Biosum_Manager
 		{
 			// This call is required by the Windows.Forms Form Designer.
 			InitializeComponent();
-			this.m_txtMinDiam = new txtNumeric(3,1);
-			this.groupBox1.Controls.Add(this.m_txtMinDiam);
-			this.m_txtMinDiam.Size = this.txtMin.Size;
-			this.m_txtMinDiam.Location = this.txtMin.Location;
-			this.m_txtMinDiam.Font = this.txtMin.Font;
-			this.m_txtMinDiam.TabIndex = this.txtMin.TabIndex;
-			this.m_txtMinDiam.Enabled=true;
-			this.m_txtMinDiam.ReadOnly=false;
-			this.m_txtMinDiam.bEdit = true;
-			this.txtMin.Visible=false;
-			this.m_txtMinDiam.Visible=true;
-
-
 			
-			this.m_txtMaxDiam = new txtNumeric(3,1);
-			this.groupBox1.Controls.Add(this.m_txtMaxDiam);
-			this.m_txtMaxDiam.Size = this.txtMax.Size;
-			this.m_txtMaxDiam.Location = this.txtMax.Location;
-			this.m_txtMaxDiam.Font = this.txtMax.Font;
-			this.m_txtMaxDiam.TabIndex = this.txtMax.TabIndex;
-			this.m_txtMaxDiam.Enabled=true;
-			this.m_txtMaxDiam.ReadOnly=false;
-			this.m_txtMaxDiam.bEdit = true;
-			this.txtMax.Visible=false;
-			this.m_txtMaxDiam.Visible=true;
-
-
-
 			// TODO: Add any initialization after the InitializeComponent call
-
 		}
 
 		/// <summary> 
@@ -87,10 +58,10 @@ namespace FIA_Biosum_Manager
 		{
 			
 		   
-		   get {return m_txtMinDiam.Text.Trim();}
+		   get {return txtMin.Text.Trim();}
 		   set
-		   {   
-			   m_txtMinDiam.Text = value;
+		   {
+				txtMin.Text = value;
 		   }
 		   
 			
@@ -99,10 +70,10 @@ namespace FIA_Biosum_Manager
 		{
 			
 		   
-			get {return m_txtMaxDiam.Text.Trim();}
+			get {return txtMax.Text.Trim();}
 			set 
 			{
-				m_txtMaxDiam.Text = value;
+				txtMax.Text = value;
 			   
 			}
 		   
@@ -160,6 +131,7 @@ namespace FIA_Biosum_Manager
 			this.txtMax.Size = new System.Drawing.Size(160, 26);
 			this.txtMax.TabIndex = 6;
 			this.txtMax.Text = "";
+			this.txtMax.Validating += txtMax_Validating;
 			// 
 			// txtMin
 			// 
@@ -169,6 +141,7 @@ namespace FIA_Biosum_Manager
 			this.txtMin.Size = new System.Drawing.Size(160, 26);
 			this.txtMin.TabIndex = 4;
 			this.txtMin.Text = "";
+			this.txtMin.Validating += txtMin_Validating;
 			// 
 			// lblID
 			// 
@@ -261,38 +234,60 @@ namespace FIA_Biosum_Manager
 		private void val_input()
 		{
 			this.m_intError=0;
-			if (this.m_txtMinDiam.Text.Trim().Length < 2)
+			if (this.txtMin.Text.Trim().Length < 2)
 			{
 				this.m_intError=-1;
 				MessageBox.Show("Enter a value for minimum diameter","Tree Diameter Groups", System.Windows.Forms.MessageBoxButtons.OK,System.Windows.Forms.MessageBoxIcon.Exclamation);
-				this.m_txtMinDiam.Focus();
+				this.txtMin.Focus();
 				return;
 			}
 
-			if (this.m_txtMaxDiam.Text.Trim().Length < 2)
+			if (this.txtMax.Text.Trim().Length < 2)
 			{
 				this.m_intError=-1;
 				MessageBox.Show("Enter a value for maximum diameter","Tree Diameter Groups", System.Windows.Forms.MessageBoxButtons.OK,System.Windows.Forms.MessageBoxIcon.Exclamation);
-				this.m_txtMaxDiam.Focus();
+				this.txtMax.Focus();
 				return;
 			}
-			if (Convert.ToDouble(this.m_txtMaxDiam.Text.Trim()) < Convert.ToDouble(this.m_txtMinDiam.Text.Trim()))
+			if (Convert.ToDouble(this.txtMax.Text.Trim()) < Convert.ToDouble(this.txtMin.Text.Trim()))
 			{
 				this.m_intError=-1;
 				MessageBox.Show("Minimum value cannot be greater than maximum value","Tree Diameter Groups", System.Windows.Forms.MessageBoxButtons.OK,System.Windows.Forms.MessageBoxIcon.Exclamation);
-				this.m_txtMinDiam.Focus();
+				this.txtMin.Focus();
 				return;
 			}
 
-			if (this.m_txtMaxDiam.Text.Trim() == this.m_txtMinDiam.Text.Trim())
+			if (this.txtMax.Text.Trim() == this.txtMin.Text.Trim())
 			{
 				this.m_intError=-1;
 				MessageBox.Show("Minimum and maximum values cannot be equal","Tree Diameter Groups", System.Windows.Forms.MessageBoxButtons.OK,System.Windows.Forms.MessageBoxIcon.Exclamation);
-				this.m_txtMinDiam.Focus();
+				this.txtMin.Focus();
 				return;
 			}
-
-
+		}
+		private void txtMin_Validating(object sender, System.ComponentModel.CancelEventArgs e)
+		{
+			if (decimal.TryParse(txtMin.Text, out decimal value))
+			{
+				// Round to 1 decimal place and format with trailing zero (e.g., 5 becomes 5.0)
+				txtMin.Text = Math.Round(value, 1).ToString("0.0");
+			}
+			else
+			{
+				txtMin.Text = "0.0";
+			}
+		}
+		private void txtMax_Validating(object sender, System.ComponentModel.CancelEventArgs e)
+		{
+			if (decimal.TryParse(txtMax.Text, out decimal value))
+			{
+				// Round to 1 decimal place and format with trailing zero (e.g., 5 becomes 5.0)
+				txtMax.Text = Math.Round(value, 1).ToString("0.0");
+			}
+			else
+			{
+				txtMax.Text = "0.0";
+			}
 		}
 	}
 }
