@@ -308,10 +308,12 @@ namespace FIA_Biosum_Manager
 					if (lstPSites.Items[x].Checked == true)
 					{
 						strSelected = "Y";
+						ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem.m_oProcessingSiteItem_Collection.Item(x).Selected = true;
 					}
 					else
 					{
 						strSelected = "N";
+						ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem.m_oProcessingSiteItem_Collection.Item(x).Selected = false;
 					}
 					if (lstPSites.Items[x].SubItems[COLUMN_PSITEROADRAIL].Text.Trim() == "Facility on Road")
 					{

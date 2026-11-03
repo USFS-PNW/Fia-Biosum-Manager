@@ -577,21 +577,25 @@ namespace FIA_Biosum_Manager
 			strHaulCost = RoadHaulCostDollarsPerGreenTonPerHour.Replace("$", "");
 			strHaulCost = strHaulCost.Replace(",", "");
 			if (strHaulCost.Trim().Length == 1) strHaulCost = "0.00";
+            ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem.m_oTranCosts.RoadHaulCostPerGreenTonPerHour = strHaulCost;
 
-			strRailHaulCost = RailHaulCostDollarsPerGreenTonPerMile.Replace("$", "");
+            strRailHaulCost = RailHaulCostDollarsPerGreenTonPerMile.Replace("$", "");
 			strRailHaulCost = strRailHaulCost.Replace(",", "");
 			if (strRailHaulCost.Trim().Length == 1) strRailHaulCost = "0.00";
+            ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem.m_oTranCosts.RailHaulCostPerGreenTonPerMile = strRailHaulCost;
 
-			strRailBioTransferCost = RailChipTransferCostDollarsPerGreenTonPerHour.Replace("$", "");
+            strRailBioTransferCost = RailChipTransferCostDollarsPerGreenTonPerHour.Replace("$", "");
 			strRailBioTransferCost = strRailBioTransferCost.Replace(",", "");
 			if (strRailBioTransferCost.Trim().Length == 1) strRailBioTransferCost = "0.00";
+            ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem.m_oTranCosts.RailChipTransferPerGreenTon = strRailBioTransferCost;
 
-			strRailMerchTransferCost = RailMerchTransferCostDollarsPerGreenTonPerHour.Replace("$", "");
+           strRailMerchTransferCost = RailMerchTransferCostDollarsPerGreenTonPerHour.Replace("$", "");
 			strRailMerchTransferCost = strRailMerchTransferCost.Replace(",", "");
 			if (strRailMerchTransferCost.Trim().Length == 1) strRailMerchTransferCost = "0.00";
+            ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem.m_oTranCosts.RailMerchTransferPerGreenTon = strRailMerchTransferCost;
 
-           
-			DataMgr oDataMgr = new DataMgr();
+
+            DataMgr oDataMgr = new DataMgr();
 			string strScenarioId = this.ReferenceOptimizerScenarioForm.uc_scenario1.txtScenarioId.Text.Trim();
 			string strScenarioDB =
 				frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() + "\\" +
@@ -626,48 +630,66 @@ namespace FIA_Biosum_Manager
 				oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
 
                 // default value for all checkbox columns are 'N', so they only need to be updated if they are checked
+                ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem.m_oRevenue.PreventMerchEconomicDowngrade = false;
+                ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem.m_oRevenue.PreventWood4EconomicDowngrade = false;
+                ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem.m_oRevenue.PreventWood5EconomicDowngrade = false;
+                ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem.m_oRevenue.PreventWood6EconomicDowngrade = false;
+                ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem.m_oRevenue.PreventChipsEconomicDowngrade = false;
+                ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem.m_oRevenue.PreventMerchNoFacilityDowngrade = false;
+                ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem.m_oRevenue.PreventWood4NoFacilityDowngrade = false;
+                ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem.m_oRevenue.PreventWood5NoFacilityDowngrade = false;
+                ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem.m_oRevenue.PreventWood6NoFacilityDowngrade = false;
                 if (chkMerchPrevEconDG.Checked)
                 {
+                    ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem.m_oRevenue.PreventMerchEconomicDowngrade = true;
                     oDataMgr.m_strSQL = "UPDATE scenario_costs SET merch_prev_econDG_YN = 'Y' WHERE scenario_id = '" + strScenarioId + "'";
                     oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
                 }
                 if (chkWood4PrevEconDG.Checked)
                 {
+                    ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem.m_oRevenue.PreventWood4EconomicDowngrade = true;
                     oDataMgr.m_strSQL = "UPDATE scenario_costs SET wood4_prev_econDG_YN = 'Y' WHERE scenario_id = '" + strScenarioId + "'";
                     oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
                 }
                 if (chkWood5PrevEconDG.Checked)
                 {
+                    ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem.m_oRevenue.PreventWood5EconomicDowngrade = true;
                     oDataMgr.m_strSQL = "UPDATE scenario_costs SET wood5_prev_econDG_YN = 'Y' WHERE scenario_id = '" + strScenarioId + "'";
                     oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
                 }
                 if (chkWood6PrevEconDG.Checked)
                 {
+                    ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem.m_oRevenue.PreventWood6EconomicDowngrade = true;
                     oDataMgr.m_strSQL = "UPDATE scenario_costs SET wood6_prev_econDG_YN = 'Y' WHERE scenario_id = '" + strScenarioId + "'";
                     oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
                 }
                 if (chkChipsPrevEconDG.Checked)
                 {
+                    ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem.m_oRevenue.PreventChipsEconomicDowngrade = true;
                     oDataMgr.m_strSQL = "UPDATE scenario_costs SET chips_prev_econDG_YN = 'Y' WHERE scenario_id = '" + strScenarioId + "'";
                     oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
                 }
                 if (chkMerchPrevNoFacDG.Checked)
                 {
+                    ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem.m_oRevenue.PreventMerchNoFacilityDowngrade = true;
                     oDataMgr.m_strSQL = "UPDATE scenario_costs SET merch_prev_nofacDG_YN = 'Y' WHERE scenario_id = '" + strScenarioId + "'";
                     oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
                 }
                 if (chkWood4PrevNoFacDG.Checked)
                 {
+                    ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem.m_oRevenue.PreventWood4NoFacilityDowngrade = true;
                     oDataMgr.m_strSQL = "UPDATE scenario_costs SET wood4_prev_nofacDG_YN = 'Y' WHERE scenario_id = '" + strScenarioId + "'";
                     oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
                 }
                 if (chkWood5PrevNoFacDG.Checked)
                 {
+                    ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem.m_oRevenue.PreventWood5NoFacilityDowngrade = true;
                     oDataMgr.m_strSQL = "UPDATE scenario_costs SET wood5_prev_nofacDG_YN = 'Y' WHERE scenario_id = '" + strScenarioId + "'";
                     oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
                 }
                 if (chkWood6PrevNoFacDG.Checked)
                 {
+                    ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem.m_oRevenue.PreventWood6NoFacilityDowngrade = true;
                     oDataMgr.m_strSQL = "UPDATE scenario_costs SET wood6_prev_nofacDG_YN = 'Y' WHERE scenario_id = '" + strScenarioId + "'";
                     oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
                 }

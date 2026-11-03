@@ -1765,6 +1765,12 @@ namespace FIA_Biosum_Manager
 											"(" + strColumns + ") VALUES " +
 											"(" + strValues + ")";
 							oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+
+							ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem.m_oEffectiveVariablesItem_Collection.Item(0).m_strPreVarArray[x] = m_oSavVar.m_strPreVarArray[x];
+							ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem.m_oEffectiveVariablesItem_Collection.Item(0).m_strPostVarArray[x] = m_oSavVar.m_strPostVarArray[x];
+							ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem.m_oEffectiveVariablesItem_Collection.Item(0).m_strBetterExpr[x] = m_oSavVar.m_strBetterExpr[x];
+							ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem.m_oEffectiveVariablesItem_Collection.Item(0).m_strWorseExpr[x] = m_oSavVar.m_strWorseExpr[x];
+							ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem.m_oEffectiveVariablesItem_Collection.Item(0).m_strEffectiveExpr[x] = m_oSavVar.m_strEffectiveExpr[x];
 						}
 					}
 
@@ -1779,6 +1785,8 @@ namespace FIA_Biosum_Manager
 							"(" + strColumns + ") VALUES " +
 							"(" + strValues + ")";
 						oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+
+						ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem.m_oEffectiveVariablesItem_Collection.Item(0).m_strOverallEffectiveExpr = m_oSavVar.m_strOverallEffectiveExpr;
 					}
 				}
 			}
