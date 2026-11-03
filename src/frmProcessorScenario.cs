@@ -1744,7 +1744,7 @@ namespace FIA_Biosum_Manager
                 get { return _strChipPercent; }
                 set { _strChipPercent = value; }
             }
-            private string _strMerchPercent = "0";
+            private string _strMerchPercent = "100";
             public string MerchPercent
             {
                 get { return _strMerchPercent; }

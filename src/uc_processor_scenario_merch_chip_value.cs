@@ -142,6 +142,10 @@ namespace FIA_Biosum_Manager
                             //CHIP PERCENT
                             //
                             this.uc_processor_scenario_spc_dbh_group_value1.ChipPercent = ReferenceProcessorScenarioForm.m_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).ChipPercent;
+                            if (this.uc_processor_scenario_spc_dbh_group_value1.ChipPercent == "100")
+                            {
+                                this.uc_processor_scenario_spc_dbh_group_value1.chkChips.Checked = true;
+                            }
                             //
                             //MERCH CUBIC FOOT VALUE
                             //
@@ -205,6 +209,10 @@ namespace FIA_Biosum_Manager
                             //CHIP PERCENT
                             //
                             oItem.ChipPercent = ReferenceProcessorScenarioForm.m_oProcessorScenarioItem.m_oTreeSpeciesAndDbhDollarValuesItem_Collection.Item(x).ChipPercent;
+                            if (oItem.ChipPercent == "100")
+                            {
+                                oItem.chkChips.Checked = true;
+                            }
                             //
                             //MERCH CUBIC FOOT VALUE
                             //
