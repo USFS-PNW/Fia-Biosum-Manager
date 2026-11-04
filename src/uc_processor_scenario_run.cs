@@ -1042,11 +1042,11 @@ namespace FIA_Biosum_Manager
                         if (_lstErrorVariants.Count == 0)
                         {
                             string strMessage = $@"Costs could not be estimated for {intCount} stands in Variant {p_strVariant} RxPackage {p_strRxPackage}. If you continue, there may be missing costs in other packages. Please review the opcost_errors table for ALL variant/package combinations. {Environment.NewLine}Do you wish to continue ?";
-                            DialogResult res = new DialogResult();
-                            this.Invoke(new Action(() =>
-                            {
-                                res = MessageBox.Show(this, strMessage, "FIA Biosum", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
-                            }));
+                            DialogResult res = frmMain.g_oDelegate.ShowMessageBoxWithResult(this, strMessage, "FIA Biosum");
+                            //this.Invoke(new Action(() =>
+                            //{
+                            //    res = MessageBox.Show(this, strMessage, "FIA Biosum", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+                            //}));
                             if (res != DialogResult.Yes)
                             {
                                 m_intError = -1;
@@ -2682,10 +2682,7 @@ namespace FIA_Biosum_Manager
 
             if (_lstErrorVariants.Count == 0)
             {
-                this.Invoke(new Action(() =>
-                {
-                    MessageBox.Show(this, "Done", "FIA Biosum");
-                }));
+                frmMain.g_oDelegate.ShowMessageBox(this, "Done", "FIA Biosum");
             }
             else
             {
@@ -2700,10 +2697,7 @@ namespace FIA_Biosum_Manager
                     "Please review the opcost_errors tables in the most recent OPCOST databases located in the " +
                     frmMain.g_oFrmMain.getProjectDirectory() + "\\OPCOST\\Input folder for these Variant/Package combinations: \r\n\r\n" +
                     strVariantInfo;
-                this.Invoke(new Action(() =>
-                {
-                    MessageBox.Show(this, strMessage, "FIA Biosum");
-                }));
+                frmMain.g_oDelegate.ShowMessageBox(this, strMessage, "FIA Biosum");
             }
 
             if (frmMain.g_bDebug)

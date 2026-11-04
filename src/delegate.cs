@@ -1068,6 +1068,36 @@ namespace FIA_Biosum_Manager
             return false;
 
         }
+        public void ShowMessageBox(System.Windows.Forms.UserControl p_oUserControl, string p_strMessage, string p_strCaption)
+        {
+            if (p_oUserControl.InvokeRequired)
+            {
+                p_oUserControl.Invoke(new Action(() =>
+                {
+                    MessageBox.Show(p_oUserControl, p_strMessage, p_strCaption);
+                }));
+            }
+            else
+            {
+                MessageBox.Show(p_oUserControl, p_strMessage, p_strCaption);
+            }
+        }
+        public DialogResult ShowMessageBoxWithResult (System.Windows.Forms.UserControl p_oUserControl, string p_strMessage, string p_strCaption)
+        {
+            DialogResult res = new DialogResult();
+            if (p_oUserControl.InvokeRequired)
+            {
+                p_oUserControl.Invoke(new Action(() =>
+                {
+                    res = MessageBox.Show(p_oUserControl, p_strMessage, p_strCaption, MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+                }));
+            }
+            else
+            {
+                res = MessageBox.Show(p_oUserControl, p_strMessage, p_strCaption, MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+            }
+            return res;
+        }
 
         private void ThreadFinished()
         {
