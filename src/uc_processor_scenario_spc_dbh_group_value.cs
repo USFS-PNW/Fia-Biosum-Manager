@@ -34,7 +34,7 @@ namespace FIA_Biosum_Manager
 		private string m_strWood5PctSave = "";
 		private string m_strWood6PctSave = "";
         public bool m_bSave = false;
-        private CheckBox chkChips;
+        public CheckBox chkChips;
         private frmProcessorScenario _oFrmProcessorScenario = null;
 		
 		/// <summary> 

@@ -1219,6 +1219,13 @@ namespace FIA_Biosum_Manager
 
                     oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
 
+                    ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem.m_oTieBreaker_Collection.Item(0).strMethod = m_oSavTieBreakerCollection.Item(0).strMethod;
+                    ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem.m_oTieBreaker_Collection.Item(0).strFVSVariableName = m_oSavTieBreakerCollection.Item(0).strFVSVariableName;
+                    ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem.m_oTieBreaker_Collection.Item(0).strValueSource = m_oSavTieBreakerCollection.Item(0).strValueSource;
+                    ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem.m_oTieBreaker_Collection.Item(0).strMaxYN = m_oSavTieBreakerCollection.Item(0).strMaxYN;
+                    ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem.m_oTieBreaker_Collection.Item(0).strMinYN = m_oSavTieBreakerCollection.Item(0).strMinYN;
+                    ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem.m_oTieBreaker_Collection.Item(0).bSelected = m_oSavTieBreakerCollection.Item(0).bSelected;
+
                     //
                     //ECONOMIC VARIABLE
                     //
@@ -1264,6 +1271,13 @@ namespace FIA_Biosum_Manager
 
                     oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
 
+                    ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem.m_oTieBreaker_Collection.Item(1).strMethod = m_oSavTieBreakerCollection.Item(1).strMethod;
+                    ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem.m_oTieBreaker_Collection.Item(1).strFVSVariableName = m_oSavTieBreakerCollection.Item(1).strFVSVariableName;
+                    ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem.m_oTieBreaker_Collection.Item(1).strValueSource = m_oSavTieBreakerCollection.Item(1).strValueSource;
+                    ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem.m_oTieBreaker_Collection.Item(1).strMaxYN = m_oSavTieBreakerCollection.Item(1).strMaxYN;
+                    ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem.m_oTieBreaker_Collection.Item(1).strMinYN = m_oSavTieBreakerCollection.Item(1).strMinYN;
+                    ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem.m_oTieBreaker_Collection.Item(1).bSelected = m_oSavTieBreakerCollection.Item(1).bSelected;
+
                     //
                     //LAST TIE-BREAK RANK
                     //
@@ -1299,6 +1313,14 @@ namespace FIA_Biosum_Manager
                         "(" + strValues + ")";
 
                     oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+
+                    ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem.m_oTieBreaker_Collection.Item(2).strMethod = m_oSavTieBreakerCollection.Item(2).strMethod;
+                    ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem.m_oTieBreaker_Collection.Item(2).strFVSVariableName = m_oSavTieBreakerCollection.Item(2).strFVSVariableName;
+                    ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem.m_oTieBreaker_Collection.Item(2).strValueSource = m_oSavTieBreakerCollection.Item(2).strValueSource;
+                    ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem.m_oTieBreaker_Collection.Item(2).strMaxYN = m_oSavTieBreakerCollection.Item(2).strMaxYN;
+                    ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem.m_oTieBreaker_Collection.Item(2).strMinYN = m_oSavTieBreakerCollection.Item(2).strMinYN;
+                    ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem.m_oTieBreaker_Collection.Item(2).bSelected = m_oSavTieBreakerCollection.Item(2).bSelected;
+
                 }
             }
             this.uc_scenario_last_tiebreak_rank1.savevalues();

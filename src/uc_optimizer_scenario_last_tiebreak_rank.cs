@@ -173,6 +173,10 @@ namespace FIA_Biosum_Manager
 						oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
 						if (oDataMgr.m_intError < 0) break;
 
+						ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem.m_oLastTieBreakRankItem_Collection.Item(x).RxPackage =
+							this.m_DataSet.Tables["scenario_last_tiebreak_rank"].Rows[x]["rxpackage"].ToString().Trim();
+						ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem.m_oLastTieBreakRankItem_Collection.Item(x).LastTieBreakRank =
+							(int)this.m_DataSet.Tables["scenario_last_tiebreak_rank"].Rows[x]["last_tiebreak_rank"];
 					}
 				}
 			}
