@@ -4056,7 +4056,8 @@ namespace FIA_Biosum_Manager
                                 SET stand_residue_wt_gt = stand_residue_wt_gt + t.{p_strWoodType}_wt_gt, 
                                 stand_residue_wt_bdt = stand_residue_wt_bdt + t.{p_strWoodType}_wt_bdt 
                                 FROM {p_strEconByRxCycleWorkTable} AS e WHERE t.biosum_cond_id = e.biosum_cond_id 
-                                AND t.rx = e.rx AND t.rxcycle = e.rxcycle AND e.use{p_strWoodType} = 'R'";
+                                AND t.rx = e.rx AND t.rxcycle = e.rxcycle AND e.use{p_strWoodType} = 'R'
+                                AND t.{p_strWoodType}_vol_cf != 0";
                 return strSql;
             }
 
@@ -4069,7 +4070,8 @@ namespace FIA_Biosum_Manager
                                 chip_wt_bdt = t.chip_wt_bdt + t.{p_strWoodType}_wt_bdt, 
                                 chip_val_dpa = t.chip_val_dpa + ({p_strChipValue} * t.{p_strWoodType}_wt_gt) 
                                 FROM {p_strEconByRxCycleWorkTable} AS e WHERE t.biosum_cond_id = e.biosum_cond_id 
-                                AND t.rx = e.rx AND t.rxcycle = e.rxcycle AND e.use{p_strWoodType} = 'H'";
+                                AND t.rx = e.rx AND t.rxcycle = e.rxcycle AND e.use{p_strWoodType} = 'H' 
+                                AND t.{p_strWoodType}_vol_cf != 0";
                 return strSql;
             }
 
@@ -4081,7 +4083,8 @@ namespace FIA_Biosum_Manager
                                 {p_strWoodType}_wt_bdt = 0, {p_strWoodType}_val_dpa = 0, 
                                 adj_YN = 'Y' FROM {p_strEconByRxCycleWorkTable} AS e 
                                 WHERE t.biosum_cond_id = e.biosum_cond_id AND t.rx = e.rx AND 
-                                t.rxcycle = e.rxcycle AND e.use{p_strWoodType} = '{p_strUseFlag}'";
+                                t.rxcycle = e.rxcycle AND e.use{p_strWoodType} = '{p_strUseFlag}' 
+                                AND t.{p_strWoodType}_vol_cf != 0";
                 return strSql;
             }
         }
