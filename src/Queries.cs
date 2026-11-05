@@ -3033,6 +3033,21 @@ namespace FIA_Biosum_Manager
                            WHERE dbh >= 1.0";
                 }
 
+                public static string BuildInputTvbcTableForVolumeCalculation_Step1(string p_strInputVolumesTable, string p_strFvsTreeTable,
+                    string p_strFvsVariant, string p_strRxPackage)
+                {
+                    string strColumns = @"id,biosum_cond_id,statecd, countycd, plot,invyr,spcd,dbh,ht,actualht,cr,fvs_tree_id, fvscreatedtree_yn";
+                    string strValues = $@"id,biosum_cond_id, CAST((SUBSTR(BIOSUM_COND_ID, 6, 2)) AS INTEGER) AS STATECD," +
+                        "CAST((SUBSTR(BIOSUM_COND_ID, 12, 3)) AS INTEGER) AS COUNTYCD, CAST((SUBSTR(BIOSUM_COND_ID, 16, 6)) AS LONG) AS PLOT," +
+                        "cast(rxyear as integer) as invyr," +
+                        "CASE WHEN FvsCreatedTree_YN='Y' THEN cast(fvs_species as integer) ELSE -1 END AS spcd, " +
+                        "dbh,ht,ht,pctcr,fvs_tree_id, fvscreatedtree_yn";
+                    return $@"INSERT INTO {p_strInputVolumesTable} ({strColumns})  
+                           SELECT {strValues} 
+                           FROM {p_strFvsTreeTable}
+                           WHERE fvs_variant = '{p_strFvsVariant}' and rxpackage = '{p_strRxPackage}' and dbh >= 1.0";
+                }
+
                 /// <summary>
                 /// Update tree fields with values from the MASTER.TREE records
                 /// </summary>

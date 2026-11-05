@@ -138,6 +138,7 @@ namespace FIA_Biosum_Manager
             m_strTempDBFile = frmMain.g_oUtils.getRandomFile(frmMain.g_oEnv.strTempDir, "db");
             m_strTreeSampleDBFile = $@"{frmMain.g_oEnv.strApplicationDataDirectory.Trim()}{ frmMain.g_strBiosumDataDir}{ Tables.Reference.DefaultTreeSampleDbFile}";
             bool bHasTvbcData = false;
+            bool bHasFvsOut = false;
             if (File.Exists(m_strTreeSampleDBFile))
             {
                 using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(m_oDataMgr.GetConnectionString(m_strTreeSampleDBFile)))
@@ -149,6 +150,7 @@ namespace FIA_Biosum_Manager
                     }
                 }
             }
+
             if (frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim().Length > 0)
             {
                 // We have an open project
@@ -156,12 +158,25 @@ namespace FIA_Biosum_Manager
                 m_oQueries.m_oFIAPlot.LoadDatasource = true;
                 m_oQueries.LoadDatasources(true);
 
+                // Check for summary table in FVS Out
+                string strFvsOutDb = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() + Tables.FVS.DefaultFVSOutDbFile;
+                if (File.Exists(strFvsOutDb))
+                {
+                    using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(m_oDataMgr.GetConnectionString(strFvsOutDb)))
+                    {
+                        conn.Open();
+                        if (m_oDataMgr.TableExist(conn, Tables.FVS.DefaultFVSSummaryTableName))
+                        {
+                            bHasFvsOut = true;
+                        }
+                    }
+                }
+
                 //
                 //OPEN CONNECTION TO FVSOUT_TREE_LIST DB FILE
                 //
                 string strFvsTreeListDb = $@"{frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim()}{Tables.FVS.DefaultFVSTreeListDbFile}";
                 string strFVSTreeTableName = "";
-                //@ToDo: Re-enable this when we are ready to support FVS_CutTreeTvbc
                 if (File.Exists(strFvsTreeListDb))
                 {
                     using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(m_oDataMgr.GetConnectionString(strFvsTreeListDb)))
@@ -175,7 +190,7 @@ namespace FIA_Biosum_Manager
                 }
 
                 cmbDatasource.Items.Clear();
-                if (!string.IsNullOrEmpty(strFVSTreeTableName))
+                if (bHasFvsOut && !string.IsNullOrEmpty(strFVSTreeTableName))
                 {
                     cmbDatasource.Items.Add(strFVSTreeTableName);
                 }
@@ -997,7 +1012,7 @@ namespace FIA_Biosum_Manager
                         Tuple.Create("ECOSUBCD", $"'{txtEcoSubCd.Text.Trim()}'"),
                         Tuple.Create("STDORGCD", "0"),
                         Tuple.Create("CONFIG_ID", $"'{txtVolLocGrp.Text.Trim()}'"),
-                        Tuple.Create("BALIVE", "58.9219"),
+                        Tuple.Create("BALIVE", "110"),
                         Tuple.Create("SPN", txtSpCd.Text),
                         Tuple.Create("STATUSCD", txtStatusCd.Text.Trim()),
                         Tuple.Create("STANDING_DEAD_CD", "NULL"),
@@ -1509,7 +1524,6 @@ namespace FIA_Biosum_Manager
         frmMain.g_sbpInfo.Text = "Loading FVS Out Tree Table Data...Stand By";
             m_strSelectedDBFile = m_strTempDBFile;
             var strFvsTreeTable = this.cmbDatasource.Text; //e.g., FVS_CutTree
-            var strFiaTreeSpeciesRefTableLink = Tables.ProcessorScenarioRun.DefaultFiaTreeSpeciesRefTableName;
 
             using (System.Data.SQLite.SQLiteConnection conn = new System.Data.SQLite.SQLiteConnection(m_oDataMgr.GetConnectionString(m_strSelectedDBFile)))
             {
@@ -1526,7 +1540,7 @@ namespace FIA_Biosum_Manager
                     m_oDataMgr.SqlNonQuery(conn, "DROP TABLE " + Tables.VolumeAndBiomass.BiosumVolumesInputTable);
                 frmMain.g_oTables.m_oFvs.CreateTvbcInputBiosumVolumesTable(m_oDataMgr, conn, Tables.VolumeAndBiomass.BiosumVolumesInputTable,true);
                 m_oDataMgr.m_strSQL = Queries.VolumeAndBiomass.FVSOut.BuildInputTvbcTableForVolumeCalculation_Step1(
-                                       Tables.VolumeAndBiomass.BiosumVolumesInputTable, strFvsTreeTable);
+                                       Tables.VolumeAndBiomass.BiosumVolumesInputTable, strFvsTreeTable, strFvsVariant, strRxPackage);
                 if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                     frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile, m_oDataMgr.m_strSQL + "\r\n\r\n");
                 m_oDataMgr.SqlNonQuery(conn, m_oDataMgr.m_strSQL);
