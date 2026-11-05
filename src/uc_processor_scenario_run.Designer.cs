@@ -33,7 +33,6 @@
             this.btnRun = new System.Windows.Forms.Button();
             this.cmbFilter = new System.Windows.Forms.ComboBox();
             this.pnlFileSizeMonitor = new System.Windows.Forms.Panel();
-            this.uc_filesize_monitor3 = new FIA_Biosum_Manager.uc_filesize_monitor();
             this.uc_filesize_monitor2 = new FIA_Biosum_Manager.uc_filesize_monitor();
             this.uc_filesize_monitor1 = new FIA_Biosum_Manager.uc_filesize_monitor();
             this.btnRunOC7 = new System.Windows.Forms.Button();
@@ -103,7 +102,6 @@
             // pnlFileSizeMonitor
             // 
             this.pnlFileSizeMonitor.AutoScroll = true;
-            this.pnlFileSizeMonitor.Controls.Add(this.uc_filesize_monitor3);
             this.pnlFileSizeMonitor.Controls.Add(this.uc_filesize_monitor2);
             this.pnlFileSizeMonitor.Controls.Add(this.uc_filesize_monitor1);
             this.pnlFileSizeMonitor.Location = new System.Drawing.Point(25, 482);
@@ -111,17 +109,6 @@
             this.pnlFileSizeMonitor.Name = "pnlFileSizeMonitor";
             this.pnlFileSizeMonitor.Size = new System.Drawing.Size(836, 122);
             this.pnlFileSizeMonitor.TabIndex = 68;
-            // 
-            // uc_filesize_monitor3
-            // 
-            this.uc_filesize_monitor3.ForeColor = System.Drawing.Color.Black;
-            this.uc_filesize_monitor3.Information = "";
-            this.uc_filesize_monitor3.Location = new System.Drawing.Point(572, 12);
-            this.uc_filesize_monitor3.Margin = new System.Windows.Forms.Padding(5);
-            this.uc_filesize_monitor3.Name = "uc_filesize_monitor3";
-            this.uc_filesize_monitor3.Size = new System.Drawing.Size(241, 94);
-            this.uc_filesize_monitor3.TabIndex = 2;
-            this.uc_filesize_monitor3.Visible = false;
             // 
             // uc_filesize_monitor2
             // 
@@ -242,7 +229,6 @@
         private System.Windows.Forms.Button btnRunOC7;
         private System.Windows.Forms.Label lblMsg;
         private System.Windows.Forms.Panel pnlFileSizeMonitor;
-        private uc_filesize_monitor uc_filesize_monitor3;
         private uc_filesize_monitor uc_filesize_monitor2;
         private uc_filesize_monitor uc_filesize_monitor1;
         private System.Windows.Forms.ComboBox cmbFilter;

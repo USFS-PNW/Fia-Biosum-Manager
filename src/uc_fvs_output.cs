@@ -97,11 +97,9 @@ namespace FIA_Biosum_Manager
         int m_intProgressOverallCurrentCount = 0;
         int m_intProgressStepCurrentCount = 0;
 
-        private List<string> m_oFVSTables;
         private Button btnExecute;
         private ComboBox cmbStep;
         private Panel pnlFileSizeMonitor;
-        private uc_filesize_monitor uc_filesize_monitor3;
         private uc_filesize_monitor uc_filesize_monitor2;
         private uc_filesize_monitor uc_filesize_monitor1;
         private ComboBox cmbFilter;
@@ -176,7 +174,6 @@ namespace FIA_Biosum_Manager
             this.btnPostAppendAuditDb = new System.Windows.Forms.Button();
             this.cmbFilter = new System.Windows.Forms.ComboBox();
             this.pnlFileSizeMonitor = new System.Windows.Forms.Panel();
-            this.uc_filesize_monitor3 = new FIA_Biosum_Manager.uc_filesize_monitor();
             this.uc_filesize_monitor2 = new FIA_Biosum_Manager.uc_filesize_monitor();
             this.uc_filesize_monitor1 = new FIA_Biosum_Manager.uc_filesize_monitor();
             this.btnExecute = new System.Windows.Forms.Button();
@@ -270,24 +267,12 @@ namespace FIA_Biosum_Manager
             // pnlFileSizeMonitor
             // 
             this.pnlFileSizeMonitor.AutoScroll = true;
-            this.pnlFileSizeMonitor.Controls.Add(this.uc_filesize_monitor3);
             this.pnlFileSizeMonitor.Controls.Add(this.uc_filesize_monitor2);
             this.pnlFileSizeMonitor.Controls.Add(this.uc_filesize_monitor1);
             this.pnlFileSizeMonitor.Location = new System.Drawing.Point(6, 364);
             this.pnlFileSizeMonitor.Name = "pnlFileSizeMonitor";
             this.pnlFileSizeMonitor.Size = new System.Drawing.Size(706, 99);
             this.pnlFileSizeMonitor.TabIndex = 67;
-            // 
-            // uc_filesize_monitor3
-            // 
-            this.uc_filesize_monitor3.ForeColor = System.Drawing.Color.Black;
-            this.uc_filesize_monitor3.Information = "";
-            this.uc_filesize_monitor3.Location = new System.Drawing.Point(429, 10);
-            this.uc_filesize_monitor3.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.uc_filesize_monitor3.Name = "uc_filesize_monitor3";
-            this.uc_filesize_monitor3.Size = new System.Drawing.Size(181, 76);
-            this.uc_filesize_monitor3.TabIndex = 2;
-            this.uc_filesize_monitor3.Visible = false;
             // 
             // uc_filesize_monitor2
             // 
@@ -868,25 +853,7 @@ namespace FIA_Biosum_Manager
 
                     }
                 }
-                if (uc_filesize_monitor3.lblMaxSize.Left + uc_filesize_monitor3.lblMaxSize.Width > uc_filesize_monitor3.Width)
-                {
-                    for (; ; )
-                    {
-                        uc_filesize_monitor3.Width = uc_filesize_monitor3.Width + 1;
-                        if (uc_filesize_monitor3.lblMaxSize.Left + uc_filesize_monitor3.lblMaxSize.Width < uc_filesize_monitor3.Width)
-                            break;
-
-                    }
-                }
-
-
-
-
-
-
-                this.uc_filesize_monitor2.Left = this.uc_filesize_monitor1.Left + uc_filesize_monitor2.Width + 2;
-                this.uc_filesize_monitor3.Left = this.uc_filesize_monitor2.Left + uc_filesize_monitor3.Width + 2;
-               
+                this.uc_filesize_monitor2.Left = this.uc_filesize_monitor1.Left + uc_filesize_monitor2.Width + 2;               
                 this.lstFvsOutput.Height = this.lblMsg.Top - this.lstFvsOutput.Top - 5;               
                 this.txtOutDir.Width = this.Width - this.txtOutDir.Left - 10;               
                 this.lblRunStatus.Left = (int)(this.groupBox1.Width / 2) - (int)(this.lblRunStatus.Width / 2);
@@ -1577,9 +1544,6 @@ namespace FIA_Biosum_Manager
                                     if (m_bDebug && frmMain.g_intDebugLevel > 2)
                                         this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
                     }
-                    if (uc_filesize_monitor3.File.Length > 0) uc_filesize_monitor3.EndMonitoringFile();
-                        else uc_filesize_monitor2.EndMonitoringFile();
-
                     if (SQLite.m_intError != 0) break;
 
                 }
@@ -3261,13 +3225,8 @@ namespace FIA_Biosum_Manager
 		{
 			try
 			{
-                //frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.GroupBox)grpboxAppend, "Enabled", true);
-                //frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.GroupBox)grpboxAudit, "Enabled", true);
-                //frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.GroupBox)grpBoxPostAudit, "Enabled", true);
-                //frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.GroupBox)grpboxSpCdConvert, "Enabled", true);
                 uc_filesize_monitor1.EndMonitoringFile();
                 uc_filesize_monitor2.EndMonitoringFile();
-                uc_filesize_monitor3.EndMonitoringFile();
                 frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Button)btnExecute, "Enabled", true);
                 frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.ComboBox)cmbStep, "Enabled", true);
                 frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Button)btnChkAll, "Enabled", true);
@@ -5750,11 +5709,6 @@ namespace FIA_Biosum_Manager
 		{
             uc_filesize_monitor1.EndMonitoringFile();
             uc_filesize_monitor2.EndMonitoringFile();
-            uc_filesize_monitor3.EndMonitoringFile();
-            //frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.GroupBox)grpboxAppend, "Enabled", true);
-            //frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.GroupBox)grpboxAudit, "Enabled", true);
-            //frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.GroupBox)grpBoxPostAudit, "Enabled", true);
-            //frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.GroupBox)grpboxSpCdConvert, "Enabled", true);
             frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.ComboBox)cmbStep, "Enabled", true);
             frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Button)btnExecute, "Enabled", true);
 			frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Button)btnChkAll,"Enabled",true);
@@ -5767,11 +5721,7 @@ namespace FIA_Biosum_Manager
             frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Button)btnAuditDb, "Enabled", true);
             frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Button)btnPostAppendAuditDb, "Enabled", true);
             frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Button)btnCancel, "Enabled", false);
-            frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.UserControl)this, "Enabled", true);
-           
-//            frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.UserControl)uc_filesize_monitor1, "Visible", false);
-//            frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.UserControl)uc_filesize_monitor2, "Visible", false);
-//            frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.UserControl)uc_filesize_monitor3, "Visible", false);
+            frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.UserControl)this, "Enabled", true);           
 			this.ParentForm.Enabled=true;
 			
 		}

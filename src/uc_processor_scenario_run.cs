@@ -941,24 +941,7 @@ namespace FIA_Biosum_Manager
 
                     }
                 }
-                if (uc_filesize_monitor3.lblMaxSize.Left + uc_filesize_monitor3.lblMaxSize.Width > uc_filesize_monitor3.Width)
-                {
-                    for (; ; )
-                    {
-                        uc_filesize_monitor3.Width = uc_filesize_monitor3.Width + 1;
-                        if (uc_filesize_monitor3.lblMaxSize.Left + uc_filesize_monitor3.lblMaxSize.Width < uc_filesize_monitor3.Width)
-                            break;
-
-                    }
-                }
-
-
-
-
-
-
                 this.uc_filesize_monitor2.Left = this.uc_filesize_monitor1.Left + uc_filesize_monitor2.Width + 2;
-                this.uc_filesize_monitor3.Left = this.uc_filesize_monitor2.Left + uc_filesize_monitor3.Width + 2;
             }
             catch
             {
