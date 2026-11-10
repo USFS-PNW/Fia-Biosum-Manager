@@ -100,8 +100,6 @@ namespace FIA_Biosum_Manager
         private Button btnExecute;
         private ComboBox cmbStep;
         private Panel pnlFileSizeMonitor;
-        private uc_filesize_monitor uc_filesize_monitor2;
-        private uc_filesize_monitor uc_filesize_monitor1;
         private ComboBox cmbFilter;
 
         private FVSPrePostSeqNumItem_Collection m_oFVSPrePostSeqNumItemCollection = null;
@@ -116,6 +114,9 @@ namespace FIA_Biosum_Manager
         public static string m_colBioSumAppend = "BIOSUM_Append_YN";
 
         private SQLite.ADO.DataMgr _SQLite = new SQLite.ADO.DataMgr();
+        private Label lblTmpDbFile;
+        private Label lblTempDb;
+
         public SQLite.ADO.DataMgr SQLite
         {
             get { return _SQLite; }
@@ -174,8 +175,6 @@ namespace FIA_Biosum_Manager
             this.btnPostAppendAuditDb = new System.Windows.Forms.Button();
             this.cmbFilter = new System.Windows.Forms.ComboBox();
             this.pnlFileSizeMonitor = new System.Windows.Forms.Panel();
-            this.uc_filesize_monitor2 = new FIA_Biosum_Manager.uc_filesize_monitor();
-            this.uc_filesize_monitor1 = new FIA_Biosum_Manager.uc_filesize_monitor();
             this.btnExecute = new System.Windows.Forms.Button();
             this.cmbStep = new System.Windows.Forms.ComboBox();
             this.lblMsg = new System.Windows.Forms.Label();
@@ -192,6 +191,8 @@ namespace FIA_Biosum_Manager
             this.btnChkAll = new System.Windows.Forms.Button();
             this.btnClose = new System.Windows.Forms.Button();
             this.btnHelp = new System.Windows.Forms.Button();
+            this.lblTempDb = new System.Windows.Forms.Label();
+            this.lblTmpDbFile = new System.Windows.Forms.Label();
             this.groupBox1.SuspendLayout();
             this.pnlFileSizeMonitor.SuspendLayout();
             this.SuspendLayout();
@@ -267,34 +268,12 @@ namespace FIA_Biosum_Manager
             // pnlFileSizeMonitor
             // 
             this.pnlFileSizeMonitor.AutoScroll = true;
-            this.pnlFileSizeMonitor.Controls.Add(this.uc_filesize_monitor2);
-            this.pnlFileSizeMonitor.Controls.Add(this.uc_filesize_monitor1);
+            this.pnlFileSizeMonitor.Controls.Add(this.lblTmpDbFile);
+            this.pnlFileSizeMonitor.Controls.Add(this.lblTempDb);
             this.pnlFileSizeMonitor.Location = new System.Drawing.Point(6, 364);
             this.pnlFileSizeMonitor.Name = "pnlFileSizeMonitor";
             this.pnlFileSizeMonitor.Size = new System.Drawing.Size(706, 99);
             this.pnlFileSizeMonitor.TabIndex = 67;
-            // 
-            // uc_filesize_monitor2
-            // 
-            this.uc_filesize_monitor2.ForeColor = System.Drawing.Color.Black;
-            this.uc_filesize_monitor2.Information = "";
-            this.uc_filesize_monitor2.Location = new System.Drawing.Point(206, 10);
-            this.uc_filesize_monitor2.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.uc_filesize_monitor2.Name = "uc_filesize_monitor2";
-            this.uc_filesize_monitor2.Size = new System.Drawing.Size(181, 76);
-            this.uc_filesize_monitor2.TabIndex = 1;
-            this.uc_filesize_monitor2.Visible = false;
-            // 
-            // uc_filesize_monitor1
-            // 
-            this.uc_filesize_monitor1.ForeColor = System.Drawing.Color.Black;
-            this.uc_filesize_monitor1.Information = "";
-            this.uc_filesize_monitor1.Location = new System.Drawing.Point(5, 10);
-            this.uc_filesize_monitor1.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.uc_filesize_monitor1.Name = "uc_filesize_monitor1";
-            this.uc_filesize_monitor1.Size = new System.Drawing.Size(181, 76);
-            this.uc_filesize_monitor1.TabIndex = 0;
-            this.uc_filesize_monitor1.Visible = false;
             // 
             // btnExecute
             // 
@@ -460,6 +439,26 @@ namespace FIA_Biosum_Manager
             this.btnHelp.TabIndex = 44;
             this.btnHelp.Text = "Help";
             this.btnHelp.Click += new System.EventHandler(this.btnHelp_Click);
+            // 
+            // lblTempDb
+            // 
+            this.lblTempDb.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblTempDb.ForeColor = System.Drawing.Color.Green;
+            this.lblTempDb.Location = new System.Drawing.Point(5, 10);
+            this.lblTempDb.Name = "lblTempDb";
+            this.lblTempDb.Size = new System.Drawing.Size(115, 16);
+            this.lblTempDb.TabIndex = 52;
+            this.lblTempDb.Text = "Temporary db";
+            // 
+            // lblTmpDbFile
+            // 
+            this.lblTmpDbFile.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblTmpDbFile.ForeColor = System.Drawing.Color.Green;
+            this.lblTmpDbFile.Location = new System.Drawing.Point(118, 10);
+            this.lblTmpDbFile.Name = "lblTmpDbFile";
+            this.lblTmpDbFile.Size = new System.Drawing.Size(500, 16);
+            this.lblTmpDbFile.TabIndex = 53;
+            this.lblTmpDbFile.Text = "";
             // 
             // uc_fvs_output
             // 
@@ -832,28 +831,7 @@ namespace FIA_Biosum_Manager
                 btnPostAppendAuditDb.Top = btnViewPostLogFile.Top;
                 this.btnAuditDb.Left = this.btnViewLogFile.Left - this.btnAuditDb.Width;
                 this.btnPostAppendAuditDb.Left = this.btnAuditDb.Left;
-                this.lblMsg.Top = btnChkAll.Top - this.lblMsg.Height - 2;
-                if (uc_filesize_monitor1.lblMaxSize.Left + uc_filesize_monitor1.lblMaxSize.Width > uc_filesize_monitor1.Width)
-                {
-                    for (; ; )
-                    {
-                        uc_filesize_monitor1.Width = uc_filesize_monitor1.Width + 1;
-                        if (uc_filesize_monitor1.lblMaxSize.Left + uc_filesize_monitor1.lblMaxSize.Width < uc_filesize_monitor1.Width)
-                            break;
-
-                    }
-                }
-                if (uc_filesize_monitor2.lblMaxSize.Left + uc_filesize_monitor2.lblMaxSize.Width > uc_filesize_monitor2.Width)
-                {
-                    for (; ; )
-                    {
-                        uc_filesize_monitor2.Width = uc_filesize_monitor2.Width + 1;
-                        if (uc_filesize_monitor2.lblMaxSize.Left + uc_filesize_monitor2.lblMaxSize.Width < uc_filesize_monitor2.Width)
-                            break;
-
-                    }
-                }
-                this.uc_filesize_monitor2.Left = this.uc_filesize_monitor1.Left + uc_filesize_monitor2.Width + 2;               
+                this.lblMsg.Top = btnChkAll.Top - this.lblMsg.Height - 2;            
                 this.lstFvsOutput.Height = this.lblMsg.Top - this.lstFvsOutput.Top - 5;               
                 this.txtOutDir.Width = this.Width - this.txtOutDir.Left - 10;               
                 this.lblRunStatus.Left = (int)(this.groupBox1.Width / 2) - (int)(this.lblRunStatus.Width / 2);
@@ -1128,12 +1106,7 @@ namespace FIA_Biosum_Manager
                 UpdateTherm(m_frmTherm.progressBar1,
                             m_intProgressStepCurrentCount,
                             m_intProgressStepTotalCount);
-
-                if (uc_filesize_monitor1.File.Trim().Length == 0)
-                {
-                    uc_filesize_monitor1.BeginMonitoringFile(p_strTempDb, 2000000000, "2GB");
-                    uc_filesize_monitor1.Information = "The temporary DB file listed above is a copy of the production DB file " + frmMain.g_oUtils.getFileName(m_strFvsPrePostDb);
-                }
+                frmMain.g_oDelegate.SetControlPropertyValue((Control)lblTmpDbFile, "Text", p_strTempDb);
 
                 string strConn = SQLite.GetConnectionString(p_strTempDb);
                 string strFVSOutTable = lstTableNames[y].ToUpper();
@@ -3225,8 +3198,6 @@ namespace FIA_Biosum_Manager
 		{
 			try
 			{
-                uc_filesize_monitor1.EndMonitoringFile();
-                uc_filesize_monitor2.EndMonitoringFile();
                 frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Button)btnExecute, "Enabled", true);
                 frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.ComboBox)cmbStep, "Enabled", true);
                 frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Button)btnChkAll, "Enabled", true);
@@ -3361,6 +3332,8 @@ namespace FIA_Biosum_Manager
 			m_strLogDate = oDate.ToString(strDateFormat);
 			m_strLogDate = m_strLogDate.Replace("/","_"); m_strLogDate=m_strLogDate.Replace(":","_");
 
+            frmMain.g_oDelegate.SetControlPropertyValue((Control)lblTmpDbFile, "Text", "");
+
             if (m_oFVSPrePostSeqNumItemCollection == null) m_oFVSPrePostSeqNumItemCollection = new FVSPrePostSeqNumItem_Collection();
 
             // Loads the sequence number configurations from db\fvsmaster.db\fvs_output_prepost_seqnum
@@ -3403,9 +3376,7 @@ namespace FIA_Biosum_Manager
                 {
                     SQLite.CreateDbFile(strAuditDbFile);
                 }
-                if (uc_filesize_monitor1.File.Trim().Length > 0) uc_filesize_monitor1.EndMonitoringFile();
-                uc_filesize_monitor1.BeginMonitoringFile(strAuditDbFile, 2000000000, "2GB");
-                uc_filesize_monitor1.Information = "BIOSUM DB file containing PREPOST SEQNUM MATRIX and AUDIT tables for processing FVS Output DB file " + strDbFile;
+                frmMain.g_oDelegate.SetControlPropertyValue((Control)lblTmpDbFile, "Text", strAuditDbFile);
 
                 if (m_intError == 0)
                 {
@@ -4265,7 +4236,7 @@ namespace FIA_Biosum_Manager
             string strSQL = "";
             System.Windows.Forms.ListView oLv = (System.Windows.Forms.ListView)frmMain.g_oDelegate.GetListView(this.lstFvsOutput, false);
             System.Windows.Forms.ListViewItem oLvItem = null;
-            string strAuditDbFile;
+            string strAuditDbFile = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() + Tables.FVS.DefaultFVSAuditsDbFile;
             string strRxPackageWorktable = "rxpackage_work_table";
             string strRxPackageWorktable2 = "rxpackage_work_table2";
             string strRxWorktable = "rx_work_table";
@@ -4280,6 +4251,8 @@ namespace FIA_Biosum_Manager
 			m_strLogDate = oDate.ToString(strDateFormat);
 			m_strLogDate = m_strLogDate.Replace("/","_"); m_strLogDate=m_strLogDate.Replace(":","_");
 			int x,y;
+
+                frmMain.g_oDelegate.SetControlPropertyValue((Control)lblTmpDbFile, "Text", strAuditDbFile);
 
             try
             {
@@ -4398,7 +4371,6 @@ namespace FIA_Biosum_Manager
 
                             // With the SQLite rewrite, we run the queries in a temp database instead of PostAudit.db
                             // The permanent audit tables are in the new SQLite audits.db
-                            strAuditDbFile = frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() + Tables.FVS.DefaultFVSAuditsDbFile;
                             string strTempDb = frmMain.g_oUtils.getRandomFile(frmMain.g_oEnv.strTempDir, "db");
                             SQLite.CreateDbFile(strTempDb);
                             string strTempCutListTable = "tmpCutTree";
@@ -4572,9 +4544,6 @@ namespace FIA_Biosum_Manager
                                         this.WriteText(m_strDebugFile, "DONE:" + System.DateTime.Now.ToString() + "\r\n\r\n");
                                 }
                             }
-
-                            uc_filesize_monitor1.BeginMonitoringFile(strAuditDbFile, 2000000000, "2GB");
-                            uc_filesize_monitor1.Information = "BIOSUM DB file containing FVS OUTPUT PRE/POST AUDIT tables";
 
                             m_intProgressStepCurrentCount++;
                             UpdateTherm(m_frmTherm.progressBar1,
@@ -5707,8 +5676,6 @@ namespace FIA_Biosum_Manager
 		}
 		private void CleanupThread()
 		{
-            uc_filesize_monitor1.EndMonitoringFile();
-            uc_filesize_monitor2.EndMonitoringFile();
             frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.ComboBox)cmbStep, "Enabled", true);
             frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Button)btnExecute, "Enabled", true);
 			frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Button)btnChkAll,"Enabled",true);
@@ -5783,13 +5750,6 @@ namespace FIA_Biosum_Manager
 				}
 				proc=null;
 			}
-
-						
-
-			//strOutDirAndFile = strOutDirAndFile  + "\\" + strDbFile;
-
-
-
 		}
 
 		private void btnAuditDb_Click(object sender, System.EventArgs e)
@@ -7542,6 +7502,8 @@ namespace FIA_Biosum_Manager
                     m_intProgressStepTotalCount = intCount;
 
                     string strTempDb = frmMain.g_oUtils.getRandomFile(frmMain.g_oEnv.strTempDir, "db");
+                    frmMain.g_oDelegate.SetControlPropertyValue((Control)lblTmpDbFile, "Text", strTempDb);
+
                     for (x = 0; x <= intCount - 1; x++)
                     {
                         m_intProgressStepCurrentCount = 0;
@@ -7669,12 +7631,6 @@ namespace FIA_Biosum_Manager
 
                             if (m_bDebug && frmMain.g_intDebugLevel > 1)
                                 this.WriteText(m_strDebugFile, "checkpoint 6 \r\n START: " + System.DateTime.Now.ToString() + "\r\n");
-
-                            if (uc_filesize_monitor1.File.Trim().Length == 0)
-                            {
-                                uc_filesize_monitor1.BeginMonitoringFile(strTempDb, 2000000000, "2GB");
-                                uc_filesize_monitor1.Information = strTempDb;
-                            }
 
                             frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)this.m_frmTherm.lblMsg, "Text", "Processing Variant:" + strVariant.Trim() + " Package:" + strPackage.Trim());
                             frmMain.g_oDelegate.ExecuteControlMethod((System.Windows.Forms.Control)this.m_frmTherm.lblMsg, "Refresh");
