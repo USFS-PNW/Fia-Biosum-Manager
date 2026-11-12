@@ -3376,7 +3376,7 @@ namespace FIA_Biosum_Manager
                 {
                     SQLite.CreateDbFile(strAuditDbFile);
                 }
-                frmMain.g_oDelegate.SetControlPropertyValue((Control)lblTmpDbFile, "Text", strAuditDbFile);
+                frmMain.g_oDelegate.SetControlPropertyValue((Control)lblTmpDbFile, "Text", "");
 
                 if (m_intError == 0)
                 {
@@ -4240,7 +4240,8 @@ namespace FIA_Biosum_Manager
             string strRxPackageWorktable = "rxpackage_work_table";
             string strRxPackageWorktable2 = "rxpackage_work_table2";
             string strRxWorktable = "rx_work_table";
-			
+            string strTempDb = frmMain.g_oUtils.getRandomFile(frmMain.g_oEnv.strTempDir, "db");
+
             bool bDisplay = false;
 
             if (m_bDebug)
@@ -4252,7 +4253,7 @@ namespace FIA_Biosum_Manager
 			m_strLogDate = m_strLogDate.Replace("/","_"); m_strLogDate=m_strLogDate.Replace(":","_");
 			int x,y;
 
-                frmMain.g_oDelegate.SetControlPropertyValue((Control)lblTmpDbFile, "Text", strAuditDbFile);
+            frmMain.g_oDelegate.SetControlPropertyValue((Control)lblTmpDbFile, "Text", strTempDb);
 
             try
             {
@@ -4371,7 +4372,6 @@ namespace FIA_Biosum_Manager
 
                             // With the SQLite rewrite, we run the queries in a temp database instead of PostAudit.db
                             // The permanent audit tables are in the new SQLite audits.db
-                            string strTempDb = frmMain.g_oUtils.getRandomFile(frmMain.g_oEnv.strTempDir, "db");
                             SQLite.CreateDbFile(strTempDb);
                             string strTempCutListTable = "tmpCutTree";
                             int intTreeTable = m_oQueries.m_oDataSource.getDataSourceTableNameRow("TREE");
