@@ -1264,6 +1264,7 @@ namespace FIA_Biosum_Manager
 					}
 					else
 						oItem.strMinYN="N";
+                    oItem.RxCycle = "1";
                     this.ReferenceOptimizerScenarioForm.m_oOptimizerScenarioItem_Collection.Item(0).m_oOptimizationVariableItem_Collection.Add(oItem);
 
 				}
@@ -1412,6 +1413,7 @@ namespace FIA_Biosum_Manager
                                 "(" + strColumns + ") VALUES " +
                                 "(" + strValues + ")";
                         oDataMgr.SqlNonQuery(conn, oDataMgr.m_strSQL);
+
                     }
                 }
             }
