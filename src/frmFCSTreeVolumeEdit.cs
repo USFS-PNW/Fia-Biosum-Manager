@@ -1221,8 +1221,7 @@ namespace FIA_Biosum_Manager
                 intThermValue++;
                 UpdateThermPercent(0, intRecordCount * 3 + 8, intThermValue);
 
-                if (strTable != Tables.VolumeAndBiomass.BiosumVolumesInputTable)
-                {
+
                     //delete and create work tables
                     if (m_oDataMgr.AttachedTableExist(conn, $@"{m_strSampleTvbcTable}_calc"))
                         m_oDataMgr.SqlNonQuery(conn, $@"DROP TABLE {m_strSampleTvbcTable}_calc");
@@ -1250,7 +1249,9 @@ namespace FIA_Biosum_Manager
                     //step 6 - insert records
                     frmMain.g_oDelegate.SetStatusBarPanelTextValue(frmMain.g_sbpInfo.Parent, 1,
                         "Prepare Tree Data For BioSumComps Volume and Biomass calculations...Stand By");
-                    
+                if (strTable != Tables.VolumeAndBiomass.BiosumVolumesInputTable)
+                {
+
                     var treeToTvbcBiosumVolumesInputTable = new List<Tuple<string, string>>
                 {
                     Tuple.Create("TRE_CN", "CAST(ID AS TEXT)"),
@@ -1289,6 +1290,52 @@ namespace FIA_Biosum_Manager
 
                     // Writing from treeSample to tvbc_tree_data
                     m_oDataMgr.m_strSQL = $"INSERT INTO {m_strTvbcTable} ({strColumns}) SELECT {strValues} FROM {strTable} WHERE DIA >= 1.0";
+                    if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
+                        frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile,
+                            m_oDataMgr.m_strSQL + "\r\n\r\n");
+                    m_oDataMgr.SqlNonQuery(conn, m_oDataMgr.m_strSQL);
+                }
+                else
+                {
+                    // This is a separate path because dbh vs dia
+                    var treeToTvbcBiosumVolumesInputTable = new List<Tuple<string, string>>
+                {
+                    Tuple.Create("TRE_CN", "CAST(ID AS TEXT)"),
+                    Tuple.Create("FVS_TREE_ID", "TRIM(FVS_TREE_id)"),
+                    Tuple.Create("BIOSUM_COND_ID", "BIOSUM_COND_ID"),
+                    Tuple.Create("STATECD", "CAST(SUBSTR(BIOSUM_COND_ID,6,2) AS INTEGER) AS STATECD"),
+                    Tuple.Create("ECOSUBCD", "TRIM(ECOSUBCD)"),
+                    Tuple.Create("STDORGCD", "STDORGCD"),
+                    Tuple.Create("CONFIG_ID", "TRIM(VOL_LOC_GRP)"),
+                    Tuple.Create("BALIVE", "BALIVE"),
+                    Tuple.Create("SPN","SPCD"),
+                    Tuple.Create("STATUSCD", "STATUSCD"),
+                    Tuple.Create("STANDING_DEAD_CD", "STANDING_DEAD_CD"),
+                    Tuple.Create("DIA", "DBH"),
+                    Tuple.Create("HT", "HT"),
+                    Tuple.Create("ACTUALHT", "ACTUALHT"),
+                    Tuple.Create("DIAHTCD", "DIAHTCD"),
+                    Tuple.Create("CR", "CR"),
+                    Tuple.Create("CULL", "CULL"),
+                    Tuple.Create("CULL_FLD", "CULL_FLD"),
+                    Tuple.Create("ROUGHCULL", "ROUGHCULL"),
+                    Tuple.Create("CULLFORM", "CULLFORM"),
+                    Tuple.Create("CULLMSTOP", "CULLMSTOP"),
+                    Tuple.Create("DECAYCD", "DECAYCD"),
+                    Tuple.Create("UPPER_DIA", "UPPER_DIA"),
+                    Tuple.Create("UPPER_DIA_HT", "UPPER_DIA_HT"),
+                    Tuple.Create("CENTROID_DIA", "CENTROID_DIA"),
+                    Tuple.Create("CENTROID_DIA_HT_ACTUAL", "CENTROID_DIA_HT_ACTUAL"),
+                    Tuple.Create("HTDMP", "HTDMP"),
+                    Tuple.Create("WDLDSTEM", "WDLDSTEM"),
+                    Tuple.Create("TREECLCD", "TREECLCD"),
+                    Tuple.Create("SITREE", "SITREE")
+                };
+                    strColumns = string.Join(",", treeToTvbcBiosumVolumesInputTable.Select(e => e.Item1));
+                    strValues = string.Join(",", treeToTvbcBiosumVolumesInputTable.Select(e => e.Item2));
+
+                    // Writing from treeSample to tvbc_tree_data
+                    m_oDataMgr.m_strSQL = $"INSERT INTO {m_strTvbcTable} ({strColumns}) SELECT {strValues} FROM {strTable} WHERE DBH >= 1.0";
                     if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 2)
                         frmMain.g_oUtils.WriteText(frmMain.g_oFrmMain.frmProject.uc_project1.m_strDebugFile,
                             m_oDataMgr.m_strSQL + "\r\n\r\n");
