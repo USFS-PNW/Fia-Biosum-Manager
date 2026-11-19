@@ -4014,7 +4014,9 @@ namespace FIA_Biosum_Manager
                                 SET chip_haul_cost_dpa = chip_haul_cost_dpa + ({p_strWoodType}_wt_gt * 
                                 {Tables.OptimizerScenarioResults.DefaultScenarioResultsPSiteAccessibleWorkTableName}.chip_haul_cost_dpgt)  
                                 FROM {Tables.OptimizerScenarioResults.DefaultScenarioResultsPSiteAccessibleWorkTableName} 
-                                WHERE use{p_strWoodType} = 'H' AND rxcycle = '1'";
+                                WHERE use{p_strWoodType} = 'H' AND rxcycle = '1' 
+                                AND {p_strEconByRxCycleWorkTable}.biosum_cond_id = 
+                                {Tables.OptimizerScenarioResults.DefaultScenarioResultsPSiteAccessibleWorkTableName}.biosum_cond_id";
                 return strSql;
             }
 
@@ -4026,7 +4028,9 @@ namespace FIA_Biosum_Manager
                                 {Tables.OptimizerScenarioResults.DefaultScenarioResultsPSiteAccessibleWorkTableName}.chip_haul_cost_dpgt *
                                 {p_strOperatingEscalator}) 
                                 FROM {Tables.OptimizerScenarioResults.DefaultScenarioResultsPSiteAccessibleWorkTableName} 
-                                WHERE use{p_strWoodType} = 'H' AND rxcycle = '2'";
+                                WHERE use{p_strWoodType} = 'H' AND rxcycle = '2'
+                                AND {p_strEconByRxCycleWorkTable}.biosum_cond_id = 
+                                {Tables.OptimizerScenarioResults.DefaultScenarioResultsPSiteAccessibleWorkTableName}.biosum_cond_id";
                 return strSql;
             }
 
@@ -4038,7 +4042,9 @@ namespace FIA_Biosum_Manager
                                 {Tables.OptimizerScenarioResults.DefaultScenarioResultsPSiteAccessibleWorkTableName}.chip_haul_cost_dpgt *
                                 {p_strOperatingEscalator}) 
                                 FROM {Tables.OptimizerScenarioResults.DefaultScenarioResultsPSiteAccessibleWorkTableName} 
-                                WHERE use{p_strWoodType} = 'H' AND rxcycle = '3'";
+                                WHERE use{p_strWoodType} = 'H' AND rxcycle = '3'
+                                AND {p_strEconByRxCycleWorkTable}.biosum_cond_id = 
+                                {Tables.OptimizerScenarioResults.DefaultScenarioResultsPSiteAccessibleWorkTableName}.biosum_cond_id";
                 return strSql;
             }
 
@@ -4050,7 +4056,9 @@ namespace FIA_Biosum_Manager
                                 {Tables.OptimizerScenarioResults.DefaultScenarioResultsPSiteAccessibleWorkTableName}.chip_haul_cost_dpgt *
                                 {p_strOperatingEscalator}) 
                                 FROM {Tables.OptimizerScenarioResults.DefaultScenarioResultsPSiteAccessibleWorkTableName} 
-                                WHERE use{p_strWoodType} = 'H' AND rxcycle = '4'";
+                                WHERE use{p_strWoodType} = 'H' AND rxcycle = '4'
+                                AND {p_strEconByRxCycleWorkTable}.biosum_cond_id = 
+                                {Tables.OptimizerScenarioResults.DefaultScenarioResultsPSiteAccessibleWorkTableName}.biosum_cond_id";
                 return strSql;
             }
 
@@ -4060,7 +4068,8 @@ namespace FIA_Biosum_Manager
                 string strSql = $@"UPDATE {p_strEconByRxCycleWorkTable} 
                                 SET harvest_onsite_cost_dpa = harvest_onsite_cost_dpa + (((0.0015 * 
                                 {p_strWoodType}_wt_gt * 2000) / 60) * {p_strOpcostCostsTable}.DefaultCPH) 
-                                FROM opcost_ref.{p_strOpcostCostsTable} WHERE use{p_strWoodType} = 'H'";
+                                FROM opcost_ref.{p_strOpcostCostsTable} WHERE use{p_strWoodType} = 'H' 
+                                AND {p_strOpcostCostsTable}.Machine = 'Chipper'";
                 return strSql;
             }
 
