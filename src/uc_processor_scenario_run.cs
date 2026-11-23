@@ -920,28 +920,6 @@ namespace FIA_Biosum_Manager
                     this.btnRunOC7.Left = (int)this.btnRun.Left + 150;
                     this.lblMsg.Width = this.m_lvEx.Width;
                 }
-
-                if (uc_filesize_monitor1.lblMaxSize.Left + uc_filesize_monitor1.lblMaxSize.Width > uc_filesize_monitor1.Width)
-                {
-                    for (; ; )
-                    {
-                        uc_filesize_monitor1.Width = uc_filesize_monitor1.Width + 1;
-                        if (uc_filesize_monitor1.lblMaxSize.Left + uc_filesize_monitor1.lblMaxSize.Width < uc_filesize_monitor1.Width)
-                            break;
-
-                    }
-                }
-                if (uc_filesize_monitor2.lblMaxSize.Left + uc_filesize_monitor2.lblMaxSize.Width > uc_filesize_monitor2.Width)
-                {
-                    for (; ; )
-                    {
-                        uc_filesize_monitor2.Width = uc_filesize_monitor2.Width + 1;
-                        if (uc_filesize_monitor2.lblMaxSize.Left + uc_filesize_monitor2.lblMaxSize.Width < uc_filesize_monitor2.Width)
-                            break;
-
-                    }
-                }
-                this.uc_filesize_monitor2.Left = this.uc_filesize_monitor1.Left + uc_filesize_monitor2.Width + 2;
             }
             catch
             {
@@ -1996,8 +1974,6 @@ namespace FIA_Biosum_Manager
 
         private void RunScenario_Finished()
         {
-            uc_filesize_monitor1.EndMonitoringFile();
-            uc_filesize_monitor2.EndMonitoringFile();
             frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Control)ReferenceProcessorScenarioForm.tlbScenario, "Enabled", true);
             ReferenceProcessorScenarioForm.EnableTabPage(ReferenceProcessorScenarioForm.tabControlScenario, "tbDataSources", true);
             ReferenceProcessorScenarioForm.EnableTabPage(ReferenceProcessorScenarioForm.tabControlScenario, "tbTreeGroupings", true);
@@ -2278,23 +2254,12 @@ namespace FIA_Biosum_Manager
             // Create temp SQLite database
             m_strTempSqliteDbFile = frmMain.g_oUtils.getRandomFile(frmMain.g_oEnv.strTempDir, "db");
             m_oDataMgr.CreateDbFile(m_strTempSqliteDbFile);
+            frmMain.g_oDelegate.SetControlPropertyValue((Control)lblTmpDbFile, "Text", m_strTempSqliteDbFile);
 
             for (x = 0; x <= this.m_lvEx.Items.Count - 1; x++)
             {
                 if ((bool)frmMain.g_oDelegate.GetListViewExItemPropertyValue(this.m_lvEx, x, "Checked", false))
                 {
-
-                    if ((bool)frmMain.g_oDelegate.GetControlPropertyValue((System.Windows.Forms.UserControl)uc_filesize_monitor1, "Visible", false) == false)
-                    {
-                        uc_filesize_monitor1.BeginMonitoringFile(
-                            m_strTempSqliteDbFile, 2000000000, "2GB");
-                        uc_filesize_monitor1.Information = "Work table containing table links";
-                        uc_filesize_monitor2.BeginMonitoringFile(
-                             frmMain.g_oFrmMain.frmProject.uc_project1.m_strProjectDirectory.Trim() +
-                            "\\processor\\" + ScenarioId + "\\" + Tables.ProcessorScenarioRun.DefaultSqliteResultsDbFile
-                            , 2000000000, "2GB");
-                        uc_filesize_monitor2.Information = "Scenario results DB file containing Harvest Costs and Tree Volume and Value tables";
-                    }
                     frmMain.g_oDelegate.EnsureListViewExItemVisible(this.m_lvEx, x);
 
                     frmMain.g_oDelegate.SetListViewExItemPropertyValue(this.m_lvEx, x, "Selected", true);

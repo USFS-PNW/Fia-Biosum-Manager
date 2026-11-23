@@ -33,14 +33,14 @@
             this.btnRun = new System.Windows.Forms.Button();
             this.cmbFilter = new System.Windows.Forms.ComboBox();
             this.pnlFileSizeMonitor = new System.Windows.Forms.Panel();
-            this.uc_filesize_monitor2 = new FIA_Biosum_Manager.uc_filesize_monitor();
-            this.uc_filesize_monitor1 = new FIA_Biosum_Manager.uc_filesize_monitor();
             this.btnRunOC7 = new System.Windows.Forms.Button();
             this.lblMsg = new System.Windows.Forms.Label();
             this.lstFvsOutput = new System.Windows.Forms.ListView();
             this.btnUncheckAll = new System.Windows.Forms.Button();
             this.btnChkAll = new System.Windows.Forms.Button();
             this.lblTitle = new System.Windows.Forms.Label();
+            this.lblTempDb = new System.Windows.Forms.Label();
+            this.lblTmpDbFile = new System.Windows.Forms.Label();
             this.groupBox1.SuspendLayout();
             this.panel1.SuspendLayout();
             this.pnlFileSizeMonitor.SuspendLayout();
@@ -102,35 +102,33 @@
             // pnlFileSizeMonitor
             // 
             this.pnlFileSizeMonitor.AutoScroll = true;
-            this.pnlFileSizeMonitor.Controls.Add(this.uc_filesize_monitor2);
-            this.pnlFileSizeMonitor.Controls.Add(this.uc_filesize_monitor1);
+            this.pnlFileSizeMonitor.Controls.Add(this.lblTempDb);
+            this.pnlFileSizeMonitor.Controls.Add(this.lblTmpDbFile);
             this.pnlFileSizeMonitor.Location = new System.Drawing.Point(25, 482);
             this.pnlFileSizeMonitor.Margin = new System.Windows.Forms.Padding(4);
             this.pnlFileSizeMonitor.Name = "pnlFileSizeMonitor";
             this.pnlFileSizeMonitor.Size = new System.Drawing.Size(836, 122);
             this.pnlFileSizeMonitor.TabIndex = 68;
             // 
-            // uc_filesize_monitor2
+            // lblTempDb
             // 
-            this.uc_filesize_monitor2.ForeColor = System.Drawing.Color.Black;
-            this.uc_filesize_monitor2.Information = "";
-            this.uc_filesize_monitor2.Location = new System.Drawing.Point(275, 12);
-            this.uc_filesize_monitor2.Margin = new System.Windows.Forms.Padding(5);
-            this.uc_filesize_monitor2.Name = "uc_filesize_monitor2";
-            this.uc_filesize_monitor2.Size = new System.Drawing.Size(241, 94);
-            this.uc_filesize_monitor2.TabIndex = 1;
-            this.uc_filesize_monitor2.Visible = false;
+            this.lblTempDb.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblTempDb.ForeColor = System.Drawing.Color.Green;
+            this.lblTempDb.Location = new System.Drawing.Point(5, 10);
+            this.lblTempDb.Name = "lblTempDb";
+            this.lblTempDb.Size = new System.Drawing.Size(115, 16);
+            this.lblTempDb.TabIndex = 52;
+            this.lblTempDb.Text = "Temporary db";
             // 
-            // uc_filesize_monitor1
+            // lblTmpDbFile
             // 
-            this.uc_filesize_monitor1.ForeColor = System.Drawing.Color.Black;
-            this.uc_filesize_monitor1.Information = "";
-            this.uc_filesize_monitor1.Location = new System.Drawing.Point(7, 12);
-            this.uc_filesize_monitor1.Margin = new System.Windows.Forms.Padding(5);
-            this.uc_filesize_monitor1.Name = "uc_filesize_monitor1";
-            this.uc_filesize_monitor1.Size = new System.Drawing.Size(241, 94);
-            this.uc_filesize_monitor1.TabIndex = 0;
-            this.uc_filesize_monitor1.Visible = false;
+            this.lblTmpDbFile.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblTmpDbFile.ForeColor = System.Drawing.Color.Green;
+            this.lblTmpDbFile.Location = new System.Drawing.Point(118, 10);
+            this.lblTmpDbFile.Name = "lblTmpDbFile";
+            this.lblTmpDbFile.Size = new System.Drawing.Size(500, 16);
+            this.lblTmpDbFile.TabIndex = 53;
+            this.lblTmpDbFile.Text = "";
             // 
             // btnRunOC7
             // 
@@ -229,9 +227,9 @@
         private System.Windows.Forms.Button btnRunOC7;
         private System.Windows.Forms.Label lblMsg;
         private System.Windows.Forms.Panel pnlFileSizeMonitor;
-        private uc_filesize_monitor uc_filesize_monitor2;
-        private uc_filesize_monitor uc_filesize_monitor1;
         private System.Windows.Forms.ComboBox cmbFilter;
         private System.Windows.Forms.Button btnRun;
+        private System.Windows.Forms.Label lblTmpDbFile;
+        private System.Windows.Forms.Label lblTempDb;
     }
 }

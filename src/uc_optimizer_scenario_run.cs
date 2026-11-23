@@ -38,16 +38,13 @@ namespace FIA_Biosum_Manager
         private ColumnHeader colDesc;
         private ColumnHeader colStatus;
         private Panel pnlFileSizeMonitor;
-        public uc_filesize_monitor uc_filesize_monitor3;
-        public uc_filesize_monitor uc_filesize_monitor2;
-        public uc_filesize_monitor uc_filesize_monitor1;
-        public uc_filesize_monitor uc_filesize_monitor4;
+        public Label lblTmpDbFile;
+        private Label lblTempDb;
 
-
-		/// <summary> 
-		/// Required designer variable.
-		/// </summary>
-		private System.ComponentModel.Container components = null;
+        /// <summary> 
+        /// Required designer variable.
+        /// </summary>
+        private System.ComponentModel.Container components = null;
 
 		public uc_optimizer_scenario_run()
 		{
@@ -233,10 +230,6 @@ namespace FIA_Biosum_Manager
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.panel1 = new System.Windows.Forms.Panel();
             this.pnlFileSizeMonitor = new System.Windows.Forms.Panel();
-            this.uc_filesize_monitor4 = new FIA_Biosum_Manager.uc_filesize_monitor();
-            this.uc_filesize_monitor3 = new FIA_Biosum_Manager.uc_filesize_monitor();
-            this.uc_filesize_monitor2 = new FIA_Biosum_Manager.uc_filesize_monitor();
-            this.uc_filesize_monitor1 = new FIA_Biosum_Manager.uc_filesize_monitor();
             this.listViewEx1 = new ListViewEmbeddedControls.ListViewEx();
             this.colNull = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.colStatus = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
@@ -248,6 +241,8 @@ namespace FIA_Biosum_Manager
             this.btnViewResultsTables = new System.Windows.Forms.Button();
             this.btnViewAuditTables = new System.Windows.Forms.Button();
             this.btnViewLog = new System.Windows.Forms.Button();
+            this.lblTempDb = new System.Windows.Forms.Label();
+            this.lblTmpDbFile = new System.Windows.Forms.Label();
             this.groupBox1.SuspendLayout();
             this.panel1.SuspendLayout();
             this.pnlFileSizeMonitor.SuspendLayout();
@@ -285,58 +280,32 @@ namespace FIA_Biosum_Manager
             // pnlFileSizeMonitor
             // 
             this.pnlFileSizeMonitor.AutoScroll = true;
-            this.pnlFileSizeMonitor.Controls.Add(this.uc_filesize_monitor4);
-            this.pnlFileSizeMonitor.Controls.Add(this.uc_filesize_monitor3);
-            this.pnlFileSizeMonitor.Controls.Add(this.uc_filesize_monitor2);
-            this.pnlFileSizeMonitor.Controls.Add(this.uc_filesize_monitor1);
+            this.pnlFileSizeMonitor.Controls.Add(this.lblTmpDbFile);
+            this.pnlFileSizeMonitor.Controls.Add(this.lblTempDb);
             this.pnlFileSizeMonitor.Location = new System.Drawing.Point(12, 380);
             this.pnlFileSizeMonitor.Name = "pnlFileSizeMonitor";
             this.pnlFileSizeMonitor.Size = new System.Drawing.Size(829, 99);
             this.pnlFileSizeMonitor.TabIndex = 69;
             // 
-            // uc_filesize_monitor4
+            // lblTempDb
             // 
-            this.uc_filesize_monitor4.ForeColor = System.Drawing.Color.Black;
-            this.uc_filesize_monitor4.Information = "";
-            this.uc_filesize_monitor4.Location = new System.Drawing.Point(616, 10);
-            this.uc_filesize_monitor4.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
-            this.uc_filesize_monitor4.Name = "uc_filesize_monitor4";
-            this.uc_filesize_monitor4.Size = new System.Drawing.Size(181, 76);
-            this.uc_filesize_monitor4.TabIndex = 3;
-            this.uc_filesize_monitor4.Visible = false;
+            this.lblTempDb.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblTempDb.ForeColor = System.Drawing.Color.Green;
+            this.lblTempDb.Location = new System.Drawing.Point(5, 10);
+            this.lblTempDb.Name = "lblTempDb";
+            this.lblTempDb.Size = new System.Drawing.Size(115, 16);
+            this.lblTempDb.TabIndex = 52;
+            this.lblTempDb.Text = "Temporary db";
             // 
-            // uc_filesize_monitor3
+            // lblTmpDbFile
             // 
-            this.uc_filesize_monitor3.ForeColor = System.Drawing.Color.Black;
-            this.uc_filesize_monitor3.Information = "";
-            this.uc_filesize_monitor3.Location = new System.Drawing.Point(429, 10);
-            this.uc_filesize_monitor3.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
-            this.uc_filesize_monitor3.Name = "uc_filesize_monitor3";
-            this.uc_filesize_monitor3.Size = new System.Drawing.Size(181, 76);
-            this.uc_filesize_monitor3.TabIndex = 2;
-            this.uc_filesize_monitor3.Visible = false;
-            // 
-            // uc_filesize_monitor2
-            // 
-            this.uc_filesize_monitor2.ForeColor = System.Drawing.Color.Black;
-            this.uc_filesize_monitor2.Information = "";
-            this.uc_filesize_monitor2.Location = new System.Drawing.Point(206, 10);
-            this.uc_filesize_monitor2.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
-            this.uc_filesize_monitor2.Name = "uc_filesize_monitor2";
-            this.uc_filesize_monitor2.Size = new System.Drawing.Size(181, 76);
-            this.uc_filesize_monitor2.TabIndex = 1;
-            this.uc_filesize_monitor2.Visible = false;
-            // 
-            // uc_filesize_monitor1
-            // 
-            this.uc_filesize_monitor1.ForeColor = System.Drawing.Color.Black;
-            this.uc_filesize_monitor1.Information = "";
-            this.uc_filesize_monitor1.Location = new System.Drawing.Point(5, 10);
-            this.uc_filesize_monitor1.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
-            this.uc_filesize_monitor1.Name = "uc_filesize_monitor1";
-            this.uc_filesize_monitor1.Size = new System.Drawing.Size(181, 76);
-            this.uc_filesize_monitor1.TabIndex = 0;
-            this.uc_filesize_monitor1.Visible = false;
+            this.lblTmpDbFile.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblTmpDbFile.ForeColor = System.Drawing.Color.Green;
+            this.lblTmpDbFile.Location = new System.Drawing.Point(118, 10);
+            this.lblTmpDbFile.Name = "lblTmpDbFile";
+            this.lblTmpDbFile.Size = new System.Drawing.Size(500, 16);
+            this.lblTmpDbFile.TabIndex = 53;
+            this.lblTmpDbFile.Text = "";
             // 
             // listViewEx1
             // 
@@ -640,8 +609,6 @@ namespace FIA_Biosum_Manager
 						case DialogResult.Yes:
 							this.btnCancel.Text = "Start";
 							this.m_bUserCancel=true;
-                            uc_filesize_monitor1.EndMonitoringFile();
-                            uc_filesize_monitor2.EndMonitoringFile();
 							return;
 						case DialogResult.No:
 							return;
@@ -669,9 +636,6 @@ namespace FIA_Biosum_Manager
                             }
                             frmMain.g_oDelegate.SetControlPropertyValue((Control)btnCancel, "Text", "Start");
 							this.m_bUserCancel=true;
-                            uc_filesize_monitor1.EndMonitoringFile();
-                            uc_filesize_monitor2.EndMonitoringFile();
-
 						}
 					}
 				}
@@ -982,52 +946,6 @@ namespace FIA_Biosum_Manager
             this.pnlFileSizeMonitor.Top = this.groupBox1.Height - this.groupBox1.Top - this.pnlFileSizeMonitor.Height - 2;
             this.lblMsg.Top = pnlFileSizeMonitor.Top - this.lblMsg.Height - 2;
             this.listViewEx1.Height = this.lblMsg.Top - this.listViewEx1.Top -5;
-
-            if (uc_filesize_monitor1.lblMaxSize.Left + uc_filesize_monitor1.lblMaxSize.Width > uc_filesize_monitor1.Width)
-            {
-                for (; ; )
-                {
-                    uc_filesize_monitor1.Width = uc_filesize_monitor1.Width + 1;
-                    if (uc_filesize_monitor1.lblMaxSize.Left + uc_filesize_monitor1.lblMaxSize.Width < uc_filesize_monitor1.Width)
-                        break;
-
-                }
-            }
-            if (uc_filesize_monitor2.lblMaxSize.Left + uc_filesize_monitor2.lblMaxSize.Width > uc_filesize_monitor2.Width)
-            {
-                for (; ; )
-                {
-                    uc_filesize_monitor2.Width = uc_filesize_monitor2.Width + 1;
-                    if (uc_filesize_monitor2.lblMaxSize.Left + uc_filesize_monitor2.lblMaxSize.Width < uc_filesize_monitor2.Width)
-                        break;
-
-                }
-            }
-            if (uc_filesize_monitor3.lblMaxSize.Left + uc_filesize_monitor3.lblMaxSize.Width > uc_filesize_monitor3.Width)
-            {
-                for (; ; )
-                {
-                    uc_filesize_monitor3.Width = uc_filesize_monitor3.Width + 1;
-                    if (uc_filesize_monitor3.lblMaxSize.Left + uc_filesize_monitor3.lblMaxSize.Width < uc_filesize_monitor3.Width)
-                        break;
-
-                }
-            }
-
-            if (uc_filesize_monitor4.lblMaxSize.Left + uc_filesize_monitor4.lblMaxSize.Width > uc_filesize_monitor4.Width)
-            {
-                for (; ; )
-                {
-                    uc_filesize_monitor4.Width = uc_filesize_monitor4.Width + 1;
-                    if (uc_filesize_monitor4.lblMaxSize.Left + uc_filesize_monitor4.lblMaxSize.Width < uc_filesize_monitor4.Width)
-                        break;
-
-                }
-            }
-
-            this.uc_filesize_monitor2.Left = this.uc_filesize_monitor1.Left + uc_filesize_monitor2.Width + 2;
-            this.uc_filesize_monitor3.Left = this.uc_filesize_monitor2.Left + uc_filesize_monitor3.Width + 2;
-            this.uc_filesize_monitor4.Left = this.uc_filesize_monitor3.Left + uc_filesize_monitor4.Width + 2;
         }
 
         public void UpdateOptimizationVariableGroupboxText(string p_strOptimizationVariableName)
@@ -1172,6 +1090,7 @@ namespace FIA_Biosum_Manager
                 FIA_Biosum_Manager.RunOptimizer.g_intCurrentProgressBarBasicMaximumSteps = 15;
                 FIA_Biosum_Manager.RunOptimizer.g_intCurrentProgressBarBasicMinimumSteps = 1;
                 FIA_Biosum_Manager.RunOptimizer.g_intCurrentProgressBarBasicCurrentStep = 1;
+                frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Label)_uc_scenario_run.lblTmpDbFile, "Text", "");
 
                 frmMain.g_oDelegate.EnsureListViewExItemVisible(ReferenceUserControlScenarioRun.listViewEx1, 2);
                 frmMain.g_oDelegate.SetListViewItemPropertyValue(ReferenceUserControlScenarioRun.listViewEx1, 2, "Selected", true);
@@ -1238,17 +1157,7 @@ namespace FIA_Biosum_Manager
                 }
                 else
                 {
-                    if ((bool)frmMain.g_oDelegate.GetControlPropertyValue((System.Windows.Forms.UserControl)_uc_scenario_run.uc_filesize_monitor1, "Visible", false) == false)
-                    {
-                        _uc_scenario_run.uc_filesize_monitor1.BeginMonitoringFile(
-                            m_strWorkTablesDb, 2000000000, "2GB");
-                        _uc_scenario_run.uc_filesize_monitor1.Information = "Work table DB file";
-
-                        _uc_scenario_run.uc_filesize_monitor2.BeginMonitoringFile(
-                            m_strSystemResultsDbPathAndFile, 2000000000, "2GB");
-                        _uc_scenario_run.uc_filesize_monitor2.Information = "Scenario results DB file";
-                    }
-
+                    frmMain.g_oDelegate.SetControlPropertyValue((System.Windows.Forms.Label)_uc_scenario_run.lblTmpDbFile, "Text", m_strWorkTablesDb);
                     FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermPercent();
 
                     if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
@@ -1700,13 +1609,6 @@ namespace FIA_Biosum_Manager
                         frmMain.g_oUtils.WriteText(m_strDebugFile, "!!Error!!\r\n");
                 }
             }
-
-            _uc_scenario_run.uc_filesize_monitor1.EndMonitoringFile();
-            _uc_scenario_run.uc_filesize_monitor2.EndMonitoringFile();
-            if ((bool)frmMain.g_oDelegate.GetControlPropertyValue((System.Windows.Forms.UserControl)_uc_scenario_run.uc_filesize_monitor3, "Visible", false))
-                _uc_scenario_run.uc_filesize_monitor3.EndMonitoringFile();
-            if ((bool)frmMain.g_oDelegate.GetControlPropertyValue((System.Windows.Forms.UserControl)_uc_scenario_run.uc_filesize_monitor4, "Visible", false))
-                _uc_scenario_run.uc_filesize_monitor4.EndMonitoringFile();
 
             frmMain.g_oDelegate.m_oEventThreadStopped.Set();
             this.ReferenceUserControlScenarioRun.Invoke(frmMain.g_oDelegate.m_oDelegateThreadFinished);
@@ -5080,16 +4982,11 @@ namespace FIA_Biosum_Manager
                 oCheckBox = (CheckBox)ReferenceUserControlScenarioRun.listViewEx1.GetEmbeddedControl(
                                0, intListViewIndex);
 
-                _uc_scenario_run.uc_filesize_monitor4.EndMonitoringFile();
-
                 if ((bool)frmMain.g_oDelegate.GetControlPropertyValue((System.Windows.Forms.Control)oCheckBox, "Checked", false) == true)
                 {
                     frmMain.g_oDelegate.SetControlPropertyValue((Control)ReferenceUserControlScenarioRun.lblMsg, "Text", "Creating Audit Data");
                     frmMain.g_oDelegate.SetControlPropertyValue((Control)ReferenceUserControlScenarioRun.lblMsg, "Visible", true);
                     frmMain.g_oDelegate.ExecuteControlMethod((Control)ReferenceUserControlScenarioRun, "Refresh");
-
-                    _uc_scenario_run.uc_filesize_monitor4.BeginMonitoringFile(
-                        ReferenceUserControlScenarioRun.ReferenceOptimizerScenarioForm.uc_scenario1.txtScenarioPath.Text.Trim() + "\\db\\" + Tables.Audit.DefaultCondAuditTableDbFile, 2000000000, "2GB");
 
                     if (frmMain.g_bDebug && frmMain.g_intDebugLevel > 1)
                         frmMain.g_oUtils.WriteText(m_strDebugFile, "\r\n--cond_audit--\r\n\r\n");
@@ -5453,8 +5350,6 @@ namespace FIA_Biosum_Manager
             frmMain.g_oDelegate.SetControlPropertyValue((Control)ReferenceUserControlScenarioRun.lblMsg, "Visible", false);
             frmMain.g_oDelegate.SetControlPropertyValue((Control)ReferenceUserControlScenarioRun.lblMsg, "Text", "");
             frmMain.g_oDelegate.ExecuteControlMethod((Control)ReferenceUserControlScenarioRun.lblMsg, "Refresh");
-            _uc_scenario_run.uc_filesize_monitor4.EndMonitoringFile();
-            _uc_scenario_run.uc_filesize_monitor3.EndMonitoringFile();
             if (this.m_intError == 0)
             {
                 FIA_Biosum_Manager.uc_optimizer_scenario_run.UpdateThermText(FIA_Biosum_Manager.RunOptimizer.g_oCurrentProgressBarBasic, "Done");
