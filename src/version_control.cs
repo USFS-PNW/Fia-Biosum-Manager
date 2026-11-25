@@ -1,8 +1,5 @@
 using SQLite.ADO;
 using System;
-using System.Collections.Generic;
-using System.Data.OleDb;
-using System.Linq;
 using System.Windows.Forms;
 
 namespace FIA_Biosum_Manager

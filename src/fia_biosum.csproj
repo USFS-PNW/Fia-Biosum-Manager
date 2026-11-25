@@ -329,12 +329,6 @@
     <Compile Include="uc_datasource_edit.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="uc_filesize_monitor.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="uc_filesize_monitor.designer.cs">
-      <DependentUpon>uc_filesize_monitor.cs</DependentUpon>
-    </Compile>
     <Compile Include="uc_filter_rows_numeric_datatype.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -629,9 +623,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="uc_datasource_edit.resx">
       <DependentUpon>uc_datasource_edit.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="uc_filesize_monitor.resx">
-      <DependentUpon>uc_filesize_monitor.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="uc_filter_rows_numeric_datatype.resx">
       <DependentUpon>uc_filter_rows_numeric_datatype.cs</DependentUpon>
